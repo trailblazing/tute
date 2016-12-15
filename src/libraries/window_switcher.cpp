@@ -41,7 +41,7 @@ WindowSwitcher::WindowSwitcher(QString object_name, MetaEditor *meta_editor, QOb
 	// MetaEditor *edView=find_object<MetaEditor>(meta_editor_singleton_name); // Выясняется указатель на объект редактирования текста записи
 
 	//    MetaEditor *metaEditor = globalparameters.getMetaEditor();
-    meta_editor->back_callback(this->record_to_recordtable);	// Устанавливается функция обратного вызова при клике на кнопку Back
+    meta_editor->back_callback(&WindowSwitcher::record_to_recordtable);	// Устанавливается функция обратного вызова при клике на кнопку Back
 }
 
 void WindowSwitcher::enable(void){

@@ -216,5 +216,6 @@ extern bool		url_equal(const std::string &url_compare_stored, const std::string 
 // boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record> record, browser::WebPage *page);
 
 extern std::ifstream::pos_type filesize(const char* filename);
+extern std::streampos file_size(const char *file_path);
 
 #endif	// __MAIN_H__

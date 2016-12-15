@@ -183,7 +183,7 @@ void Editor::init(int mode){
     setup_editor_area();
 
     setup_signals();
-    if(_init_data_enable_assembly)assembly();
+    if(_init_data_enable_assembly) assembly();
     _current_font_family		= "";
     _current_font_size			= 0;
     _current_font_color			= "#000000";
@@ -198,7 +198,7 @@ void Editor::init(int mode){
 
     update_indentline_geometry();
 	// Устанавливается состояние распахнуто или нет панель инструментов
-    if(_editor_config->get_expand_tools_lines())switch_expand_tools_lines(1);
+    if(_editor_config->get_expand_tools_lines()) switch_expand_tools_lines(1);
     else switch_expand_tools_lines(- 1);
     if(_init_data_enable_random_seed){
 //	QDateTime	datetime = QDateTime::currentDateTime();
@@ -420,7 +420,7 @@ void Editor::setup_buttons(void){
 
 	// Выбор размера шрифта
     _font_size = new FlatComboBox(this);
-    for(int i = MINIMUM_ALLOWED_FONT_SIZE; i <= MAXIMUM_ALLOWED_FONT_SIZE; i ++)_font_size->addItem(QString("%1").arg(i), i);
+    for(int i = MINIMUM_ALLOWED_FONT_SIZE; i <= MAXIMUM_ALLOWED_FONT_SIZE; i ++) _font_size->addItem(QString("%1").arg(i), i);
     _font_size->setCurrentIndex(_font_size->findData(10));
     _font_size->setMinimumContentsLength(3);
     _font_size->setEditable(true);
@@ -609,7 +609,7 @@ void Editor::hide_all_tools_elements(void){
 
 	// QList<QWidget *> tb_tools_list=qFindChildren(qobject_cast<QObject *>(this),name_mask);
     QList<QWidget *> tbToolsList = this->findChildren<QWidget *>(nameMask);
-    for(int i = 0; i < tbToolsList.size(); ++ i)tbToolsList.at(i)->setVisible(false);
+    for(int i = 0; i < tbToolsList.size(); ++ i) tbToolsList.at(i)->setVisible(false);
 }
 
 // Создание объекта области редактирования
@@ -632,7 +632,7 @@ void Editor::setup_editor_area(void){
 // и указатель на линейку
 void Editor::insert_button_to_tools_line(QString toolName, QToolBar *line){
 	// qDebug() << "Editor::insert_button_to_tools_line() disableToolList : " << disableToolList;
-    if(toolName == "separator")line->addSeparator();
+    if(toolName == "separator") line->addSeparator();
     else{
 	QString name("editor_tb_" + toolName);
 	QWidget *tool = this->findChild<QWidget *>(name);
@@ -644,10 +644,10 @@ void Editor::insert_button_to_tools_line(QString toolName, QToolBar *line){
 		line->addWidget(tool);	// Инструмент добавляется на панель инструментов
 
 		FlatToolButton *tb = qobject_cast<FlatToolButton *>(tool);
-		if(tb != 0)tb->setAutoRaise(true);		// false
+		if(tb != 0) tb->setAutoRaise(true);																														// false
 	    }else{
 		FlatToolButton *tb = qobject_cast<FlatToolButton *>(tool);
-		if(tb != 0)tb->setEnabled(false);
+		if(tb != 0) tb->setEnabled(false);
 	    }
 	}else critical_error("WyEdit: Can not find editor tool with name '" + toolName + "'. Please check editor *.ini file");
     }
@@ -786,12 +786,12 @@ bool Editor::work_directory(QString dir_name){
 	QString path		= directory.absolutePath();
 	path.remove(child_dir);
 	directory.setPath(path);
-    //        directory.rmdir(child_dir);// globalparameters.main_program_file() + get_unical_id();
+	//        directory.rmdir(child_dir);// globalparameters.main_program_file() + get_unical_id();
 
 	bool result = directory.mkdir(
 	    child_dir	// _work_directory // short_dir()
 	    );
-	if(! result)critical_error("Editor::work_directory(QString dir_name) : Can't create directory '" + _work_directory + "'");
+	if(! result) critical_error("Editor::work_directory(QString dir_name) : Can't create directory '" + _work_directory + "'");
 	_work_directory = dir_name;
 
 	//        critical_error("WyEdit: Can not set work directory to " + dirName + ". Directory not exists.");
@@ -808,8 +808,8 @@ void Editor::file_name(QString _file_name){
     if(_file_name.size() > 0){
 	QFile		f(_file_name);
 	QFileInfo	fileInfo(f);
-	if(! f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::ReadOnly))critical_error("Editor::file_name(QString _file_name) : Can\'t open text file " + _file_name + " for read / write.");
-	if(fileInfo.absoluteDir().exists() && f.exists())_work_file_name = _file_name;
+	if(! f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::ReadOnly)) critical_error("Editor::file_name(QString _file_name) : Can\'t open text file " + _file_name + " for read / write.");
+	if(fileInfo.absoluteDir().exists() && f.exists()) _work_file_name = _file_name;
     }else _work_file_name = "";
 }
 
@@ -851,8 +851,8 @@ void Editor::editor_load_callback(QObject *editor, QString &loadText){
 	//    if(!f.open(QIODevice::ReadOnly))
 	//        critical_error("File " + fileName + " not readable. Check permission.");
 	// Если незашифровано
-	if(workWithCrypt == false)loadText = QString::fromUtf8(f.readAll());
-	else loadText = CryptService::decryptStringFromByteArray(globalparameters.crypt_key(), f.readAll());	// Если зашифровано
+	if(workWithCrypt == false) loadText = QString::fromUtf8(f.readAll());
+	else loadText = CryptService::decryptStringFromByteArray(globalparameters.crypt_key(), f.readAll());																																																									// Если зашифровано
     }else loadText = "";
 }
 
@@ -871,7 +871,7 @@ void Editor::editor_save_callback(QObject *editor, QString saveText){
     bool workWithCrypt = false;
     if(currEditor->misc_field(boost::mpl::c_str < crypt_type >::value) == "1"){
 	// Если не установлено ключа шифрации
-	if(globalparameters.crypt_key().length() == 0)return;
+	if(globalparameters.crypt_key().length() == 0) return;
 	workWithCrypt = true;
     }
     QString fileName = currEditor->work_directory() + "/" + currEditor->file_name();
@@ -879,7 +879,7 @@ void Editor::editor_save_callback(QObject *editor, QString saveText){
     if(workWithCrypt == false){
 	// Текст сохраняется в файл
 	QFile wfile(fileName);
-	if(! wfile.open(QIODevice::WriteOnly | QIODevice::Text))critical_error("Editor::editor_save_callback() : Can\'t open text file " + fileName + " for write.");
+	if(! wfile.open(QIODevice::WriteOnly | QIODevice::Text)) critical_error("Editor::editor_save_callback() : Can\'t open text file " + fileName + " for write.");
 	QTextStream out(&wfile);
 	out.setCodec("UTF-8");
 	out << saveText;
@@ -889,7 +889,7 @@ void Editor::editor_save_callback(QObject *editor, QString saveText){
 
 	// В файл сохраняются зашифрованные данные
 	QFile wfile(fileName);
-	if(! wfile.open(QIODevice::WriteOnly))critical_error("Editor::editor_save_callback() : Can\'t open binary file " + fileName + " for write.");
+	if(! wfile.open(QIODevice::WriteOnly)) critical_error("Editor::editor_save_callback() : Can\'t open binary file " + fileName + " for write.");
 	wfile.write(encryptData);
     }
 	// Вызывается сохранение картинок
@@ -979,7 +979,7 @@ bool Editor::save_textarea_images(int mode = SAVE_IMAGES_SIMPLE){
 
 	// Перебираются файлы в директории
 	foreach(QString fileName, imageInDirectory)
-	if(fileName.contains(QRegExp("\\.png$")))	// Обрабатыватся только *.png файлы
+	if(fileName.contains(QRegExp("\\.png$")))																													// Обрабатыватся только *.png файлы
 		if(! imagesNames.contains(fileName)){
 			// Если в списке картинок нет текущего png файла,
 			// значит этот файл лишний и он удаляется
@@ -1074,7 +1074,7 @@ bool Editor::load_textarea(){
     _text_area->document()->setMetaInformation(QTextDocument::DocumentUrl, "file:" + fileName);
 
     qDebug() << "Editor::load_textarea() Set document URL to " << fileName;
-
+//    assert(content != "");
 	// Текст из файла вставляется в область редактирования
 	// QString content=QString::fromUtf8(f.readAll());
 	// qDebug() << "Load content:";
@@ -1107,8 +1107,8 @@ void Editor::on_bold_clicked(void){
 	// Если выделение есть
     if(_text_area->textCursor().hasSelection()){
 	// Обычное форматирование
-	if(_text_area->fontWeight() != QFont::Bold)_text_area->setFontWeight(QFont::Bold);	// Bold
-	else _text_area->setFontWeight(0);	// Remove Bold
+	if(_text_area->fontWeight() != QFont::Bold) _text_area->setFontWeight(QFont::Bold);																																																	// Bold
+	else _text_area->setFontWeight(0);																									// Remove Bold
     }else{
 	// Иначе надо выделить дополнительным курсором слово на
 	// котором стоит курсор
@@ -1117,7 +1117,7 @@ void Editor::on_bold_clicked(void){
 
 	// К выделению применяется форматирование Bold
 	QTextCharFormat format;
-	if(cursor.charFormat().fontWeight() != QFont::Bold)format.setFontWeight(QFont::Bold);
+	if(cursor.charFormat().fontWeight() != QFont::Bold) format.setFontWeight(QFont::Bold);
 	else format.setFontWeight(0);
 	cursor.mergeCharFormat(format);
     }
@@ -1129,7 +1129,7 @@ void Editor::on_italic_clicked(void){
 	// Если выделение есть
     if(_text_area->textCursor().hasSelection()){
 	// Обычное форматирование
-	if(! _text_area->fontItalic())_text_area->setFontItalic(true);
+	if(! _text_area->fontItalic()) _text_area->setFontItalic(true);
 	else _text_area->setFontItalic(false);
     }else{
 	// Иначе надо выделить дополнительным курсором слово на
@@ -1139,7 +1139,7 @@ void Editor::on_italic_clicked(void){
 
 	// К выделению применяется форматирование Italic
 	QTextCharFormat format;
-	if(! cursor.charFormat().fontItalic())format.setFontItalic(true);
+	if(! cursor.charFormat().fontItalic()) format.setFontItalic(true);
 	else format.setFontItalic(false);
 	cursor.mergeCharFormat(format);
     }
@@ -1151,7 +1151,7 @@ void Editor::on_underline_clicked(void){
 	// Если выделение есть
     if(_text_area->textCursor().hasSelection()){
 	// Обычное форматирование
-	if(! _text_area->fontUnderline())_text_area->setFontUnderline(true);
+	if(! _text_area->fontUnderline()) _text_area->setFontUnderline(true);
 	else _text_area->setFontUnderline(false);
     }else{
 	// Иначе надо выделить дополнительным курсором слово на
@@ -1161,7 +1161,7 @@ void Editor::on_underline_clicked(void){
 
 	// К выделению применяется форматирование Underline
 	QTextCharFormat format;
-	if(! cursor.charFormat().fontUnderline())format.setFontUnderline(true);
+	if(! cursor.charFormat().fontUnderline()) format.setFontUnderline(true);
 	else format.setFontUnderline(false);
 	cursor.mergeCharFormat(format);
     }
@@ -1204,17 +1204,17 @@ bool Editor::is_block_select(void){
     int		flagStopBlockEdge	= 0;
     QTextCursor cursor			= _text_area->textCursor();
     cursor.setPosition(start);
-    if(cursor.atBlockStart() == true || cursor.atBlockEnd() == true)flagStartBlockEdge = 1;
+    if(cursor.atBlockStart() == true || cursor.atBlockEnd() == true) flagStartBlockEdge = 1;
     cursor.setPosition(stop);
-    if(cursor.atBlockStart() == true || cursor.atBlockEnd() == true)flagStopBlockEdge = 1;
-    if(flagStartBlockEdge == 1 && flagStopBlockEdge == 1)return true;
+    if(cursor.atBlockStart() == true || cursor.atBlockEnd() == true) flagStopBlockEdge = 1;
+    if(flagStartBlockEdge == 1 && flagStopBlockEdge == 1) return true;
     else return false;
 }
 
 // Стоит ли курсор на пустой строке (т.е. в строке есть только символ
 // перевода на новую строку)
 bool Editor::is_cursor_on_empty_line(void){
-    if(! _text_area->textCursor().atBlockStart())return false;
+    if(! _text_area->textCursor().atBlockStart()) return false;
 	// Создаётся дополнительный курсор
     QTextCursor cursor = _text_area->textCursor();
 
@@ -1223,13 +1223,13 @@ bool Editor::is_cursor_on_empty_line(void){
 
 	// Текст анализируемой строки
     QString selectedText = cursor.selectedText();
-    if(selectedText.size() > 0)return false;
+    if(selectedText.size() > 0) return false;
     else return true;
 }
 
 bool Editor::is_cursor_on_space_line(void){
 	// Если есть выделение, функция работать не должна
-    if(_text_area->textCursor().hasSelection())return false;
+    if(_text_area->textCursor().hasSelection()) return false;
 	// Создаётся дополнительный курсор
     QTextCursor cursor = _text_area->textCursor();
 
@@ -1238,14 +1238,14 @@ bool Editor::is_cursor_on_space_line(void){
 
 	// Текст анализируемой строки
     QString selectedText = cursor.selectedText();
-    if(selectedText.simplified().size() > 0)return false;
+    if(selectedText.simplified().size() > 0) return false;
     else return true;
 }
 
 // Форматирование в качестве кода
 void Editor::on_code_clicked(void){
 	// Если выделения нет
-    if(! _text_area->textCursor().hasSelection())return;
+    if(! _text_area->textCursor().hasSelection()) return;
     bool enableIndent;
 	// Проверяется, выбран ли четко блок (блоки) текста
 	// Блок - это текст между <p>...</p>
@@ -1265,9 +1265,9 @@ void Editor::on_code_clicked(void){
 	int	selectStop	= _text_area->textCursor().selectionEnd();
 
 	qDebug() << "Code format action, block " << blockStart << blockStop << " selection " << selectStart << selectStop;
-	if(blockStart <= selectStart && blockStop >= selectStop)enableIndent = false;	// Выбран кусок текста в пределах блока
+	if(blockStart <= selectStart && blockStop >= selectStop) enableIndent = false;																																													// Выбран кусок текста в пределах блока
 	else return;
-    }else enableIndent = true;	// Выбран четко блок (блоки) текста, нужно делать отступ
+    }else enableIndent = true;																	// Выбран четко блок (блоки) текста, нужно делать отступ
 
     _text_area->textCursor().beginEditBlock();
 
@@ -1321,9 +1321,9 @@ void Editor::on_clear_clicked(void){
 	// Или курсор стоит на строке, в которой нет текста
     if(! (_text_area->textCursor().hasSelection() ||
 	flag_cursor_on_empty_line ||
-	flag_cursor_on_space_line))return;
+	flag_cursor_on_space_line)) return;
     _text_area->textCursor().beginEditBlock();
-    if(flag_cursor_on_space_line)(_text_area->textCursor()).select(QTextCursor::LineUnderCursor);
+    if(flag_cursor_on_space_line) (_text_area->textCursor()).select(QTextCursor::LineUnderCursor);
 	// Создается стандартный шрифт
     QFont font;
     font.fromString(_editor_config->get_default_font());	// Стандартное начертание
@@ -1365,7 +1365,7 @@ void Editor::on_clear_clicked(void){
     }
 	// Если была работа со строкой, в которой нет символов,
 	// курсор переносится на начало строки, чтобы не путать пользователя
-    if(flag_cursor_on_space_line)_text_area->moveCursor(QTextCursor::StartOfLine);
+    if(flag_cursor_on_space_line) _text_area->moveCursor(QTextCursor::StartOfLine);
 	// Очистка закомментирована, так как она заменена очисткой формата символов setCurrentCharFormat()
 	// А так же эта очистка некорректно работает из-за особенностей вставки в Qt (первая строка получает отличный от остальных строк формат).
 	// Думать дальше
@@ -1408,9 +1408,9 @@ void Editor::on_clear_clicked(void){
 
 void Editor::format_to_list(QTextListFormat::Style setFormat){
 	// Если выделения нет
-    if(! _text_area->textCursor().hasSelection())return;
+    if(! _text_area->textCursor().hasSelection()) return;
 	// Форматирование в список возможно только если выделен блок
-    if(! is_block_select())return;
+    if(! is_block_select()) return;
 	// Если строки выбраны
     if(_text_area->textCursor().hasSelection()){
 	if(_text_area->textCursor().currentList() == 0 ||
@@ -1497,7 +1497,7 @@ void Editor::on_indentminus_clicked(void){
 
 	// Выяснение текущего отступа
     currentIndent = (int) _text_area->textCursor().blockFormat().leftMargin();
-    if((currentIndent - 10) > 0)indentForSet = currentIndent - 10;
+    if((currentIndent - 10) > 0) indentForSet = currentIndent - 10;
     else indentForSet = 0;
 	// Создание форматирования
     QTextBlockFormat indentFormatting;
@@ -1543,7 +1543,7 @@ void Editor::align_text(Qt::AlignmentFlag mode){
 
 // Слот, срабатывающий при изменении шрифта в списке шрифтов
 void Editor::on_fontselect_changed(const QFont &font){
-    if(_flag_set_font_parameters_enabled == false)return;
+    if(_flag_set_font_parameters_enabled == false) return;
     _text_area->setFontFamily(font.family());
 
     _current_font_family = font.family();
@@ -1555,7 +1555,7 @@ void Editor::on_fontselect_changed(const QFont &font){
 // Метод только меняет значение, показываемое списком шрифтов
 void Editor::set_fontselect_on_display(QString fontName){
     _flag_set_font_parameters_enabled = false;
-    if(fontName.size() > 0)_font_select->setCurrentIndex(_font_select->findText(fontName));
+    if(fontName.size() > 0) _font_select->setCurrentIndex(_font_select->findText(fontName));
     else _font_select->setCurrentIndex(_font_select->count() - 1);
     _current_font_family = fontName;
 
@@ -1564,10 +1564,10 @@ void Editor::set_fontselect_on_display(QString fontName){
 
 // Слот, срабатывающий когда изменен размер шрифта через список размеров
 void Editor::on_fontsize_changed(int i){
-    if(_flag_set_font_parameters_enabled == false)return;
+    if(_flag_set_font_parameters_enabled == false) return;
     int n = (_font_size->itemData(i)).toInt();
-    if(n < MINIMUM_ALLOWED_FONT_SIZE)return;
-    if(n > MAXIMUM_ALLOWED_FONT_SIZE)return;
+    if(n < MINIMUM_ALLOWED_FONT_SIZE) return;
+    if(n > MAXIMUM_ALLOWED_FONT_SIZE) return;
     _text_area->setFontPointSize(n);
 
     _current_font_size = n;
@@ -1598,7 +1598,7 @@ void Editor::on_fontcolor_clicked(){
 	// Меняется цвет кнопки
 	_font_color->setPalette(QPalette(selectedColor));
 	// Если выделение есть
-	if(_text_area->textCursor().hasSelection())_text_area->setTextColor(selectedColor);	// Меняется цвет текста
+	if(_text_area->textCursor().hasSelection()) _text_area->setTextColor(selectedColor);																																																	// Меняется цвет текста
 	else{
 		// Иначе надо выделить дополнительным курсором слово на
 		// котором стоит курсор
@@ -1616,7 +1616,7 @@ void Editor::on_fontcolor_clicked(){
 // Слот вызывается при каждом движении курсора в момент выделения текста
 void Editor::on_selection_changed(void){
 	// Если выделения нет
-    if(! _text_area->textCursor().hasSelection())return;
+    if(! _text_area->textCursor().hasSelection()) return;
 	// qDebug() << "Selection text " << textarea->textCursor().selection().toHtml();
 
 	// Позиции начала и конца выделения
@@ -1640,7 +1640,7 @@ void Editor::on_selection_changed(void){
     QString	startFontFamily = cursor.charFormat().fontFamily();	// Шрифт
     qreal	startSize	= cursor.charFormat().fontPointSize();	// Размер шрифта
     bool	startBold	= false;
-    if(cursor.charFormat().fontWeight() == QFont::Bold)startBold = true;// Тощина
+    if(cursor.charFormat().fontWeight() == QFont::Bold) startBold = true;// Тощина
 
     bool	startItalic	= cursor.charFormat().fontItalic();	// Наклон
     bool	startUnderline	= cursor.charFormat().fontUnderline();	// Подчеркивание
@@ -1655,47 +1655,47 @@ void Editor::on_selection_changed(void){
 	// и выясняем, есть ли разные шрифты, разные размеры,
 	// разные начертания символов, разное выравнивание в выделенном тексте
     while(cursor.position() <= stop){
-	if(differentFontFlag == 0 && startFontFamily != cursor.charFormat().fontFamily())differentFontFlag = 1;
-	if(differentSizeFlag == 0 && startSize != cursor.charFormat().fontPointSize())differentSizeFlag = 1;
+	if(differentFontFlag == 0 && startFontFamily != cursor.charFormat().fontFamily()) differentFontFlag = 1;
+	if(differentSizeFlag == 0 && startSize != cursor.charFormat().fontPointSize()) differentSizeFlag = 1;
 	if(differentBoldFlag == 0){
 	    int b = cursor.charFormat().fontWeight();
-	    if(startBold == false && b == QFont::Bold)differentBoldFlag = 1;
-	    else if(startBold == true && b == QFont::Normal)differentBoldFlag = 1;
+	    if(startBold == false && b == QFont::Bold) differentBoldFlag = 1;
+	    else if(startBold == true && b == QFont::Normal) differentBoldFlag = 1;
 	}
-	if(differentItalicFlag == 0 && startItalic != cursor.charFormat().fontItalic())differentItalicFlag = 1;
-	if(differentUnderlineFlag == 0 && startUnderline != cursor.charFormat().fontUnderline())differentUnderlineFlag = 1;
-	if(differentAlignFlag == 0 && startAlign != cursor.blockFormat().alignment())differentAlignFlag = 1;
+	if(differentItalicFlag == 0 && startItalic != cursor.charFormat().fontItalic()) differentItalicFlag = 1;
+	if(differentUnderlineFlag == 0 && startUnderline != cursor.charFormat().fontUnderline()) differentUnderlineFlag = 1;
+	if(differentAlignFlag == 0 && startAlign != cursor.blockFormat().alignment()) differentAlignFlag = 1;
 	// Курсор передвигается на одну позицию вперед
 	// Если дальше двигаться некуда (конец документа) цикл досрочно завершается
-	if(cursor.movePosition(QTextCursor::NextCharacter) == false)break;
+	if(cursor.movePosition(QTextCursor::NextCharacter) == false) break;
     }
 	// Список выбора шрифта начинает указывать на нужный шрифт
-    if(differentFontFlag == 0)set_fontselect_on_display(startFontFamily);	// Если всё выделение одним шрифтом
+    if(differentFontFlag == 0) set_fontselect_on_display(startFontFamily);																																									// Если всё выделение одним шрифтом
     else set_fontselect_on_display("");
 	// Список выбора размера начинает указывать на нужный размер
-    if(differentSizeFlag == 0)set_fontsize_on_display((int) startSize);	// Если всё отформатировано одним размером
-    else set_fontsize_on_display(0);	// В выделении есть разные размеры
+    if(differentSizeFlag == 0) set_fontsize_on_display((int) startSize);// Если всё отформатировано одним размером
+    else set_fontsize_on_display(0);																					// В выделении есть разные размеры
 	// Кнопка Bold выключается, если есть разное Bold форматирование
 	// и включается, если форматирование одинаковое,
 	// и выделение начиналось с Bold
-    if(differentBoldFlag == 1)set_outline_button_higlight(BT_BOLD, false);
-    else if(startBold == true)set_outline_button_higlight(BT_BOLD, true);
+    if(differentBoldFlag == 1) set_outline_button_higlight(BT_BOLD, false);
+    else if(startBold == true) set_outline_button_higlight(BT_BOLD, true);
 	// Кнопка Italic
-    if(differentItalicFlag == 1)set_outline_button_higlight(BT_ITALIC, false);
-    else if(startItalic == true)set_outline_button_higlight(BT_ITALIC, true);
+    if(differentItalicFlag == 1) set_outline_button_higlight(BT_ITALIC, false);
+    else if(startItalic == true) set_outline_button_higlight(BT_ITALIC, true);
 	// Кнопка Underline
-    if(differentUnderlineFlag == 1)set_outline_button_higlight(BT_UNDERLINE, false);
-    else if(startUnderline == true)set_outline_button_higlight(BT_UNDERLINE, true);
+    if(differentUnderlineFlag == 1) set_outline_button_higlight(BT_UNDERLINE, false);
+    else if(startUnderline == true) set_outline_button_higlight(BT_UNDERLINE, true);
 	// Кнопки выравнивания
-    if(differentAlignFlag == 1)update_align_button_higlight(false);
+    if(differentAlignFlag == 1) update_align_button_higlight(false);
     else update_align_button_higlight(true);
 }
 
 void Editor::update_tool_line_to_actual_format(void){
 	// Список должен показывать текущий шрифт позиции, где находится курсор
-    if(_current_font_family != _text_area->fontFamily())set_fontselect_on_display(_text_area->fontFamily());
+    if(_current_font_family != _text_area->fontFamily()) set_fontselect_on_display(_text_area->fontFamily());
 	// Размер
-    if(_current_font_size != (int) _text_area->fontPointSize())set_fontsize_on_display((int) _text_area->fontPointSize());
+    if(_current_font_size != (int) _text_area->fontPointSize()) set_fontsize_on_display((int) _text_area->fontPointSize());
 	// Кнопки форматирования начертания
     update_outline_button_higlight();
 
@@ -1727,7 +1727,7 @@ void Editor::update_indentslider_to_actual_format(void){
 void Editor::on_cursor_position_changed(void){
 	// Если одновременно идет режим выделения
 	// то обслуживание текущего шрифта и размера идет в on_selection_changed()
-    if(_text_area->textCursor().hasSelection())return;
+    if(_text_area->textCursor().hasSelection()) return;
     update_tool_line_to_actual_format();
 
     update_indentslider_to_actual_format();
@@ -1748,18 +1748,18 @@ bool Editor::is_key_for_tool_line_update(QKeyEvent *event){
 	event->key() == Qt::Key_F9 ||
 	event->key() == Qt::Key_F10 ||
 	event->key() == Qt::Key_F11 ||
-	event->key() == Qt::Key_F12)return true;
+	event->key() == Qt::Key_F12) return true;
     else return false;
 }
 
 // Cлот отлавливает нажатия клавиш
 void Editor::keyPressEvent(QKeyEvent *event){
-    if(is_key_for_tool_line_update(event))update_tool_line_to_actual_format();
+    if(is_key_for_tool_line_update(event)) update_tool_line_to_actual_format();
 }
 
 // Cлот отлавливает отжатия клавиш
 void Editor::keyReleaseEvent(QKeyEvent *event){
-    if(is_key_for_tool_line_update(event))update_tool_line_to_actual_format();
+    if(is_key_for_tool_line_update(event)) update_tool_line_to_actual_format();
 }
 
 void Editor::on_undo(void){
@@ -1783,8 +1783,8 @@ void Editor::on_copy(void){
 	// Если выбрана только картинка или курсор стоит на позиции картинки
     if(is_image_select() || is_cursor_on_image()){
 	QTextImageFormat imageFormat;
-	if(is_image_select())imageFormat = image_format_on_select();
-	if(is_cursor_on_image())imageFormat = image_format_on_cursor();
+	if(is_image_select()) imageFormat = image_format_on_select();
+	if(is_cursor_on_image()) imageFormat = image_format_on_cursor();
 	// Из формата выясняется имя картинки
 	QString imageName = imageFormat.name();
 
@@ -1797,7 +1797,7 @@ void Editor::on_copy(void){
 
 	// Копирвание картинки в буфер обмена
 	clipboard->setImage(image);
-    }else _text_area->copy();	// Обычное копирование
+    }else _text_area->copy();																	// Обычное копирование
 
     update_tool_line_to_actual_format();// Обновляется панель с кнопками
 }
@@ -1825,11 +1825,11 @@ void Editor::update_align_button_higlight(bool activate){
     _align_center->setPalette(palInactive);
     _align_right->setPalette(palInactive);
     _align_width->setPalette(palInactive);
-    if(activate == false)return;
-    if(_text_area->alignment() == Qt::AlignLeft)_align_left->setPalette(palActive);
-    else if(_text_area->alignment() == Qt::AlignHCenter)_align_center->setPalette(palActive);
-    else if(_text_area->alignment() == Qt::AlignRight)_align_right->setPalette(palActive);
-    else if(_text_area->alignment() == Qt::AlignJustify)_align_width->setPalette(palActive);
+    if(activate == false) return;
+    if(_text_area->alignment() == Qt::AlignLeft) _align_left->setPalette(palActive);
+    else if(_text_area->alignment() == Qt::AlignHCenter) _align_center->setPalette(palActive);
+    else if(_text_area->alignment() == Qt::AlignRight) _align_right->setPalette(palActive);
+    else if(_text_area->alignment() == Qt::AlignJustify) _align_width->setPalette(palActive);
 }
 
 // Обновление подсветки клавиш начертания текста
@@ -1841,9 +1841,9 @@ void Editor::update_outline_button_higlight(void){
     _bold->setPalette(palInactive);
     _italic->setPalette(palInactive);
     _underline->setPalette(palInactive);
-    if(_text_area->fontWeight() == QFont::Bold)_bold->setPalette(palActive);
-    if(_text_area->fontItalic() == true)_italic->setPalette(palActive);
-    if(_text_area->fontUnderline() == true)_underline->setPalette(palActive);
+    if(_text_area->fontWeight() == QFont::Bold) _bold->setPalette(palActive);
+    if(_text_area->fontItalic() == true) _italic->setPalette(palActive);
+    if(_text_area->fontUnderline() == true) _underline->setPalette(palActive);
 }
 
 void Editor::set_outline_button_higlight(int button, bool active){
@@ -1851,18 +1851,18 @@ void Editor::set_outline_button_higlight(int button, bool active){
     palActive.setColor(QPalette::Normal, QPalette::Button, _buttons_select_color);
     palActive.setColor(QPalette::Normal, QPalette::Window, _buttons_select_color);
     if(button == BT_BOLD){
-	if(active == false)_bold->setPalette(palInactive);
-	else              _bold->setPalette(palActive);
+	if(active == false) _bold->setPalette(palInactive);
+	else _bold->setPalette(palActive);
 	return;
     }
     if(button == BT_ITALIC){
-	if(active == false)_italic->setPalette(palInactive);
-	else              _italic->setPalette(palActive);
+	if(active == false) _italic->setPalette(palInactive);
+	else _italic->setPalette(palActive);
 	return;
     }
     if(button == BT_UNDERLINE){
-	if(active == false)_underline->setPalette(palInactive);
-	else              _underline->setPalette(palActive);
+	if(active == false) _underline->setPalette(palInactive);
+	else _underline->setPalette(palActive);
 	return;
     }
 }
@@ -1873,10 +1873,10 @@ void Editor::on_showhtml_clicked(void){
 
     dialog.set_text(_text_area->toHtml());
     dialog.set_window_title(tr("Edit HTML source"));
-    if(dialog.exec() != QDialog::Accepted)return;
+    if(dialog.exec() != QDialog::Accepted) return;
     _text_area->setHtml(dialog.get_text());
 	// Если в диалоговом окне был иземен HTML код
-    if(dialog.isModified())_text_area->document()->setModified(true);
+    if(dialog.isModified()) _text_area->document()->setModified(true);
 }
 
 void Editor::on_findtext_clicked(void){
@@ -1907,7 +1907,7 @@ void Editor::on_customContextMenuRequested(const QPoint &pos){
 	// Если выбрана картинка
 	// Или нет выделения, но курсор находится на позиции картинки
     if(is_image_select() ||
-	is_cursor_on_image())_editor_context_menu->set_edit_image_properties(true);
+	is_cursor_on_image()) _editor_context_menu->set_edit_image_properties(true);
     else _editor_context_menu->set_edit_image_properties(false);
 	// Контекстное меню запускается
     _editor_context_menu->exec(_text_area->viewport()->mapToGlobal(pos));
@@ -1994,7 +1994,7 @@ void Editor::on_indentline_mouse_release(void){
 void Editor::on_createtable_clicked(void){
 	// Создается и запускается диалог создания новой таблицы
     EditorAddTableForm dialog;
-    if(dialog.exec() != QDialog::Accepted)return;
+    if(dialog.exec() != QDialog::Accepted) return;
 	// Выясняются введенные в диалоге данные
     int tableColumns	= dialog.get_columns();
     int tableRows	= dialog.get_rows();
@@ -2109,7 +2109,7 @@ void Editor::on_table_add_row_clicked(void){
 
 	bool	ok	= false;
 	int	addNum	= QInputDialog::getInt(this, tr("Append rows to table"), tr("Append rows:"), 1, 1, 100, 1, &ok);
-	if(ok && addNum > 0)table->insertRows(cellRowCursor + 1, addNum);
+	if(ok && addNum > 0) table->insertRows(cellRowCursor + 1, addNum);
     }
 }
 
@@ -2123,7 +2123,7 @@ void Editor::on_table_add_col_clicked(void){
 
 	bool	ok	= false;
 	int	addNum	= QInputDialog::getInt(this, tr("Append columns to table"), tr("Append columns:"), 1, 1, 100, 1, &ok);
-	if(ok && addNum > 0)table->insertColumns(cellColCursor + 1, addNum);
+	if(ok && addNum > 0) table->insertColumns(cellColCursor + 1, addNum);
     }
 }
 
@@ -2131,7 +2131,7 @@ void Editor::on_table_add_col_clicked(void){
 void Editor::on_table_merge_cells_clicked(void){
     QTextCursor cursor(_text_area->textCursor());
     QTextTable	*table = cursor.currentTable();
-    if(table)table->mergeCells(cursor);
+    if(table) table->mergeCells(cursor);
 }
 
 void Editor::on_table_split_cell_clicked(void){
@@ -2177,12 +2177,12 @@ void Editor::on_table_split_cell_clicked(void){
 	int	vSplitTo;
 	int	hCurrMerge	= current_table.get_cell_colspan(cellColCursor, cellRowCursor);
 	int	vCurrMerge	= current_table.get_cell_rowspan(cellColCursor, cellRowCursor);
-	if(hCurrMerge == 0)hCurrMerge = 1;
-	if(vCurrMerge == 0)vCurrMerge = 1;
-	if(hCurrMerge == 1)hSplitTo = 0;// Можно разбивать на любое число
-	else              hSplitTo = hCurrMerge;
-	if(vCurrMerge == 1)vSplitTo = 0;// Можно разбивать на любое число
-	else              vSplitTo = vCurrMerge;
+	if(hCurrMerge == 0) hCurrMerge = 1;
+	if(vCurrMerge == 0) vCurrMerge = 1;
+	if(hCurrMerge == 1) hSplitTo = 0;// Можно разбивать на любое число
+	else hSplitTo = hCurrMerge;
+	if(vCurrMerge == 1) vSplitTo = 0;// Можно разбивать на любое число
+	else vSplitTo = vCurrMerge;
 	// Создается диалог запроса на сколько сегментов надо разбивать ячейку
 	EditorSplitCellForm dialog(hSplitTo, vSplitTo);
 	if(dialog.exec() == QDialog::Accepted){
@@ -2190,7 +2190,7 @@ void Editor::on_table_split_cell_clicked(void){
 	    int vSplit	= dialog.get_num_split_v();
 		// Разбивка по горизонтали
 	    if(hSplit > 1){
-		if(hCurrMerge == 1)current_table.split_single_cell_by_horisontal(cellColCursor, cellRowCursor, hSplit);
+		if(hCurrMerge == 1) current_table.split_single_cell_by_horisontal(cellColCursor, cellRowCursor, hSplit);
 		else current_table.split_merged_cell_by_horisontal(cellColCursor, cellRowCursor);
 	    }
 		// Разбивка по вертикали
@@ -2298,7 +2298,7 @@ bool Editor::is_cursor_on_image(void){
 	// Проверка срабатывает только если нет выделения
     if(_text_area->textCursor().hasSelection() == false){
 	QTextImageFormat imageFormat = _text_area->textCursor().charFormat().toImageFormat();
-	if(imageFormat.isValid())return true;
+	if(imageFormat.isValid()) return true;
     }
     return false;
 }
@@ -2308,7 +2308,7 @@ QTextImageFormat Editor::image_format_on_cursor(void){
 	// Проверка срабатывает только если нет выделения
     if(_text_area->textCursor().hasSelection() == false){
 	QTextImageFormat imageFormat = _text_area->textCursor().charFormat().toImageFormat();
-	if(imageFormat.isValid())return imageFormat;
+	if(imageFormat.isValid()) return imageFormat;
     }
     return QTextImageFormat();
 }
@@ -2336,7 +2336,7 @@ void Editor::on_insert_image_from_file_clicked(void){
 	// Выясняется список выбранных файлов
 	QStringList files = imageSelectDialog.selectedFiles();
 	// Если ни один файл не выбран
-	if(files.size() == 0)return;
+	if(files.size() == 0) return;
 	// Перебираются файлы выбранных картинок
 	for(int i = 0; i < files.size(); ++ i){
 		// Текущее имя файла
@@ -2366,9 +2366,9 @@ void Editor::edit_image_properties(void){
 	// Данные обрабатываемой картинки
     QTextImageFormat imageFormat;
 	// Если выбрано изображение
-    if(is_image_select())imageFormat = image_format_on_select();
+    if(is_image_select()) imageFormat = image_format_on_select();
 	// Если изображение не выбрано, но курсор находится в позиции изображения
-    if(is_cursor_on_image())imageFormat = image_format_on_cursor();
+    if(is_cursor_on_image()) imageFormat = image_format_on_cursor();
 	// Выясняется имя картинки в ресурсах документа
     QString imageName = imageFormat.name();
 
@@ -2405,7 +2405,7 @@ void Editor::edit_image_properties(void){
     }
     dialog.update_percent();
 	// Запуск диалога на выполнение
-    if(dialog.exec() != QDialog::Accepted)return;
+    if(dialog.exec() != QDialog::Accepted) return;
     imageFormat.setWidth(dialog.get_width());
     imageFormat.setHeight(dialog.get_height());
 	// Если в новом формате картинки нет никаких ошибок
@@ -2423,7 +2423,7 @@ void Editor::edit_image_properties(void){
 		fragment = it.fragment();
 		// Если фрагмент содержит изображение
 		if(fragment.isValid() &&
-		    fragment.charFormat().isImageFormat())break;// Переменная fragment содержит только картинку
+		    fragment.charFormat().isImageFormat()) break;// Переменная fragment содержит только картинку
 	    }
 	    QTextCursor helper = _text_area->textCursor();
 
@@ -2439,7 +2439,7 @@ void Editor::edit_image_properties(void){
 	    QTextCursor helper = _text_area->textCursor();
 
 	    helper.setPosition(cursorPosition);
-	    if(_text_area->textCursor().atBlockStart())helper.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+	    if(_text_area->textCursor().atBlockStart()) helper.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
 	    else helper.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
 	    helper.setCharFormat(imageFormat);
 	}
@@ -2469,16 +2469,16 @@ void Editor::switch_expand_tools_lines(int flag){
 	// Если метод был вызван без параметра
     if(flag == 0){
 	bool is_expand = _editor_config->get_expand_tools_lines();
-	if(is_expand)setFlag = false;	// Если панель инструментов распахнута, надо сомкнуть
-	else setFlag = true;	// Иначе распахнуть
+	if(is_expand) setFlag = false;																					// Если панель инструментов распахнута, надо сомкнуть
+	else setFlag = true;																	// Иначе распахнуть
     }else{
 	// Иначе метод вызывался с каким-то параметром
-	if(flag == 1)setFlag = true;
-	if(flag == - 1)setFlag = false;
+	if(flag == 1) setFlag = true;
+	if(flag == - 1) setFlag = false;
     }
 	// Панели распахиваются/смыкаются (кроме первой линии инструментов)
     _tools_line_1->setVisible(setFlag);
-    if(_view_mode == WYEDIT_DESKTOP_MODE)_indent_slider->setVisible(setFlag);
+    if(_view_mode == WYEDIT_DESKTOP_MODE) _indent_slider->setVisible(setFlag);
 	// Запоминается новое состояние
     _editor_config->set_expand_tools_lines(setFlag);
 
@@ -2498,7 +2498,7 @@ void Editor::on_back_clicked(void){
 void Editor::on_freeze_clicked(void){
 	// Обновление инфополей в области редактирования записи
     MetaEditor *metaeditor = globalparameters.meta_editor();	// MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
-    if(metaeditor)metaeditor->switch_pin();
+    if(metaeditor) metaeditor->switch_pin();
 }
 
 void Editor::on_to_attach_clicked(void){
@@ -2522,18 +2522,26 @@ void Editor::on_show_text_clicked(void){
 
 	// Устанавливается флаг удаления диалога после закрытия его окна
     showText->setAttribute(Qt::WA_DeleteOnClose);
-    if(misc_field("title").length() > 0)showText->setWindowTitle(misc_field("title"));
+    if(misc_field("title").length() > 0) showText->setWindowTitle(misc_field("title"));
     QTextDocument *cloneDocument = _text_area->document()->clone(showText);	// Для метода clone указан parent, который уничтожится при закрытии окна, и за собой уничтожит этот временный документ
     showText->setDocument(cloneDocument);
 
     showText->show();
 }
 
-void Editor::save_callback(void (*func)(QObject *editor, QString saveString)){
+const std::function<void (QObject *editor, QString saveString)> Editor::save_callback()const{
+    return save_callback_func;
+}
+
+void Editor::save_callback(const std::function<void (QObject *editor, QString saveString)> & func){
     save_callback_func = func;
 }
 
-void Editor::load_callback(void (*func)(QObject *editor, QString &String)){
+std::function<void (QObject *editor, QString &String)> Editor::load_callback() const {
+    return load_callback_func;
+}
+
+void Editor::load_callback(const std::function<void (QObject *editor, QString &String)> &func){
     load_callback_func = func;
 }
 
@@ -2550,7 +2558,7 @@ void Editor::misc_field(QString name, QString value){
 }
 
 QString Editor::misc_field(QString name){
-    if(_misc_fields.contains(name))return _misc_fields[name];
+    if(_misc_fields.contains(name)) return _misc_fields[name];
     else return QString();
 }
 
@@ -2561,7 +2569,7 @@ void Editor::clear_all_misc_field(void){
 void Editor::dir_file_empty_reaction(int mode){
 	// Проверяется допустимость переданного значения
     if(mode == DIRFILEEMPTY_REACTION_SHOW_ERROR ||
-	mode == DIRFILEEMPTY_REACTION_SUPPRESS_ERROR)_dir_file_empty_reaction = mode;
+	mode == DIRFILEEMPTY_REACTION_SUPPRESS_ERROR) _dir_file_empty_reaction = mode;
     else critical_error("Editor::setDirFileEmptyReaction() : Unsupport mode " + QString::number(mode));
 }
 

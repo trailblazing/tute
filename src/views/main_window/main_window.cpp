@@ -42,21 +42,21 @@
 
 
 
-extern AppConfig		appconfig;
-extern TrashMonitoring	trashmonitoring;
-extern GlobalParameters globalparameters;
-extern WalkHistory		walkhistory;
-const char				*meta_editor_singleton_name				= "editor_screen";
-const char				*record_screen_multi_instance_name		= "record_screen";
-const char				*tree_screen_singleton_name				= "tree_screen";
-const char				*find_screen_singleton_name				= "find_screen";
-const char				*download_manager_singleton_name		= "download_manager";
-const char				*windowswitcher_singleton_name			= "window_switcher";
-const char				*entrance_singleton_name				= "entrance";
+extern AppConfig			appconfig;
+extern TrashMonitoring			trashmonitoring;
+extern GlobalParameters			globalparameters;
+extern WalkHistory			walkhistory;
+const char				*meta_editor_singleton_name		= "editor_screen";
+const char				*record_screen_multi_instance_name	= "record_screen";
+const char				*tree_screen_singleton_name		= "tree_screen";
+const char				*find_screen_singleton_name		= "find_screen";
+const char				*download_manager_singleton_name	= "download_manager";
+const char				*windowswitcher_singleton_name		= "window_switcher";
+const char				*entrance_singleton_name		= "entrance";
 const char				*record_controller_multi_instance_name	= "record_controller";		// std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
-const char				*record_view_multi_instance_name		= "record_view";
-extern const char		*tree_screen_viewer_name;
-extern const char		*action_find_in_base;
+const char				*record_view_multi_instance_name	= "record_view";
+extern const char			*tree_screen_viewer_name;
+extern const char			*action_find_in_base;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(wn_t)
@@ -64,10 +64,10 @@ W_OBJECT_IMPL(wn_t)
 
 
 wn_t::wn_t(GlobalParameters     &_globalparameters
-          , AppConfig           &_appconfig
-          , DataBaseConfig      &_databaseconfig
-          , browser::Profile    *_profile
-          , QString style_source)
+	  , AppConfig           &_appconfig
+	  , DataBaseConfig      &_databaseconfig
+	  , browser::Profile    *_profile
+	  , QString style_source)
     : QMainWindow()
       , _style(style_source)
       , _globalparameters(_globalparameters)
@@ -195,9 +195,9 @@ wn_t::~wn_t(){
 	// if(_page_screen)delete  _page_screen;
 	// delete  _table_screen;
     if(_tree_screen){
-        // delete
-        _tree_screen->deleteLater();
-        _tree_screen = nullptr;
+	// delete
+	_tree_screen->deleteLater();
+	_tree_screen = nullptr;
     }
 	// delete  _vtabwidget;
 
@@ -232,11 +232,11 @@ wn_t::~wn_t(){
 }
 
 void wn_t::setup_ui(void){
-    if(_globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																														// Для Андроида окно просто разворачивается на весь экран
+    if(_globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																																																				// Для Андроида окно просто разворачивается на весь экран
     else{
-        QRect rect = _appconfig.mainwin_geometry();
-        resize(rect.size());
-        move(rect.topLeft());
+	QRect rect = _appconfig.mainwin_geometry();
+	resize(rect.size());
+	move(rect.topLeft());
     }
 	// При создании объектов не указывается parent, так как он буден задан в момент вставки в layout в методе assembly()
 
@@ -495,8 +495,8 @@ void wn_t::setup_signals(void){
 //    }
 //	//
     connect(_h_tree_splitter, &QSplitter::splitterMoved, [&](int _tree_pos, int index){
-            (void) index;
-            (void) _tree_pos;
+	    (void) index;
+	    (void) _tree_pos;
 
 //	    QList<int>	current_tree_sizes = _h_tree_splitter->sizes();
 //	    QString _hide_tree_text = current_tree_sizes[0] == 0 ? tr("Show tree view") : tr("Hide tree view");
@@ -536,7 +536,7 @@ void wn_t::setup_signals(void){
 //		_record_hide->setStatusTip(_hide_tree_text);
 //		_record_hide->setText(_hide_tree_text);
 //	    }
-            auto tree_siezes = _h_tree_splitter->sizes();
+	    auto tree_siezes = _h_tree_splitter->sizes();
 ////	    emit _tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
 //	    auto summary = record_sizes[0] + record_sizes[1];
 //	    record_sizes[0] = record_sizes[0] + (tree_siezes[0] - old_tree_sizes[0]);
@@ -544,55 +544,55 @@ void wn_t::setup_signals(void){
 //	    _h_record_splitter->setSizes(record_sizes);
 //	    if(0 != pos){
 //	    auto tree_siezes = _h_tree_splitter->sizes();
-            if(tree_siezes != _appconfig.h_tree_splitter_sizelist()) _appconfig.h_tree_splitter_sizelist(tree_siezes);
+	    if(tree_siezes != _appconfig.h_tree_splitter_sizelist()) _appconfig.h_tree_splitter_sizelist(tree_siezes);
 //	    }
-        });
+	});
 
 
     connect(_h_record_splitter, &QSplitter::splitterMoved, [&](int record_pos, int index){
-            (void) index;
-            (void) record_pos;
+	    (void) index;
+	    (void) record_pos;
 
 ////	    (void) record_pos;
 ////	    (void) index;
 //	    auto _tree_hide = _tree_screen->_actionlist[action_hide_tree_screen];
 ////	    auto _h_record_splitter = this->h_record_splitter();
-            auto h_record_sizes = _h_record_splitter->sizes();
+	    auto h_record_sizes = _h_record_splitter->sizes();
 //	    auto vtab_record = _main_window->vtab_record();
 //	    auto _vtab_tree = this->vtab_tree();
-            auto bar_width = _vtab_record->tabBar()->geometry().width();// minimumSizeHint().width();	//
+	    auto bar_width = _vtab_record->tabBar()->geometry().width();// minimumSizeHint().width();	//
 //	    QIcon icon;
 //	    QString text = "";
-            if(record_pos <= bar_width){	// if(0 == sizes[0]){	// || globalparameters.entrance()->browsers().size() == 0             // h_right_splitter->widget(0)->width()
+	    if(record_pos <= bar_width){	// if(0 == sizes[0]){	// || globalparameters.entrance()->browsers().size() == 0             // h_right_splitter->widget(0)->width()
 //		icon = QIcon(":/resource/pic/butterfly-right.svg");
 //		text = tr("Show record screen");
-                _vtab_record->setMinimumWidth(bar_width);
-                _vtab_record->setMaximumWidth(bar_width);
-                h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
-                h_record_sizes[0] = bar_width;
+		_vtab_record->setMinimumWidth(bar_width);
+		_vtab_record->setMaximumWidth(bar_width);
+		h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
+		h_record_sizes[0] = bar_width;
 
-                emit _vtab_record->_hide_action->setChecked(true);	// _vtab_record->setMinimumWidth(bar_width);
-                _vtab_record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+		emit _vtab_record->_hide_action->setChecked(true);	// _vtab_record->setMinimumWidth(bar_width);
+		_vtab_record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-                _h_record_splitter->setSizes(h_record_sizes);	// QList<int>() << bar_width << h_record_sizes[0] + h_record_sizes[1] - bar_width);
+		_h_record_splitter->setSizes(h_record_sizes);	// QList<int>() << bar_width << h_record_sizes[0] + h_record_sizes[1] - bar_width);
 
 //		for(int i = 0; i < _vtab_record->count(); i ++)_vtab_record->widget(i)->close();
 
 //		if(_vtab_record->isVisible())_vtab_record->hide();
-            }else if(record_pos > bar_width){
+	    }else if(record_pos > bar_width){
 //		icon = QIcon(":/resource/pic/butterfly-left.svg");
 //		text = tr("Hide record screen");
-                _vtab_record->setMaximumWidth(this->maximumWidth());
+		_vtab_record->setMaximumWidth(this->maximumWidth());
 //		if(! _vtab_record->isVisible())_vtab_record->show();
 
-                h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - record_pos;
-                h_record_sizes[0] = record_pos;
-                emit _vtab_record->_hide_action->setChecked(false);
-                _vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-                _h_record_splitter->setSizes(h_record_sizes);
+		h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - record_pos;
+		h_record_sizes[0] = record_pos;
+		emit _vtab_record->_hide_action->setChecked(false);
+		_vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		_h_record_splitter->setSizes(h_record_sizes);
 //		_vtab_record->currentWidget()->show();
 //		emit _vtab_record->tabBar()->tabBarClicked(_vtab_record->currentIndex());
-            }
+	    }
 //	    _tree_hide->setIcon(icon);
 //	    _tree_hide->setText(text);
 //	    _tree_hide->setToolTip(text);
@@ -602,47 +602,47 @@ void wn_t::setup_signals(void){
 //	    emit _h_tree_splitter->splitterMoved(_h_tree_splitter->sizes()[0], 1);
 //	    if(0 != pos){
 //	    auto record_sizes = _h_record_splitter->sizes();
-            if(h_record_sizes != _appconfig.h_record_splitter_sizelist() && h_record_sizes[0] != bar_width) _appconfig.h_record_splitter_sizelist(h_record_sizes);
+	    if(h_record_sizes != _appconfig.h_record_splitter_sizelist() && h_record_sizes[0] != bar_width) _appconfig.h_record_splitter_sizelist(h_record_sizes);
 //	    }
-        });
+	});
 
 
     connect(_vtab_record->tabBar(), &QTabBar::tabBarClicked, [&](int index){
-            (void) index;
+	    (void) index;
 //	    auto _h_record_splitter = _main_window->h_record_splitter();
 //	    auto h_record_sizes = h_record_splitter->sizes();
-            ////        if(_tree_screen->isHidden()) _tree_screen->show(); else _tree_screen->hide();
-            // if(h_left_splitter->width() != 0) h_left_splitter->resize(0, h_left_splitter->height());//adjustSize();
-            // else h_left_splitter->resize(h_left_splitter->sizeHint().width(), h_left_splitter->height());
-            // auto h_left_splitter = globalparameters.mainwindow()->h_left_splitter();
-            // auto h_right_splitter = globalparameters.mainwindow()->h_right_splitter();
-            // auto ll = h_left_splitter->geometry().left();   // 0 // width();  // 1366
-            // auto lr = h_left_splitter->handle(1)->geometry().right();  // 143
-            // auto rl = h_right_splitter->geometry().left();  // 142
+		////        if(_tree_screen->isHidden()) _tree_screen->show(); else _tree_screen->hide();
+		// if(h_left_splitter->width() != 0) h_left_splitter->resize(0, h_left_splitter->height());//adjustSize();
+		// else h_left_splitter->resize(h_left_splitter->sizeHint().width(), h_left_splitter->height());
+		// auto h_left_splitter = globalparameters.mainwindow()->h_left_splitter();
+		// auto h_right_splitter = globalparameters.mainwindow()->h_right_splitter();
+		// auto ll = h_left_splitter->geometry().left();   // 0 // width();  // 1366
+		// auto lr = h_left_splitter->handle(1)->geometry().right();  // 143
+		// auto rl = h_right_splitter->geometry().left();  // 142
 //	    auto _vtab_record = _main_window->vtab_record();
-            auto bar_width = _vtab_record->tabBar()->geometry().width();	// same as tabRect(0).width()
-            auto vtab_record_min_width = _vtab_record->minimumSizeHint().width();	// _tree_screen->minimumSizeHint().width();     // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
-            auto reasonable_width = bar_width * 2 + vtab_record_min_width;
+	    auto bar_width = _vtab_record->tabBar()->geometry().width();	// same as tabRect(0).width()
+	    auto vtab_record_min_width = _vtab_record->minimumSizeHint().width();	// _tree_screen->minimumSizeHint().width();     // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+	    auto reasonable_width = bar_width * 2 + vtab_record_min_width;
 //            auto bar_width_ = _main_window->vtab_tree()->tabBar()->tabRect(0).width();	// width = large; minimumWidth() == 0;
-            auto h_record_sizes = _h_record_splitter->sizes();	// auto h_tree_sizes = h_tree_splitter->sizes();
+	    auto h_record_sizes = _h_record_splitter->sizes();	// auto h_tree_sizes = h_tree_splitter->sizes();
 //	    QList<int> delta;
-            if(index == _vtab_record->currentIndex()){
-                if(h_record_sizes[0] <= bar_width){	// reasonable_width// show	// h_left_splitter->widget(0)->width()
-                    // auto h = h_right_splitter->handle(1);
-                    // h->move(lr + shw, h->rect().top());
+	    if(index == _vtab_record->currentIndex()){
+		if(h_record_sizes[0] <= bar_width){	// reasonable_width// show	// h_left_splitter->widget(0)->width()
+			// auto h = h_right_splitter->handle(1);
+			// h->move(lr + shw, h->rect().top());
 
-                    auto record_size_memory = appconfig.h_record_splitter_sizelist();
+		    auto record_size_memory = appconfig.h_record_splitter_sizelist();
 
-                    auto tree_sum = record_size_memory[0] + record_size_memory[1];
-                    h_record_sizes[0] = record_size_memory[0] > reasonable_width ? record_size_memory[0] < tree_sum ? record_size_memory[0] : tree_sum * 15 / 100 : reasonable_width;
-                    h_record_sizes[1] = tree_sum - h_record_sizes[0] > 0 ? tree_sum - h_record_sizes[0] : tree_sum * 85 / 100;
-                    _vtab_record->setMaximumWidth(this->maximumWidth());	// just a very big number
-                    _vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);	// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
-                    emit _vtab_record->_hide_action->setChecked(false);
-                    if(_h_record_splitter->sizes() != h_record_sizes){
-                        _h_record_splitter->setSizes(h_record_sizes);
-                        emit _h_record_splitter->splitterMoved(h_record_sizes[0], 1);
-                    }
+		    auto tree_sum = record_size_memory[0] + record_size_memory[1];
+		    h_record_sizes[0] = record_size_memory[0] > reasonable_width ? record_size_memory[0] < tree_sum ? record_size_memory[0] : tree_sum * 15 / 100 : reasonable_width;
+		    h_record_sizes[1] = tree_sum - h_record_sizes[0] > 0 ? tree_sum - h_record_sizes[0] : tree_sum * 85 / 100;
+		    _vtab_record->setMaximumWidth(this->maximumWidth());	// just a very big number
+		    _vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);	// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+		    emit _vtab_record->_hide_action->setChecked(false);
+		    if(_h_record_splitter->sizes() != h_record_sizes){
+			_h_record_splitter->setSizes(h_record_sizes);
+			emit _h_record_splitter->splitterMoved(h_record_sizes[0], 1);
+		    }
 //		sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] : vtab_tree_min_width;
 //		sizes[1] = size_memory[0] + size_memory[1] - sizes[0];		// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 
@@ -652,18 +652,18 @@ void wn_t::setup_signals(void){
 //		_hide_tree_text = tr("Hide tree view");
 
 ////            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
-                }else{
-                    h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
-                    h_record_sizes[0] = bar_width;		// 0;
-                    emit _vtab_record->_hide_action->setChecked(true);		// _vtab_record->setMinimumWidth(bar_width);
-                    _vtab_record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-                    if(h_record_sizes != _h_record_splitter->sizes()){
-                        _h_record_splitter->setSizes(h_record_sizes);		//
-                        emit _h_record_splitter->splitterMoved(h_record_sizes[0], 1);
-                    }
-                }
-            }
-        });
+		}else{
+		    h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
+		    h_record_sizes[0] = bar_width;		// 0;
+		    emit _vtab_record->_hide_action->setChecked(true);		// _vtab_record->setMinimumWidth(bar_width);
+		    _vtab_record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+		    if(h_record_sizes != _h_record_splitter->sizes()){
+			_h_record_splitter->setSizes(h_record_sizes);		//
+			emit _h_record_splitter->splitterMoved(h_record_sizes[0], 1);
+		    }
+		}
+	    }
+	});
 
 //    connect(_vtab_record->tabBar(), &QTabBar::tabCloseRequested, [&](int index){
 ////	    if(_vtab_record->widget(index)->objectName() == download_manager_singleton_name)
@@ -944,20 +944,20 @@ void wn_t::assembly(void){
 
 
     auto	record_sizes	= _h_record_splitter->sizes();	// _h_tree_splitter->sizes();
-    auto	bar_width		= _vtab_record->minimumSizeHint().width();	// tabBar()->geometry().width();	// _vtab_tree->tabBar()->geometry().width();
+    auto	bar_width	= _vtab_record->minimumSizeHint().width();	// tabBar()->geometry().width();	// _vtab_tree->tabBar()->geometry().width();
 // auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0] == 0
     if(bar_width >= record_sizes[0]){			// _h_left_splitter->widget(0)->width()
-        auto vtab_record_min_width = _vtab_record->minimumSizeHint().width();	// auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();		// _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
-        // auto h = h_right_splitter->handle(1);
-        // h->move(lr + shw, h->rect().top());
+	auto vtab_record_min_width = _vtab_record->minimumSizeHint().width();	// auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();		// _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+	// auto h = h_right_splitter->handle(1);
+	// h->move(lr + shw, h->rect().top());
 
-        auto	size_memory	= appconfig.h_record_splitter_sizelist();// appconfig.h_tree_splitter_sizelist();
-        auto	sum			= size_memory[0] > 0 ? size_memory[0] : this->geometry().width() * 15 / 100 + size_memory[1] > 0 ? size_memory[1] : this->geometry().width() * 85 / 100;
-        record_sizes[0]	= size_memory[0] > vtab_record_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_record_min_width;
-        record_sizes[1]	= sum - record_sizes[0] > 0 ? sum - record_sizes[0] : sum * 85 / 100;					// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+	auto	size_memory	= appconfig.h_record_splitter_sizelist();// appconfig.h_tree_splitter_sizelist();
+	auto	sum		= size_memory[0] > 0 ? size_memory[0] : this->geometry().width() * 15 / 100 + size_memory[1] > 0 ? size_memory[1] : this->geometry().width() * 85 / 100;
+	record_sizes[0]	= size_memory[0] > vtab_record_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_record_min_width;
+	record_sizes[1]	= sum - record_sizes[0] > 0 ? sum - record_sizes[0] : sum * 85 / 100;					// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 //	_vtab_tree->setMaximumWidth(maximumWidth());
 //	_vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);// h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
-        _h_record_splitter->setSizes(record_sizes);	// _h_tree_splitter->setSizes(tree_sizes);	// emit _h_tree_splitter->splitterMoved(sizes[0], 1);
+	_h_record_splitter->setSizes(record_sizes);	// _h_tree_splitter->setSizes(tree_sizes);	// emit _h_tree_splitter->splitterMoved(sizes[0], 1);
 
 // auto s_0 = _vtab_tree->minimumSizeHint();   // (146, 146)
 // auto s_1 = _vtab_record->minimumSizeHint(); // (25, 146)
@@ -965,7 +965,7 @@ void wn_t::assembly(void){
 // auto s_3 = _h_right_splitter->minimumSizeHint();    // (241,146)
 // auto s_4 = _h_right_splitter->maximumWidth();    // (241,146)
 // auto sizes_check = _h_left_splitter->sizes();
-        // h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
+	// h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
     }
 }
 
@@ -1021,11 +1021,11 @@ void wn_t::commit_data(QSessionManager &manager){
 
 // Восстанавливается геометрия окна и позиции основных разделителей
 void wn_t::restore_geometry(void){
-    if(globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																													// Для Андроида окно просто разворачивается на весь экран
+    if(globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																																			// Для Андроида окно просто разворачивается на весь экран
     else{
-        QRect rect = appconfig.mainwin_geometry();
-        resize(rect.size());
-        move(rect.topLeft());
+	QRect rect = appconfig.mainwin_geometry();
+	resize(rect.size());
+	move(rect.topLeft());
     }
 	// move(rect.topLeft());
 	// resize(rect.size());
@@ -1097,11 +1097,11 @@ void wn_t::restore_geometry(void){
 
     auto record_sizes = _h_record_splitter->sizes();	// _h_tree_splitter->sizes();
 // QList<int> new_sizes;
-    auto	sum				= record_sizes[0] + record_sizes[1];
+    auto	sum		= record_sizes[0] + record_sizes[1];
     auto	vtab_record_min	= _vtab_record->minimumSizeHint();	// _vtab_tree->minimumSizeHint();		// (146, 146) // _tree_screen->minimumSizeHint().width();
     if(record_sizes[0] == sum){
-        record_sizes[0] = vtab_record_min.width();
-        record_sizes[1] = sum - record_sizes[0];			// vtab_tree_max_width
+	record_sizes[0] = vtab_record_min.width();
+	record_sizes[1] = sum - record_sizes[0];			// vtab_tree_max_width
     }
 // for(auto sz : sizes) {
 // if(sz == 0) {
@@ -1129,7 +1129,7 @@ void wn_t::save_geometry(void){
     QRect geom(pos(), size());
 
     appconfig.mainwin_geometry(geom.x(), geom.y()
-                              ,	geom.width(), geom.height());
+			      ,	geom.width(), geom.height());
 
 	// mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
 	// geometry().width(), geometry().height());
@@ -1148,8 +1148,8 @@ void wn_t::save_geometry(void){
 
 void wn_t::restore_tree_position(void){
 	// Путь к последнему выбранному в дереве элементу
-    auto		pair						= appconfig.tree_position();
-    QString		current_root_id				= pair.first;
+    auto	pair				= appconfig.tree_position();
+    QString	current_root_id			= pair.first;
     QStringList current_item_absolute_path	= pair.second;			// appconfig.get_tree_position();
 
     qDebug() << "MainWindow::restoreTreePosition() : " << current_item_absolute_path;
@@ -1165,16 +1165,16 @@ void wn_t::save_tree_position(void){
 	//// Получение QModelIndex выделенного в дереве элемента
 	// const QModelIndex index = _tree_screen->tree_view()->current_index();
     auto current_item = _tree_screen->view()->current_item();
-    if(current_item) appconfig.tree_position(_current_source_model()->root_item()->id(), current_item->path_list());																																																																																																																																																																						// _tree_screen->know_model_board()->root_item()->id()
+    if(current_item) appconfig.tree_position(_current_source_model()->root_item()->id(), current_item->path_list());																																																																																																																																																																																																				// _tree_screen->know_model_board()->root_item()->id()
     else if(item){			// if(index.isValid()) {
-        ////    if(index.isValid()) {   // this line is to be remove
-        //// Получаем указатель вида TreeItem
-        // auto item = _current_source_model()->item(index);
+	////    if(index.isValid()) {   // this line is to be remove
+	//// Получаем указатель вида TreeItem
+	// auto item = _current_source_model()->item(index);
 
-        // Сохраняем путь к элементу item
-        appconfig.tree_position(_current_source_model()->root_item()->id(), item->path_list());	// _tree_screen->know_model_board()->root_item()->id()
+	// Сохраняем путь к элементу item
+	appconfig.tree_position(_current_source_model()->root_item()->id(), item->path_list());	// _tree_screen->know_model_board()->root_item()->id()
 
-        // }
+	// }
     }
 }
 
@@ -1187,8 +1187,8 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
     if(source_model()->root_item()->id() != current_root_id){
 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, know_model_board()->item([&] (boost::intrusive_ptr<const TreeItem> it) {
 // return it->id() == current_root_id;})); } catch(std::exception &e) {throw e; } return tree_index; } ();
-        auto it = know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it){return it->id() == current_root_id;});
-        _tree_screen->view()->intercept(it);	// TreeIndex::instance(know_model_board, it, it->parent())
+	auto it = know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it){return it->id() == current_root_id;});
+	_tree_screen->view()->intercept(it);	// TreeIndex::instance(know_model_board, it, it->parent())
     }
 	// if(!_tree_screen->know_model_board()->item(current_item_absolute_path))   // on know_root semantic
 	// return;
@@ -1198,63 +1198,63 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
 
     auto _tree_view = _tree_screen->view();
     if(it){
-        if(! static_cast<QModelIndex>(source_model()->index(it)).isValid()){
-            // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it); } catch(std::exception &e) {throw e; } return tree_index; } ();
-            _tree_view->cursor_focus(it);
-            _tree_screen->view()->intercept(it);	// TreeIndex::instance(know_model_board, it, it->parent())
-        }
-        if(it != know_model_board()->root_item()){
-            qDebug() << "Set tree position to " << it->field<name_type>() << " id " << it->field<id_type>();
+	if(! static_cast<QModelIndex>(source_model()->index(it)).isValid()){
+		// boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it); } catch(std::exception &e) {throw e; } return tree_index; } ();
+	    _tree_view->cursor_focus(it);
+	    _tree_screen->view()->intercept(it);	// TreeIndex::instance(know_model_board, it, it->parent())
+	}
+	if(it != know_model_board()->root_item()){
+	    qDebug() << "Set tree position to " << it->field<name_type>() << " id " << it->field<id_type>();
 
-            //// Из указателя на элемент TreeItem получаем QModelIndex
-            // QModelIndex setto = source_model()->index(item);
+		//// Из указателя на элемент TreeItem получаем QModelIndex
+		// QModelIndex setto = source_model()->index(item);
 
-            // Курсор устанавливается в нужную позицию
+		// Курсор устанавливается в нужную позицию
 
-            boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::create_treeindex_from_item([&] {return _tree_view->source_model();}, it);
+	    boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::create_treeindex_from_item([&] {return _tree_view->source_model();}, it);
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
 // })); } catch(std::exception &e) {throw e; }
 
-            _tree_view->select_as_current(tree_index);
-            _tree_view->source_model()->session_id(tree_index);						// TreeIndex(source_model, it)
-        }else{
-            boost::intrusive_ptr<TreeItem> r(nullptr);
-            if(it->count_direct() == 0) r = _tree_view->tree_empty_controll();
-            else r = it->child_direct(0);
-            boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::create_treeindex_from_item([&] {return _tree_view->source_model();}, r);
+	    _tree_view->select_as_current(tree_index);
+	    _tree_view->source_model()->session_id(tree_index);						// TreeIndex(source_model, it)
+	}else{
+	    boost::intrusive_ptr<TreeItem> r(nullptr);
+	    if(it->count_direct() == 0) r = _tree_view->tree_empty_controll();
+	    else r = it->child_direct(0);
+	    boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::create_treeindex_from_item([&] {return _tree_view->source_model();}, r);
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it, 0); } catch(std::exception &e) {throw e; }
 
-            _tree_view->select_as_current(tree_index);
-            _tree_view->source_model()->session_id(tree_index);						// TreeIndex(source_model, it)
-        }
+	    _tree_view->select_as_current(tree_index);
+	    _tree_view->source_model()->session_id(tree_index);						// TreeIndex(source_model, it)
 	}
+    }
 }
 
 bool wn_t::is_tree_position_crypt(){
-    bool		result	= false;
-    auto		pair	= appconfig.tree_position();
-    QString		id		= pair.first;
+    bool	result	= false;
+    auto	pair	= appconfig.tree_position();
+    QString	id	= pair.first;
     QStringList path	= pair.second;
 
     auto know_model_board = [&](){
-            return _tree_screen->view()->know_model_board();
-        };
+	    return _tree_screen->view()->know_model_board();
+	};
     if(_tree_screen->view()->source_model()->root_item()->id() != id){
 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, know_model_board()->item([&] (boost::intrusive_ptr<const TreeItem> it) {
 // return it->id() == id;})); } catch(std::exception &e) {throw e; } return tree_index; } ();
-        auto it = know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it){return it->id() == id;});
+	auto it = know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it){return it->id() == id;});
 
-        _tree_screen->view()->intercept(it);	// TreeIndex::instance(know_model_board, it, it->parent())
+	_tree_screen->view()->intercept(it);	// TreeIndex::instance(know_model_board, it, it->parent())
     }
 	// if(_tree_screen->know_model_board()->is_item_valid(path) == false) return false;
 
 	// Получаем указатель на элемент вида TreeItem, используя путь
     auto item = know_model_board()->item(path);
     if(item){
-        if(item->field<crypt_type>() == "1") result = true;
-        // else
-        // return false;
+	if(item->field<crypt_type>() == "1") result = true;
+	// else
+	// return false;
     }
     return result;
 }
@@ -1403,13 +1403,13 @@ void wn_t::init_tools_menu(void){
 
     _toolsmenu->addSeparator();
     if(appconfig.interface_mode() == "desktop"){
-        a = new QAction(tr("Main &preferences"), this);
-        connect(a, &QAction::triggered, this, &wn_t::tools_preferences);
-        _toolsmenu->addAction(a);
+	a = new QAction(tr("Main &preferences"), this);
+	connect(a, &QAction::triggered, this, &wn_t::tools_preferences);
+	_toolsmenu->addAction(a);
     }else{
-        // Создание подменю
-        QMenu *menu = new QMenu(tr("Main &preferences"), this);
-        init_preferences_menu(menu);
+	// Создание подменю
+	QMenu *menu = new QMenu(tr("Main &preferences"), this);
+	init_preferences_menu(menu);
     }
 }
 
@@ -1494,13 +1494,13 @@ void wn_t::file_print_preview(void){
 void wn_t::file_print_pdf(void){
 #ifndef QT_NO_PRINTER
     QString fileName = QFileDialog::getSaveFileName(this, "Export PDF"
-                                                   , QString(), "*.pdf");
+						   , QString(), "*.pdf");
     if(! fileName.isEmpty()){
-        if(QFileInfo(fileName).suffix().isEmpty()) fileName.append(".pdf");
-        QPrinter printer(QPrinter::HighResolution);
-        printer.setOutputFormat(QPrinter::PdfFormat);
-        printer.setOutputFileName(fileName);
-        _editor_screen->textarea_document()->print(&printer);
+	if(QFileInfo(fileName).suffix().isEmpty()) fileName.append(".pdf");
+	QPrinter printer(QPrinter::HighResolution);
+	printer.setOutputFormat(QPrinter::PdfFormat);
+	printer.setOutputFileName(fileName);
+	_editor_screen->textarea_document()->print(&printer);
     }
 #endif
 }
@@ -1511,7 +1511,7 @@ void wn_t::application_exit(void){
 	// Если в конфиге настроено, что нужно синхронизироваться при выходе
 	// И задана команда синхронизации
     if(appconfig.synchro_on_exit())
-            if(appconfig.synchro_command().trimmed().length() > 0) synchronization();
+		if(appconfig.synchro_command().trimmed().length() > 0) synchronization();
 	// Запуск выхода из программы
     _enable_real_close = true;
     emit close();
@@ -1536,11 +1536,11 @@ void wn_t::tools_find(void){
 void wn_t::editor_switch(void){
     MetaEditor *editorScreen = globalparameters.meta_editor();			// find_object<MetaEditor>(meta_editor_singleton_name);
     if(! (editorScreen->isVisible())){
-        editorScreen->show();
-        appconfig.editor_show(true);
+	editorScreen->show();
+	appconfig.editor_show(true);
     }else{
-        editorScreen->hide();
-        appconfig.editor_show(false);
+	editorScreen->hide();
+	appconfig.editor_show(false);
     }
 }
 
@@ -1563,51 +1563,51 @@ void wn_t::on_expand_edit_area(bool flag){
 	// static bool _treetable_hidden;     // = globalparameters.getTreeScreen()->isHidden();
 	// static bool recordtable_hidden; // = globalparameters.getRecordTableScreen()->isHidden();
     if(flag){
-        globalparameters.entrance()->hide();				// resize(QSize(0, 0)); //
+	globalparameters.entrance()->hide();				// resize(QSize(0, 0)); //
 
-        // if(!globalparameters.getTreeScreen()->isHidden()) {
-        // _treetable_hidden = false;
-        ////            globalparameters.getTreeScreen()->resize(QSize(0, tree_size.height()));
-        // globalparameters.getTreeScreen()->hide();    // resize(QSize(0, 0)); //
-        // } else {
-        // _treetable_hidden = true;
-        // }
+	// if(!globalparameters.getTreeScreen()->isHidden()) {
+	// _treetable_hidden = false;
+	////            globalparameters.getTreeScreen()->resize(QSize(0, tree_size.height()));
+	// globalparameters.getTreeScreen()->hide();    // resize(QSize(0, 0)); //
+	// } else {
+	// _treetable_hidden = true;
+	// }
 
-        // if(!globalparameters.getRecordTableScreen()->isHidden()) {
-        // _recordtable_hidden = false;
-        ////            globalparameters.getRecordTableScreen()->resize(QSize(0, recordtable_size.height()));
-        // globalparameters.getRecordTableScreen()->hide(); // resize(QSize(0, 0)); //
-        // } else {
-        // _recordtable_hidden = true;
-        // }
+	// if(!globalparameters.getRecordTableScreen()->isHidden()) {
+	// _recordtable_hidden = false;
+	////            globalparameters.getRecordTableScreen()->resize(QSize(0, recordtable_size.height()));
+	// globalparameters.getRecordTableScreen()->hide(); // resize(QSize(0, 0)); //
+	// } else {
+	// _recordtable_hidden = true;
+	// }
 
-        emit _vtab_record->_hide_action->setChecked(true);	// emit _vtab_tree->_hide_action->setChecked(true);
-        // QTabWidget *tab = globalparameters.vtab();
-        // tab->currentWidget()->hide();
+	emit _vtab_record->_hide_action->setChecked(true);	// emit _vtab_tree->_hide_action->setChecked(true);
+	// QTabWidget *tab = globalparameters.vtab();
+	// tab->currentWidget()->hide();
 
-        // auto * tab_pane = tab->findChild<QStackedWidget *>();
-        // tab_pane->hide();
+	// auto * tab_pane = tab->findChild<QStackedWidget *>();
+	// tab_pane->hide();
 
-        // QRect rect = tab->geometry();
-        // tab->setGeometry(rect.left(), rect.top(), 0, rect.height());
+	// QRect rect = tab->geometry();
+	// tab->setGeometry(rect.left(), rect.top(), 0, rect.height());
 
-        // setGeometry(rect.top(), rect.left(), 0, rect.height());
+	// setGeometry(rect.top(), rect.left(), 0, rect.height());
 
-        // resize(QSize(0, v_left_splitter->height())); // hide();
+	// resize(QSize(0, v_left_splitter->height())); // hide();
     }else{
-        globalparameters.entrance()->show();				// resize(entrance_size); //
+	globalparameters.entrance()->show();				// resize(entrance_size); //
 
-        // if(!_treetable_hidden) {
-        // globalparameters.getTreeScreen()->show();    // resize(tree_size); //
-        // }
+	// if(!_treetable_hidden) {
+	// globalparameters.getTreeScreen()->show();    // resize(tree_size); //
+	// }
 
-        // if(!_recordtable_hidden) {
-        // globalparameters.getRecordTableScreen()->show(); // resize(recordtable_size); //
-        // }
+	// if(!_recordtable_hidden) {
+	// globalparameters.getRecordTableScreen()->show(); // resize(recordtable_size); //
+	// }
 
-        // emit _vtabwidget->hideAction.toggle();
-        emit _vtab_record->_hide_action->setChecked(false);	// emit _vtab_tree->_hide_action->setChecked(false);
-        // globalparameters.vtab()->resize(vtab_size); // show();
+	// emit _vtabwidget->hideAction.toggle();
+	emit _vtab_record->_hide_action->setChecked(false);	// emit _vtab_tree->_hide_action->setChecked(false);
+	// globalparameters.vtab()->resize(vtab_size); // show();
     }
 }
 
@@ -1627,44 +1627,44 @@ void wn_t::on_click_help_about_mytetra(void){
     QString	infoPhysicalDpiX;
     QString	infoPhysicalDpiY;
 
-    infoProgramName		= "<b>MyTetra</b> - smart manager<br/>for information collecting<br/><br/>";
-    infoVersion			= "v." + version + "<br/><br/>";
-    infoAuthor			= "Author: Sergey M. Stepanov<br/>";
-    infoEmail			= "Author Email:<i>xintrea@gmail.com</i><br/>Author Email:<i>hughvonyoung@gmail.com</i><br/>";
-    infoLicense			= "GNU General Public License v.3.0<br/><br/>";
-    infoTargetOs		= "Target OS: " + globalparameters.target_os() + "<br/>";
-    infoProgramFile		= "Program file: " + globalparameters.main_program_file() + "<br/>";
+    infoProgramName	= "<b>MyTetra</b> - smart manager<br/>for information collecting<br/><br/>";
+    infoVersion		= "v." + version + "<br/><br/>";
+    infoAuthor		= "Author: Sergey M. Stepanov<br/>";
+    infoEmail		= "Author Email:<i>xintrea@gmail.com</i><br/>Author Email:<i>hughvonyoung@gmail.com</i><br/>";
+    infoLicense		= "GNU General Public License v.3.0<br/><br/>";
+    infoTargetOs	= "Target OS: " + globalparameters.target_os() + "<br/>";
+    infoProgramFile	= "Program file: " + globalparameters.main_program_file() + "<br/>";
     infoWorkDirectory	= "Work directory: " + globalparameters.work_directory() + "<br/>";
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
     infoDevicePixelRatio	= "Device pixel ratio: " + (QString::number(sapp_t::instance()->devicePixelRatio(), 'f', 8)) + "<br/>";
-    infoPhysicalDpi			= "Physical DPI (from screen): " + (QString::number(QApplication::screens().at(0)->physicalDotsPerInch(), 'f', 8)) + "<br/>";
+    infoPhysicalDpi		= "Physical DPI (from screen): " + (QString::number(QApplication::screens().at(0)->physicalDotsPerInch(), 'f', 8)) + "<br/>";
 #endif
 
     infoPhysicalDpiX	= "Physical DPI X (from desktop): " + (QString::number(sapp_t::instance()->desktop()->physicalDpiX(), 'f', 8)) + "<br/>";
     infoPhysicalDpiY	= "Physical DPI Y (from desktop): " + (QString::number(sapp_t::instance()->desktop()->physicalDpiY(), 'f', 8)) + "<br/>";
 
     QString info = infoProgramName +
-        infoVersion +
-        infoAuthor +
-        infoEmail +
-        infoLicense +
-        infoTargetOs +
-        infoProgramFile +
-        infoWorkDirectory +
-        infoDevicePixelRatio +
-        infoPhysicalDpi +
-        infoPhysicalDpiX +
-        infoPhysicalDpiY;
+	infoVersion +
+	infoAuthor +
+	infoEmail +
+	infoLicense +
+	infoTargetOs +
+	infoProgramFile +
+	infoWorkDirectory +
+	infoDevicePixelRatio +
+	infoPhysicalDpi +
+	infoPhysicalDpiX +
+	infoPhysicalDpiY;
 
-    QMessageBox *msgBox = new QMessageBox(this);
+    auto msgBox = std::make_shared<QMessageBox>(this);
     msgBox->about(this
-                 , "MyTetra v." + version
-                 , info);
+		 , "MyTetra v." + version
+		 , info);
 }
 
 void wn_t::on_click_help_about_qt(void){
-    QMessageBox *msgBox = new QMessageBox(this);
+    auto msgBox = std::make_shared<QMessageBox>(this);
 
     msgBox->aboutQt(this);
 }
@@ -1683,12 +1683,12 @@ void wn_t::synchronization(void){
     QString command = appconfig.synchro_command();
 	// Если команда синхронизации пуста
     if(command.trimmed().length() == 0){
-        QMessageBox::warning(this
-                            , tr("MyTetra: can't synchronization")
-                            , tr("Do not set synchronization command.<br>Check the setting in \"Syncro\" section in \"Tools\" menu")
-                            , QMessageBox::Close);
+	QMessageBox::warning(this
+			    , tr("MyTetra: can't synchronization")
+			    , tr("Do not set synchronization command.<br>Check the setting in \"Syncro\" section in \"Tools\" menu")
+			    , QMessageBox::Close);
 
-        return;
+	return;
     }
 	// Макрос %a заменяется на путь к директории базы данных
 	// QString databasePath=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir();
@@ -1758,32 +1758,32 @@ void wn_t::set_icon(void){
 void wn_t::icon_activated(QSystemTrayIcon::ActivationReason reason){
     if(QSystemTrayIcon::isSystemTrayAvailable() == false) return;
     switch(reason){
-        case QSystemTrayIcon::Trigger:
-        case QSystemTrayIcon::DoubleClick:
-            if(isVisible()){
-                if(isMinimized()) showNormal();
-                else hide();
-            }else{
-                if(isMinimized()) showNormal();
-                else show();
-            }
-        default:
-            ;
+	case QSystemTrayIcon::Trigger:
+	case QSystemTrayIcon::DoubleClick:
+	    if(isVisible()){
+		if(isMinimized()) showNormal();
+		else hide();
+	    }else{
+		if(isMinimized()) showNormal();
+		else show();
+	    }
+	default:
+	    ;
     }
 }
 
 // Слот закрытия окна
 void wn_t::closeEvent(QCloseEvent *event){
     if(_enable_real_close == false){
-        if(QSystemTrayIcon::isSystemTrayAvailable() == false) return;
-        // При приходе события закрыть окно, событие игнорируется
-        // и окно просто делается невидимым. Это нужно чтобы при закрытии окна
-        // программа не завершала работу
-        if(_tray_icon->isVisible()){
-            hide();
-            event->ignore();
-        }
+	if(QSystemTrayIcon::isSystemTrayAvailable() == false) return;
+	// При приходе события закрыть окно, событие игнорируется
+	// и окно просто делается невидимым. Это нужно чтобы при закрытии окна
+	// программа не завершала работу
+	if(_tray_icon->isVisible()){
+	    hide();
+	    event->ignore();
 	}
+    }
 }
 
 bool wn_t::eventFilter(QObject *o, QEvent *e){
@@ -1792,8 +1792,8 @@ bool wn_t::eventFilter(QObject *o, QEvent *e){
 	// Отлавливание потери фокуса
 	// QEvent::ActivationChange
     if(e->type() == QEvent::WindowDeactivate){
-        qDebug() << "Main window focus deactivate, save all state.";
-        save_all_state();
+	qDebug() << "Main window focus deactivate, save all state.";
+	save_all_state();
     }
     return false;		// Продолжать оработку событий дальше
 }
@@ -1832,48 +1832,48 @@ void wn_t::go_walk_history(void){
 	// walkhistory.set_drop(false);
 	// return;
 	// }
-    auto	_tree_view			= _tree_screen->view();
+    auto	_tree_view		= _tree_screen->view();
     auto	know_model_board	= std::bind(&tv_t::know_model_board, _tree_view);	// [&](){return _tree_screen->view()->know_model_board();};
     if(static_cast<QString>(record_id).length() > 0){
-        // Выясняется путь к ветке, где находится данная запись
-        QStringList absolute_path = static_cast<tkm_t *>(know_model_board())->path_list(record_id);					// on know_root semantic
+	// Выясняется путь к ветке, где находится данная запись
+	QStringList absolute_path = static_cast<tkm_t *>(know_model_board())->path_list(record_id);					// on know_root semantic
 
-        //// Проверяем, есть ли такая ветка
-        // if(_tree_screen->know_model_board()->is_item_valid(absolute_path) == false) {    // on know_root semantic
+	//// Проверяем, есть ли такая ветка
+	// if(_tree_screen->know_model_board()->is_item_valid(absolute_path) == false) {    // on know_root semantic
+	// walkhistory.set_drop(false);
+	// return;
+	// }
+
+
+	// Выясняется позицию записи в таблице конечных записей
+	auto item = know_model_board()->item(absolute_path);				// on know_root semantic
+	if(item && item != know_model_board()->root_item()){
+		//// Проверяем, есть ли такая позиция
+		// if(!item->item_direct(record_id)) {  // == false
 		// walkhistory.set_drop(false);
 		// return;
 		// }
-
-
-        // Выясняется позицию записи в таблице конечных записей
-        auto item = know_model_board()->item(absolute_path);				// on know_root semantic
-        if(item && item != know_model_board()->root_item()){
-            //// Проверяем, есть ли такая позиция
-            // if(!item->item_direct(record_id)) {  // == false
-            // walkhistory.set_drop(false);
-            // return;
-            // }
 //	    if(item->child_direct(record_id)){//?
-            set_tree_position(global_root_id, absolute_path);
-            // select_id(id);
-            if(appconfig.remember_cursor_at_history_navigation()){
-                _editor_screen->cursor_position(walkhistory.cursor_position(record_id));
-                _editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
-            }
+	    set_tree_position(global_root_id, absolute_path);
+		// select_id(id);
+	    if(appconfig.remember_cursor_at_history_navigation()){
+		_editor_screen->cursor_position(walkhistory.cursor_position(record_id));
+		_editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
+	    }
 //	    }
-            auto url_target = item->field<url_type>();
-            // walkhistory.set_drop(false);
-            TreeIndex::activate([&] {return _tree_view->source_model();}
-                               , _tree_view->current_item()
-                               , item->field<url_type>()
-                               , std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
-                               , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url_target.toStdString()) || url_equal(it_->field<url_type>().toStdString(), url_target.toStdString());}
-                );
-        }
-        // else {
+	    auto url_target = item->field<url_type>();
 		// walkhistory.set_drop(false);
-        // }
+	    TreeIndex::activate([&] {return _tree_view->source_model();}
+			       , _tree_view->current_item()
+			       , item->field<url_type>()
+			       , std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+			       , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url_target.toStdString()) || url_equal(it_->field<url_type>().toStdString(), url_target.toStdString());}
+		);
 	}
+	// else {
+	// walkhistory.set_drop(false);
+	// }
+    }
     walkhistory.set_drop(false);
 }
 

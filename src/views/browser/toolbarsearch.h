@@ -109,7 +109,7 @@ namespace browser {
 //	    emit resultReady();
 //	}
 	signals:
-	    void resultReady();
+	    void result_ready();
 	private:
 	    QList<boost::intrusive_ptr<TreeItem> >	&_child_items;
 	public:
@@ -130,9 +130,9 @@ namespace browser {
 		//                    , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return it ? QUrl(it->field("url")).fragment() == _url.fragment() : false;}
 		//                   );
 
-	    void returnPressed()
+	    void return_pressed()
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(returnPressed)	//
+	    W_SIGNAL(return_pressed)	//
 #else
 	    ;
 #endif
@@ -153,12 +153,12 @@ namespace browser {
 
 	public slots:
 	    void	clear();
-	    void	searchNow();
+	    void	search_now();
 
 	private slots:
 	    void	save();
-	    void	aboutToShowMenu();
-	    void	triggeredMenuAction(QAction *action);
+	    void	show_menu();
+	    void	triggered_menu_action(QAction *action);
 
 	private:
 	    void load();

@@ -430,12 +430,13 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 //	/// Painting item without text
 //	optionV4->text = QString();
 ////	style->
-	_view->style()->drawControl(QStyle::CE_ItemViewItem, &option, painter);	// _view->style()->drawControl(QStyle::CE_ItemViewItem, optionV4.get(), painter);
+//
+//	_view->style()->drawControl(QStyle::CE_ItemViewItem, &option, painter);	// _view->style()->drawControl(QStyle::CE_ItemViewItem, optionV4.get(), painter);
 
 	QAbstractTextDocumentLayout::PaintContext ctx;
 	// Highlighting text if item is selected
-	if(option.state & QStyle::State_Selected) ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Active, QPalette::HighlightedText));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													// if(optionV4->state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Active, QPalette::HighlightedText));
-	if(0 == it->count_direct() && ! (option.state & QStyle::State_Selected) && (it != _view->current_item())) ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Inactive, QPalette::Shadow));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		// if(0 == it->count_direct() && ! (optionV4->state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Inactive, QPalette::Shadow));
+	if(option.state & QStyle::State_Selected) ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Active, QPalette::HighlightedText));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	// if(optionV4->state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Active, QPalette::HighlightedText));
+	if(0 == it->count_direct() && ! (option.state & QStyle::State_Selected) && (it != _view->current_item())) ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Inactive, QPalette::Shadow));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																					// if(0 == it->count_direct() && ! (optionV4->state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Inactive, QPalette::Shadow));
 	QRect textRect =// style->
 	    _view->style()->subElementRect(QStyle::SE_ItemViewItemText, &option);// _view->style()->subElementRect(QStyle::SE_ItemViewItemText, optionV4.get());
 //	painter->restore();
@@ -519,7 +520,7 @@ QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewIte
 
 #endif
 
-		return result;																																																																																																																																																		//    return QStyledItemDelegate::createEditor(parent, option, index);
+		return result;																																																																																																																																																																																						//    return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
 void ViewDelegation::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
@@ -978,7 +979,7 @@ void rv_t::on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualI
 	// После это кода logicalIindex=visualIndex для всех полей
     for(int logicalIdx = 0; logicalIdx < showFields.size(); logicalIdx ++){
 	int visualIdx = horizontalHeader()->visualIndex(logicalIdx);
-	if(visualIdx != logicalIdx) horizontalHeader()->moveSection(visualIdx, logicalIdx);																																																																																																																																																																																																																																																																																																																																																																																																																																																			// Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
+	if(visualIdx != logicalIdx) horizontalHeader()->moveSection(visualIdx, logicalIdx);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															// Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
     }
     _enable_move_section = true;
 
@@ -1040,7 +1041,7 @@ void rv_t::edit_field_context(void){
     QModelIndexList	selectItems = selectionModel()->selectedIndexes();
     index_proxy		proxy_index;
     for(auto &si : selectItems)
-		if(0 == si.column()) proxy_index = index_proxy(si);																																																																																																																																																																																																																																																																																																																																							// selectItems.at(0);
+		if(0 == si.column()) proxy_index = index_proxy(si);																																																																																																																																																																																																																																																																																																																																																																																																																								// selectItems.at(0);
     auto current_index = currentIndex();
 
 	// auto _index0 = _record_controller->proxyindex_to_sourceindex(proxy_index);
@@ -1183,25 +1184,29 @@ bool rv_t::eventFilter(QObject *obj, QEvent *event){
 // Обработчик событий, нужен только для QTapAndHoldGesture (долгое нажатие)
 bool rv_t::event(QEvent *event){
     bool result = false;
-    if(! event->spontaneous()){
-	if(event->type() == QEvent::Gesture){
-	    qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
+    if(event){
+	if(! event->spontaneous()){
+	    if(event->type() == QEvent::Gesture){
+		qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
 
-	    return gesture_event(static_cast<QGestureEvent *>(event));
-	}else if(event->type() == QEvent::MouseButtonDblClick){
-	    on_doubleclick(indexAt(static_cast<QMouseEvent *>(event)->pos()));
+		return gesture_event(static_cast<QGestureEvent *>(event));
+	    }else if(event->type() == QEvent::MouseButtonDblClick){
+		on_doubleclick(indexAt(static_cast<QMouseEvent *>(event)->pos()));
 //	    return true;
-	    result = true;
-	}else{
-	    try{
-		result = QTableView::event(event);
-	    }catch(std::exception &e){
-		qDebug() << "bool rv_t::event(QEvent *event): " << e.what();
-	    }
+		result = true;
+	    }else{
+		// you can not comment out the block, it will make cpu usage always high
+		if(event->type() <= QEvent::Type::MaxUser){
+		    try{
+			result = QTableView::event(event);	// sometimes halt the system
+		    }catch(std::exception &e){
+			qDebug() << "bool rv_t::event(QEvent *event): " << e.what();
+		    }
+		}
 //		return QTableView::event(event);
-	}
+	    }
+	}else result = QTableView::event(event);																			// else  return false;
     }
-	// else  return false;
     return result;
 }
 
@@ -1522,7 +1527,7 @@ void rv_t::resizeEvent(QResizeEvent *e){
 	for(auto it : show_fields) if(it == "row number") show_fields.removeOne(it);
 	int required_width = row_number_width;
 //	int	i		= 0;
-	for(auto w : show_fields_width) required_width += w.toInt();																																																																																																																																																																																																																																																																																																																																					// columnWidth(i ++);
+	for(auto w : show_fields_width) required_width += w.toInt();																																																																																																																																																																																																																																																																																																																																																																																																																						// columnWidth(i ++);
 	for(int i = 0; i < show_fields.size(); i ++){
 	    if(required_width >= real_capacity){			// if((columnWidth(0) + columnWidth(1)) >= real_width){
 		if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i)) setColumnWidth(i, _pin_width);
@@ -1570,8 +1575,8 @@ void rv_t::resizeEvent(QResizeEvent *e){
 template<>pos_proxy rv_t::selection_first<pos_proxy>() const {
 	// Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    if(selectItems.isEmpty()) return pos_proxy(- 1);																																																																																																																																																																																																																																																														// Если ничего не выделено
-    else return pos_proxy((selectItems.at(0)).row());																																																																																																																																																																																																																																																															// Номер первого выделенного элемента
+    if(selectItems.isEmpty()) return pos_proxy(- 1);																																																																																																																																																																																																																																																																																																																													// Если ничего не выделено
+    else return pos_proxy((selectItems.at(0)).row());																																																																																																																																																																																																																																																																																																																														// Номер первого выделенного элемента
 }
 
 template<>pos_source rv_t::selection_first<pos_source>() const {
@@ -1583,7 +1588,7 @@ template<>pos_source rv_t::selection_first<pos_source>() const {
 template<>id_value rv_t::selection_first<id_value>() const {
 	// Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    if(selectItems.isEmpty()) return id_value("");																																																																																																																																																																																																																																																														// Если ничего не выделено
+    if(selectItems.isEmpty()) return id_value("");																																																																																																																																																																																																																																																																																																																													// Если ничего не выделено
 
     return id_value(selectItems.at(0).data(RECORD_ID_ROLE).toString());
 }

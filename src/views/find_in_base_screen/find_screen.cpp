@@ -394,7 +394,7 @@ void FindScreen::setup_signals(void){
 
 
 	// При нажатии Enter в строке запроса
-    connect(_toolbarsearch, &browser::ToolbarSearch::returnPressed, this, [this] {FindScreen::find_clicked();});
+    connect(_toolbarsearch, &browser::ToolbarSearch::return_pressed, this, [this] {FindScreen::find_clicked();});
 
 	// При нажатии кнопки Find
     connect(_find_start_button, &QPushButton::clicked, this, [this] {FindScreen::find_clicked();});

@@ -1509,7 +1509,7 @@ browser::WebView *tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
                 if(index != tabmanager->currentIndex()) tabmanager->setCurrentIndex(index);																																																																																																																																																			// c->index<PosSource>(c->source_model()->index(_binder->item()))
             }
         }
-        if(v) v->recovery_global_consistency();
+	if(v) v->current_view_global_consistency();
         globalparameters.main_window()->setEnabled(true);
 	}
     return v;

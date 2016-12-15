@@ -16,7 +16,7 @@ class DiskHelper {
 
         static void	remove_directory_to_trash(QString nameDirFrom);
         static void	remove_file_to_trash(QString file_name_from);
-        static std::shared_ptr<QFileInfo> copy_file_to_data_folder(QString file_name_from);
+        static std::shared_ptr<QFileInfo> copy_file_to_data_folder(const QString &file_name_to, const QString &file_name_from);
         static QString copy_file_to_trash(QString file_name_from);
         static QString create_directory(QString path_name, QString dir_name);
         static QString create_temp_directory(void);
