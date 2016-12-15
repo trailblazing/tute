@@ -2604,7 +2604,7 @@ browser::WebView *TreeItem::activate(const std::function<browser::WebView *(cons
 	v = _binder->activate();
     }
     assert(v);
-    v->recovery_global_consistency();
+    v->current_view_global_consistency();
 
     return v;
 }

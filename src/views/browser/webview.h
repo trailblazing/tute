@@ -133,8 +133,8 @@ namespace browser {
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
 	    void handleUnsupportedContent(QNetworkReply *reply);
 #endif
-	    void	authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
-	    void	proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
+	    void authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
+	    void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
 
 	private:
 	    friend class PopupView;
@@ -142,10 +142,10 @@ namespace browser {
 // set the webview mousepressedevent
 	    PopupView			*_view;
 	    Browser			*_browser;
-	    Qt::KeyboardModifiers	_keyboard_modifiers;
-	    Qt::MouseButtons		_pressed_buttons;
-	    QUrl			_loading_url;
-	    bool			_certificate_ignored = false;
+	    Qt::KeyboardModifiers _keyboard_modifiers;
+	    Qt::MouseButtons _pressed_buttons;
+	    QUrl _loading_url;
+	    bool _certificate_ignored = false;
     };
 
 #endif	// USE_POPUP_WINDOW
@@ -271,34 +271,35 @@ namespace browser {
 	    boost::intrusive_ptr<TreeItem> bind(boost::intrusive_ptr<TreeItem> host_);
 
 	    boost::intrusive_ptr<::Binder>	binder();
-	    const				boost::intrusive_ptr<::Binder> && binder() const;
-	    void				binder(boost::intrusive_ptr<::Binder> &&binder_);
+	    const boost::intrusive_ptr<::Binder> && binder() const;
+	    void binder(boost::intrusive_ptr<::Binder> &&binder_);
 
 	protected:
 //        void setUrl(const QUrl &url);
 
-	    bool		acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
+	    bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
 	    QWebEnginePage	*createWindow(QWebEnginePage::WebWindowType type) Q_DECL_OVERRIDE;
 #if ! defined(QT_NO_UITOOLS)
 	    QObject *createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
 #endif
 	    virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
 
-	    void	record_info_update(const QUrl &url, const QString &title);
-	    void	record_view_synchronize(boost::intrusive_ptr<TreeItem> host_);
-	    void	record_view_remove(boost::intrusive_ptr<TreeItem> host_);
-	    void	binder_reset();
+	    void record_info_update(const QUrl &url, const QString &title);
+	    void record_view_synchronize(boost::intrusive_ptr<TreeItem> host_);
+	    void record_view_remove(boost::intrusive_ptr<TreeItem> host_);
+	    void binder_reset();
+	    std::function<void (const QUrl &url)> onUrlChanged;	// void onUrlChanged(const QUrl &url);
+	    std::function<void (const QString &title)> onTitleChanged;	// void onTitleChanged(const QString &title);
 
 	private slots:
 
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
 	    void handleUnsupportedContent(QNetworkReply *reply);
 #endif
-	    void	authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
-	    void	proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
+	    void authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
+	    void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
 
-	    void	onUrlChanged(const QUrl &url);
-	    void	onTitleChanged(const QString &title);
+
 
 	private:
 	    Profile			*_profile;
@@ -312,11 +313,11 @@ namespace browser {
 
 	    WebView *_view;
 // set the webview mousepressedevent
-	    Qt::KeyboardModifiers	_keyboardmodifiers	= Qt::NoModifier;
-	    Qt::MouseButtons		_pressedbuttons		= Qt::NoButton;
+	    Qt::KeyboardModifiers _keyboardmodifiers	= Qt::NoModifier;
+	    Qt::MouseButtons _pressedbuttons		= Qt::NoButton;
 // bool _openinnewtab;
-	    QUrl	_loadingurl;
-	    QString	_hovered_url = Browser::_defaulthome;
+	    QUrl _loadingurl		= QUrl();
+	    QString _hovered_url	= Browser::_defaulthome;
 // bool _create_window_generated;
 
 //        boost::intrusive_ptr<TreeItem>  _item;
@@ -363,18 +364,18 @@ namespace browser {
 
 	    void setPage(PopupPage *page_);
 
-	    void	loadUrl(const QUrl &url);
-	    QUrl	url() const;
-	    QIcon	icon() const;
+	    void loadUrl(const QUrl &url);
+	    QUrl url() const;
+	    QIcon icon() const;
 
 	    QString lastStatusBarText() const;
 	    inline int progress() const {return _progress;}
 
 	protected:
-	    void	mousePressEvent(QMouseEvent *event);
-	    void	mouseReleaseEvent(QMouseEvent *event);
-	    void	contextMenuEvent(QContextMenuEvent *event);
-	    void	wheelEvent(QWheelEvent *event);
+	    void mousePressEvent(QMouseEvent *event);
+	    void mouseReleaseEvent(QMouseEvent *event);
+	    void contextMenuEvent(QContextMenuEvent *event);
+	    void wheelEvent(QWheelEvent *event);
 
 	signals:
 	    void iconChanged()
@@ -384,20 +385,20 @@ namespace browser {
 	    ;
 #endif
 	private slots:
-	    void	setProgress(int progress);
-	    void	loadFinished(bool success);
-	    void	setStatusBarText(const QString &string);
-	    void	openLinkInNewTab();
-	    void	onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature);
-	    void	onIconUrlChanged(const QUrl &url);
-	    void	iconLoaded();
+	    void setProgress(int progress);
+	    void loadFinished(bool success);
+	    void setStatusBarText(const QString &string);
+	    void openLinkInNewTab();
+	    void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature);
+	    void onIconUrlChanged(const QUrl &url);
+	    void iconLoaded();
 
 	private:
-	    QString		_statusbar_text;
-	    QUrl		_initial_url;
-	    int			_progress;
+	    QString _statusbar_text;
+	    QUrl _initial_url;
+	    int	_progress;
 	    PopupPage		*_page;
-	    QIcon		_icon;
+	    QIcon _icon;
 	    QNetworkReply	*_icon_reply;
     };
 
@@ -433,19 +434,19 @@ namespace browser {
 	    ~WebView();
 	    WebPage *page() const;
 
-	    bool	load_finished() const;
-	    void	page(WebPage *page);
-	    void	activateWindow();
+	    bool load_finished() const;
+	    void page(WebPage *page);
+	    void activateWindow();
 
 	    WebView	*load(boost::intrusive_ptr<TreeItem> it, bool checked);
-	    QUrl	url() const = delete;
-	    QIcon	icon() const;
+	    QUrl url() const = delete;
+	    QIcon icon() const;
 
-	    QString	lastStatusBarText() const;
-	    int		progress() const;
+	    QString lastStatusBarText() const;
+	    int	progress() const;
 
 	    rctrl_t	*record_controller();	// {return _record_controller;}
-	    void	record_controller(rctrl_t *_record_controller);	// {this->_record_controller = _record_controller;}
+	    void record_controller(rctrl_t *_record_controller);// {this->_record_controller = _record_controller;}
 
 //        Record *const &record()const {return _record;}
 //        void record(Record *record) {if(record) {_record = record;
@@ -455,15 +456,15 @@ namespace browser {
 
 	    TabWidget *const &tabmanager() const;
 
-	    void recovery_global_consistency();
+	    void current_view_global_consistency();
 	protected:
 	    void loadUrl(const QUrl &url);
 
-	    void	mousePressEvent(QMouseEvent *event);
-	    void	mouseReleaseEvent(QMouseEvent *event);
-	    void	contextMenuEvent(QContextMenuEvent *event);
-	    void	wheelEvent(QWheelEvent *event);
-
+	    void mousePressEvent(QMouseEvent *event);
+	    void mouseReleaseEvent(QMouseEvent *event);
+	    void contextMenuEvent(QContextMenuEvent *event);
+	    void wheelEvent(QWheelEvent *event);
+	    void focusOutEvent(QFocusEvent *event);
 	signals:
 	    void iconChanged()
 #if QT_VERSION == 0x050600
@@ -484,13 +485,13 @@ namespace browser {
 	private slots:
 	    void setProgress(int progress);
 
-	    void	setStatusBarText(const QString &string);
-	    void	openLinkInNewTab();
-	    void	openLinkInNewTab(const QUrl &url);
-	    void	onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature);
-	    void	onIconUrlChanged(const QUrl &url);
-	    void	iconLoaded();
-	    void	onLoadFinished(bool success);
+	    void setStatusBarText(const QString &string);
+	    void openLinkInNewTab();
+	    void openLinkInNewTab(const QUrl &url);
+	    void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature);
+	    void onIconUrlChanged(const QUrl &url);
+	    void iconLoaded();
+	    void onLoadFinished(bool success);
 
 //    void onCloseTab(int index);
 	private:
@@ -499,13 +500,13 @@ namespace browser {
 	    rctrl_t	*_record_controller;
 
 	    WebPage	*_page;
-	    QString	_statusbartext;
+	    QString _statusbartext;
 //        QUrl _initialurl;
-	    int				_progress;
-	    QIcon			_icon;
+	    int	_progress;
+	    QIcon _icon;
 	    QNetworkReply		*_iconreply;
-	    bool			_load_finished = false;
-	    QMetaObject::Connection	_home_connection;		// for disconnect
+	    bool _load_finished = false;
+	    QMetaObject::Connection _home_connection;			// for disconnect
 	    friend class TabWidget;
 	    friend class WebPage;
     };

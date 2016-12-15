@@ -96,7 +96,7 @@ MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
     setup_signals(_find_screen);
 
 	// В редакторе устанавливается функция обратного вызова на кнопку Attach
-    attach_callback(to_attach_callback);
+    attach_callback(&MetaEditor::to_attach_callback);
 
     Editor::update_indentline_geometry();
 }

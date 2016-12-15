@@ -1321,6 +1321,11 @@ namespace browser {
 	_tabmanager->resizeEvent(e);
     }
 
+    void Browser::focusOutEvent(QFocusEvent *event){
+	(void)event;
+	//
+    }
+
     void Browser::closeEvent(QCloseEvent *event){
 	if(_tabmanager->count() > 1){
 	    int ret = QMessageBox::warning(this, QString()

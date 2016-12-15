@@ -197,17 +197,17 @@ namespace browser {
 	    TabWidget	*tabmanager() const;
 
 	    WebView		*currentTab() const;
-	    QByteArray		save_state(bool withTabs = true) const;
-	    bool		restore_state(const QByteArray &state);
+	    QByteArray save_state(bool withTabs = true) const;
+	    bool restore_state(const QByteArray &state);
 	    QAction		*action_restore_last_session();
 //	    Q_INVOKABLE
-	    void			runScriptOnOpenViews(const QString &);
-	    void			setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled);
+	    void runScriptOnOpenViews(const QString &);
+	    void setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled);
 	    QString			&lastsearch();
 	    const QString		&lastsearch() const;
 
-	    void				activateWindow();
-	    bool				is_under_construction() const;
+	    void activateWindow();
+	    bool is_under_construction() const;
 	    QAction				*historyback();
 	    QStatusBar				*statusBar() = delete;
 	    QStatusBar				*status_bar();
@@ -218,54 +218,55 @@ namespace browser {
 	    Entrance	*entrance();
 	public slots:
 //            void loadPage(const QString &url) = delete;
-	    void	slotHome();
-	    void	updateToolbarActionText(bool visible);	// void updateToolbarActionText(bool visible);
+	    void slotHome();
+	    void updateToolbarActionText(bool visible);	// void updateToolbarActionText(bool visible);
 
 	protected:
-	    void	closeEvent(QCloseEvent *event);
-	    void	resizeEvent(QResizeEvent *);
+	    void closeEvent(QCloseEvent *event);
+	    void resizeEvent(QResizeEvent *);
+	    void focusOutEvent(QFocusEvent *event);
 	private slots:
 	    void save();
 
-	    void	slotLoadProgress(int);
-	    void	slotUpdateStatusbar(const QString &string);
-	    void	slotUpdateWindowTitle(const QString &title = QString());
+	    void slotLoadProgress(int);
+	    void slotUpdateStatusbar(const QString &string);
+	    void slotUpdateWindowTitle(const QString &title = QString());
 
 //            void loadUrl(const QUrl &url) = delete;
 	    void slotPreferences();
 
-	    void	slotFileNew();
-	    void	slotFileOpen();
-	    void	slotFilePrintPreview();
-	    void	slotFilePrint();
-	    void	slotPrivateBrowsing();
-	    void	slotFileSaveAs();
-	    void	slotEditFind();
-	    void	slotEditFindNext();
-	    void	slotEditFindPrevious();
-	    void	slotShowBookmarksDialog();
-	    void	slotAddBookmark();
-	    void	slotViewZoomIn();
-	    void	slotViewZoomOut();
-	    void	slotViewResetZoom();
-	    void	slotViewToolbar();
-	    void	slotViewBookmarksBar();
-	    void	slotViewStatusbar();
-	    void	slotViewPageSource();
-	    void	slotViewFullScreen(bool enable);
+	    void slotFileNew();
+	    void slotFileOpen();
+	    void slotFilePrintPreview();
+	    void slotFilePrint();
+	    void slotPrivateBrowsing();
+	    void slotFileSaveAs();
+	    void slotEditFind();
+	    void slotEditFindNext();
+	    void slotEditFindPrevious();
+	    void slotShowBookmarksDialog();
+	    void slotAddBookmark();
+	    void slotViewZoomIn();
+	    void slotViewZoomOut();
+	    void slotViewResetZoom();
+	    void slotViewToolbar();
+	    void slotViewBookmarksBar();
+	    void slotViewStatusbar();
+	    void slotViewPageSource();
+	    void slotViewFullScreen(bool enable);
 
-	    void	slotWebSearch();
-	    void	slotToggleInspector(bool enable);
-	    void	slotAboutApplication();
-	    void	slotDownloadManager();
-	    void	slotSelectLineEdit();
+	    void slotWebSearch();
+	    void slotToggleInspector(bool enable);
+	    void slotAboutApplication();
+	    void slotDownloadManager();
+	    void slotSelectLineEdit();
 
-	    void	slotAboutToShowBackMenu();
-	    void	slotAboutToShowForwardMenu();
-	    void	slotAboutToShowWindowMenu();
-	    void	slotOpenActionUrl(QAction *action);
-	    void	slotShowWindow();
-	    void	slotSwapFocus();
+	    void slotAboutToShowBackMenu();
+	    void slotAboutToShowForwardMenu();
+	    void slotAboutToShowWindowMenu();
+	    void slotOpenActionUrl(QAction *action);
+	    void slotShowWindow();
+	    void slotSwapFocus();
 
 #if defined(QWEBENGINEPAGE_PRINT)
 	    void printRequested(QWebEngineFrame *frame);
@@ -286,24 +287,24 @@ namespace browser {
 		//            , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
 		//        );
 
-	    void	run_script(const QString &style_source);
-	    void	load_default_state();
-	    void	append_to_file_menu();
-	    void	append_edit_menu();
-	    void	append_view_menu();
-	    void	append_history_menu();
-	    void	append_bookmark_menu();
-	    void	append_window_menu();
-	    void	append_to_tools_menu();
-	    void	append_to_help_menu();
-	    void	append_to_main_menu();
-	    void	setup_tool_bar();
-	    void	update_statusbar_action_text(bool visible);
-	    void	handle_find_text_result(bool found);
+	    void run_script(const QString &style_source);
+	    void load_default_state();
+	    void append_to_file_menu();
+	    void append_edit_menu();
+	    void append_view_menu();
+	    void append_history_menu();
+	    void append_bookmark_menu();
+	    void append_window_menu();
+	    void append_to_tools_menu();
+	    void append_to_help_menu();
+	    void append_to_main_menu();
+	    void setup_tool_bar();
+	    void update_statusbar_action_text(bool visible);
+	    void handle_find_text_result(bool found);
 		//    void initUrl();
 	private:
 
-	    bool		_is_under_construction = true;
+	    bool _is_under_construction = true;
 	    ts_t		*_tree_screen;
 	    FindScreen		*_find_screen;
 	    wn_t		*_main_window;
@@ -335,12 +336,12 @@ namespace browser {
 	    QAction		*_viewstatusbar;
 	    QAction		*_restorelastsession;
 	    QAction		*_addbookmark;
-	    QIcon		_reloadicon;
-	    QIcon		_stopicon;
-	    QString		_lastsearch;
+	    QIcon _reloadicon;
+	    QIcon _stopicon;
+	    QString _lastsearch;
 
-	    QWebEngineSettings::WebAttribute	_webattribute;
-	    bool				_webattributeenabled;
+	    QWebEngineSettings::WebAttribute _webattribute;
+	    bool _webattributeenabled;
 	    QWidget				*_centralwidget;
 	    QVBoxLayout				*_layout;
 
