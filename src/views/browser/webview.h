@@ -212,18 +212,18 @@ namespace browser {
 
 	    struct Binder : public std::enable_shared_from_this <Binder> {		// boost::intrusive_ref_counter<Binder, boost::thread_safe_counter>    //
 		private:
-		    boost::intrusive_ptr<TreeItem>	_item;
+		    boost::intrusive_ptr<TreeItem>	_host;
 		    WebPage				*_page;
 
 			//            bool _make_current;
 		public:
 		    Binder(boost::intrusive_ptr<TreeItem> item_, WebPage *page_);
 		    ~Binder();
-		    void host(boost::intrusive_ptr<TreeItem> it){_item = it;}
+		    void host(boost::intrusive_ptr<TreeItem> it){_host = it;}
 
 		    void page(WebPage *p){_page = p;}
 
-		    boost::intrusive_ptr<TreeItem> host() const {return _item;}
+		    boost::intrusive_ptr<TreeItem> host() const {return _host;}
 
 		    WebPage *page() const {return _page;}
 
@@ -272,7 +272,7 @@ namespace browser {
 
 	    boost::intrusive_ptr<::Binder>	binder();
 	    const boost::intrusive_ptr<::Binder> && binder() const;
-	    void binder(boost::intrusive_ptr<::Binder> &&binder_);
+	    boost::intrusive_ptr<::Binder> binder(boost::intrusive_ptr<::Binder> &&binder_);
 
 	protected:
 //        void setUrl(const QUrl &url);
