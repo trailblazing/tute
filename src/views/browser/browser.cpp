@@ -1322,7 +1322,7 @@ namespace browser {
     }
 
     void Browser::focusOutEvent(QFocusEvent *event){
-	(void)event;
+	(void) event;
 	//
     }
 
@@ -1466,7 +1466,7 @@ namespace browser {
 	if(progress < 100 && progress > 0){
 	    _chasewidget->setAnimated(true);
 	    disconnect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);
-	    if(_stopicon.isNull()) _stopicon = QIcon(":/resource/pic/mobile_stop.svg");																																																																																																																									// style()->standardIcon(QStyle::SP_BrowserStop);
+	    if(_stopicon.isNull()) _stopicon = QIcon(":/resource/pic/mobile_stop.svg");																																																																																																																																				// style()->standardIcon(QStyle::SP_BrowserStop);
 
 	    _stopreload->setIcon(_stopicon);
 	    connect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);
@@ -1563,8 +1563,8 @@ namespace browser {
     void Browser::slotOpenActionUrl(QAction *action){
 	int			offset		= action->data().toInt();
 	QWebEngineHistory	*history	= currentTab()->history();
-	if(offset < 0) history->goToItem(history->backItems(- 1 * offset).first());																																																																																																																				// back
-	else if(offset > 0) history->goToItem(history->forwardItems(history->count() - offset + 1).back());																																																																																																																																																					// forward
+	if(offset < 0) history->goToItem(history->backItems(- 1 * offset).first());																																																																																																																															// back
+	else if(offset > 0) history->goToItem(history->forwardItems(history->count() - offset + 1).back());																																																																																																																																																																			// forward
     }
 
     void Browser::geometry_change_requested(const QRect &geometry){setGeometry(geometry);}
