@@ -85,20 +85,13 @@ struct TreeIndex : public boost::intrusive_ref_counter<TreeIndex, boost::thread_
     protected:
 
     private:
-//	TreeIndex(const std::function<km_t *()> &current_model, boost::intrusive_ptr<TreeItem> host_parent_, int sibling_order = 0);	// , const QModelIndex &_current_index
+
 	TreeIndex(const std::function<tkm_t *()> &current_model_, boost::intrusive_ptr<TreeItem> host_, const index_tree &host_index_, const int sibling_order_);
-//        static boost::intrusive_ptr<TreeItem> item_register(const QUrl             &find_url_
-//                                                           , const insert_strategy &tree_view_insert_strategy_
-//                                                           , equal_url equal_	// = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-//            );
-	//    boost::intrusive_ptr<TreeItem> item_register(boost::intrusive_ptr<TreeItem> target
-	//                                                 , const KnowView::paste_strategy &_view_paste_strategy
-	//                                                 , equal_t _equal // = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-	//                                                );
+
 
 	std::function<tkm_t *()>		_current_model;
 	boost::intrusive_ptr<TreeItem>		_host;
-//	boost::intrusive_ptr<TreeItem>	_host_parent;
+//	boost::intrusive_ptr<TreeItem>		_host_parent;
 
 	int _sibling_order;
 //	index_tree _host_parent_index;

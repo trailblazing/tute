@@ -194,21 +194,20 @@ namespace browser {
 		   , WebView *parent = 0);
 
 	    ~WebPage();
-//        WebView *(*_load_record)(Record *const record);
+
 	    TabWidget	*tabmanager();
 	    Browser	*browser();
 	    WebView	*view();		// {assert(_view); return _view;}
-//        std::map<QString, boost::intrusive_ptr<TreeItem>>
-//        binded_items()const;
+
+
 	    rctrl_t	*record_controller();		// {return _record_controller;}
 	    WebView	*activate();
 	    WebView	*load(boost::intrusive_ptr<TreeItem> item, bool checked = true);
-//        WebView *bind(boost::intrusive_ptr<TreeItem> item);
+
 
 	    void load(const QUrl &url) = delete;
 
 	    boost::intrusive_ptr<TreeItem>	host() const;	// {return _record_binder->bounded_item();}
-//	    WebPage				*page() const;
 
 	    struct Binder : public std::enable_shared_from_this <Binder> {		// boost::intrusive_ref_counter<Binder, boost::thread_safe_counter>    //
 		private:
@@ -232,41 +231,9 @@ namespace browser {
 		    static QString binder_type(){return "page_binder";}
 	    };
 
-//        void item_break(boost::intrusive_ptr<TreeItem> item);    //
-//        {if(_record->binded_page() == this)_record->bind_page(nullptr);
-//        _record = nullptr;}
-//        void items_break();
+
 	    void metaeditor_sychronize();
 
-//        boost::intrusive_ptr<TreeItem> item_bind(const QUrl &_url
-//                                                              , const
-//                                                              TreeScreen::paste_strategy
-//                                                              &_view_paste_strategy
-//                                                              , equal_url_t
-//                                                              _equal =
-//                                                              [](boost::intrusive_ptr<const
-//                                                              TreeItem> it,
-//                                                              const QUrl
-//                                                              &_url)->bool
-//                                                              {return
-//                                                              it->field("url")
-//                                                              ==
-//                                                              _url.toString();}
-//                                                             );
-
-//        boost::intrusive_ptr<TreeItem>
-//        item_bind(boost::intrusive_ptr<TreeItem> item
-//                                                 , const
-//                                                 TreeScreen::paste_strategy
-//                                                 &_view_paste_strategy
-//                                                 , equal_t _equal =
-//                                                 [](boost::intrusive_ptr<const
-//                                                 TreeItem> it,
-//                                                 boost::intrusive_ptr<const
-//                                                 TreeItem> target)->bool
-//                                                 {return it->id() ==
-//                                                 target->id();}
-//                                                );
 
 	    boost::intrusive_ptr<TreeItem> bind(boost::intrusive_ptr<TreeItem> host_);
 
@@ -285,7 +252,6 @@ namespace browser {
 	    virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
 
 	    void record_info_update(const QUrl &url, const QString &title);
-	    void record_view_synchronize(boost::intrusive_ptr<TreeItem> host_);
 	    void record_view_remove(boost::intrusive_ptr<TreeItem> host_);
 	    void binder_reset();
 	    std::function<void (const QUrl &url)> onUrlChanged;	// void onUrlChanged(const QUrl &url);
@@ -309,40 +275,20 @@ namespace browser {
 	    Browser			*_browser;
 	    TabWidget			*_tabmanager;
 	    rctrl_t			*_record_controller;
-//        std::map<QString, boost::intrusive_ptr<TreeItem> > _items;
 
 	    WebView *_view;
-// set the webview mousepressedevent
+
 	    Qt::KeyboardModifiers _keyboardmodifiers	= Qt::NoModifier;
 	    Qt::MouseButtons _pressedbuttons		= Qt::NoButton;
-// bool _openinnewtab;
+
 	    QUrl _loadingurl		= QUrl();
 	    QString _hovered_url	= Browser::_defaulthome;
-// bool _create_window_generated;
 
-//        boost::intrusive_ptr<TreeItem>  _item;
-//        void item(boost::intrusive_ptr<TreeItem> it) {_item = it;}
+
 
 	    boost::intrusive_ptr<::Binder> _binder;
 
-//        friend class Record;
-//        friend class TreeItem;
 
-//        friend void TreeItem::page_to_nullptr();
-//        friend Record::Record(const Record &obj);
-
-//        friend Record::~Record();
-
-//        friend Record *TreeItem::bind(WebPage *page);
-//        friend WebPage *TreeItem::unique_page();
-//        friend bool TreeItem::is_holder();
-
-//        friend TreeItem::~TreeItem();
-
-//        friend boost::intrusive_ptr<TreeItem>
-//        TreeItem::bind(browser::WebPage *page);
-
-//        friend bool TreeItem::is_holder();
 	    bool _certificate_ignored = false;
 
 	    friend class TabWidget;
@@ -424,12 +370,6 @@ namespace browser {
 		   , TabWidget *tabmanager
 		   , rctrl_t *record_controller);
 
-//        WebView(const boost::intrusive_ptr<TreeItem> requested_item
-//                , Profile *profile    // , bool openinnewtab
-//                , TabWidget *tabmanager
-//                , QWidget *parent
-//                , RecordController *record_controller
-//               );
 
 	    ~WebView();
 	    WebPage *page() const;
@@ -447,12 +387,6 @@ namespace browser {
 
 	    rctrl_t	*record_controller();	// {return _record_controller;}
 	    void record_controller(rctrl_t *_record_controller);// {this->_record_controller = _record_controller;}
-
-//        Record *const &record()const {return _record;}
-//        void record(Record *record) {if(record) {_record = record;
-//        _record->view(this);}}
-
-//        void switch_show();
 
 	    TabWidget *const &tabmanager() const;
 
@@ -521,36 +455,14 @@ namespace browser {
 #endif
 	public:
 	    PopupWindow(Browser *browser_, Profile *profile_);
-//		: QWidget(), _addressbar(new QLineEdit(this)),
-//		  _view(new PopupView(this)){
-//		_view->setPage(new PopupPage(profile, _view));
-//		QVBoxLayout *layout = new QVBoxLayout;
-//		layout->setMargin(0);
-//		setLayout(layout);
-//		layout->addWidget(_addressbar);
-//		layout->addWidget(_view);
-//		_view->setFocus();
 
-//		connect(_view, &PopupView::titleChanged, this, &QWidget::setWindowTitle);
-//		connect(_view, &PopupView::urlChanged, this, &PopupWindow::setUrl);
-//		connect(page(), &PopupPage::geometryChangeRequested, this,
-//		    &PopupWindow::adjustGeometry);
-//		connect(page(), &PopupPage::windowCloseRequested, this, &QWidget::close);
-//	    }
 	    QWebEnginePage *page() const {return _view->page();}
 
 	private Q_SLOTS:
 	    void setUrl(const QUrl &url){_addressbar->setText(url.toString());}
 
 	    void adjustGeometry(const QRect &newGeometry);
-//	    {
-//		const int	x1 = frameGeometry().left() - geometry().left();
-//		const int	y1 = frameGeometry().top() - geometry().top();
-//		const int	x2 = frameGeometry().right() - geometry().right();
-//		const int	y2 = frameGeometry().bottom() - geometry().bottom();
 
-//		setGeometry(newGeometry.adjusted(x1, y1 - _addressbar->height(), x2, y2));
-//	    }
 	private:
 	    Browser	*_browser;
 	    QLineEdit	*_addressbar;
