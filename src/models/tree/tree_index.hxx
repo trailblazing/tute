@@ -19,7 +19,7 @@ struct Linker;
 class tkm_t;
 struct TreeIndex;
 class tv_t;
-struct RecordModel;
+class RecordModel;
 
 namespace  browser {
     class Browser;

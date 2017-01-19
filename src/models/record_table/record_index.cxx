@@ -58,7 +58,7 @@ boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<Reco
     boost::intrusive_ptr<RecordIndex> result(nullptr);
     assert(host_);
     if(sibling_item_ == host_){
-	sibling_item_ = current_model_()->sibling(sibling_item_);
+	sibling_item_ = current_model_()->_record_controller->tabmanager()->sibling(sibling_item_);	// sibling_s(sibling_item_);
 //	if(! sibling_item_)throw std::runtime_error(formatter() << "sibling_item_ == host_; host_ has already been inside the record view");
     }
     index_source sibling_index_;

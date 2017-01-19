@@ -35,14 +35,14 @@ Binder::Binder(
 		//    //    if(!std::get<2>(_state)()) {
 		//    (*_item_linker)()->binder(std::move(boost::intrusive_ptr<coupler>(const_cast<coupler *>(this))));
 
-	    _item_linker()->binder(std::move(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
+	    _item_linker()->binder(std::forward<boost::intrusive_ptr<Binder> >(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
 		//    //    }; // std::make_shared<binder_exist>([&]() {return item_link()->binder();});
 		//    assert(item_link()->binder());
 	    if(! std::get<2>(_status)()) result = false;
 		//    //    if(!std::get<3>(_state)()) {
 		//    (*_page_linker)()->binder(std::move(boost::intrusive_ptr<coupler>(const_cast<coupler *>(this))));
 
-	    _page_linker()->binder(std::move(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
+	    _page_linker()->binder(std::forward<boost::intrusive_ptr<Binder> >(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
 		//    //    };  // std::make_shared<binder_exist>([&]() {return page_link()->binder();});
 		//    assert(page_link()->binder());
 	    if(! std::get<3>(_status)()) result = false;
@@ -176,14 +176,14 @@ bool Binder::make_integrity(){
 	//    //    if(!std::get<2>(_state)()) {
 	//    (*_item_linker)()->binder(std::move(boost::intrusive_ptr<coupler>(const_cast<coupler *>(this))));
 
-    _host_linker()->binder(std::move(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
+    _host_linker()->binder(std::forward<boost::intrusive_ptr<Binder> >(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
 	//    //    }; // std::make_shared<binder_exist>([&]() {return item_link()->binder();});
 	//    assert(item_link()->binder());
     if(! std::get<2>(_status)()) result = false;
 	//    //    if(!std::get<3>(_state)()) {
 	//    (*_page_linker)()->binder(std::move(boost::intrusive_ptr<coupler>(const_cast<coupler *>(this))));
 
-    _page_linker()->binder(std::move(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
+    _page_linker()->binder(std::forward<boost::intrusive_ptr<Binder> >(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
 	//    //    };  // std::make_shared<binder_exist>([&]() {return page_link()->binder();});
 	//    assert(page_link()->binder());
     if(! std::get<3>(_status)()) result = false;
@@ -271,7 +271,7 @@ Binder::status_type Binder::state_impl(){
 	//    std::get<7>(*_state) = std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page == page_link();});
 
 
-    return std::move(status);
+    return status;
 }
 
 bool Binder::integrity_internal() const {

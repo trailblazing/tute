@@ -848,17 +848,17 @@ rctrl_t *RecordModel::reocrd_controller() const {return _record_controller;}
 // }
 
 
-boost::intrusive_ptr<TreeItem> RecordModel::sibling(boost::intrusive_ptr<TreeItem> it) const {
-// #ifdef USE_LOAD_ON_FOUND
-    return _record_controller->tabmanager()->sibling(it);
-// #else
-//    index_source	cur	= index(it);
-//    QModelIndex		cur_	= static_cast<QModelIndex>(cur);
-//    cur_ = createIndex(cur_.row() > 0 ? cur_.row() - 1 : 0, cur_.column(), cur_.internalPointer());
-//    index_source tar(cur_);
-//    return item(_record_controller->index<pos_source>(tar));
-// #endif
-}
+//boost::intrusive_ptr<TreeItem> RecordModel::sibling_s(boost::intrusive_ptr<TreeItem> it) const {
+//// #ifdef USE_LOAD_ON_FOUND
+//    return _record_controller->tabmanager()->sibling(it);
+//// #else
+////    index_source	cur	= index(it);
+////    QModelIndex		cur_	= static_cast<QModelIndex>(cur);
+////    cur_ = createIndex(cur_.row() > 0 ? cur_.row() - 1 : 0, cur_.column(), cur_.internalPointer());
+////    index_source tar(cur_);
+////    return item(_record_controller->index<pos_source>(tar));
+//// #endif
+//}
 
 boost::intrusive_ptr<TreeItem> RecordModel::current_item() const {
     boost::intrusive_ptr<TreeItem>	result(nullptr);

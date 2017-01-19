@@ -430,7 +430,7 @@ void ts_t::setup_actions(void){
     ac = new QAction(tr("Edit item name"), this);
     ac->setStatusTip(tr("Edit name of selected item"));
     ac->setIcon(QIcon(":/resource/pic/note_edit.svg"));
-    connect(ac, &QAction::triggered, _tree_view, &tv_t::edit);
+    connect(ac, &QAction::triggered, _tree_view, &tv_t::modify);
     _actionlist[action_edit_branch] = ac;
 
 	// Удаление ветки
