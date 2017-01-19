@@ -813,7 +813,7 @@ namespace sd {
                     transmitter(const transmitter &);
             };
 
-            template <typename _object_pointer_type>struct transmitter<nullptr_t, _object_pointer_type> {
+	    template <typename _object_pointer_type>struct transmitter<std::nullptr_t, _object_pointer_type> {
                 // typedef _return_type return_type;
                 typedef _object_pointer_type object_pointer_type;
                 return_type (*_func)(Arg ...);
@@ -848,8 +848,8 @@ namespace sd {
                 : meta_info(object_pointer_type(nullptr), "")
                   , _method_name(_method_name)
                   , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name())
-                  , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<nullptr_t, object_pointer_type> >(f)))
-                  , _transmit(transmitter<nullptr_t, object_pointer_type>::transmit)
+		  , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<std::nullptr_t, object_pointer_type> >(f)))
+		  , _transmit(transmitter<std::nullptr_t, object_pointer_type>::transmit)
             {}
 
             _interface &operator =(const _interface &) = delete;// because of deep copy
@@ -946,7 +946,7 @@ namespace sd {
                 // struct transmitter_static;
 
             template <typename _object_pointer_type>	// typename ... _Arg
-            struct transmitter<nullptr_t, _object_pointer_type> {	// <void, Arg ...>
+	    struct transmitter<std::nullptr_t, _object_pointer_type> {	// <void, Arg ...>
                 typedef _object_pointer_type object_pointer_type;
                 void (*_func)(Arg ...);
 
@@ -982,8 +982,8 @@ namespace sd {
                 : meta_info(object_pointer_type(nullptr), "")
                   , _method_name(_method_name)
                   , _return_type_name(typeid(void).name())
-                  , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<nullptr_t, object_pointer_type> >(f)))
-                  , _transmit(transmitter<nullptr_t, object_pointer_type>::transmit)
+		  , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<std::nullptr_t, object_pointer_type> >(f)))
+		  , _transmit(transmitter<std::nullptr_t, object_pointer_type>::transmit)
             {}
 
             _interface &operator=(const _interface &) = delete;	// because of deep copy

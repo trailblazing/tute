@@ -796,6 +796,7 @@ void init_random(void){
 
 int main(int argc, char * *argv){
     printf("\n\rStart MyTetra v. % d. % d. % d\n\r", APPLICATION_RELEASE_VERSION, APPLICATION_RELEASE_SUBVERSION, APPLICATION_RELEASE_MICROVERSION);
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     Q_INIT_RESOURCE(data);		// added by hughvonyoung@gmail.com
     Q_INIT_RESOURCE(mytetra);
