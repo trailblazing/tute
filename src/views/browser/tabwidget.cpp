@@ -1280,7 +1280,7 @@ namespace browser {
     QAction *TabWidget::newTabAction() const {return _newtabaction;}
 
     WebView *TabWidget::newTab(boost::intrusive_ptr<RecordIndex> record_index, bool make_current){	// boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
-	if(count() > 20){
+	if(count() > 30){
 	    auto	_view	= _record_controller->view();
 	    auto	current	= _view->current_item();
 ////	    auto	_proxy_model	= _record_controller->proxy_model();
