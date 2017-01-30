@@ -97,7 +97,7 @@ but it's not a must
 
 _______________________________________________________________________
 
-##happenote is forked from MyTetra
+##happenote is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
 _______________________________________________________________________
 
 ENG: Central source repository for MyTetra development.
@@ -143,17 +143,17 @@ _______________________________________________________________________
 
 The system Git created two main branches.
 
-For MyTetra
+For mytetra_webengine
 
-* MyTetra       - the main branch with the latest stable release;
-* Experimental  - branch to develop.
+* origin       - the main branch with the latest stable release;
+* develop      - branch to develop.
 
 For happenote:
 
-* happenote - the main branch with the latest stable release;
+* happenote         - the main branch with the latest stable release;
 * develop           - branch to develop.
 * code beautifier   - https://github.com/beimprovised/happenote/blob/happenote/src/uncrustify.cfg
 
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.
 
-Deciding to connect to the development MyTetra, please use the experimental/develop branch for the current code.
+Deciding to connect to the development happenote, please use the develop branch for the current code.
