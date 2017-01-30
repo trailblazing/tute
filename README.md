@@ -1,5 +1,5 @@
 
-**mytetra_webengine** == **mytetra webengine** == **MyTetra WebEngine**
+**happenote** <= **mytetra_webengine** == **mytetra webengine** == **MyTetra WebEngine**
 
 A knowledge management system equipped with an embedded web browser derived from Qt::WebEngine (Chromium-based). A lightweight browser embedded in a note management application provides an easy way to combine tabs, bookmarks and history management, as well as internal and external search together.
 
@@ -9,7 +9,7 @@ The next step, I aim to append some real-time collaborative editing functions.
 
 Should you need more functions, feel free to contact me: hughvonyoung@gmail.com
 
-##How to remote synchronize mytetra_webengine
+##How to remote synchronize happenote
 _______________________________________________________________________
 
 Currently I choose Dropbox
@@ -20,7 +20,7 @@ Move files to Dropbox:
 
 After that, change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
 
-##How to build mytetra_webengine
+##How to build happenote
 _______________________________________________________________________
 
 ###1 Build on Linux
@@ -32,7 +32,7 @@ Let's say the directory of your current project is named "working":
 	    |       |____src
 	    |
 	    |____knowledge management (name is whatever)
-		    |____mytetra_webengine (created by or synchronized with git)
+		    |____happenote (created by or synchronized with git)
 ```
 ####1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
@@ -80,24 +80,24 @@ but it's not a must
 
 ####1.4 Clone the repo to your workbench
 ```
-	git clone https://github.com/beimprovised/mytetra_webengine.git
+	git clone https://github.com/beimprovised/happenote.git
 ```
 ####1.5 Compile
 ```
-	/path-to-qt-installation/gcc_64/bin/qmake mytetra_webengine.pro
+	/path-to-qt-installation/gcc_64/bin/qmake happenote.pro
 
 	make all
 
 	sudo make install
 ```
 * Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7):
-        Open "mytetra_webengine.pro" under mytetra_webengine in qtcreator
+        Open "happenote.pro" under happenote in qtcreator
         "Configure" the project in qtcreator (no additional requirements)
         Build it.
 
 _______________________________________________________________________
 
-##mytetra_webengine is forked from MyTetra
+##happenote is forked from MyTetra
 _______________________________________________________________________
 
 ENG: Central source repository for MyTetra development.
@@ -148,11 +148,11 @@ For MyTetra
 * MyTetra       - the main branch with the latest stable release;
 * Experimental  - branch to develop.
 
-For mytetra_webengine:
+For happenote:
 
-* mytetra_webengine - the main branch with the latest stable release;
+* happenote - the main branch with the latest stable release;
 * develop           - branch to develop.
-* code beautifier   - https://github.com/beimprovised/mytetra_webengine/blob/mytetra_webengine/src/uncrustify.cfg
+* code beautifier   - https://github.com/beimprovised/happenote/blob/happenote/src/uncrustify.cfg
 
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.
 
