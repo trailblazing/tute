@@ -1,5 +1,5 @@
 
-**happenote** <= **mytetra_webengine** == **mytetra webengine** == **MyTetra WebEngine**
+**hapnote** <= **mytetra_webengine** == **mytetra webengine** == **MyTetra WebEngine**
 
 A knowledge management system equipped with an embedded web browser derived from Qt::WebEngine (Chromium-based). A lightweight browser embedded in a note management application provides an easy way to combine tabs, bookmarks and history management, as well as internal and external search together.
 
@@ -9,7 +9,7 @@ The next step, I aim to append some real-time collaborative editing functions.
 
 Should you need more functions, feel free to contact me: hughvonyoung@gmail.com
 
-##How to remote synchronize happenote
+##How to remote synchronize hapnote
 _______________________________________________________________________
 
 Currently I choose Dropbox
@@ -20,7 +20,7 @@ Move files to Dropbox:
 
 After that, change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
 
-##How to build happenote
+##How to build hapnote
 _______________________________________________________________________
 
 ###1 Build on Linux
@@ -32,7 +32,7 @@ Let's say the directory of your current project is named "working":
 	    |       |____src
 	    |
 	    |____knowledge management (name is whatever)
-		    |____happenote (created by or synchronized with git)
+		    |____hapnote (created by or synchronized with git)
 ```
 ####1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
@@ -80,24 +80,24 @@ but it's not a must
 
 ####1.4 Clone the repo to your workbench
 ```
-	git clone https://github.com/beimprovised/happenote.git
+	git clone https://github.com/beimprovised/hapnote.git
 ```
 ####1.5 Compile
 ```
-	/path-to-qt-installation/gcc_64/bin/qmake happenote.pro
+	/path-to-qt-installation/gcc_64/bin/qmake hapnote.pro
 
 	make all
 
 	sudo make install
 ```
 * Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7):
-        Open "happenote.pro" under happenote in qtcreator
+        Open "hapnote.pro" under hapnote in qtcreator
         "Configure" the project in qtcreator (no additional requirements)
         Build it.
 
 _______________________________________________________________________
 
-##happenote is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
+##hapnote is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
 _______________________________________________________________________
 
 ENG: Central source repository for MyTetra development.
@@ -148,12 +148,12 @@ For mytetra_webengine
 * origin       - the main branch with the latest stable release;
 * develop      - branch to develop.
 
-For happenote:
+For hapnote:
 
-* happenote         - the main branch with the latest stable release;
+* master            - the main branch with the latest stable release;
 * develop           - branch to develop.
-* code beautifier   - https://github.com/beimprovised/happenote/blob/happenote/src/uncrustify.cfg
+* code beautifier   - https://github.com/beimprovised/hapnote/blob/hapnote/src/uncrustify.cfg
 
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.
 
-Deciding to connect to the development happenote, please use the develop branch for the current code.
+Deciding to connect to the development hapnote, please use the develop branch for the current code.
