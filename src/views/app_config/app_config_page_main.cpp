@@ -24,7 +24,7 @@
 
 extern AppConfig	appconfig;
 extern GlobalParameters globalparameters;
-const char		*standartItem	= "Standard";
+const char		*standardItem	= "Standard";
 const char		*portableItem	= "Portable";
 
 #if QT_VERSION == 0x050600
@@ -41,7 +41,7 @@ void AppConfigPageMain::setup_ui(void){
     qDebug() << "Create main config page";
 
 
-//    QString	standartItem	= tr("Standard");
+//    QString	standardItem	= tr("Standard");
 //    QString	portableItem	= tr("Portable");
 
 
@@ -51,9 +51,9 @@ void AppConfigPageMain::setup_ui(void){
 
     _application_mode_option = new MtComboBox(this);
     _application_mode_option->setMinimumContentsLength(2);
-    _application_mode_option->addItem(standartItem);
+    _application_mode_option->addItem(standardItem);
     _application_mode_option->addItem(portableItem);
-    _application_mode_option->setCurrentIndex(_application_mode_option->findText(globalparameters.application_mode(), Qt::MatchCaseSensitive));
+    _application_mode_option->setCurrentIndex(_application_mode_option->findText(globalparameters.permanent_application_mode(), Qt::MatchCaseSensitive));
 
     _rootdir_label = new QLabel(this);
     _rootdir_label->setText(tr("Root directory"));
@@ -64,7 +64,7 @@ void AppConfigPageMain::setup_ui(void){
 
     _rootdir_input = new QLineEdit(this);
     _rootdir_input->setMinimumWidth(50);
-    _rootdir_input->setText(appconfig.root_dir());
+    _rootdir_input->setText(globalparameters.permanent_root_path());
 
     _rootdir_button = new FlatToolButton(this);
     _rootdir_button->setText(tr("..."));
@@ -337,7 +337,7 @@ int AppConfigPageMain::apply_changes(void){
 
     int	difficult_changes = 0;
 
-    QString	root_path	= globalparameters.root_path();
+    QString	root_path	= globalparameters.permanent_root_path();
     auto	write_root	= [&](){
 	    auto	root_path = _rootdir_input->text();
 	    QDir	dir(root_path);
@@ -349,11 +349,11 @@ int AppConfigPageMain::apply_changes(void){
 	    }else if(dir.exists() == false) DiskHelper::create_directory(QDir::rootPath(), root_path);
 	    else{
 		// Новое имя запоминается в конфиг
-		appconfig.root_dir(root_path);
+		globalparameters.permanent_root_path(root_path);
 		difficult_changes = 1;
 	    }
 	};
-    if(appconfig.root_dir() != _rootdir_input->text()) write_root();
+    if(globalparameters.permanent_root_path() != _rootdir_input->text()) write_root();
     auto write_data = [&](){
 	    auto	data_path = _datadir_input->text();
 	    QDir	dir(data_path);
@@ -402,39 +402,29 @@ int AppConfigPageMain::apply_changes(void){
 	appconfig.interface_language(_interface_language->currentText());
 	difficult_changes = 1;
     }
-    if((globalparameters.application_mode() != _application_mode_option->currentText()) || (_rootdir_input->text() != globalparameters.root_path())){
-//	if(! globalparameters.is_hapnote_ini_config_exist(root_dir + "/" + globalparameters.target_os() + "/conf.ini")){
-//	    QFileInfo file(root_dir + "/" + globalparameters.target_os() + "/conf.ini");
-//	    if(! (file.exists() && file.isFile())) QFile::remove(root_dir + "/" + globalparameters.target_os() + "/conf.ini");
-//	    if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/conf.ini", root_dir + "/" + globalparameters.target_os() + "/conf.ini")) throw std::runtime_error("Can not copy conf.ini");
-//	    else QFile::setPermissions(root_dir + "/" + globalparameters.target_os() + "/conf.ini", QFile::ReadUser | QFile::WriteUser);
-////	    bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.config_ini());
-////	    assert(succedded);
-//	}
-//	globalparameters.application_mode(_application_mode_option->currentText());
-
-	const auto	is_portable	= (_application_mode_option->currentText() == portableItem);
-	const auto	original_state	= std::tuple<const bool, const bool, const QString>(true, is_portable, _rootdir_input->text());
-	const auto	result		= globalparameters.initialize_root(is_portable, _rootdir_input->text());
-	if(original_state != result){
-	    if(std::get<1>(result) != is_portable) _application_mode_option->setCurrentText(is_portable ? portableItem : standartItem);
-	    if(std::get<2>(result) != _rootdir_input->text()){
-		_rootdir_input->setText(std::get<2>(result));
-		write_root();
-		_datadir_input->setText(std::get<2>(result) + "/" + QDir(_datadir_input->text()).dirName());
-		write_data();
-		_trashdir_input->setText(std::get<2>(result) + "/" + QDir(_trashdir_input->text()).dirName());
-		write_trash();
-	    }
-	    difficult_changes = 1;
-	    if(std::get<0>(result)){
-		QMessageBox message;
-		message.setText("The changes of application mode will take effect after restart the application.");		// You have to restart Mytetra for the configuration changes to take effect.
-		message.exec();
-		exit(0);
-	    }
-	}else difficult_changes = 0;
-    }
+//    if((globalparameters.application_mode() != _application_mode_option->currentText()) || (_rootdir_input->text() != globalparameters.root_path())){
+    const auto	is_standard	= (_application_mode_option->currentText() == standardItem);
+    const auto	original_state	= std::tuple<const bool, const bool, const QString>(true, is_standard, _rootdir_input->text());
+    const auto	result		= globalparameters.initialize_root(is_standard, _rootdir_input->text());
+    if(original_state != result){
+	if(std::get<1>(result) != is_standard) _application_mode_option->setCurrentText(is_standard ?  standardItem : portableItem);
+	if(std::get<2>(result) != _rootdir_input->text()){
+	    _rootdir_input->setText(std::get<2>(result));
+	    write_root();
+	    _datadir_input->setText(std::get<2>(result) + "/" + QDir(_datadir_input->text()).dirName());
+	    write_data();
+	    _trashdir_input->setText(std::get<2>(result) + "/" + QDir(_trashdir_input->text()).dirName());
+	    write_trash();
+	}
+	difficult_changes = 1;
+	if(std::get<0>(result)){
+	    QMessageBox message;
+	    message.setText("The changes of application mode will take effect after restart the application.");			// You have to restart Mytetra for the configuration changes to take effect.
+	    message.exec();
+	    exit(0);
+	}
+    }	// else difficult_changes = 0;
+//    }
     return difficult_changes;
 }
 

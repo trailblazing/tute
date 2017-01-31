@@ -445,7 +445,7 @@ QString replace_css_meta_iconsize(QString styleText){
 QString set_css_style(){
     QString style;
 
-    QString	work_directory	= globalparameters.root_path();
+    QString	work_directory	= globalparameters.permanent_root_path();
     auto	target_os	= globalparameters.target_os();
     QString	file_name_to	= work_directory + "/" + target_os + "/stylesheet.css";
 //    QString	file_name_from	= work_directory + "/resource/standardconfig/" + target_os + "/stylesheet.css";

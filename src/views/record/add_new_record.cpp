@@ -60,7 +60,7 @@ void AddNewRecord::setupUI(void){
     recordTextEditor = new Editor();
     recordTextEditor->disable_tool_list(appconfig.hide_editor_tools() + (QStringList() << "save" << "show_text" << "attach"));
     recordTextEditor->init_enable_assembly(true);
-    recordTextEditor->init_config_file_name(globalparameters.root_path() + "/" + globalparameters.target_os() + "/editorconf.ini");
+    recordTextEditor->init_config_file_name(globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/editorconf.ini");
     recordTextEditor->init_enable_random_seed(false);
     recordTextEditor->init(Editor::WYEDIT_DESKTOP_MODE);// Так как это окно, в мобильном режие его инициализировать ненужно, так как есть кнопка Отмена
 

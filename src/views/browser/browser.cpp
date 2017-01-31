@@ -643,7 +643,7 @@ namespace browser {
     }
 
     void Browser::load_default_state(){
-	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("browser"));
 	QByteArray data = settings.value(QLatin1String("default_state")).toByteArray();
 	restore_state(data);
@@ -667,7 +667,7 @@ namespace browser {
 
     void Browser::save(){
 	sapp_t::instance()->saveSession();
-	std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+	std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 //	QSettings settings(globalparameters.work_directory() + "/" + globalparameters.target_os() +  "/browser.conf", QSettings::IniFormat);
 	settings->beginGroup(QLatin1String("browser"));
 	QByteArray data = save_state(false);
@@ -1404,7 +1404,7 @@ namespace browser {
 
 	// deprecated by record::preoperty::home
     void Browser::slotHome(){
-	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("MainWindow"));
 	QString home		= settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
 	auto	tree_view	= _tree_screen->view();

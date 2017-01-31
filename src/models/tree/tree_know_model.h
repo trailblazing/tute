@@ -52,7 +52,7 @@ class tkm_t : public tm_t {
 	tkm_t(boost::intrusive_ptr<TreeItem> _root_item, tv_t *parent = 0);
 	~tkm_t();
 
-	std::shared_ptr<XmlTree>	init_from_xml(QString _file_name);
+	std::shared_ptr<XmlTree>	init_from_xml(QString _file_full_path);
 	std::shared_ptr<XmlTree>	init_from_xml(std::shared_ptr<XmlTree> xmlt);
 	void				reload(void);
 
@@ -201,7 +201,7 @@ class tkm_t : public tm_t {
     private:
 
 	// QModelIndex get_item_index_recurse(QModelIndex currindex, TreeItem *finditem, int mode);
-	QString _xml_file_name = index_xml_file_name;
+	QString _xml_file_path = index_xml_file_name;
 
 	bool _synchronized = false;
 

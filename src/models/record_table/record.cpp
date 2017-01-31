@@ -57,7 +57,7 @@ Record::Record()	// boost::intrusive_ref_counter<Record, boost::thread_safe_coun
 	      QString result = "";
 
 	      auto crypt_field_name = boost::mpl::c_str<crypt_type>::value;
-	      if(name == "home" && _field_data[name] == "" && _field_data[boost::mpl::c_str < url_type > ::value] != "") _field_data[name] = _field_data[boost::mpl::c_str < url_type > ::value];																																																																																																																																																					// for history reason
+	      if(name == "home" && _field_data[name] == "" && _field_data[boost::mpl::c_str < url_type > ::value] != "") _field_data[name] = _field_data[boost::mpl::c_str < url_type > ::value];																																																																																																																																																																																																																																// for history reason
 	      if(_field_data.contains(crypt_field_name)){	// boost::mpl::c_str < crypt_type > ::value
 		  if(_field_data[crypt_field_name] == "1"){
 		      if(_field_data[name].length() > 0 && globalparameters.crypt_key().length() > 0){
@@ -409,7 +409,7 @@ void Record::dom_to_record(const QDomElement &_dom_element){
 	else if(! _lite_flag && _attach_table_data->is_lite()) _attach_table_data->switch_to_fat();
     }
 	// Проверка, есть ли у переданного DOM-элемента таблица файлов для заполнения
-    if(! _dom_element.firstChildElement("files").isNull()) _attach_table_data->dom_to_data(_dom_element.firstChildElement("files"));																																																																																																							// Заполнение таблицы приаттаченных файлов
+    if(! _dom_element.firstChildElement("files").isNull()) _attach_table_data->dom_to_data(_dom_element.firstChildElement("files"));																																																																																																																																																										// Заполнение таблицы приаттаченных файлов
     if(_lite_flag && natural_field_source(boost::mpl::c_str < id_type >::value) != global_root_id) to_fat();
 }
 
@@ -668,7 +668,7 @@ QString Record::natural_field_source(QString name) const {
 	// Если имя поля недопустимо
     if(fixedparameters.is_record_field_natural(name) == false) critical_error("Record::natural_field_source() : get unavailable field " + name);
 	// Если поле с таким названием есть
-    if(_field_data.contains(name)) return _field_data[name];																																																	// Возвращается значение поля
+    if(_field_data.contains(name)) return _field_data[name];																																																																									// Возвращается значение поля
     else return QString();
 }
 
@@ -702,7 +702,7 @@ QMap<QString, QString> Record::natural_field_list() const {
 	    else{
 		// Присутствует шифрование
 		// Если поле не подлежит шифрованию (не все поля в зашифрованной ветке шифруются. Например, не шифруется ID записи)
-		if(fixedparameters._record_field_crypted.contains(currName) == false) result = _field_data[currName];																																																																																									// Напрямую значение поля
+		if(fixedparameters._record_field_crypted.contains(currName) == false) result = _field_data[currName];																																																																																																																																						// Напрямую значение поля
 		else if(globalparameters.crypt_key().length() > 0 &&
 		    fixedparameters._record_field_crypted.contains(currName)) result = CryptService::decryptString(globalparameters.crypt_key(), _field_data[currName]);// асшифровывается значение поля
 	    }
@@ -776,8 +776,8 @@ QString Record::text_from_fat() const {
     if(! (_field_data.value(boost::mpl::c_str < crypt_type >::value) == "1" &&
 	globalparameters.crypt_key().length() == 0)){	// return "";
 	// Если шифровать ненужно
-	if(_field_data.value(boost::mpl::c_str < crypt_type >::value).length() == 0 || _field_data.value(boost::mpl::c_str < crypt_type >::value) == "0") result = QString(_text);																																																																																																																																									// Текст просто преобразуется из QByteArray
-	else if(_field_data.value(boost::mpl::c_str < crypt_type >::value) == "1")																																																																	// Если нужно шифровать
+	if(_field_data.value(boost::mpl::c_str < crypt_type >::value).length() == 0 || _field_data.value(boost::mpl::c_str < crypt_type >::value) == "0") result = QString(_text);																																																																																																																																																																																																														// Текст просто преобразуется из QByteArray
+	else if(_field_data.value(boost::mpl::c_str < crypt_type >::value) == "1")																																																																																																		// Если нужно шифровать
 		result = CryptService::decryptStringFromByteArray(globalparameters.crypt_key(), _text);
 	else critical_error("Record::text_from_fat() : Unavailable crypt field value \"" + _field_data.value(boost::mpl::c_str < crypt_type >::value) + "\"");
     }
@@ -819,8 +819,8 @@ void Record::text_to_fat(QString _text_source){
 	// Легкому объекту невозможно установить текст, если так происходит - это ошибка вызывающей логики
     if(_lite_flag == true) critical_error("Can\'t set text for lite record object" + id_and_name());
 	// Если шифровать ненужно
-    if(_field_data.value(boost::mpl::c_str < crypt_type >::value).length() == 0 || _field_data.value(boost::mpl::c_str < crypt_type >::value) == "0") _text = _text_source.toUtf8();																																																																																																																																											// Текст просто запоминается в виде QByteArray
-    else if(_field_data.value(boost::mpl::c_str < crypt_type >::value) == "1")																																																													// Если нужно шифровать
+    if(_field_data.value(boost::mpl::c_str < crypt_type >::value).length() == 0 || _field_data.value(boost::mpl::c_str < crypt_type >::value) == "0") _text = _text_source.toUtf8();																																																																																																																																																																																																																// Текст просто запоминается в виде QByteArray
+    else if(_field_data.value(boost::mpl::c_str < crypt_type >::value) == "1")																																																																																											// Если нужно шифровать
 		_text = CryptService::encryptStringToByteArray(globalparameters.crypt_key(), _text_source);
     else critical_error("Record::text_to_fat() : Unavailable crypt field value \"" + _field_data.value(boost::mpl::c_str < crypt_type >::value) + "\"");
 }
@@ -904,7 +904,7 @@ void Record::to_decrypt_fields(void){
 	// И это поле непустое
 	// Поле расшифровывается
 	if(_field_data.contains(field_name))
-		if(_field_data[field_name].length() > 0) natural_field_source(field_name, _field_data[field_name]);																																																																																								// field(field_name)
+		if(_field_data[field_name].length() > 0) natural_field_source(field_name, _field_data[field_name]);																																																																																																																																					// field(field_name)
     }
 
 	// Устанавливается поле (флаг) что запись не зашифрована
@@ -1042,13 +1042,13 @@ void Record::push_fat_attributes(){
 
 // Полное имя директории записи
 QString Record::full_dir() const {
-    if(_field_data.contains(boost::mpl::c_str < dir_type >::value) == false) const_cast<Record *>(this)->_field_data[boost::mpl::c_str < dir_type > ::value] = _field_data.value(boost::mpl::c_str < id_type >::value);																																																																																																																																																																			// critical_error("Record::full_dir() : Not present dir field");
-    return appconfig.data_dir() + "/base/" + _field_data.value(boost::mpl::c_str < dir_type >::value);
+    if(_field_data.contains(boost::mpl::c_str < dir_type >::value) == false) const_cast<Record *>(this)->_field_data[boost::mpl::c_str < dir_type > ::value] = _field_data.value(boost::mpl::c_str < id_type >::value);																																																																																																																																																																																																																																																				// critical_error("Record::full_dir() : Not present dir field");
+    return globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + _field_data.value(boost::mpl::c_str < dir_type >::value);
 }
 
 // Короткое имя директории записи
 QString Record::short_dir() const {
-    if(_field_data.contains(boost::mpl::c_str < dir_type >::value) == false) const_cast<Record *>(this)->_field_data[boost::mpl::c_str < dir_type > ::value] = _field_data.value(boost::mpl::c_str < id_type >::value);																																																																																																																																																																			// critical_error("Record::short_dir() : Not present dir field");
+    if(_field_data.contains(boost::mpl::c_str < dir_type >::value) == false) const_cast<Record *>(this)->_field_data[boost::mpl::c_str < dir_type > ::value] = _field_data.value(boost::mpl::c_str < id_type >::value);																																																																																																																																																																																																																																																				// critical_error("Record::short_dir() : Not present dir field");
     return _field_data.value(boost::mpl::c_str < dir_type >::value);
 }
 
@@ -1083,8 +1083,8 @@ void Record::check_and_fill_file_dir(QString &idir_name, QString &i_file_name){
 	// Проверяется наличие директории, куда будет вставляться файл с текстом записи
     if(! recordDir.exists()){
 	// Создается новая директория в директории base
-	QDir directory(appconfig.data_dir() + "/base");
-	if(! directory.exists()) QDir(appconfig.data_dir()).mkdir("base");
+	QDir directory(globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base");
+	if(! directory.exists()) QDir(globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName()).mkdir("base");
 	bool result = directory.mkdir(short_dir());
 	if(! result) critical_error("Record::check_and_fill_file_dir() : Can't create directory '" + short_dir() + "'");
     }

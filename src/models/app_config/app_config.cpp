@@ -17,7 +17,7 @@
 
 extern GlobalParameters		globalparameters;
 extern const char		*global_root_id;
-extern const char		*standartItem;
+extern const char		*standardItem;
 extern const char		*portableItem;
 
 #if QT_VERSION == 0x050600
@@ -46,7 +46,7 @@ AppConfig::~AppConfig(){
 
 void AppConfig::init(void){
 	// Создается имя файла конфигурации
-    QString config_file_name = globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + globalparameters.config_filename();
+    QString config_file_name = globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/" + globalparameters.config_filename();
 
 	// Проверяется, есть ли файл конфигурации
     QFile conf_file(config_file_name);
@@ -79,7 +79,7 @@ QString AppConfig::get_parameter(QString name) const {
     if(_app_conf->contains(name)) result = _app_conf->value(name).toString();
     else{
 	AppConfig	*_this			= const_cast<AppConfig *>(this);
-	QString		config_file_name	= globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + globalparameters.config_filename();
+	QString		config_file_name	= globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/" + globalparameters.config_filename();
 	if(QFile(config_file_name).exists()) QFile::remove(config_file_name);
 	if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/" + globalparameters.config_filename(), config_file_name)) critical_error("Can not copy " + globalparameters.config_filename());
 	if(! (QFile::permissions(config_file_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(config_file_name, QFile::ReadUser | QFile::WriteUser);
@@ -92,17 +92,17 @@ QString AppConfig::get_parameter(QString name) const {
 
 
 
-bool AppConfig::root_dir(QString dirName){
-    QDir directory(dirName);
-    if(directory.exists() && directory.isReadable()){
-	_app_conf->setValue("rootdir", dirName);
+//bool AppConfig::root_dir(QString dirName){
+//    QDir directory(dirName);
+//    if(directory.exists() && directory.isReadable()){
+//	_app_conf->setValue("rootdir", dirName);
 
-	return true;
-    }else return false;
-}
+//	return true;
+//    }else return false;
+//}
 
 
-QString AppConfig::root_dir(void) const {return get_parameter("rootdir");}
+//QString AppConfig::root_dir(void) const {return get_parameter("rootdir");}
 
 // Установка имени директории с данными (в которой находится hapnote.xml)
 bool AppConfig::data_dir(QString dirName){
@@ -642,7 +642,7 @@ QStringList AppConfig::replace_parameter_in_table(QString replaceName, QString r
 // ------------------------------------
 
 void AppConfig::update_version_process(void){
-    QString configFileName = globalparameters.root_path() + "/" + globalparameters.target_os() + "/conf.ini";
+    QString configFileName = globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/conf.ini";
 
     AppConfigUpdater updater;
     updater.set_config_file(configFileName);

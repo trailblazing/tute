@@ -37,8 +37,8 @@ class AppConfig : public QObject {
 	int config_version(void) const;
 	void config_version(int i);
 
-	QString root_dir(void) const;
-	bool root_dir(QString dirName);
+//	QString root_dir(void) const;
+//	bool root_dir(QString dirName);
 
 	// Рабочая директория
 	QString data_dir(void) const;

@@ -232,7 +232,7 @@ wn_t::~wn_t(){
 }
 
 void wn_t::setup_ui(void){
-    if(_globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																																																				// Для Андроида окно просто разворачивается на весь экран
+    if(_globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																																																															// Для Андроида окно просто разворачивается на весь экран
     else{
 	QRect rect = _appconfig.mainwin_geometry();
 	resize(rect.size());
@@ -1021,7 +1021,7 @@ void wn_t::commit_data(QSessionManager &manager){
 
 // Восстанавливается геометрия окна и позиции основных разделителей
 void wn_t::restore_geometry(void){
-    if(globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																																			// Для Андроида окно просто разворачивается на весь экран
+    if(globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																																														// Для Андроида окно просто разворачивается на весь экран
     else{
 	QRect rect = appconfig.mainwin_geometry();
 	resize(rect.size());
@@ -1165,7 +1165,7 @@ void wn_t::save_tree_position(void){
 	//// Получение QModelIndex выделенного в дереве элемента
 	// const QModelIndex index = _tree_screen->tree_view()->current_index();
     auto current_item = _tree_screen->view()->current_item();
-    if(current_item) appconfig.tree_position(_current_source_model()->root_item()->id(), current_item->path_list());																																																																																																																																																																																																				// _tree_screen->know_model_board()->root_item()->id()
+    if(current_item) appconfig.tree_position(_current_source_model()->root_item()->id(), current_item->path_list());																																																																																																																																																																																																																			// _tree_screen->know_model_board()->root_item()->id()
     else if(item){			// if(index.isValid()) {
 	////    if(index.isValid()) {   // this line is to be remove
 	//// Получаем указатель вида TreeItem
@@ -1634,7 +1634,7 @@ void wn_t::on_click_help_about_hapnote(void){
     infoLicense		= "GNU General Public License v.3.0<br/><br/>";
     infoTargetOs	= "Target OS: " + globalparameters.target_os() + "<br/>";
     infoProgramFile	= "Program file: " + globalparameters.main_program_full_file() + "<br/>";
-    infoWorkDirectory	= "Work directory: " + globalparameters.root_path() + "<br/>";
+    infoWorkDirectory	= "Work directory: " + globalparameters.permanent_root_path() + "<br/>";
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
     infoDevicePixelRatio	= "Device pixel ratio: " + (QString::number(sapp_t::instance()->devicePixelRatio(), 'f', 8)) + "<br/>";
@@ -1692,7 +1692,7 @@ void wn_t::synchronization(void){
     }
 	// Макрос %a заменяется на путь к директории базы данных
 	// QString databasePath=globalParameters.getWorkDirectory()+"/"+hapnoteConfig.datadir();
-    QDir	databaseDir(appconfig.data_dir());
+    QDir	databaseDir(globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName());
     QString	databasePath = databaseDir.canonicalPath();
 
     command.replace("%a", databasePath);
