@@ -1012,7 +1012,7 @@ void rctrl_t::paste(void){
 	// Проверяется, содержит ли буфер обмена данные нужного формата
     const QMimeData *mimeData = QApplication::clipboard()->mimeData();
     if(mimeData == nullptr) return;
-    if(! (mimeData->hasFormat("mytetra/records"))) return;
+    if(! (mimeData->hasFormat("hapnote/records"))) return;
 	// Создается ссылка на буфер обмена
     QClipboard *clipboardBuf = QApplication::clipboard();
 

@@ -129,7 +129,7 @@ namespace browser {
     }
 
     void ToolbarSearch::save(){
-	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("toolbarsearch"));
 	settings.setValue(QLatin1String("recentSearches"), _stringlistmodel->stringList());
 	settings.setValue(QLatin1String("maximumSaved"), _maxsavedsearches);
@@ -137,7 +137,7 @@ namespace browser {
     }
 
     void ToolbarSearch::load(){
-	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("toolbarsearch"));
 	QStringList list = settings.value(QLatin1String("recentSearches")).toStringList();
 	_maxsavedsearches = settings.value(QLatin1String("maximumSaved"), _maxsavedsearches).toInt();

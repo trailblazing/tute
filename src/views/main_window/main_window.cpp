@@ -1131,7 +1131,7 @@ void wn_t::save_geometry(void){
     appconfig.mainwin_geometry(geom.x(), geom.y()
 			      ,	geom.width(), geom.height());
 
-	// mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
+	// hapnoteconfig.set_mainwingeometry(geometry().x(), geometry().y(),
 	// geometry().width(), geometry().height());
 
     appconfig.v_right_splitter_sizelist(_v_right_splitter->sizes());
@@ -1447,8 +1447,8 @@ void wn_t::init_help_menu(void){
 
     QAction *a;
 
-    a = new QAction(tr("About MyTetra"), this);
-    connect(a, &QAction::triggered, this, &wn_t::on_click_help_about_mytetra);
+    a = new QAction(tr("About Hapnote"), this);
+    connect(a, &QAction::triggered, this, &wn_t::on_click_help_about_hapnote);
     _helpmenu->addAction(a);
 
     a = new QAction(tr("About Qt"), this);
@@ -1611,7 +1611,7 @@ void wn_t::on_expand_edit_area(bool flag){
     }
 }
 
-void wn_t::on_click_help_about_mytetra(void){
+void wn_t::on_click_help_about_hapnote(void){
     QString version = QString::number(APPLICATION_RELEASE_VERSION) + "." + QString::number(APPLICATION_RELEASE_SUBVERSION) + "." + QString::number(APPLICATION_RELEASE_MICROVERSION);
 
     QString	infoProgramName;
@@ -1627,14 +1627,14 @@ void wn_t::on_click_help_about_mytetra(void){
     QString	infoPhysicalDpiX;
     QString	infoPhysicalDpiY;
 
-    infoProgramName	= "<b>MyTetra</b> - smart manager<br/>for information collecting<br/><br/>";
+    infoProgramName	= "<b>Hapnote</b> - smart manager<br/>for information collecting<br/><br/>";
     infoVersion		= "v." + version + "<br/><br/>";
-    infoAuthor		= "Author: Sergey M. Stepanov<br/>";
-    infoEmail		= "Author Email:<i>xintrea@gmail.com</i><br/>Author Email:<i>hughvonyoung@gmail.com</i><br/>";
+    infoAuthor		= "Author: Hugh Von Young<br/>";
+    infoEmail		= "Author Email:<i>hughvonyoung@gmail.com</i><br/>";
     infoLicense		= "GNU General Public License v.3.0<br/><br/>";
     infoTargetOs	= "Target OS: " + globalparameters.target_os() + "<br/>";
-    infoProgramFile	= "Program file: " + globalparameters.main_program_file() + "<br/>";
-    infoWorkDirectory	= "Work directory: " + globalparameters.work_directory() + "<br/>";
+    infoProgramFile	= "Program file: " + globalparameters.main_program_full_file() + "<br/>";
+    infoWorkDirectory	= "Work directory: " + globalparameters.root_path() + "<br/>";
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
     infoDevicePixelRatio	= "Device pixel ratio: " + (QString::number(sapp_t::instance()->devicePixelRatio(), 'f', 8)) + "<br/>";
@@ -1659,7 +1659,7 @@ void wn_t::on_click_help_about_mytetra(void){
 
     auto msgBox = std::make_shared<QMessageBox>(this);
     msgBox->about(this
-		 , "MyTetra v." + version
+		 , "hapnote v." + version
 		 , info);
 }
 
@@ -1684,22 +1684,22 @@ void wn_t::synchronization(void){
 	// Если команда синхронизации пуста
     if(command.trimmed().length() == 0){
 	QMessageBox::warning(this
-			    , tr("MyTetra: can't synchronization")
+			    , tr("hapnote: can't synchronization")
 			    , tr("Do not set synchronization command.<br>Check the setting in \"Syncro\" section in \"Tools\" menu")
 			    , QMessageBox::Close);
 
 	return;
     }
 	// Макрос %a заменяется на путь к директории базы данных
-	// QString databasePath=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir();
-    QDir	databaseDir(appconfig.tetra_dir());
+	// QString databasePath=globalParameters.getWorkDirectory()+"/"+hapnoteConfig.datadir();
+    QDir	databaseDir(appconfig.data_dir());
     QString	databasePath = databaseDir.canonicalPath();
 
     command.replace("%a", databasePath);
 
 	// Запуск команды синхронизации
     ExecuteCommand cons;
-    cons.setWindowTitle(tr("MyTetra synchronization"));
+    cons.setWindowTitle(tr("hapnote synchronization"));
     cons.setMessageText(tr("Synchronization in progress, please wait..."));
 
     cons.setCommand(command);

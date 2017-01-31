@@ -30,11 +30,11 @@ AppConfigPageSynchro::AppConfigPageSynchro(QWidget *parent) : ConfigPage(parent)
 
 
     synchroOnStartup = new QCheckBox(this);
-    synchroOnStartup->setText(tr("Synchronize at MyTetra startup"));
+    synchroOnStartup->setText(tr("Synchronize at Hapnote startup"));
     synchroOnStartup->setChecked(appconfig.synchro_on_startup());
 
     synchroOnExit = new QCheckBox(this);
-    synchroOnExit->setText(tr("Synchronize when exit from MyTetra"));
+    synchroOnExit->setText(tr("Synchronize when exit from Hapnote"));
     synchroOnExit->setChecked(appconfig.synchro_on_exit());
 
 

@@ -247,7 +247,7 @@ std::set<rs_t *> HidableTabWidget::record_screens() const {
 
 void HidableTabWidget::onHideAction(bool checked){
     if(checked){
-	if(this->tabPosition() == North || tabPosition() == South)																			// , West, East
+	if(this->tabPosition() == North || tabPosition() == South)																																																							// , West, East
 		this->setMaximumHeight(this->tabBar()->height());
 	else this->setMaximumWidth(this->tabBar()->width());
 	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -336,7 +336,12 @@ browser::Browser *HidableTabWidget::new_browser(){
     bool found = false;
     for(int i = 0; i < count(); i ++){
 	auto r = widget(i);
-	if(r == rs) found = true;
+	if(r == rs){
+	    rs->browser()->activateWindow();
+	    rs->browser()->setVisible(true);
+	    this->setCurrentWidget(r);
+	    found = true;
+	}
     }
     assert(found);
 ////    bool found = false;
@@ -369,11 +374,13 @@ browser::Browser *HidableTabWidget::activated_browser(){
 // );
 // } else { //
 //    if(count() > 0)
+    int count_browser = 0;
     for(int i = 0; i < count(); i ++){		// for(auto i : _record_screens){
-	auto w = widget(i);
-	if(w->objectName() == record_screen_multi_instance_name){
+	auto rs = widget(i);
+	if(rs->objectName() == record_screen_multi_instance_name){
+	    count_browser ++;
 //	    auto	rs		= dynamic_cast<rs_t *>(w);
-	    auto browser_ = dynamic_cast<rs_t *>(w)->browser();
+	    auto browser_ = dynamic_cast<rs_t *>(rs)->browser();
 	    if(browser_){
 		if(browser_->isVisible() || browser_->isActiveWindow()){
 		    _browser = browser_;		// .data();

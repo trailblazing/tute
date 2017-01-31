@@ -5,11 +5,11 @@
 TARGET_OS   =   ANY_OS
 
 lessThan(QT_VERSION, 5.7) {
-    error("happenote requires at least Qt 5.7!")
+    error("Hapnote requires at least Qt 5.7!")
 }
 
 lessThan(QT.webengine.VERSION, 5.7) {
-    error("happenote requires at least QtWebEngine 5.7!")
+    error("Hapnote requires at least QtWebEngine 5.7!")
 }
 
 # Flags for profile application
@@ -107,17 +107,18 @@ DESTDIR     =   bin
 OBJECTS_DIR =   build
 MOC_DIR     =   build
 UI_DIR      =   build
+SOURCE_OS    =   any
 }
 
 VERSION     =   0.0.1
 DEFINES     +=  APP_VERSION=\\\"$$VERSION\\\"
 
-TARGET      =   happenote
-RESOURCES   =   bin/happenote.qrc     \
+TARGET      =   hapnote
+RESOURCES   =   bin/hapnote.qrc     \
     src/views/browser/data/data.qrc \
     src/views/browser/htmls/htmls.qrc
 
-TRANSLATIONS    =   bin/resource/translations/happenote_ru.ts
+TRANSLATIONS    =   bin/resource/translations/hapnote_ru.ts
 CODECFORTR      =   utf8
 
 # QMAKE_LFLAGS  +=  -L/usr/lib/qt4/lib
@@ -127,19 +128,19 @@ INCLUDEPATH     += ../../verdigris/src
 
 contains(TARGET_OS, ANY_OS) {
  message(Building the any OS version...)
- SYSTEM_PROGRAM_NAME    =   happenote
+ SYSTEM_PROGRAM_NAME    =   hapnote
  BINARY_INSTALL_PATH    =   /usr/local/bin
 }
 
 contains(TARGET_OS, MEEGO_OS){
  message(Building the MeeGo OS version...)
- SYSTEM_PROGRAM_NAME    =   ru.webhamster.happenote
+ SYSTEM_PROGRAM_NAME    =   ru.webhamster.hapnote
  BINARY_INSTALL_PATH    =   /opt/$${SYSTEM_PROGRAM_NAME}/bin
 }
 
 contains(TARGET_OS, ANDROID_OS){
  message(Building the Android OS version...)
- SYSTEM_PROGRAM_NAME    =   happenote
+ SYSTEM_PROGRAM_NAME    =   hapnote
  BINARY_INSTALL_PATH    =   /
 }
 
@@ -155,31 +156,42 @@ build_all:!build_pass {
 
 message(Set installation directory for binary file to $${BINARY_INSTALL_PATH})
 
-# happenote_binary.path   =   $${BINARY_INSTALL_PATH}
-# happenote_binary.files  =   bin/happenote
-# INSTALLS  +=  happenote_binary
+
+### hapnote_binary.path   =   "$${buildDir}/bin"
+## hapnote_binary.commands  +=   $(COPY_DIR) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/\" \"$${OUT_PWD}/bin\"
+# hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/mode.ini\" \"$${OUT_PWD}/bin\"
+### hapnote_binary.files  +=   "$${sourceDir}/bin/resource/standardconfig/$${TARGET_OS}/browser.conf"
+### hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/browserview.ini\" \"$${OUT_PWD}/bin/.\"
+### hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/conf.ini\" \"$${OUT_PWD}/bin/.\"
+### hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/editorconf.ini\" \"$${OUT_PWD}/bin/.\"
+### hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/entrance.ini\" \"$${OUT_PWD}/bin/.\"
+### hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/stylesheet.css\" \"$${OUT_PWD}/bin/.\"
+# first.depends = $(first) hapnote_binary
+# export(first.depends)
+# export(hapnote_binary.commands)
+# QMAKE_EXTRA_TARGETS  +=  first hapnote_binary
 
 target.path     =   $${BINARY_INSTALL_PATH}
 INSTALLS        +=  target
 
 desktop_file.path   =   /usr/share/applications
 contains(TARGET_OS, ANY_OS) {
- desktop_file.files =   desktop/any/happenote.desktop
+ desktop_file.files =   desktop/any/hapnote.desktop
 }
 contains(TARGET_OS, MEEGO_OS) {
- desktop_file.files =   desktop/meego/happenote.desktop
+ desktop_file.files =   desktop/meego/hapnote.desktop
 }
 contains(TARGET_OS, ANDROID_OS) {
- desktop_file.files =   desktop/any/happenote.desktop
+ desktop_file.files =   desktop/any/hapnote.desktop
 }
 INSTALLS    +=  desktop_file
 
 icon_scalable_file.path     =   /usr/share/icons/hicolor/scalable/apps
-icon_scalable_file.files    =   desktop/happenote.svg
+icon_scalable_file.files    =   desktop/hapnote.svg
 INSTALLS    +=  icon_scalable_file
 
 icon_48_file.path   =   /usr/share/icons/hicolor/48x48/apps
-icon_48_file.files  =   desktop/happenote.png
+icon_48_file.files  =   desktop/hapnote.png
 INSTALLS    +=  icon_48_file
 
 
@@ -459,7 +471,7 @@ win32 {
 mac {
     ICON    =   browser.icns
     QMAKE_INFO_PLIST    =   Info_mac.plist
-    TARGET  =   happenote
+    TARGET  =   hapnote
 }
 
 ANDROID_PACKAGE_SOURCE_DIR  =   $$PWD/android
@@ -476,13 +488,7 @@ DISTFILES   +=          \
     README.md \
     doc/up_linker.png \
     doc/binder.png \
-    bin/browser.conf \
-    bin/resource/standartconfig/android/browser.conf \
-    bin/resource/standartconfig/android/entrance.ini \
-    bin/resource/standartconfig/android/mode.ini \
-    bin/resource/standartconfig/meego/browser.conf \
-    bin/resource/standartconfig/meego/entrance.ini \
-    bin/resource/standartconfig/meego/mode.ini
+    bin/browser.conf
 
 FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \

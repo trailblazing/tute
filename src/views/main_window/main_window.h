@@ -157,7 +157,7 @@ class wn_t
 
 	void on_expand_edit_area(bool flag);
 
-	void	on_click_help_about_mytetra(void);
+	void	on_click_help_about_hapnote(void);
 	void	on_click_help_about_qt(void);
 
 	void icon_activated(QSystemTrayIcon::ActivationReason reason);

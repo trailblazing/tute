@@ -643,7 +643,7 @@ namespace browser {
     }
 
     void Browser::load_default_state(){
-	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("browser"));
 	QByteArray data = settings.value(QLatin1String("default_state")).toByteArray();
 	restore_state(data);
@@ -667,8 +667,8 @@ namespace browser {
 
     void Browser::save(){
 	sapp_t::instance()->saveSession();
-	std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
-//	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
+	std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+//	QSettings settings(globalparameters.work_directory() + "/" + globalparameters.target_os() +  "/browser.conf", QSettings::IniFormat);
 	settings->beginGroup(QLatin1String("browser"));
 	QByteArray data = save_state(false);
 	settings->setValue(QLatin1String("default_state"), data);
@@ -1404,7 +1404,7 @@ namespace browser {
 
 	// deprecated by record::preoperty::home
     void Browser::slotHome(){
-	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("MainWindow"));
 	QString home		= settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
 	auto	tree_view	= _tree_screen->view();
@@ -1466,7 +1466,7 @@ namespace browser {
 	if(progress < 100 && progress > 0){
 	    _chasewidget->setAnimated(true);
 	    disconnect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);
-	    if(_stopicon.isNull()) _stopicon = QIcon(":/resource/pic/mobile_stop.svg");																																																																																																																																				// style()->standardIcon(QStyle::SP_BrowserStop);
+	    if(_stopicon.isNull()) _stopicon = QIcon(":/resource/pic/mobile_stop.svg");																																																																																																																																															// style()->standardIcon(QStyle::SP_BrowserStop);
 
 	    _stopreload->setIcon(_stopicon);
 	    connect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);
@@ -1563,8 +1563,8 @@ namespace browser {
     void Browser::slotOpenActionUrl(QAction *action){
 	int			offset		= action->data().toInt();
 	QWebEngineHistory	*history	= currentTab()->history();
-	if(offset < 0) history->goToItem(history->backItems(- 1 * offset).first());																																																																																																																															// back
-	else if(offset > 0) history->goToItem(history->forwardItems(history->count() - offset + 1).back());																																																																																																																																																																			// forward
+	if(offset < 0) history->goToItem(history->backItems(- 1 * offset).first());																																																																																																																																										// back
+	else if(offset > 0) history->goToItem(history->forwardItems(history->count() - offset + 1).back());																																																																																																																																																																																	// forward
     }
 
     void Browser::geometry_change_requested(const QRect &geometry){setGeometry(geometry);}

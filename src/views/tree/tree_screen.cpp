@@ -131,11 +131,11 @@ ts_t::ts_t(QString object_name
 
 	// _know_model_board->synchronized(true);
 
-	////    _selected_branch->init_from_xml(_appconfig.get_tetradir() + "/candidate.xml");
+	////    _selected_branch->init_from_xml(_appconfig.datadir() + "/candidate.xml");
 	////    _selected_branch->_root_item->field("id", get_unical_id());   // come from _root
 	////    _selected_branch->_root_item->field("name", "Candidate");     // come from _root
 
-	////    _shadow_branch->init_from_xml(_appconfig.get_tetradir() + "/default_page.xml");
+	////    _shadow_branch->init_from_xml(_appconfig.datadir() + "/default_page.xml");
 	////    _shadow_branch->_root_item->field("id", "0");  // get_unical_id()   // ?
 
 	////    _shadow_branch->_root_item->field("name", "Current Session");
@@ -797,7 +797,7 @@ void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 //// knowTreeModel->setHeaders(headers);
 
 ////    // Загрузка данных
-////    _treemodelknow->init_from_xml(_appconfig.get_tetradir() + "/" + index_xml_file_name);
+////    _treemodelknow->init_from_xml(_appconfig.datadir() + "/" + index_xml_file_name);
 // _tree_view->reset();
 //// Модель подключется к виду
 // _tree_view->setModel(treemodel);
@@ -1977,7 +1977,7 @@ bool ts_t::move_checkenable(void){
 // if(mimeData == nullptr)
 // return;
 
-// if(!(mimeData->hasFormat("mytetra/branch")))
+// if(!(mimeData->hasFormat("hapnote/branch")))
 // return;
 
 //// Получение списка индексов QModelIndex выделенных элементов
@@ -2189,7 +2189,7 @@ void ts_t::on_custom_contextmenu_requested(const QPoint &_position){
 //	    bool		is_branch	= false;
 //	    const QMimeData	*mimeData	= QApplication::clipboard()->mimeData();
 //	    if(mimeData != nullptr)
-//			if(mimeData->hasFormat("mytetra/branch")) is_branch = true;
+//			if(mimeData->hasFormat("hapnote/branch")) is_branch = true;
 	    enable_up_action();
 		// ----------------------------
 		// Подсветка пунктов шифрования

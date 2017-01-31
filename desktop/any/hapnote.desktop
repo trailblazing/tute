@@ -1,9 +1,8 @@
 [Desktop Entry]
-Name=MyTetra WebEngine
+Name=hapnote
 Comment=Smart manager for information collecting
-Comment[ru]=Менеджер накопления осмысленной информации
-Exec=mytetra_webengine
-Icon=mytetra
+Exec=hapnote
+Icon=hapnote
 Terminal=false
 Type=Application
 StartupNotify=true
