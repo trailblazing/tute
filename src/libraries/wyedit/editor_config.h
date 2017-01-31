@@ -22,7 +22,7 @@ class EditorConfig : public QWidget {
 #endif
 
     public:
-	EditorConfig(QString config_file_name, QWidget *parent = 0);
+	EditorConfig(const QString &config_file_name, QWidget *parent = 0);
 	~EditorConfig();
 
 	// Настройка стандартного шрифта

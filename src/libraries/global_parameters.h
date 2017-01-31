@@ -12,6 +12,8 @@
 #include <QObject>
 #endif
 
+extern const char	*standartItem;
+extern const char	*portableItem;
 
 // #ifndef QWEBENGINEPAGE_HITTESTCONTENT
 // #define QWEBENGINEPAGE_HITTESTCONTENT
@@ -47,123 +49,140 @@ class GlobalParameters : public QObject {
 #endif
 
     public:
-        GlobalParameters(QObject *pobj = 0);
-        virtual ~GlobalParameters();
+	GlobalParameters(QObject *pobj = 0);
+	virtual ~GlobalParameters();
 
-        void main_program_file(QString file);
-        QString main_program_file(void) const;
+//	void main_program_full_file(QString file);
+	QString main_program_full_file(void) const;
+	QString main_program_dir() const;
 
-        void init(const QString &app_name);
+	void init(const QString &app_name);
 
-        QString application_mode() const;
-        void application_mode(const QString &mode);
+	QString application_mode() const;
+	void application_mode(const QString &mode);
 
-        QString work_directory(void);
+	QString root_path(void) const;
+	QString config_filename(void) const;
 
-        QString target_os(void);
-        QString application_name(void);
+	QString target_os(void) const;
+	QString application_name(void) const;
 
 
-        browser::Profile	*profile();
-        void profile(browser::Profile *profile_);
+	browser::Profile	*profile() const;
+	void profile(browser::Profile *profile_);
 
-        QSplitter	*find_splitter();
-        void find_splitter(QSplitter *_find_splitter);
+	QSplitter	*find_splitter() const;
+	void find_splitter(QSplitter *_find_splitter);
 
-        void h_record_splitter(QSplitter *h_record_splitter);
-        QSplitter	*h_record_splitter();
+	void h_record_splitter(QSplitter *h_record_splitter);
+	QSplitter	*h_record_splitter() const;
 
-        void h_tree_splitter(QSplitter *vleftsplitter);
-        QSplitter	*h_tree_splitter();
+	void h_tree_splitter(QSplitter *vleftsplitter);
+	QSplitter	*h_tree_splitter() const;
 
-        void v_right_splitter(QSplitter *vrightsplitter);
-        QSplitter	*v_right_splitter();
+	void v_right_splitter(QSplitter *vrightsplitter);
+	QSplitter	*v_right_splitter() const;
 
-        void vtab_record(HidableTabWidget *point);
-        HidableTabWidget	*vtab_record();
+	void vtab_record(HidableTabWidget *point);
+	HidableTabWidget	*vtab_record() const;
 
 //	void		vtab_tree(QTabWidget *point);
 //	QTabWidget	*vtab_tree();
 
-        void tree_screen(ts_t *point);
-        ts_t	*tree_screen();
+	void tree_screen(ts_t *point);
+	ts_t	*tree_screen() const;
 
-        browser::Entrance	*entrance();
-        void entrance(browser::Entrance * &b);
+	browser::Entrance	*entrance() const;
+	void entrance(browser::Entrance * &b);
 
-        void push_record_screen(rs_t *point);
-        std::vector<rs_t *>	record_screens();
+	void push_record_screen(rs_t *point);
+	std::vector<rs_t *>	record_screens() const;
 
-        //    void page_screen(RecordScreen *page);
-        //    RecordScreen *page_screen();
+	//    void page_screen(RecordScreen *page);
+	//    RecordScreen *page_screen();
 
-        void find_screen(FindScreen *point);
-        FindScreen	*find_screen();
+	void find_screen(FindScreen *point);
+	FindScreen	*find_screen() const;
 
-        void meta_editor(MetaEditor *point);
-        MetaEditor	*meta_editor();
+	void meta_editor(MetaEditor *point);
+	MetaEditor	*meta_editor() const;
 
-        void status_bar(QStatusBar *point);
-        QStatusBar	*status_bar();
+	void status_bar(QStatusBar *point);
+	QStatusBar	*status_bar() const;
 
-        void window_switcher(WindowSwitcher *point);
-        WindowSwitcher	*window_switcher();
+	void window_switcher(WindowSwitcher *point);
+	WindowSwitcher	*window_switcher() const;
 
-        wn_t		*main_window();
-        void main_window(wn_t *main_window);
-        void crypt_key(QByteArray hash);
-        QByteArray crypt_key(void);
+	wn_t		*main_window() const;
+	void main_window(wn_t *main_window);
 
-        // Файл стилей может создаваться и после развертывания начальных файлов MyTetra
-        // Так как в более старых версиях MyTetra его еще небыло
-        void create_stylesheet_file(QString dirname);
+	void crypt_key(QByteArray hash);
+	QByteArray crypt_key(void) const;
 
-        void style_source(const QString &source);
-        QString	style_source() const;
-        browser::DownloadManager	*request_download_manager();
-        void download_manager(browser::DownloadManager *dm);
-        browser::DownloadManager	*download_manager() const;
+//	// Файл стилей может создаваться и после развертывания начальных файлов Hapnote
+//	// Так как в более старых версиях Hapnote его еще небыло
+//	void create_stylesheet_file(QString config_dir);
 
-        void editor_config(EditorConfig *dialog);
-        EditorConfig		*editor_config();
-        AttachTableController	*attachtable_controller();
-        void attachtable_controller(AttachTableController *_attachtable_controller);
-        bool is_mytetra_ini_config_exist(QString filename);
+	void style_source(const QString &source);
+	QString	style_source() const;
+
+	browser::DownloadManager	*request_download_manager();
+
+	void download_manager(browser::DownloadManager *dm);
+	browser::DownloadManager	*download_manager() const;
+
+	EditorConfig		*editor_config() const;
+	void editor_config(EditorConfig *dialog);
+
+	AttachTableController	*attachtable_controller() const;
+	void attachtable_controller(AttachTableController *_attachtable_controller);
+//	bool is_hapnote_ini_config_exist(const QString &filename) const;
 //	QMap<QString, QString>	config_ini() const;
-//	QMap<QString, QString>	mytetra_xml() const;
+//	QMap<QString, QString>	hapnote_xml() const;
 //	QMap<QString, QString>	editorconf() const;
     private:
+#define STANDARD_MODE		true
+#define PORTABLE_MODE		false
+	std::tuple<const bool, const bool, const QString> initialize_root(bool standard_mode = STANDARD_MODE, const QString &root_path_ = "");
+//	bool check_workdirectory(bool enablePortable);
 
-        void init_workdirectory(void);
-        bool find_workdirectory(void);
+//	void create_root_standard(void);
+//	void create_root_portable(void);
+//	void initialize_root_impl(const QString &root_dir);
 
-        void create_standard_programfiles(void);
-        void create_portable_programfiles(void);
-        void create_first_programfiles(QString dirName);
+	browser::Profile			*_profile			= nullptr;
+	ts_t					*_tree_screen			= nullptr;
+	browser::Entrance			*_entrance			= nullptr;
+	EditorConfig				*_editor_config			= nullptr;
+	FindScreen				*_find_screen			= nullptr;
+	MetaEditor				*_meta_editor			= nullptr;
+	QStatusBar				*_statusbar			= nullptr;
+	WindowSwitcher				*_window_switcher		= nullptr;
+	QSplitter				*_find_splitter			= nullptr;
+	QSplitter				*_v_left_splitter		= nullptr;
+	QSplitter				*_h_record_splitter		= nullptr;
+	QSplitter				*_v_right_splitter		= nullptr;
+	HidableTabWidget			*_vtab_record			= nullptr;	//	HidableTabWidget			*_vtab_tree		= nullptr;
+	wn_t					*_mainwindow			= nullptr;
+	browser::DownloadManager		*_download_manager		= nullptr;
+	AttachTableController			*_attachtable_controller	= nullptr;
 
-        browser::Profile			*_profile						= nullptr;
-        ts_t					*_tree_screen						= nullptr;
-        browser::Entrance			*_entrance						= nullptr;
-        EditorConfig				*_editor_config					= nullptr;
-        FindScreen				*_find_screen						= nullptr;
-        MetaEditor				*_meta_editor						= nullptr;
-        QStatusBar				*_statusbar							= nullptr;
-        WindowSwitcher				*_window_switcher				= nullptr;
-        QSplitter				*_find_splitter						= nullptr;
-        QSplitter				*_v_left_splitter					= nullptr;
-        QSplitter				*_h_record_splitter					= nullptr;
-        QSplitter				*_v_right_splitter					= nullptr;
-        HidableTabWidget			*_vtab_record					= nullptr;	//	HidableTabWidget			*_vtab_tree		= nullptr;
-        wn_t					*_mainwindow						= nullptr;
-        browser::DownloadManager		*_download_manager			= nullptr;
-        AttachTableController			*_attachtable_controller	= nullptr;
+	QByteArray _password_hash;
+	QString	_style_source			= "";
+	QString	_main_program_full_file		= "";
+	QString _application_name		= "";
+	QString _main_program_path		= "";
+	QString	_root_path			= "./";
+	QString	_mode_filename			= "mode.ini";
+	QString	_conf_filename			= "conf.ini";
+	QString	_browser_conf_filename		= "browser.conf";
+	QString	_browserview_conf_filename	= "browserview.ini";
+	QString	_editor_conf_filename		= "editorconf.ini";
+	QString	_entrance_conf_filename		= "entrance.ini";
+	QString	_stylesheet_filename		= "stylesheet.css";
 
-        QByteArray _password_hash;
-        QString	_style_source;
-        QString	_main_program_file;
-        QString _application_name;
-        QString	_work_directory;
-        std::vector<rs_t *>			_table_screens;
+	std::vector<rs_t *>			_table_screens;
+	friend class AppConfigPageMain;
 };
 
 #endif /* __GLOBALPARAMETERS_H__ */

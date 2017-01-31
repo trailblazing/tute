@@ -65,7 +65,7 @@
 // const int add_new_record_after = 2;
 using namespace std;
 
-// Фиксированные параметры программы (жестко заданные в текущей версии MyTetra)
+// Фиксированные параметры программы (жестко заданные в текущей версии Hapnote)
 FixedParameters fixedparameters;
 
 // Глобальные параметры программы (вычислимые на этапе инициализации, иногда меняющиеся в процессе выполнения программы)
@@ -96,13 +96,13 @@ bool url_equal(const std::string &url_compare_stored, const std::string &url_com
 std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get){
     std::string compare = "";
     if(url_compare_stored.size() >= url_compare_get.size()){
-	for(std::string::size_type i = 0; i < url_compare_get.size(); i ++)																																																						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i);																																																																													// url_compare_stored.erase(i, 1);
+	for(std::string::size_type i = 0; i < url_compare_get.size(); i ++)																																																																																																																																						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i);																																																																																																																																																																																													// url_compare_stored.erase(i, 1);
 	for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i ++) compare += url_compare_stored.at(i);
     }else{
 	// url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
-	for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++)																																																							// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i);																																																																									// url_compare_get.erase(i, 1);
+	for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++)																																																																																																																																							// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i);																																																																																																																																																																																	// url_compare_get.erase(i, 1);
 	for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i ++) compare += url_compare_get.at(i);
     }
 //    std::string::size_type pos;
@@ -120,7 +120,7 @@ void log_print(char *lpszText, ...){
 	// инициализируем список аргументов
     va_start(argList, lpszText);
 	// открываем лог-файл для добавления данных
-    if((pFile = fopen("mytetralog.txt", "a+")) == nullptr){
+    if((pFile = fopen("hapnotelog.txt", "a+")) == nullptr){
 	printf("\nLog file not writable\n");
 
 	return;
@@ -152,7 +152,7 @@ void critical_error(QString message){
     QMessageBox::critical(qobject_cast<QWidget *>(mainwindow), "Critical error"
 			 , message + "\n\nProgramm was closed."
 			 , QMessageBox::Ok);
-
+//    throw std::runtime_error(message.toStdString());
     exit(1);
 }
 
@@ -445,54 +445,48 @@ QString replace_css_meta_iconsize(QString styleText){
 QString set_css_style(){
     QString style;
 
-    QString	work_directory	= globalparameters.work_directory();
+    QString	work_directory	= globalparameters.root_path();
     auto	target_os	= globalparameters.target_os();
-    QString	file_name_to	= work_directory + "/stylesheet.css";
-    QString	file_name_from	= work_directory + "/resource/standartconfig/" + target_os + "/stylesheet.css";
-
-
-
-    qint64	size_from = 0;
-    QFile	css_from(file_name_from);
-
-    bool result = css_from.open(QIODevice::ReadOnly | QIODevice::Text);
-	// Если файла не существует
-    if(! result){
-	qDebug() << "Stylesheet not found in " << file_name_from;
-//        globalparameters.create_stylesheet_file(globalparameters.work_directory());
-    }else size_from = css_from.size();
-    css_from.close();	// ?
-
-
-    qint64	size_to = 0;
-    QFile	css(file_name_to);
-
-    bool openResult = css.open(QIODevice::ReadOnly | QIODevice::Text);
-	// Если файла не существует
-    if(! openResult){
-	qDebug() << "Stylesheet not found in " << file_name_from << ". Create new css file.";
-	globalparameters.create_stylesheet_file(globalparameters.work_directory());
-    }else size_to = css.size();
-    css.close();	// ?
-    if(size_to < size_from){
-	if(! QFile::remove(file_name_to)) critical_error("Can not remove file\n" + file_name_to);
-	if(! QFile::copy(file_name_from, file_name_to)){
-		//        trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
-		//        }else {
-	    critical_error("Can not copy file\n" + file_name_from + "\nto file\n" + file_name_to);
-	}
+    QString	file_name_to	= work_directory + "/" + target_os + "/stylesheet.css";
+//    QString	file_name_from	= work_directory + "/resource/standardconfig/" + target_os + "/stylesheet.css";
+//    qint64	size_from = 0;
+//    QFile	css_from(file_name_from);
+//    bool result = css_from.open(QIODevice::ReadOnly | QIODevice::Text);
+//	// Если файла не существует
+//    if(! result){
+//	qDebug() << "Stylesheet not found in " << file_name_from;
+////        globalparameters.create_stylesheet_file(globalparameters.work_directory());
+//    }else size_from = css_from.size();
+//    css_from.close();	// ?
+//    qint64	size_to = 0;
+    QFile css_to(file_name_to);
+//    bool openResult = css_to.open(QIODevice::ReadOnly | QIODevice::Text);
+//	// Если файла не существует
+//    if(! openResult){
+//	qDebug() << "Stylesheet not found in " << file_name_from << ". Create new css file.";
+//	globalparameters.create_stylesheet_file(globalparameters.work_directory());
+//    }else size_to = css_to.size();
+//    css_to.close();	// ?
+//    if(size_to < size_from){
+    if(css_to.exists())
+		if(! QFile::remove(file_name_to)) critical_error("Can not remove file\n" + file_name_to);
+    if(! QFile::copy(":/resource/standardconfig/" + target_os + "/stylesheet.css", file_name_to)){		// file_name_from, file_name_to
+	//        trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
+	//        }else {
+	critical_error("Can not copy css file to file\t" + file_name_to);
     }
+//    }
 	// Заново открывается файл
-    if(css.open(QIODevice::ReadOnly | QIODevice::Text)){
+    if(css_to.open(QIODevice::ReadOnly | QIODevice::Text)){
 	qDebug() << "Stylesheet success loaded from" << file_name_to;
 
 //        QString
-	style = QTextStream(&css).readAll();
+	style = QTextStream(&css_to).readAll();
 
 	style = replace_css_meta_iconsize(style);
 
 	sapp_t::instance()->setStyleSheet(style);
-	css.close();
+	css_to.close();
     }
     return style;
 }
@@ -795,11 +789,11 @@ void init_random(void){
 }
 
 int main(int argc, char * *argv){
-    printf("\n\rStart MyTetra v. % d. % d. % d\n\r", APPLICATION_RELEASE_VERSION, APPLICATION_RELEASE_SUBVERSION, APPLICATION_RELEASE_MICROVERSION);
+    printf("\n\rStart Hapnote v. % d. % d. % d\n\r", APPLICATION_RELEASE_VERSION, APPLICATION_RELEASE_SUBVERSION, APPLICATION_RELEASE_MICROVERSION);
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     Q_INIT_RESOURCE(data);		// added by hughvonyoung@gmail.com
-    Q_INIT_RESOURCE(mytetra);
+    Q_INIT_RESOURCE(hapnote);
 
 
 

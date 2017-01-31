@@ -1,5 +1,5 @@
 
-**hapnote** <= **mytetra_webengine** == **mytetra webengine** == **MyTetra WebEngine**
+**Hapnote** <= **mytetra_webengine** == **mytetra webengine** == **MyTetra WebEngine**
 
 A knowledge management system equipped with an embedded web browser derived from Qt::WebEngine (Chromium-based). A lightweight browser embedded in a note management application provides an easy way to combine tabs, bookmarks and history management, as well as internal and external search together.
 
@@ -9,7 +9,7 @@ The next step, I aim to append some real-time collaborative editing functions.
 
 Should you need more functions, feel free to contact me: hughvonyoung@gmail.com
 
-##How to remote synchronize hapnote
+##How to remote synchronize Hapnote
 _______________________________________________________________________
 
 Currently I choose Dropbox
@@ -20,7 +20,7 @@ Move files to Dropbox:
 
 After that, change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
 
-##How to build hapnote
+##How to build Hapnote
 _______________________________________________________________________
 
 ###1 Build on Linux
@@ -97,7 +97,7 @@ but it's not a must
 
 _______________________________________________________________________
 
-##hapnote is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
+##Hapnote is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
 _______________________________________________________________________
 
 ENG: Central source repository for MyTetra development.
@@ -136,7 +136,7 @@ _______________________________________________________________________
 	\#endif // _CLIPBBRANCH_H_
 ```
 * Always use the classes, and classes instead of Qt's containers and containers STL;
-* The program is designed as a cross-platform MyTetra Qt-only application. MyTetra program should not depend on third-party libraries that are not part of Qt. If you need to use a third-party library of its source code to the project.
+* The program is designed as a cross-platform Qt-only application. Program should not depend on third-party libraries that are not part of Qt. If you need to use a third-party library of its source code to the project.
 
 Branches at GIT
 _______________________________________________________________________
@@ -148,7 +148,7 @@ For mytetra_webengine
 * origin       - the main branch with the latest stable release;
 * develop      - branch to develop.
 
-For hapnote:
+For Hapnote:
 
 * master            - the main branch with the latest stable release;
 * develop           - branch to develop.
@@ -156,4 +156,4 @@ For hapnote:
 
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.
 
-Deciding to connect to the development hapnote, please use the develop branch for the current code.
+Deciding to connect to the development Hapnote, please use the develop branch for the current code.

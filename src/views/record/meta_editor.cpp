@@ -83,10 +83,10 @@ MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
     Editor::disable_tool_list(appconfig.hide_editor_tools());
 
     Editor::init_enable_assembly(false);
-    Editor::init_config_file_name(globalparameters.work_directory() + "/editorconf.ini");
+    Editor::init_config_file_name(globalparameters.root_path() + "/" + globalparameters.target_os() + "/editorconf.ini");
     Editor::init_enable_random_seed(false);
-    if(appconfig.interface_mode() == "desktop")Editor::init(Editor::WYEDIT_DESKTOP_MODE);
-    else if(appconfig.interface_mode() == "mobile")Editor::init(Editor::WYEDIT_MOBILE_MODE);
+    if(appconfig.interface_mode() == "desktop") Editor::init(Editor::WYEDIT_DESKTOP_MODE);
+    else if(appconfig.interface_mode() == "mobile") Editor::init(Editor::WYEDIT_MOBILE_MODE);
     else critical_error("In MetaEditor constructor unknown interface mode: " + appconfig.interface_mode());
     setup_labels();
     setup_ui();
@@ -113,7 +113,7 @@ void MetaEditor::setup_labels(void){
 	// Путь в дереве до данной записи в виде названий веток (только для мобильного интерфейса)
 	// _tree_path = new QLabel(this);
     _tree_path->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-    if(appconfig.interface_mode() == "desktop")_tree_path->setVisible(false);
+    if(appconfig.interface_mode() == "desktop") _tree_path->setVisible(false);
     else _tree_path->setVisible(true);
     _tree_path->setWordWrap(true);
 
@@ -316,12 +316,12 @@ void MetaEditor::to_attach_callback(void){
 
 // Слот для установки значений инфополей на экране
 void MetaEditor::field(QString n, QString v){
-    if(n == "pin")pin(v);
-    else if(n == "name")name(v);
-    else if(n == "author")author(v);
-    else if(n == "home")home(v);
-    else if(n == "url")url(v);
-    else if(n == "tags")tags(v);
+    if(n == "pin") pin(v);
+    else if(n == "name") name(v);
+    else if(n == "author") author(v);
+    else if(n == "home") home(v);
+    else if(n == "url") url(v);
+    else if(n == "tags") tags(v);
     else critical_error("metaeditor.set_field Undestand field " + n + " with value " + v);
 }
 
@@ -405,8 +405,8 @@ void MetaEditor::switch_pin(){
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
 	    ts_t *treescreen = globalparameters.tree_screen();
-	    if(treescreen)treescreen->view()->know_model_save();
-	    if(record_view)_record_controller->select_as_current(_record_controller->index<pos_proxy>(pos_source_));
+	    if(treescreen) treescreen->view()->know_model_save();
+	    if(record_view) _record_controller->select_as_current(_record_controller->index<pos_proxy>(pos_source_));
 	}
     }
 	// }
@@ -442,7 +442,7 @@ void MetaEditor::home(QString url_){
     }else{
 	_label_home->setVisible(true);
 	_item_home->setVisible(true);
-	if(url_.size() > 64)_item_home->setText("<a href=\"" + url_ + "\">" + url_.left(64) + "...</a>");
+	if(url_.size() > 64) _item_home->setText("<a href=\"" + url_ + "\">" + url_.left(64) + "...</a>");
 	else _item_home->setText("<a href=\"" + url_ + "\">" + url_ + "</a>");
     }
 }
@@ -456,7 +456,7 @@ void MetaEditor::url(QString url_){
     }else{
 	_label_url->setVisible(true);
 	_item_url->setVisible(true);
-	if(url_.size() > 64)_item_url->setText("<a href=\"" + url_ + "\">" + url_.left(64) + "...</a>");
+	if(url_.size() > 64) _item_url->setText("<a href=\"" + url_ + "\">" + url_.left(64) + "...</a>");
 	else _item_url->setText("<a href=\"" + url_ + "\">" + url_ + "</a>");
     }
 }
@@ -471,7 +471,7 @@ void MetaEditor::tags(QString tags_){
 	// Строка с метками разделяется на отдельные меки
     _item_tags_text_list = _item_tags_text.split(QRegExp("[,;]+"), QString::SkipEmptyParts);
 	// В каждой метке убираются лишние пробелы по краям
-    for(int i = 0; i < _item_tags_text_list.size(); ++ i)_item_tags_text_list[i] = _item_tags_text_list.at(i).trimmed();
+    for(int i = 0; i < _item_tags_text_list.size(); ++ i) _item_tags_text_list[i] = _item_tags_text_list.at(i).trimmed();
 	//// Очищается слой с метками
 	// QLayoutItem *child_item;
 	// auto size = _item_tags_text_list.size();
@@ -528,12 +528,12 @@ void MetaEditor::tags(QString tags_){
 	// Если нечего выводить на экран
     if(tags_.length() == 0 || _item_tags_text_list.size() == 0){
 	_label_tags->setVisible(false);
-	for(auto &label : _item_tags_labels)label->setVisible(false);
+	for(auto &label : _item_tags_labels) label->setVisible(false);
 	_item_tags_container->setVisible(false);
 	_item_tags_scrollarea->setVisible(false);	// without this, editor screen is always filled by pane
     }else{
 	_label_tags->setVisible(true);
-	for(auto &label : _item_tags_labels)label->setVisible(true);
+	for(auto &label : _item_tags_labels) label->setVisible(true);
 	_label_tags->adjustSize();
 	_item_tags_container->setVisible(true);
 	_item_tags_scrollarea->setVisible(true);
@@ -561,7 +561,7 @@ void MetaEditor::on_click_to_tag(const QString &link_text){
 	// Определяется ссылка на виджет поиска
 	// FindScreen *_find_screen = globalparameters.find_screen();    // find_object<FindScreen>(find_screen_singleton_name);
 	// Если виджет не показан, он выводится на экран
-    if(_find_screen->isVisible() == false)_find_screen->widget_show();
+    if(_find_screen->isVisible() == false) _find_screen->widget_show();
     emit set_find_text_signal(tag);
 }
 

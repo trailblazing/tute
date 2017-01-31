@@ -43,7 +43,7 @@ void ClipboardBranch:: init(void){
     _branch_data._records.clear();
 
     _clipboard_branch_format.clear();
-    _clipboard_branch_format << "mytetra/branch";
+    _clipboard_branch_format << "hapnote/branch";
 }
 void ClipboardBranch:: print(void) const {
 	// Перебираются ветки

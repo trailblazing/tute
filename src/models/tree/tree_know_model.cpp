@@ -69,15 +69,15 @@ tkm_t::tkm_t(const QString &index_xml_file_name, tv_t *parent) : tm_t(parent){	/
 //    assert(_root_item->linker()->host().get() == _root_item.get());
 //    assert(_root_item->linker()->host_parent().get() != _root_item.get());
 
-    init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);		// _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
+    init_from_xml(appconfig.data_dir() + "/" + index_xml_file_name);		// _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
     int all_count = count_records_all();
     while(all_count <= 0){
 	assert(trashmonitoring.is_inited());
-	auto target_file = std::make_shared<QFileInfo>(appconfig.tetra_dir() + "/" + index_xml_file_name);
+	auto target_file = std::make_shared<QFileInfo>(appconfig.data_dir() + "/" + index_xml_file_name);
 	if(trashmonitoring.recover_from_trash(target_file)){
 ////	throw std::runtime_error("database load failure");
 
-	    init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);
+	    init_from_xml(appconfig.data_dir() + "/" + index_xml_file_name);
 	    all_count = count_records_all();
 	}else{
 	    AppConfigDialog appconfigdialog(nullptr, "pageMain");		// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
@@ -134,7 +134,7 @@ std::shared_ptr<XmlTree> tkm_t::init_from_xml(std::shared_ptr<XmlTree> xmlt){
 void tkm_t::init(QDomDocument *dom_model){
 	// Проверка формата XML-файла
     if(! format_check(dom_model->documentElement().firstChildElement("format"))){
-	critical_error(tr("Unsupported format version for data base.\nPlease upgrade your MyTetra application."));
+	critical_error(tr("Unsupported format version for data base.\nPlease upgrade your Hapnote application."));
 
 	return;
     }
@@ -475,7 +475,7 @@ void tkm_t::save(){
 	// Если имя файла небыло проинициализировано
     if(_xml_file_name == "") critical_error(tr("In KnowTreeModel can't set file name for XML file"));
 	// Коструирование DOM документа для записи в файл
-    QDomDocument doc("mytetradoc");
+    QDomDocument doc("hapnotedoc");
 
 	// Установка заголовка
     doc.appendChild(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""));

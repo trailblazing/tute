@@ -170,7 +170,7 @@ namespace browser {
 	// sb.append(QDir::separator());
 	// sb.append("browserview.ini");
 
-	QString configFileName = globalparameters.work_directory() + "/browserview.ini";
+	QString configFileName = globalparameters.root_path() + "/" + globalparameters.target_os() + "/browserview.ini";
 	// check to see if we have a settings file where we started from
 	// if not fall back to system hard coded path
 	QFileInfo file(configFileName.toLatin1());	// file(sb.toLatin1());
@@ -212,7 +212,7 @@ namespace browser {
 	// }
 
 	qDebug() << "loading url: " << settings.value("main_view").toString();
-	if(settings.value("full_screen", false).toBool())this->showFullScreen();
+	if(settings.value("full_screen", false).toBool()) this->showFullScreen();
 	if(settings.value("hide_cursor", false).toBool()){
 	    this->setCursor(QCursor(Qt::BlankCursor));
 #ifdef Q_WS_QWS
@@ -1102,7 +1102,7 @@ namespace browser {
 
 
     void Entrance::finished(QNetworkReply *reply){
-	if(reply->error() != QNetworkReply::NoError)qDebug() << QString("Network Error: %1").arg(reply->errorString());
+	if(reply->error() != QNetworkReply::NoError) qDebug() << QString("Network Error: %1").arg(reply->errorString());
 	if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true){
 	    QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
 	    qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
@@ -1470,7 +1470,7 @@ namespace browser {
 // for(auto i : _browsers) {
 // if(i) i->resizeEvent(e);
 // }
-	if(this->widget())static_cast<Browser *>(this->widget())->resizeEvent(e);
+	if(this->widget()) static_cast<Browser *>(this->widget())->resizeEvent(e);
 	QDockWidget::resizeEvent(e);
     }
 

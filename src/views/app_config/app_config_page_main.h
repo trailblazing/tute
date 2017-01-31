@@ -17,6 +17,9 @@
 #include <QObject>
 #endif
 
+extern const char	*standartItem;
+extern const char	*portableItem;
+
 class FlatToolButton;
 
 #include "config_page.h"
@@ -41,7 +44,8 @@ class AppConfigPageMain : public ConfigPage {
         int apply_changes(void);
 
     private slots:
-        void open_tetradir_select_dialog(void);
+	void open_rootdir_select_dialog(void);
+	void open_datadir_select_dialog(void);
         void open_trashdir_select_dialog(void);
 
         void on_disable_custom_datetime_format_toggle(bool checked);
@@ -53,9 +57,13 @@ class AppConfigPageMain : public ConfigPage {
         QLabel		*_application_mode_label;
         MtComboBox	*_application_mode_option;
 
-        QLabel		*_tetradir_label;
-        QLineEdit	*_tetradir_input;
-        FlatToolButton	*_tetradir_button;
+	QLabel		*_rootdir_label;
+	QLineEdit	*_rootdir_input;
+	FlatToolButton	*_rootdir_button;
+
+	QLabel		*_datadir_label;
+	QLineEdit	*_datadir_input;
+	FlatToolButton	*_datadir_button;
 
         QLabel		*_trashdir_label;
         QLineEdit	*_trashdir_input;
