@@ -26,7 +26,7 @@ class XmlTree : public QObject {
     public:
 	XmlTree(void);
 	~XmlTree(void);
-	bool		load(QString _file_name);
+	bool		load(QString _file_path);
 	QDomDocument	*dom_model(void);
 
     protected:

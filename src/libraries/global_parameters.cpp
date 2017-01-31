@@ -33,7 +33,7 @@
 
 extern const char *index_xml_file_name;
 
-extern const char	*standartItem;
+extern const char	*standardItem;
 extern const char	*portableItem;
 
 #if QT_VERSION == 0x050600
@@ -66,27 +66,63 @@ void GlobalParameters::init(const QString &app_name){
 
     QFileInfo mainProgramFileInfo(_main_program_full_file);
     _main_program_path = mainProgramFileInfo.absolutePath();
-
-    initialize_root(application_mode() == portableItem, _root_path);		// Инициализация рабочей директории
+    if(! QFile(_main_program_path + "/mode.ini").exists()){
+	if(! QFile::copy(QString(":/resource/standardconfig/") + target_os() + "/" + _mode_filename, _main_program_path + "/" + _mode_filename)) throw std::runtime_error("Can not copy mode.ini");
+	else QFile::setPermissions(_main_program_path + "/" + _mode_filename, QFile::ReadUser | QFile::WriteUser);
+    }
+    QSettings	app_conf(_main_program_path + "/" + _mode_filename, QSettings::IniFormat);
+    auto	conf_root_dir = app_conf.value("rootdir").toString();
+    if(conf_root_dir == "./" || _root_path == "./") _root_path = _main_program_path;
+    initialize_root(permanent_application_mode() == standardItem, _root_path);		// Инициализация рабочей директории
 }
 
 static const int mode_initilized = 3;
 
-QString GlobalParameters::application_mode() const {
-    if(! QFile(_main_program_path + "/mode.ini").exists()){
-	if(! QFile::copy(QString(":/resource/standardconfig/") + target_os() + "/" + "mode.ini", _main_program_path + "/mode.ini")) throw std::runtime_error("Can not copy mode.ini");
-	else QFile::setPermissions(_main_program_path + "/mode.ini", QFile::ReadUser | QFile::WriteUser);
-    }
+QString GlobalParameters::permanent_application_mode() const {
+//    if(! QFile(_main_program_path + "/mode.ini").exists()){
+//	if(! QFile::copy(QString(":/resource/standardconfig/") + target_os() + "/" + "mode.ini", _main_program_path + "/mode.ini")) throw std::runtime_error("Can not copy mode.ini");
+//	else QFile::setPermissions(_main_program_path + "/mode.ini", QFile::ReadUser | QFile::WriteUser);
+//    }
     QSettings	setting(_main_program_path + "/mode.ini", QSettings::IniFormat);
     QString	mode = setting.value("application_mode").toString();
 
     return mode;
 }
 
-void GlobalParameters::application_mode(const QString &mode){
+void GlobalParameters::permanent_application_mode(const QString &mode){
     QSettings setting(_main_program_path + "/mode.ini", QSettings::IniFormat);
 
     setting.setValue("application_mode", mode);
+}
+
+
+bool GlobalParameters::permanent_root_path(QString dirName){
+    QSettings	app_conf(_main_program_path + "/" + _mode_filename, QSettings::IniFormat);
+    QDir	directory(dirName);
+    if(directory.exists() && directory.isReadable()){
+	app_conf.setValue("rootdir", dirName);
+
+	return true;
+    }else return false;
+}
+
+
+QString GlobalParameters::permanent_root_path(void) const {
+//    return get_parameter("rootdir");
+    auto	mode_file_full = _main_program_path + "/" + _mode_filename;
+    QSettings	app_conf(mode_file_full, QSettings::IniFormat);
+    auto	name	= "rootdir";
+    QString	result	= "";
+    if(app_conf.contains(name)) result = app_conf.value(name).toString();
+    else{
+	if(QFile(mode_file_full).exists()) QFile::remove(mode_file_full);
+	if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/" + globalparameters.config_filename(), mode_file_full)) critical_error("Can not copy " + globalparameters.config_filename());
+	if(! (QFile::permissions(mode_file_full) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(mode_file_full, QFile::ReadUser | QFile::WriteUser);
+	QSettings a_mode(mode_file_full, QSettings::IniFormat);
+	result = a_mode.value(name).toString();
+	if(result == "") critical_error("In " + _mode_filename + " not found parameter " + name);
+    }
+    return result;
 }
 
 
@@ -99,13 +135,12 @@ void GlobalParameters::application_mode(const QString &mode){
 // If the working directory already exists, it will be installed as a working directory.
 // If the directory is not found, it will create a new working directory with initial files and it will be set as the working directory
 std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_root(bool standard_mode, const QString &root_path_){
-    const QString	application_mode_	= standard_mode ? standartItem : portableItem;
-    auto		result			= std::tuple<bool, bool, QString>(false, application_mode() == standartItem, root_path_);
-
+    const QString	application_mode_	= standard_mode ? standardItem : portableItem;
+    auto		result			= std::tuple<bool, bool, QString>(false, permanent_application_mode() == standardItem, root_path_);
 //    bool		change_mode		= false;
 //    bool change_root = false;
-    if(application_mode_ != application_mode() && application_mode_ != "") application_mode(application_mode_);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																							// change_mode = true;
-    if(root_path_ != _root_path && root_path_ != "") _root_path = root_path_;																																																																																																																																																																																																																																																																																																																																																																																							// change_root = true;
+    if(application_mode_ != permanent_application_mode() && application_mode_ != "") permanent_application_mode(application_mode_);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		// change_mode = true;
+    if(root_path_ != _root_path && root_path_ != "") _root_path = root_path_;																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																			// change_root = true;
 	////    // you can't do this, because your appconfig is not initialized yet.
 	////    AppConfigDialog appconfigdialog(nullptr, "pageMain");
 	////    appconfigdialog.show();
@@ -174,12 +209,12 @@ std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_r
 		    if(version <= 3){
 			// В этих версиях небыло переменной programm, поэтому проверяется
 			// переменная datadir
-			if(app_conf.contains("datadir")) result = true;																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																							// return true;
+			if(app_conf.contains("datadir")) result = true;																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																					// return true;
 			//                else return false;
 		    }else{
 			// Иначе номер версии больше 3
 			if(app_conf.contains("programm")){
-			    if(app_conf.value("programm").toString() == application_name()) result = true;																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		// return true;
+			    if(app_conf.value("programm").toString() == application_name()) result = true;																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																						// return true;
 				//                    else return false;
 			}	// else return false;
 		    }
@@ -188,23 +223,23 @@ std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_r
 	    return result;
 	};
 
-    auto recover_config = [&](const QString &root_path){
-	    qDebug() << "Detect home directory " << root_path;
-	    qDebug() << "Try find conf.ini in home subdirectory " << root_path;
-	    if(! QFile(root_path).exists()) if(! QDir::root().mkpath(root_path)) critical_error("Can not make path \"" + root_path + "\"");
-	    auto config_path = root_path + "/" + target_os();
+    auto recover_config = [&](const QString &root_path_local){
+	    qDebug() << "Detect home directory " << root_path_local;
+	    qDebug() << "Try find conf.ini in home subdirectory " << root_path_local;
+	    if(! QFile(root_path_local).exists()) if(! QDir::root().mkpath(root_path_local)) critical_error("Can not make path \"" + root_path_local + "\"");
+	    auto config_path = root_path_local + "/" + target_os();
 	    if(! QFile(config_path).exists()) if(! QDir::root().mkpath(config_path)) critical_error("Can not make path \"" + config_path + "\"");// throw std::runtime_error("Can not make path \"" + config_path.toStdString() + "\"");
 	    auto copy = [&](const QString &name){
 //		    auto	config_path	= root_path + "/" + target_os();
 		    auto full_path = config_path + "/" + name;
 		    if(! QFile(full_path).exists())
-				if(! QFile::copy(QString(":/resource/standardconfig/") + target_os() + "/" + name, full_path)) critical_error("Can not copy " + name);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	// throw std::runtime_error("Can not copy " + name.toStdString());
+				if(! QFile::copy(QString(":/resource/standardconfig/") + target_os() + "/" + name, full_path)) critical_error("Can not copy " + name);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																							// throw std::runtime_error("Can not copy " + name.toStdString());
 		    if(! (QFile::permissions(full_path) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(full_path, QFile::ReadUser | QFile::WriteUser);
 		};
 		// Если директория существует и в ней есть настоящий файл конфигурации
 	    if(! is_hapnote_ini_config_exist(config_path + _conf_filename)){	//	qDebug() << "Config init file success find in home subdirectory " << root_dir;
 		//	    else
-		qDebug() << "File conf.ini can't' find in home subdirectory " << root_path;
+		qDebug() << "File conf.ini can't' find in home subdirectory " << root_path_local;
 		//		QFileInfo file(root_dir + "/" + target_os() + "/conf.ini");
 		//		if(! (file.exists() && file.isFile())) QFile::remove(root_dir + "/" + target_os() + "/conf.ini");
 
@@ -215,7 +250,7 @@ std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_r
 	    if(! QFile(config_path + _editor_conf_filename).exists()) copy("editorconf.ini");
 	    if(! QFile(config_path + _entrance_conf_filename).exists()) copy("entrance.ini");
 	    if(! QFile(config_path + _stylesheet_filename).exists()) copy("stylesheet.css");
-	    _root_path = root_path;
+	    _root_path = root_path_local;
 //	    return set_current(portable);
 	    QSettings app_conf(_main_program_path + "/" + _mode_filename, QSettings::IniFormat);
 	    app_conf.setValue("rootdir", _root_path);
@@ -228,67 +263,82 @@ std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_r
 ////	return set_current(true);
 //    };
     auto try_to_move_root_path_standard = [&] {
-	QString root_path = "";
+	QString root_path_ = "";
 
 	// Если в текущей директории запуска нет conf.ini
 
 	// Поиск файла conf.ini в домашней директории пользователя
 	// в поддиректории ".имя_программы"
-	root_path = QDir::homePath() + "/." + application_name();
-	QDir root_dir_path(root_path);
-	if(root_dir_path.exists()) recover_config(root_path);
+	root_path_ = QDir::homePath() + "/." + application_name();
+	QDir root_dir_path(root_path_);
+	if(root_dir_path.exists()) recover_config(root_path_);
 	else{
 		// Иначе директории "~/.имя_программы" нет
 		// и нужно пробовать найти данные в "~/.config/имя_программы"
-	    qDebug() << "File conf.ini can't' find in home directory " << root_path;
+	    qDebug() << "File conf.ini can't' find in home directory " << root_path_;
 
-	    root_path = QDir::homePath() + "/.config/" + application_name();
-	    QDir root_dir_path(root_path);
-	    if(root_dir_path.exists()) recover_config(root_path);
+	    root_path_ = QDir::homePath() + "/.config/" + application_name();
+	    QDir root_dir_path(root_path_);
+	    if(root_dir_path.exists()) recover_config(root_path_);
 	    else{
 		if(! QDir(QDir::homePath() + "/.config/").exists()) QDir(QDir::homePath()).mkdir(".config");
-		if(! QDir(root_path).exists()) QDir(QDir::homePath() + "/.config/").mkdir(application_name());
-		recover_config(root_path);
+		if(! QDir(root_path_).exists()) QDir(QDir::homePath() + "/.config/").mkdir(application_name());
+		recover_config(root_path_);
 	    }
 	}
 //	return set_current(false);
     };
     auto	is_standard_path	= [&](const QString &new_root){return new_root == QDir::homePath() + "/." + application_name() || new_root == QDir::homePath() + "/.config/" + application_name();};
-    auto	conflict_check		= [&](bool mode_std, bool path_std){return (mode_std && path_std) || (! mode_std && ! path_std);};
-    auto	set_current_root	= [&](bool is_standard_mode){
-	    auto	result_current	= result;// std::make_pair(false, _root_path);
-	    auto	set_cur		= [&](const QString &path){
-		    auto result = std::tuple<bool, bool, QString>(false, std::get<1>(result_current), std::get<2>(result_current));
-			// Устанавливается эта директория как рабочая
-		    if(QDir::setCurrent(path)) std::get<0>(result_current) = true;
-		    else critical_error("Can not set work directory as '" + path + "'. System problem.");
-		    return result;
-		};
-	    auto	current_path			= QDir::currentPath();
-	    auto	current_path_is_standard	= is_standard_path(current_path);
-	    if(! standard_mode && current_path_is_standard) _root_path = current_path;
-	    if(conflict_check(standard_mode, current_path_is_standard)){
+    auto	non_conflicts		= [&](bool mode_std, bool path_std){return (mode_std && path_std) || (! mode_std && ! path_std);};
+	//
+    auto save_current = [&](const QString &app_mode, const QString &root_path_){
+	    auto result_current = std::tuple<bool, bool, QString>(false, std::get<1>(result), std::get<2>(result));
+		// Устанавливается эта директория как рабочая
+	    if(QDir::setCurrent(root_path_)) std::get<0>(result_current) = true;
+	    else critical_error("Can not set work directory as '" + root_path_ + "'. System problem.");
+	    permanent_application_mode(app_mode);
+	    permanent_root_path(root_path_);
+//	    QSettings mode_ini(_main_program_path + "/" + _mode_filename, QSettings::IniFormat);
+//	    mode_ini.setValue("application_mode", app_mode);
+//	    QDir directory(root_path_);
+//	    if(directory.exists() && directory.isReadable()) mode_ini.setValue("rootdir", root_path_);
+	    std::get<1>(result_current) = (app_mode == standardItem);
+	    return result_current;
+	};
+    auto set_current_root = [&](bool is_standard_mode){
+	    auto result_current	= result;// std::make_pair(false, _root_path);
+
+//	    auto	current_path			= QDir::currentPath();
+	    auto current_path_is_standard = is_standard_path(_root_path);	// current_path
+//	    if(standard_mode && current_path_is_standard) _root_path = current_path;
+	    if(! non_conflicts(permanent_application_mode() == standardItem, current_path_is_standard)){
 		// Если рабочая директория не определена
 		if(is_standard_mode){
 //		if(_root_path == "")
 		    try_to_move_root_path_standard();
 //		if(_main_program_path != _root_path)
-		    result_current = set_cur(_root_path);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												// for data and trash folder	// _work_directory.length() == 0 // qDebug() << "Cant find work directory with hapnote data";
+		    if(permanent_application_mode() != standardItem || permanent_root_path() != _root_path) result_current = save_current(standardItem, _root_path);
+		    else std::get<0>(result_current) = true;
+			// for data and trash folder	// _work_directory.length() == 0 // qDebug() << "Cant find work directory with hapnote data";
 		}else{
 		    recover_config(root_path_);																																																																																																																	// if(_root_path == "") fix_root_dir_portable();
 //		if(_main_program_path == _root_path){
 //			// Иначе рабочая директория установлена
 //		    qDebug() << "Set work directory to " << _root_path;
 //			// Устанавливается эта директория как рабочая
-		    result_current = set_cur(_root_path);
+		    if(permanent_application_mode() != portableItem || permanent_root_path() != _root_path) result_current = save_current(portableItem, _root_path);
+		    else std::get<0>(result_current) = true;
 //		}
 		}
-	    }else{
-		QMessageBox message;
-		message.setText("Root directory and application mode have conflicts.");
-		message.exec();
-//		std::get<0>(result_current) = false;
+//
 	    }
+//	    else{
+//		QMessageBox message;
+//		message.setText("Root directory and application mode have conflicts.");
+//		message.exec();
+////		std::get<0>(result_current) = false;
+//	    }
+	    else std::get<0>(result_current) = true;
 	    return result_current;
 	};
 
@@ -322,7 +372,8 @@ std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_r
 //    }else{
 	// Если рабочая директория найдена автоматически
 //    auto cur_result=set_current_root(enablePortable);
-    if(! std::get<0>(set_current_root(standard_mode))){
+//    while(! std::get<0>(result)){
+    while(! std::get<0>(set_current_root(permanent_application_mode() == standardItem))){
 	// Иначе есть возможность создать как стандартное файловое окружение,
 	// так и "переносимое"
 
@@ -332,22 +383,23 @@ std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_r
 	    tr("Portable:\n") + portableText + "\n\n";
 
 	QStringList items;
-//	QString		standartItem	= tr("Standard");
+//	QString		standardItem	= tr("Standard");
 //	QString		portableItem	= tr("Portable");
-	items << standartItem << portableItem;
+	items << standardItem << portableItem;
 
-	bool ok;
+
 
 	// QInputDialog inputDialog;
 	// inputDialog.setLabelText("<b>"+welcomeText+"</b>\n\n"+infoText);
 	// inputDialog.setComboBoxItems(items);
+	bool				ok;
+	std::unique_ptr<QWidget>	tempWidget(new QWidget());
+	QString				return_item = QInputDialog::getItem(tempWidget.get()
+									   , welcomeText
+									   , infoText
+									   , items, 0, false, &ok);
 
-	QWidget			*tempWidget	= new QWidget();
-	QString			item		= QInputDialog::getItem(tempWidget
-								       , welcomeText
-								       , infoText
-								       , items, 0, false, &ok);
-	delete tempWidget;
+
 
 //	auto create_stylesheet_file = [&](QString config_dir){
 //		QString target_os_ = target_os();
@@ -358,10 +410,10 @@ std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_r
 
 	// Создание первоначального набора файлов в указанной директории
 	// Create the initial set of files in the specified directory
-	auto initialize_root_impl = [&](const QString &root_path){
-		qDebug() << "Create first program files in directory " << root_path;
+	auto initialize_root_impl = [&](const QString &root_path_local){
+		qDebug() << "Create first program files in directory " << root_path_local;
 
-		QDir dir(root_path);
+		QDir dir(root_path_local);
 
 		// Создается дерево директорий в указанной директории
 		dir.mkpath("data/base/0000000001");
@@ -380,15 +432,15 @@ std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_r
 //		QFile::setPermissions(config_path + "/entrance.ini", QFile::ReadUser | QFile::WriteUser);
 
 //		create_stylesheet_file(config_path);
-		recover_config(root_path);
+		recover_config(root_path_local);
 
 		// Создается файл базы данных
-		QFile::copy(":/resource/standarddata/hapnote.xml", root_path + "/data/" + index_xml_file_name);
-		QFile::setPermissions(root_path + "/data/" + index_xml_file_name, QFile::ReadUser | QFile::WriteUser);
+		QFile::copy(":/resource/standarddata/hapnote.xml", root_path_local + "/data/" + index_xml_file_name);
+		QFile::setPermissions(root_path_local + "/data/" + index_xml_file_name, QFile::ReadUser | QFile::WriteUser);
 
 		// Создается файл первой записи
-		QFile::copy(":/resource/standarddata/base/0000000001/text.html", root_path + "/data/base/0000000001/text.html");
-		QFile::setPermissions(root_path + "/data/base/0000000001/text.html", QFile::ReadUser | QFile::WriteUser);
+		QFile::copy(":/resource/standarddata/base/0000000001/text.html", root_path_local + "/data/base/0000000001/text.html");
+		QFile::setPermissions(root_path_local + "/data/base/0000000001/text.html", QFile::ReadUser | QFile::WriteUser);
 	    };
 
 	auto create_root_standard = [&](void){
@@ -399,11 +451,11 @@ std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_r
 		if(userDir.mkpath(dataDirName)){
 		    qDebug() << "Successfull create subdirectory " << dataDirName << " in directory " << userDir.absolutePath();
 
-		    QString standard_root_path = userDir.absolutePath() + "/" + dataDirName;	// Ранее использовался QDir::homePath()
+		    QString standard_root_path = userDir.absolutePath() + "/" + dataDirName;		// Ранее использовался QDir::homePath()
 
 		    initialize_root_impl(standard_root_path);
 		    _root_path = standard_root_path;
-		    application_mode(standartItem);
+		    permanent_application_mode(standardItem);
 		}else{
 		    critical_error("Can not created directory \"" + dataDirName + "\" in user directory \"" + QDir::homePath() + "\"");
 		    exit(0);
@@ -413,21 +465,25 @@ std::tuple<const bool, const bool, const QString> GlobalParameters::initialize_r
 		qDebug() << "Create portable program files";
 		initialize_root_impl(root_path_);
 		_root_path = root_path_;
-		application_mode(portableItem);
+		permanent_application_mode(portableItem);
 	    };
 	// Если пользователь сделал выбор
-	if(ok && ! item.isEmpty()){
-	    if(item == standartItem){
+	if(ok && ! return_item.isEmpty()){
+	    if(return_item == standardItem){	// if(permanent_application_mode() == standardItem){	//
 		create_root_standard();
 		try_to_move_root_path_standard();
+		save_current(standardItem, _root_path);
 		result = set_current_root(STANDARD_MODE);
 	    }else{
 		create_root_portable();
-		recover_config(root_path_);	// fix_root_dir_portable();
+		recover_config(root_path_);			// fix_root_dir_portable();
+		save_current(portableItem, _root_path);
 		result = set_current_root(PORTABLE_MODE);
 	    }
 	}else exit(0);
-    }else std::get<0>(result) = true;
+    }
+//    else std::get<0>(result) = true;
+//    }
 	// Была нажата отмена
 //	fix_workdirectory_portable();
 //    }
@@ -447,7 +503,7 @@ QString GlobalParameters::style_source() const {return _style_source;}
 
 void GlobalParameters::download_manager(browser::DownloadManager *dm){_download_manager = dm;}
 
-QString GlobalParameters::root_path(void) const {return _root_path;}
+// QString GlobalParameters::root_path(void) const {return _root_path;}
 QString GlobalParameters::config_filename(void) const {return _conf_filename;}
 
 QString GlobalParameters::target_os(void) const {

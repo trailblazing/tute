@@ -170,7 +170,7 @@ namespace browser {
 	// sb.append(QDir::separator());
 	// sb.append("browserview.ini");
 
-	QString configFileName = globalparameters.root_path() + "/" + globalparameters.target_os() + "/browserview.ini";
+	QString configFileName = globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/browserview.ini";
 	// check to see if we have a settings file where we started from
 	// if not fall back to system hard coded path
 	QFileInfo file(configFileName.toLatin1());	// file(sb.toLatin1());

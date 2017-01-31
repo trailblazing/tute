@@ -128,8 +128,8 @@ void Editor::init_enable_assembly(bool flag){
 
 void Editor::init_config_file_name(QString name){
 //    name				= globalparameters.work_directory() + "/" + globalparameters.target_os() + "/editorconf.ini"
-    QDir conf_dir(globalparameters.root_path() + "/" + globalparameters.target_os());
-    if(! conf_dir.exists()) QDir(globalparameters.root_path()).mkdir(globalparameters.target_os());
+    QDir conf_dir(globalparameters.permanent_root_path() + "/" + globalparameters.target_os());
+    if(! conf_dir.exists()) QDir(globalparameters.permanent_root_path()).mkdir(globalparameters.target_os());
     QFile conf_file(name);
     if(! conf_file.exists()) QFile::copy(":/resource/standardconfig/" + globalparameters.target_os() + "/editorconf.ini", name);
     conf_file.setPermissions(name, QFile::ReadUser | QFile::WriteUser);

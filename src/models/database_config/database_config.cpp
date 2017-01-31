@@ -49,7 +49,7 @@ DataBaseConfig::~DataBaseConfig(){
 void DataBaseConfig::init(void){
 	// Создается имя файла конфигурации
 	// QString configFileName=globalParameters.getWorkDirectory()+"/"+hapnoteConfig.datadir()+"/database.ini";
-    QString configFileName = appconfig.data_dir() + "/database.ini";
+    QString configFileName = globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + "/database.ini";
 
 	// Проверяется, есть ли файл конфигурации
     QFile confFile(configFileName);
@@ -80,7 +80,7 @@ bool DataBaseConfig::is_init(void){
 // Получение параметра по имени в виде строки с проверкой его существования
 QString DataBaseConfig::get_parameter(QString name) const {
     QString t = conf->value(name).toString();
-    if(t.length() == 0)critical_error("In database config not found parameter " + name);
+    if(t.length() == 0) critical_error("In database config not found parameter " + name);
     return t;
 }
 
@@ -121,7 +121,7 @@ void DataBaseConfig::set_middle_hash_check_data(QString hash){
 // --------------------
 
 int DataBaseConfig::get_config_version(void) const {
-    if(conf->contains("version"))return conf->value("version").toInt();
+    if(conf->contains("version")) return conf->value("version").toInt();
     else return 0;
 }
 

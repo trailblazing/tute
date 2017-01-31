@@ -83,7 +83,7 @@ MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
     Editor::disable_tool_list(appconfig.hide_editor_tools());
 
     Editor::init_enable_assembly(false);
-    Editor::init_config_file_name(globalparameters.root_path() + "/" + globalparameters.target_os() + "/editorconf.ini");
+    Editor::init_config_file_name(globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/editorconf.ini");
     Editor::init_enable_random_seed(false);
     if(appconfig.interface_mode() == "desktop") Editor::init(Editor::WYEDIT_DESKTOP_MODE);
     else if(appconfig.interface_mode() == "mobile") Editor::init(Editor::WYEDIT_MOBILE_MODE);

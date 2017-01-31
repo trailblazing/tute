@@ -12,7 +12,7 @@
 #include <QObject>
 #endif
 
-extern const char	*standartItem;
+extern const char	*standardItem;
 extern const char	*portableItem;
 
 // #ifndef QWEBENGINEPAGE_HITTESTCONTENT
@@ -58,10 +58,13 @@ class GlobalParameters : public QObject {
 
 	void init(const QString &app_name);
 
-	QString application_mode() const;
-	void application_mode(const QString &mode);
+	QString permanent_application_mode() const;
+	void permanent_application_mode(const QString &mode);
 
-	QString root_path(void) const;
+	QString permanent_root_path(void) const;
+	bool permanent_root_path(QString dirName);
+
+//	QString root_path(void) const;
 	QString config_filename(void) const;
 
 	QString target_os(void) const;

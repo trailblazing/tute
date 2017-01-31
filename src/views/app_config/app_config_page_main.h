@@ -17,7 +17,7 @@
 #include <QObject>
 #endif
 
-extern const char	*standartItem;
+extern const char	*standardItem;
 extern const char	*portableItem;
 
 class FlatToolButton;
