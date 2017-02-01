@@ -1,13 +1,17 @@
 
-**Hapnote** <= **mytetra_webengine** == **mytetra webengine** == **MyTetra WebEngine**
+**Hapnote** <= **mytetra_webengine** <= **MyTetra**
 
-A knowledge management system equipped with an embedded web browser derived from Qt::WebEngine (Chromium-based). A lightweight browser embedded in a note management application provides an easy way to combine tabs, bookmarks and history management, as well as internal and external search together.
+It's a note.
 
-Yes, it is a lightweight web browser. But it's not just a browser.
+It is a lightweight web browser. A knowledge management system equipped with an embedded web browser derived from Qt::WebEngine (Chromium-based). A lightweight browser embedded in a note management application provides an easy way to combine tabs, bookmarks and history management, as well as internal and external search together.
+
+It's a client. You can manage your remote service with XML-RPC.
 
 The next step, I aim to append some real-time collaborative editing functions.
 
-Should you need more functions, feel free to contact me: hughvonyoung@gmail.com
+Should you need more functions, feel free to contact me: hughvonyoung[at]gmail.com
+
+Please note that Hapnote is distributed under the GPL v3.
 
 ##How to remote synchronize Hapnote
 _______________________________________________________________________
