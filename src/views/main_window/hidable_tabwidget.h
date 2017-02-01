@@ -30,7 +30,7 @@ namespace browser {
 struct Binder;
 class ts_t;
 class FindScreen;
-class MetaEditor;
+class Editentry;
 class wn_t;
 class rs_t;
 
@@ -45,13 +45,13 @@ class HidableTabWidget : public QTabWidget {
     public:
 	explicit HidableTabWidget(ts_t *_tree_screen
 				 , FindScreen *_find_screen
-				 , MetaEditor *_editor_screen
+				 , Editentry *_editentry
 				 , browser::Entrance *_entrance
 				 , wn_t *_main_window
 				 , browser::Profile *_profile, QString style_source_);
 	~HidableTabWidget();
 	QAction				*_hide_action;
-	std::set<rs_t *>		record_screens()const;
+	std::set<rs_t *>		record_screens() const;
 	browser::WebView		*find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const;
 	browser::Browser		*new_browser();
 	browser::Browser		*activated_browser();
@@ -59,18 +59,18 @@ class HidableTabWidget : public QTabWidget {
     protected slots:
 	bool eventFilter(QObject *obj, QEvent *event);
     private slots:
-	void	onHideAction(bool checked);
-	void	onTabBarClicked();
+	void onHideAction(bool checked);
+	void onTabBarClicked();
     private:
 //    HidableTabWidget *_delegate_tab;
 	QStackedLayout					*_layout;
 	ts_t						*_tree_screen;
 	FindScreen					*_find_screen;
-	MetaEditor					*_editor_screen;
+	Editentry					*_editentry;
 	browser::Entrance				*_entrance;
 	wn_t						*_main_window;
 	browser::Profile				*_profile;
-	QString						_style_source;
+	QString	_style_source;
 //	std::set<browser::Browser *>			_browsers;
 //	std::set<rs_t *>				_record_screens;
 };

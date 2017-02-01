@@ -31,50 +31,49 @@ class SuperMenu;
 class QMenuBar;
 class EditingWindow;
 
-class Application : public QApplication
-{
-Q_OBJECT
+class Application : public QApplication {
+    Q_OBJECT
 
-public:
-  Application( int &, char ** );
-  void setupRecentFiles();
-  QStringList recentFileTitles();
-  QStringList recentFilenames();
-  typedef struct _RF {
-    QString title;
-    QString filename;
-  } recentFile;
-  QList<recentFile> recentFiles();
-  recentFile getRecentFile( int );
-  QStringList titles();
-  QStringList filenames();
-  EditingWindow * currentEditingWindow() { return _currentEditingWindow; }
-  void deleteSandbox();
-  bool isSandbox() { return _isSandbox; }
+    public:
+	Application(int &, char * *);
+	void setupRecentFiles();
+	QStringList recentFileTitles();
+	QStringList recentFilenames();
+	typedef struct _RF {
+	    QString	title;
+	    QString	filename;
+	}recentFile;
+	QList<recentFile> recentFiles();
+	recentFile getRecentFile(int);
+	QStringList titles();
+	QStringList filenames();
+	EditingWindow *currentEditingWindow(){return _currentEditingWindow;}
+	void deleteSandbox();
+	bool isSandbox(){return _isSandbox;}
 
-public slots:
-  void setRecentFiles( const QStringList &, const QStringList & );
-  void addRecentFile( const QString &, const QString & );
-  void saveAll();
-  void setMainWindow( EditingWindow *sm );
+    public slots:
+	void setRecentFiles(const QStringList &, const QStringList &);
+	void addRecentFile(const QString &, const QString &);
+	void saveAll();
+	void setMainWindow(EditingWindow *sm);
 
- signals:
-  void recentFilesUpdated( QStringList, QStringList );
-  void recentFilesUpdated( const QList<Application::recentFile> & );
-  void mainWindowChanged( EditingWindow * );
+    signals:
+	void recentFilesUpdated(QStringList, QStringList);
+	void recentFilesUpdated(const QList<Application::recentFile> &);
+	void mainWindowChanged(EditingWindow *);
 
- private:
-  QList<recentFile> _recentFiles;
+    private:
+	QList<recentFile> _recentFiles;
 #ifdef Q_OS_MAC
-  SuperMenu *superMenu;
+	SuperMenu *superMenu;
 #endif
-  EditingWindow *_currentEditingWindow;
-  bool _isSandbox;
+	EditingWindow *_currentEditingWindow;
+	bool _isSandbox;
 
-private slots:
-  void saveRecentFiles();
-  void handleWindowChange( QWidget *, QWidget * );
-  void handleLastWindowClosed();
+    private slots:
+	void saveRecentFiles();
+	void handleWindowChange(QWidget *, QWidget *);
+	void handleLastWindowClosed();
 };
 
 #endif

@@ -36,7 +36,7 @@ class FlatToolButton;
 class TreeItem;
 class ts_t;
 class FindScreen;
-class MetaEditor;
+class Editentry;
 class wn_t;
 class AppConfig;
 class HidableTabWidget;
@@ -79,7 +79,7 @@ class rs_t : public QWidget {
 #endif
 
     public:
-	rs_t(ts_t *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Entrance *_entrance, wn_t *_main_window, const QString &_style_source, browser::Profile *_profile);
+	rs_t(ts_t *_tree_screen, FindScreen *_find_screen, Editentry *_editentry, browser::Entrance *_entrance, wn_t *_main_window, const QString &_style_source, browser::Profile *_profile);
 
 	virtual ~rs_t();
 

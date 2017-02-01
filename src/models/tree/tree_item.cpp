@@ -22,7 +22,7 @@
 // #include "models/record_table/ItemsFlat.h"
 
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 #ifdef _with_record_table
 

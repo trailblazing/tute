@@ -12,7 +12,7 @@
 #include "libraries/global_parameters.h"
 #include "libraries/disk_helper.h"
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 
 // Конструктор прикрепляемого файла

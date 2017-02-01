@@ -22,105 +22,106 @@
 
 #include <QMenuBar>
 #include <QList>
-#include "Application.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 class QAction;
 class QMenu;
 class EditingWindow;
 class SysTrayIcon;
 class QShowEvent;
+class sapp_t;
 
-class SuperMenu : public QMenuBar
-{
-Q_OBJECT
 
-public:
-  SuperMenu( QWidget *parent = 0, SysTrayIcon *sti = 0 );
-  void setEditActionsEnabled( bool );
-  QAction *getCutAction() { return cutAction; }
-  QAction *getCopyAction() { return copyAction; }
-  QAction *getPasteAction() { return pasteAction; }
-  QAction *getUndoAction() { return undoAction; }
-  QAction *getRedoAction() { return redoAction; }
-  QAction *getConsoleAction() { return showConsoleAction; }
-  QAction *getPreviewAction() { return previewAction; }
-  void setConsoleEnabled( bool );
-  void setCategoriesEnabled( bool );
-  void handleNewWindowAtStartup();
+class SuperMenu : public QMenuBar {
+    Q_OBJECT
 
-  QMenu *fileMenu, *editMenu, *insMenu, *viewMenu, *categoryMenu, 
-        *servicesMenu, *helpMenu;
-  QMenu *recentFilesMenu, *pasteAsMenu;
+    public:
+	SuperMenu(QWidget *parent = 0, SysTrayIcon *sti = 0);
+	void setEditActionsEnabled(bool);
+	QAction *getCutAction(){return cutAction;}
+	QAction *getCopyAction(){return copyAction;}
+	QAction *getPasteAction(){return pasteAction;}
+	QAction *getUndoAction(){return undoAction;}
+	QAction *getRedoAction(){return redoAction;}
+	QAction *getConsoleAction(){return showConsoleAction;}
+	QAction *getPreviewAction(){return previewAction;}
+	void setConsoleEnabled(bool);
+	void setCategoriesEnabled(bool);
+	void handleNewWindowAtStartup();
 
-  // File menu actions
-  QAction *newEntryAction, *openAction, *openRecent, *saveAction, *saveAsAction,
-          *saveAllAction, *exportAction, *uploadAction, *refreshBlogListAction,
-          *blogThisAction, *abortAction, *accountsAction, *prefsAction, *saveBlogsAction,
-          *qptAction, *clearConsoleAction, *closeAction, *quitAction;
+	QMenu *fileMenu, *editMenu, *insMenu, *viewMenu, *categoryMenu
+	, *servicesMenu, *helpMenu;
+	QMenu *recentFilesMenu, *pasteAsMenu;
 
-  // Edit menu actions
-  QAction *cutAction, *copyAction, *copyULAction, *pasteAction, *tidyPasteAction, *pasteAsAction,
-          *undoAction, *redoAction, *findAction, *findAgainAction,
-          *boldAction, *italicAction, *underlineAction, *blockquoteAction, *paraAction,
-          *ulAction, *olAction;
-  
-  // Paste As sub-menu actions
-  QAction *pasteAsMarkedParasAction, *pasteAsBlockquoteAction,
-          *pasteAsMarkdownBlockquoteAction,
-          *pasteAsUnorderedListAction, *pasteAsOrderedListAction;
+	// File menu actions
+	QAction *newEntryAction, *openAction, *openRecent, *saveAction, *saveAsAction
+	, *saveAllAction, *exportAction, *uploadAction, *refreshBlogListAction
+	, *blogThisAction, *abortAction, *accountsAction, *prefsAction, *saveBlogsAction
+	, *qptAction, *clearConsoleAction, *closeAction, *quitAction;
 
-  // Insert menu actions
-  QAction *linkAction, *clipLinkAction, *selfLinkAction, *autoLinkAction,
-          *imageAction, *clipImageAction, *moreAction;
+	// Edit menu actions
+	QAction *cutAction, *copyAction, *copyULAction, *pasteAction, *tidyPasteAction, *pasteAsAction
+	, *undoAction, *redoAction, *findAction, *findAgainAction
+	, *boldAction, *italicAction, *underlineAction, *blockquoteAction, *paraAction
+	, *ulAction, *olAction;
 
-  // View menu actions
-  QAction *highlightingAction, *showConsoleAction, *previewAction,
-          *viewBasicsAction, *viewCatsAction, *viewExcerptAction, *viewWPTagsAction,
-          *viewTechTagsAction, *viewPingsAction;
+	// Paste As sub-menu actions
+	QAction *pasteAsMarkedParasAction, *pasteAsBlockquoteAction
+	, *pasteAsMarkdownBlockquoteAction
+	, *pasteAsUnorderedListAction, *pasteAsOrderedListAction;
+
+	// Insert menu actions
+	QAction *linkAction, *clipLinkAction, *selfLinkAction, *autoLinkAction
+	, *imageAction, *clipImageAction, *moreAction;
+
+	// View menu actions
+	QAction *highlightingAction, *showConsoleAction, *previewAction
+	, *viewBasicsAction, *viewCatsAction, *viewExcerptAction, *viewWPTagsAction
+	, *viewTechTagsAction, *viewPingsAction;
 #ifndef Q_WS_MAC
-  QAction *viewToolbarAction;
+	QAction *viewToolbarAction;
 #endif
 
-  // Category menu actions
-  QAction *refreshCatsAction, *updateCatsAction, *addCatAction;
+	// Category menu actions
+	QAction *refreshCatsAction, *updateCatsAction, *addCatAction;
 
-  // Services menu actions
-  QAction *addWPTagAction, *removeWPTagAction, *refreshWPTagsAction,
-          *addTechTagAction, *addClipTechTagAction, *removeTechTagAction,
-          *addPingAction, *addClipPingAction, *removePingAction;
+	// Services menu actions
+	QAction *addWPTagAction, *removeWPTagAction, *refreshWPTagsAction
+	, *addTechTagAction, *addClipTechTagAction, *removeTechTagAction
+	, *addPingAction, *addClipPingAction, *removePingAction;
 
-  // Help menu actions
-  QAction *aboutAction, *whatsThisAction;
+	// Help menu actions
+	QAction *aboutAction, *whatsThisAction;
 
-public slots:
-  void setRecentFiles( const QList<Application::recentFile> & );
-  void openRecentFile();
-  void setMainWindow( EditingWindow * );
-  void setConsoleActionTitle( bool );
-  void setPreviewActionTitle( bool );
-  void setHighlightingChecked( bool );
+    public slots:
+	void setRecentFiles(const QList<sapp_t::recentFile> &);
+	void openRecentFile();
+	void setMainWindow(EditingWindow *);
+	void setConsoleActionTitle(bool);
+	void setPreviewActionTitle(bool);
+	void setHighlightingChecked(bool);
 
-private:
-  QList<QAction *> editingWindowActions;
-  // QList<QMenu *> editingMenus;
-  QAction *noRecentFilesAction;
-  SysTrayIcon *_sti;
-  QList<Application::recentFile> recentFiles;
-  QAction *recentFileActions[10];
-  Application *qtm;
-  EditingWindow *currentWindow;
+    private:
+	QList<QAction *> editingWindowActions;
+	// QList<QMenu *> editingMenus;
+	QAction *noRecentFilesAction;
+	SysTrayIcon *_sti;
+	QList<sapp_t::recentFile> recentFiles;
+	QAction *recentFileActions[10];
+	sapp_t *qtm;
+	EditingWindow *currentWindow;
 
-  void updateRecentFileMenu();
+	void updateRecentFileMenu();
 
-private slots:
-  void newEntry();
-  void choose( QString fname = QString() );
-  void quit();
-  void about();
-  void getPreferences();
-  void handleLastWindowClosed();
-  //void doPreview( bool );
-  void handleConsole( bool );
+    private slots:
+	void newEntry();
+	void choose(QString fname = QString());
+	void quit();
+	void about();
+	void getPreferences();
+	void handleLastWindowClosed();
+	// void doPreview( bool );
+	void handleConsole(bool);
 
-protected:
-  virtual void showEvent( QShowEvent * );
+    protected:
+	virtual void showEvent(QShowEvent *);
 };

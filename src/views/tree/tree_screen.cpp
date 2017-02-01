@@ -42,12 +42,12 @@
 #include "views/record/record_info_fields_editor.h"
 #include "views/browser/webview.h"
 // #include "models/tree/KnowModel.h"
-
+#include "views/record/editentry.h"
 
 #include "tree_screen.h"
 
 extern AppConfig				appconfig;
-extern GlobalParameters				globalparameters;
+extern gl_para				globalparameters;
 extern const char				*index_xml_file_name;
 extern const char				*clipboard_items_root;
 extern enum QItemSelectionModel::SelectionFlag	current_tree_selection_mode;
@@ -551,7 +551,7 @@ void ts_t::setup_actions(void){
 	   , [&](bool checked = false) mutable -> void {
 	    Q_UNUSED(checked)
 		// Обновление инфополей в области редактирования записи
-	    MetaEditor * metaeditor = globalparameters.meta_editor();	// MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
+	    auto * metaeditor = globalparameters.meta_editor();	// MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
 	    if(metaeditor)metaeditor->switch_pin();
 	});
     _actionlist[action_freeze_browser_view] = ac;
@@ -679,7 +679,7 @@ void ts_t::edit_field(QString pin
     auto item = _tree_view->current_item();
     for(auto i = edit_data.begin(); i != edit_data.end(); i ++)item->_field_data[i.key()] = i.value();	// field(i.key(), i.value());
 	// Обновление инфополей в области редактирования записи
-    MetaEditor *meta_editor = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
+    auto *meta_editor = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
     meta_editor->pin(pin);
     meta_editor->name(name);
     meta_editor->author(author);

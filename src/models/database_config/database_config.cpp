@@ -16,7 +16,7 @@
 #include "libraries/global_parameters.h"
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 
 // Объект для работы с конфигурацией (с настройками) базы данных
@@ -49,7 +49,7 @@ DataBaseConfig::~DataBaseConfig(){
 void DataBaseConfig::init(void){
 	// Создается имя файла конфигурации
 	// QString configFileName=globalParameters.getWorkDirectory()+"/"+hapnoteConfig.datadir()+"/database.ini";
-    QString configFileName = globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + "/database.ini";
+    QString configFileName = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + "/database.ini";
 
 	// Проверяется, есть ли файл конфигурации
     QFile confFile(configFileName);

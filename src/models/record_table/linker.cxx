@@ -7,7 +7,7 @@
 #include "utility/delegate.h"
 
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 Linker::~Linker(){
 	// boost::intrusive_ptr<TreeItem> result(nullptr);

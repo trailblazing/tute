@@ -10,7 +10,7 @@
 
 
 extern AppConfig		appconfig;
-extern GlobalParameters		globalparameters;
+extern gl_para		globalparameters;
 extern TrashMonitoring		trashmonitoring;
 extern const char		*index_xml_file_name;
 
@@ -23,7 +23,7 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom){
     QDir	dirfrom(nameDirFrom);
     QStringList fileList = dirfrom.entryList();
 
-    QString nameDirTo = globalparameters.permanent_root_path() + "/" + QDir(appconfig.trash_dir()).dirName();
+    QString nameDirTo = globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName();
 	// Перебор всех файлов в удаляемой директории
     for(int i = 0; i < fileList.size(); i ++){
 	// Директории с именами "." и ".." обрабатывать не нужно
@@ -73,7 +73,7 @@ void DiskHelper::remove_file_to_trash(QString file_name_from){
 
 	// Получение имени файла для сохранения в корзине
     QString	file_name_to_short	= get_unical_id() + "_" + file_name_from_short;
-    QString	file_name_to		= globalparameters.permanent_root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + file_name_to_short;
+    QString	file_name_to		= globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + file_name_to_short;
 
     qDebug() << "Move file from " << file_name_from << " to " << file_name_to;
     if(QFile::exists(file_name_from)){
@@ -133,7 +133,7 @@ QString DiskHelper::copy_file_to_trash(QString file_name_from){
 
 	// Получение имени файла для сохранения в корзине
     QString	file_name_to_short	= get_unical_id() + "_" + file_name_from_short;
-    QString	file_name_to		= globalparameters.permanent_root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + file_name_to_short;
+    QString	file_name_to		= globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + file_name_to_short;
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;
     if(QFile::exists(file_name_from)){

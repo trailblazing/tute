@@ -65,6 +65,10 @@ CONFIG  +=  gnu++14
 QMAKE_CXXFLAGS += -std=c++14 -std=gnu++14
 #QMAKE_LFLAGS += -static-libgcc
 
+DEFINES += "STI_SUPERCLASS=QSystemTrayIcon"
+DEFINES += USE_SYSTRAYICON
+DEFINES += DONT_USE_DBUS
+
 # http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
 
 
@@ -116,7 +120,10 @@ DEFINES     +=  APP_VERSION=\\\"$$VERSION\\\"
 TARGET      =   hapnote
 RESOURCES   =   bin/hapnote.qrc     \
     src/views/browser/data/data.qrc \
-    src/views/browser/htmls/htmls.qrc
+    src/views/browser/htmls/htmls.qrc \
+    src/libraries/qtm/EditingWindow.qrc \
+    src/libraries/qtm/QijSearchWidget.qrc \
+    src/libraries/qtm/qtm.qrc
 
 TRANSLATIONS    =   bin/resource/translations/hapnote_ru.ts
 CODECFORTR      =   utf8
@@ -302,7 +309,23 @@ HEADERS     =   \
     src/views/record_table/record_view.h \
     src/views/record_table/vertical_scrollarea.h \
     src/views/wait_clock/wait_clock.h \
-    src/libraries/wyedit/editor_image_properties.h
+    src/libraries/wyedit/editor_image_properties.h \
+    src/libraries/qtm/AccountsDialog.h \
+    src/libraries/qtm/DBusAdaptor.h \
+    src/libraries/qtm/EditingWindow.h \
+    src/libraries/qtm/Highlighter.h \
+    src/libraries/qtm/locationlineedit.h \
+    src/libraries/qtm/PrefsDialog.h \
+    src/libraries/qtm/QijSearchWidget.h \
+    src/libraries/qtm/QuickpostTemplate.h \
+    src/libraries/qtm/QuickpostTemplateDialog.h \
+    src/libraries/qtm/StatusWidget.h \
+    src/libraries/qtm/SuperMenu.h \
+    src/libraries/qtm/SysTrayIcon.h \
+    src/libraries/qtm/XmlRpcHandler.h \
+    src/views/browser/cookiejar.h \
+    src/views/record/editentry.h \
+    src/utility/config_ini.h
 #    src/views/browser/cookiejar.h \
 
 
@@ -429,7 +452,24 @@ SOURCES     =   src/main.cpp \
     src/views/record_table/record_view.cpp \
     src/views/record_table/vertical_scrollarea.cpp \
     src/views/wait_clock/wait_clock.cpp \
-    src/views/app_config/app_config_page_table.cpp
+    src/views/app_config/app_config_page_table.cpp \
+    src/libraries/qtm/StatusWidget.cc \
+    src/libraries/qtm/SuperMenu.cc \
+    src/libraries/qtm/SysTrayIcon.cc \
+    src/libraries/qtm/XmlRpcHandler.cc \
+    src/views/browser/cookiejar.cpp \
+    src/libraries/qtm/QuickpostTemplateDialog.cc \
+    src/libraries/qtm/QuickpostTemplate.cc \
+    src/libraries/qtm/QijSearchWidget.cc \
+    src/libraries/qtm/PrefsDialog.cc \
+    src/libraries/qtm/locationlineedit.cc \
+    src/libraries/qtm/Highlighter.cc \
+    src/libraries/qtm/EditingWindow_ResponseHandlers.cc \
+    src/libraries/qtm/EditingWindow.cc \
+    src/libraries/qtm/DBusAdaptor.cc \
+    src/libraries/qtm/AccountsDialog.cc \
+    src/views/record/editentry.cpp \
+    src/utility/config_ini.cpp
 #    src/views/browser/cookiejar.cpp \
 
 
@@ -488,7 +528,66 @@ DISTFILES   +=          \
     README.md \
     doc/up_linker.png \
     doc/binder.png \
-    bin/browser.conf
+    bin/browser.conf \
+    src/libraries/qtm/Markdown/Markdown.pl \
+    src/libraries/qtm/qtm-desktop-suse.sh \
+    src/libraries/qtm/qtm-desktop.sh \
+    src/libraries/qtm/qtm-manpage.sh \
+    src/libraries/qtm/images/close.png \
+    src/libraries/qtm/images/next.png \
+    src/libraries/qtm/images/previous.png \
+    src/libraries/qtm/images/qtm-bold.png \
+    src/libraries/qtm/images/qtm-cursivo.png \
+    src/libraries/qtm/images/qtm-italic.png \
+    src/libraries/qtm/images/qtm-kursiv.png \
+    src/libraries/qtm/images/qtm-logo1.png \
+    src/libraries/qtm/images/qtm-underline.png \
+    src/libraries/qtm/qtm-logo1.ico \
+    src/libraries/qtm/QTM.icns \
+    src/libraries/qtm/addctag.xpm \
+    src/libraries/qtm/addimg.xpm \
+    src/libraries/qtm/addlink.xpm \
+    src/libraries/qtm/addtag.xpm \
+    src/libraries/qtm/blog-this.xpm \
+    src/libraries/qtm/bquote.xpm \
+    src/libraries/qtm/delete.xpm \
+    src/libraries/qtm/fileopen.xpm \
+    src/libraries/qtm/fileprint.xpm \
+    src/libraries/qtm/filesave.xpm \
+    src/libraries/qtm/more.xpm \
+    src/libraries/qtm/newentry.xpm \
+    src/libraries/qtm/paragraph.xpm \
+    src/libraries/qtm/preview.xpm \
+    src/libraries/qtm/remtag.xpm \
+    src/libraries/qtm/return.xpm \
+    src/libraries/qtm/susesystray.xpm \
+    src/libraries/qtm/textbold.xpm \
+    src/libraries/qtm/textital.xpm \
+    src/libraries/qtm/textul.xpm \
+    src/libraries/qtm/winsystray.xpm \
+    src/libraries/qtm/winsystray_busy.xpm \
+    src/libraries/qtm/x11systray.xpm \
+    doc/html/doxygen.css \
+    doc/html/tabs.css \
+    bin/resource/standardconfig/android/entrance.ini \
+    bin/resource/standardconfig/android/mode.ini \
+    bin/resource/standardconfig/meego/entrance.ini \
+    bin/resource/standardconfig/meego/mode.ini \
+    src/libraries/qtm/markdown_header.h.in \
+    src/libraries/qtm/qtm-installer.nsi \
+    src/libraries/qtm/qtm.rc \
+    src/libraries/qtm/qtm_version.h.in \
+    src/libraries/qtm/qtm_fr.ts \
+    src/libraries/qtm/Changelog \
+    src/libraries/qtm/CMakeLists.txt \
+    src/libraries/qtm/COPYING \
+    src/libraries/qtm/INSTALL \
+    src/libraries/qtm/qtm-choose.py \
+    src/libraries/qtm/qtm-chooseRecent.py \
+    src/libraries/qtm/qtm-chooseTemplate.py \
+    src/libraries/qtm/qtm-new.py \
+    src/libraries/qtm/qtm-quickpost.py \
+    src/libraries/qtm/README
 
 FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \
@@ -500,7 +599,20 @@ FORMS       +=              \
     src/views/browser/history.ui \
     src/views/browser/passworddialog.ui \
     src/views/browser/proxy.ui \
-    src/views/browser/settings.ui
+    src/views/browser/settings.ui \
+    src/libraries/qtm/aboutbox.ui \
+    src/libraries/qtm/AccountsForm.ui \
+    src/libraries/qtm/ImageEntry.ui \
+    src/libraries/qtm/LinkEntry.ui \
+    src/libraries/qtm/ListDialog.ui \
+    src/libraries/qtm/ListDialogBase.ui \
+    src/libraries/qtm/NewCategoryForm.ui \
+    src/libraries/qtm/password-form.ui \
+    src/libraries/qtm/PrefsForm.ui \
+    src/libraries/qtm/QijSearchWidget.ui \
+    src/libraries/qtm/QuickpostTemplateForm.ui \
+    src/libraries/qtm/SideWidget.ui \
+    src/libraries/qtm/StatusWidgetBase.ui
 
 
 unix{
@@ -602,3 +714,6 @@ EXAMPLE_FILES   =   Info_mac.plist browser.icns browser.ico browser.rc  \
 
 #INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 #DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+
+#SUBDIRS += \
+#    src/libraries/qtm/QTM.pro

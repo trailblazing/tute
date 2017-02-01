@@ -84,7 +84,26 @@ class QtLocalPeer;
 #include <QtGui/QIcon>
 // #include "qtsingleapplication.h"
 
+
+
+
+
 #include <QtNetwork/QAuthenticator>
+
+
+
+#ifdef USE_QTM
+
+// #include <QApplication>
+#include <QStringList>
+#include <QList>
+
+class SuperMenu;
+class QMenuBar;
+class EditingWindow;
+
+#endif
+
 
 QT_BEGIN_NAMESPACE
 class QLocalServer;
@@ -94,7 +113,7 @@ class QNetworkReply;
 class QWebEngineProfile;
 QT_END_NAMESPACE
 
-//extern const char *application_name;
+// extern const char *application_name;
 
 namespace browser {
     class BookmarksManager;
@@ -120,14 +139,14 @@ class QT_QTSINGLEAPPLICATION_EXPORT sapp_t	//: public BrowserApplication { //
 	//    typedef BrowserApplication BaseType;
 	sapp_t(int &argc
 	      , char * *argv
-	      , GlobalParameters &globalparameters
+	      , gl_para &globalparameters
 	      , AppConfig &appconfig
 	      , DataBaseConfig &databaseconfig
 	      , bool _gui_enabled = true);
 	sapp_t(const QString &id
 	      , int &argc
 	      , char * *argv
-	      , GlobalParameters &globalparameters
+	      , gl_para &globalparameters
 	      , AppConfig &appconfig
 	      , DataBaseConfig &databaseconfig);
 	~sapp_t();
@@ -143,18 +162,18 @@ class QT_QTSINGLEAPPLICATION_EXPORT sapp_t	//: public BrowserApplication { //
 	QtSingleApplication(Display * dpy, const QString &appId, int argc, char * *argv, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
 #endif
 
-	bool	isRunning();
+	bool isRunning();
 	QString id() const;
 
-	void	setActivationWindow(QWidget *aw, bool activateOnMessage = true);
+	void setActivationWindow(QWidget *aw, bool activateOnMessage = true);
 	QWidget *activationWindow() const;
 
 	// Obsolete:
 	void initialize(bool dummy = true){isRunning();Q_UNUSED(dummy)}
 
     public Q_SLOTS:
-	bool	sendMessage(const QString &message, int timeout = 5000);
-	void	activateWindow();
+	bool sendMessage(const QString &message, int timeout = 5000);
+	void activateWindow();
 
 
 Q_SIGNALS:
@@ -167,14 +186,15 @@ Q_SIGNALS:
 
 
     private:
-	void	sys_init(char **argv);
-	void	main_window();
-	void	browser_init();
-
-
+	void sys_init(char * *argv);
+	void main_window();
+	void browser_init();
+#ifdef USE_QTM
+	void qtm_init();
+#endif
 	QtLocalPeer	*_peer;
 	QWidget		*_act_window;
-	bool		_gui_enabled;
+	bool _gui_enabled;
 	wn_t		*_window;
 	// private slots:
 	//    void newLocalSocketConnection();
@@ -188,26 +208,26 @@ Q_SIGNALS:
 	//    ~BrowserApplication();
 
 	static sapp_t	*instance();	// move to derived class
-	void		loadSettings();
+	void loadSettings();
 
 	//    bool isTheOnlyBrowser() const;
 	//    BrowserWindow *mainWindow();
 	//    QList<BrowserWindow *> mainWindows();
-	QIcon	icon(const QUrl &url) const;
-	QIcon	defaultIcon() const;
+	QIcon icon(const QUrl &url) const;
+	QIcon defaultIcon() const;
 
-	void	saveSession();
-	bool	canRestoreSession() const;
+	void saveSession();
+	bool canRestoreSession() const;
 	bool privateBrowsing() const {return _private_browsing;}
 
-	void	setLastAuthenticator(QAuthenticator *);
-	void	setLastProxyAuthenticator(QAuthenticator *);
+	void setLastAuthenticator(QAuthenticator *);
+	void setLastProxyAuthenticator(QAuthenticator *);
 
 
 	// TODO: Remove these functions (QTBUG-47967)
-	static QByteArray	authenticationKey(const QUrl &, const QString &);
-	static QByteArray	proxyAuthenticationKey(const QNetworkProxy &, const QString &);
-	static QByteArray	proxyAuthenticationKey(const QString &, const QString &, const QString &);
+	static QByteArray authenticationKey(const QUrl &, const QString &);
+	static QByteArray proxyAuthenticationKey(const QNetworkProxy &, const QString &);
+	static QByteArray proxyAuthenticationKey(const QString &, const QString &, const QString &);
 
 
 	static browser::HistoryManager		*historyManager();
@@ -226,13 +246,13 @@ Q_SIGNALS:
 	//    BrowserWindow *newMainWindow();
 	void restoreLastSession();
 #if defined(Q_OS_OSX)
-	void	lastWindowClosed();
-	void	quitBrowser();
+	void lastWindowClosed();
+	void quitBrowser();
 #endif
 	void setPrivateBrowsing(bool);
 
-	void	authenticationRequired(QNetworkReply *, QAuthenticator *);
-	void	proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *);
+	void authenticationRequired(QNetworkReply *, QAuthenticator *);
+	void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *);
 
     signals:
 	void privateBrowsingChanged(bool b)
@@ -259,19 +279,72 @@ Q_SIGNALS:
 	//    QList<QPointer<BrowserWindow> > _mainWindows;
 	browser::Profile	*_profile;
 	QLocalServer		*_localserver;
-	QByteArray		_last_session;
+	QByteArray _last_session;
 	// QWebEngineProfile
 	browser::Profile	*_private_profile;
-	bool			_private_browsing;
-	mutable QIcon		_default_icon;
+	bool _private_browsing;
+	mutable QIcon _default_icon;
 
-	GlobalParameters	&_globalparameters;
+	gl_para	&_globalparameters;
 	AppConfig		&_appconfig;
 	DataBaseConfig		&_databaseconfig;
 
-	QAuthenticator	_last_authenticator;
-	QAuthenticator	_last_proxy_authenticator;
-	QString		_style;
+	QAuthenticator _last_authenticator;
+	QAuthenticator _last_proxy_authenticator;
+	QString	_style;
+
+#ifdef USE_QTM
+
+
+	// class Application : public QApplication {
+//	Q_OBJECT
+
+    public:
+//	Application(int &, char * *);
+	void setupRecentFiles();
+	QStringList recentFileTitles();
+	QStringList recentFilenames();
+	typedef struct _RF {
+	    QString	title;
+	    QString	filename;
+	}recentFile;
+	QList<recentFile> recentFiles();
+	recentFile getRecentFile(int);
+	QStringList titles();
+	QStringList filenames();
+	EditingWindow *currentEditingWindow(){return _currentEditingWindow;}
+	void deleteSandbox();
+	bool isSandbox(){return _isSandbox;}
+
+    public slots:
+	void setRecentFiles(const QStringList &, const QStringList &);
+	void addRecentFile(const QString &, const QString &);
+	void saveAll();
+	void setMainWindow(EditingWindow *sm);
+
+    signals:
+	void recentFilesUpdated(QStringList, QStringList);
+	void recentFilesUpdated(const QList<sapp_t::recentFile> &);
+	void mainWindowChanged(EditingWindow *);
+
+    private:
+	QList<sapp_t::recentFile> _recentFiles;
+	#ifdef Q_OS_MAC
+	SuperMenu *superMenu;
+	#endif
+	EditingWindow *_currentEditingWindow;
+	bool _isSandbox;
+
+    private slots:
+	void saveRecentFiles();
+	void handleWindowChange(QWidget *, QWidget *);
+	void handleLastWindowClosed();
+	// };
+#endif
 };
+
+
+
+
 
 #endif	// QTSINGLEAPPLICATION_H

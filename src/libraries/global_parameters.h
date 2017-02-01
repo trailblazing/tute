@@ -37,11 +37,17 @@ class EditorConfigDialog;
 class EditorConfig;
 class AttachTableController;
 class HidableTabWidget;
+class Editentry;
+
+
+#ifndef USE_QTM
+#define USE_QTM
+#endif
 
 // W_REGISTER_ARGTYPE(rs_t)
 // W_REGISTER_ARGTYPE(rs_t *)
 
-class GlobalParameters : public QObject {
+class gl_para : public QObject {
 #if QT_VERSION == 0x050600
     W_OBJECT(GlobalParameters)
 #else
@@ -49,8 +55,8 @@ class GlobalParameters : public QObject {
 #endif
 
     public:
-	GlobalParameters(QObject *pobj = 0);
-	virtual ~GlobalParameters();
+	gl_para(QObject *pobj = 0);
+	virtual ~gl_para();
 
 //	void main_program_full_file(QString file);
 	QString main_program_full_file(void) const;
@@ -58,11 +64,11 @@ class GlobalParameters : public QObject {
 
 	void init(const QString &app_name);
 
-	QString permanent_application_mode() const;
-	void permanent_application_mode(const QString &mode);
+//	QString app_mode() const;
+//	void app_mode(const QString &mode);
 
-	QString permanent_root_path(void) const;
-	bool permanent_root_path(QString dirName);
+	QString root_path(void) const;
+	bool root_path(QString path_name);
 
 //	QString root_path(void) const;
 	QString config_filename(void) const;
@@ -107,8 +113,8 @@ class GlobalParameters : public QObject {
 	void find_screen(FindScreen *point);
 	FindScreen	*find_screen() const;
 
-	void meta_editor(MetaEditor *point);
-	MetaEditor	*meta_editor() const;
+	void meta_editor(Editentry *point);
+	Editentry *meta_editor() const;
 
 	void status_bar(QStatusBar *point);
 	QStatusBar	*status_bar() const;
@@ -146,7 +152,7 @@ class GlobalParameters : public QObject {
     private:
 #define STANDARD_MODE		true
 #define PORTABLE_MODE		false
-	std::tuple<const bool, const bool, const QString> initialize_root(bool standard_mode = STANDARD_MODE, const QString &root_path_ = "");
+	std::tuple<const bool, const QString> coordinate_root(const QString &root_path_ = "");
 //	bool check_workdirectory(bool enablePortable);
 
 //	void create_root_standard(void);
@@ -158,7 +164,7 @@ class GlobalParameters : public QObject {
 	browser::Entrance			*_entrance			= nullptr;
 	EditorConfig				*_editor_config			= nullptr;
 	FindScreen				*_find_screen			= nullptr;
-	MetaEditor				*_meta_editor			= nullptr;
+	Editentry				*_meta_editor			= nullptr;
 	QStatusBar				*_statusbar			= nullptr;
 	WindowSwitcher				*_window_switcher		= nullptr;
 	QSplitter				*_find_splitter			= nullptr;
@@ -171,19 +177,20 @@ class GlobalParameters : public QObject {
 	AttachTableController			*_attachtable_controller	= nullptr;
 
 	QByteArray _password_hash;
-	QString	_style_source			= "";
-	QString	_main_program_full_file		= "";
-	QString _application_name		= "";
-	QString _main_program_path		= "";
-	QString	_root_path			= "./";
-	QString	_mode_filename			= "mode.ini";
-	QString	_conf_filename			= "conf.ini";
-	QString	_browser_conf_filename		= "browser.conf";
-	QString	_browserview_conf_filename	= "browserview.ini";
-	QString	_editor_conf_filename		= "editorconf.ini";
-	QString	_entrance_conf_filename		= "entrance.ini";
-	QString	_stylesheet_filename		= "stylesheet.css";
-
+	QString	_style_source				= "";
+	QString	_main_program_full_file			= "";
+	QString _application_name			= "";
+	QString _main_program_path			= "";
+//	QString	_root_path				= "./";
+	QString	_mode_filename				= "mode.ini";
+	QString	_conf_filename				= "conf.ini";
+	QString	_browser_conf_filename			= "browser.conf";
+	QString	_browserview_conf_filename		= "browserview.ini";
+	QString	_editor_conf_filename			= "editorconf.ini";
+	QString	_entrance_conf_filename			= "entrance.ini";
+	QString	_stylesheet_filename			= "stylesheet.css";
+	QString _standard_path				= "";
+	std::pair<QString, QString>_standard_paths	= {"", ""};
 	std::vector<rs_t *>			_table_screens;
 	friend class AppConfigPageMain;
 };

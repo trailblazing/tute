@@ -12,7 +12,7 @@
 #include "libraries/disk_helper.h"
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 TrashMonitoring::TrashMonitoring(void)
 {}
@@ -49,9 +49,9 @@ std::shared_ptr<QFileInfo> TrashMonitoring::recover_from_trash(std::shared_ptr<Q
 //    QFileInfo	main_program_file_info(_main_program_file);
 //    QString	full_current_path = main_program_file_info.absolutePath();
 	if(_files_table.size() == 0){
-	    if(! QDir(globalparameters.permanent_root_path() + "/" + QDir(appconfig.trash_dir()).dirName()).exists()) QDir(globalparameters.main_program_dir()).mkdir(QDir(appconfig.trash_dir()).dirName());
-	    if(! QFile::copy(QString(":/resource/standarddata/") + _file_name, globalparameters.permanent_root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name)) throw std::runtime_error("Can not copy hapnote.xml");
-	    else QFile::setPermissions(globalparameters.permanent_root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name, QFile::ReadUser | QFile::WriteUser);
+	    if(! QDir(globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName()).exists()) QDir(globalparameters.main_program_dir()).mkdir(QDir(appconfig.trash_dir()).dirName());
+	    if(! QFile::copy(QString(":/resource/standarddata/") + _file_name, globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name)) throw std::runtime_error("Can not copy hapnote.xml");
+	    else QFile::setPermissions(globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name, QFile::ReadUser | QFile::WriteUser);
 //	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.hapnote_xml());
 //	assert(succedded);
 	    add_file(_file_name);	// globalparameters.hapnote_xml().keys()[0]
@@ -72,7 +72,7 @@ std::shared_ptr<QFileInfo> TrashMonitoring::recover_from_trash(std::shared_ptr<Q
 	    }
 	    return r;
 	} ();			// _files_table.first();
-	if(file_data) result = DiskHelper::copy_file_to_data_folder(file_name_fullpath, globalparameters.permanent_root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + file_data->_name);
+	if(file_data) result = DiskHelper::copy_file_to_data_folder(file_name_fullpath, globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + file_data->_name);
 //        result = target_file;
 //    }
     }
@@ -86,7 +86,7 @@ void TrashMonitoring::init(QString _trash_path){
 	// Инит объекта директории с указанным путем
     _dir.setPath(_trash_path);
     if(! _dir.exists()){
-	DiskHelper::create_directory(globalparameters.permanent_root_path()	// full_current_path
+	DiskHelper::create_directory(globalparameters.root_path()	// full_current_path
 				    , "trash");
 //	critical_error("Can not open trash directory " + _trash_path);
 //	exit(1);

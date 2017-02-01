@@ -312,6 +312,21 @@
 
 #include <QtCore/QDebug>
 
+
+#ifdef USE_QTM
+
+#include "libraries/qtm/EditingWindow.h"
+#include <QtCore>
+#include <QMenuBar>
+
+#ifdef Q_OS_MAC
+#include "SuperMenu.h"
+#endif
+
+#include "libraries/qtm/qtm_version.h.in"
+
+#endif
+
 // const char *application_name = "hapnote";
 
 extern TrashMonitoring		trashmonitoring;
@@ -565,7 +580,7 @@ void sapp_t::sys_init(char * *argv){
 
 
 	// Инициализируется объект слежения за корзиной
-    trashmonitoring.init(globalparameters.permanent_root_path() + "/" + QDir(_appconfig.trash_dir()).dirName());
+    trashmonitoring.init(globalparameters.root_path() + "/" + QDir(_appconfig.trash_dir()).dirName());
     trashmonitoring.update();
 
 	// Инициализация переменных, отвечающих за хранилище данных
@@ -629,14 +644,14 @@ void sapp_t::browser_init(){
 	//        , _privateBrowsing(false)
 	// {
 //    auto test_string = _globalparameters.work_directory();
-    QFileInfo check_file(_globalparameters.permanent_root_path() + "/" + _globalparameters.target_os() + "/browser.conf");
+    QFileInfo check_file(_globalparameters.root_path() + "/" + _globalparameters.target_os() + "/browser.conf");
     if(! (check_file.exists() && check_file.isFile())){	// if(! QFile::exists(_globalparameters.work_directory() +"/" + _globalparameters.target_os() +  "browser.conf")){
 //	QFile	file(_globalparameters.work_directory() + "/browser.conf");
 //	auto conf_name = QString(":/resource/standardconfig/") + _globalparameters.target_os() + "/browser.conf";
 //        if(QFile::exists(QString(":/resource/standardconfig/") + _globalparameters.target_os() + "/browser.conf")){
 	// Файл перемещается в корзину
-	if(! QFile::copy(QString(":/resource/standardconfig/") + _globalparameters.target_os() + "/browser.conf", _globalparameters.permanent_root_path() + "/" + _globalparameters.target_os() + "/browser.conf")) throw std::runtime_error("Can not copy browser.conf");																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																					// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not open browser.conf");
-	else QFile::setPermissions(_globalparameters.permanent_root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QFile::ReadUser | QFile::WriteUser);																																																																																																																																																																																																																																																																																																																																																																																										//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
+	if(! QFile::copy(QString(":/resource/standardconfig/") + _globalparameters.target_os() + "/browser.conf", _globalparameters.root_path() + "/" + _globalparameters.target_os() + "/browser.conf")) throw std::runtime_error("Can not copy browser.conf");																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not open browser.conf");
+	else QFile::setPermissions(_globalparameters.root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QFile::ReadUser | QFile::WriteUser);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
 //        }
     }
     QDesktopServices::setUrlHandler(QLatin1String("http"), this, "openUrl");
@@ -655,7 +670,7 @@ void sapp_t::browser_init(){
     installTranslator(langFileName);	// &langTranslator
 
 
-    QSettings settings(_globalparameters.permanent_root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+    QSettings settings(_globalparameters.root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
     settings.beginGroup(QLatin1String("sessions"));
     _last_session = settings.value(QLatin1String("lastSession")).toByteArray();
     settings.endGroup();
@@ -668,6 +683,29 @@ void sapp_t::browser_init(){
     if(canRestoreSession()) restoreLastSession();
 	// }
 }
+
+#ifdef USE_QTM
+void sapp_t::qtm_init(){
+    qDebug() << "setting up application";
+    if(arguments().contains("--sandbox") || arguments().contains("--delete-sandbox")){
+	setOrganizationName("Catkin Project Sandbox");
+	setOrganizationDomain("qtm-sandbox.blogistan.co.uk");
+	setApplicationName("QTMsandbox");
+	setApplicationVersion(QTM_VERSION);
+	_isSandbox = true;
+    }else{
+	setOrganizationName("Catkin Project");
+	setOrganizationDomain("catkin.blogistan.co.uk");
+	setApplicationName("QTM");
+	setApplicationVersion(QTM_VERSION);
+	_isSandbox = false;
+    }
+    _currentEditingWindow = 0;
+
+    connect(this, SIGNAL(aboutToQuit()), this, SLOT(saveRecentFiles()));
+    connect(this, SIGNAL(lastWindowClosed()), this, SLOT(handleLastWindowClosed()));
+}
+#endif
 
 void sapp_t::main_window(){
 	// Do not run another copy    // Не запущен ли другой экземпляр
@@ -707,7 +745,7 @@ void sapp_t::main_window(){
     _globalparameters.main_window(_window);
 
     _window->setWindowTitle(_globalparameters.application_name());
-    if(_globalparameters.target_os() == "android") _window->show();																																																																																																																																																																																																// В Андроиде нет десктопа, на нем нельзя сворачивать окно
+    if(_globalparameters.target_os() == "android") _window->show();																																																																																																																																																																																																																																				// В Андроиде нет десктопа, на нем нельзя сворачивать окно
     else{
 	if(_appconfig.run_in_minimized_window() == false) _window->show();
 	else _window->hide();
@@ -800,7 +838,7 @@ void sapp_t::main_window(){
 
 sapp_t::sapp_t(int &argc
 	      , char * *argv
-	      , GlobalParameters    &globalparameters
+	      , gl_para    &globalparameters
 	      , AppConfig           &appconfig
 	      , DataBaseConfig      &databaseconfig
 	      , bool GUIenabled)
@@ -823,6 +861,10 @@ sapp_t::sapp_t(int &argc
     main_window();
 
     browser_init();
+
+#ifdef USE_QTM
+    qtm_init();
+#endif
 }
 
 /*!
@@ -834,7 +876,7 @@ sapp_t::sapp_t(int &argc
 sapp_t::sapp_t(const QString &appId
 	      , int &argc
 	      , char * *argv
-	      , GlobalParameters    &globalparameters
+	      , gl_para    &globalparameters
 	      , AppConfig           &appconfig
 	      , DataBaseConfig      &databaseconfig)
     : QApplication(argc, argv)
@@ -851,6 +893,9 @@ sapp_t::sapp_t(const QString &appId
     sys_init(argv);
     main_window();
     browser_init();
+#ifdef USE_QTM
+    qtm_init();
+#endif
 }
 
 /*!
@@ -1026,11 +1071,11 @@ void sapp_t::newLocalSocketConnection(){
     QTextStream stream(socket);
     QString	_url;
     stream >> _url;
-    if(_url.isEmpty()) _url = browser::Browser::_defaulthome;																																																																																																																																																																																	//    browser::DockedWindow *w = nullptr;
+    if(_url.isEmpty()) _url = browser::Browser::_defaulthome;																																																																																																																																																																																																																	//    browser::DockedWindow *w = nullptr;
 
 	// if(!url.isEmpty()) {
 
-    QSettings settings(_globalparameters.permanent_root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+    QSettings settings(_globalparameters.root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
     settings.beginGroup(QLatin1String("general"));
     int openLinksIn = settings.value(QLatin1String("openLinksIn"), 0).toInt();
     settings.endGroup();
@@ -1041,7 +1086,7 @@ void sapp_t::newLocalSocketConnection(){
 //    boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
     auto	current_item	= tree_view->current_item();
     auto	parent		= current_item->parent();
-    if(! parent) throw std::runtime_error(formatter() << "! parent");																																																																																																																																																																																																							// std::exception();
+    if(! parent) throw std::runtime_error(formatter() << "! parent");																																																																																																																																																																																																																																											// std::exception();
 //    try {
 //        _tree_modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 //            return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
@@ -1154,7 +1199,7 @@ void QtSingleApplication::quitBrowser(){
     Any actions that can be delayed until the window is visible
  */
 void sapp_t::postLaunch(){
-    QString directory = _globalparameters.permanent_root_path();	// QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    QString directory = _globalparameters.root_path();	// QStandardPaths::writableLocation(QStandardPaths::DataLocation);
     if(directory.isEmpty()) directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
 #if defined(QWEBENGINESETTINGS_PATHS)
     QWebEngineSettings::setIconDatabasePath(directory);
@@ -1190,7 +1235,7 @@ void sapp_t::postLaunch(){
 }
 
 void sapp_t::loadSettings(){
-    QSettings settings(_globalparameters.permanent_root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+    QSettings settings(_globalparameters.root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 
     settings.beginGroup(QLatin1String("websettings"));
 
@@ -1287,7 +1332,7 @@ void sapp_t::saveSession(){
     if(_private_browsing) return;
 	//    globalparameters.entrance()->clean();
 
-    std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(_globalparameters.permanent_root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+    std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(_globalparameters.root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
     settings->beginGroup(QLatin1String("sessions"));
 
     QByteArray	data;
@@ -1536,7 +1581,7 @@ void sapp_t::setPrivateBrowsing(bool privateBrowsing){
     _private_browsing = privateBrowsing;
     auto browsers = [&] {set<browser::Browser *> bs;for(auto rs : _globalparameters.main_window()->vtab_record()->record_screens()) bs.insert(rs->browser());return bs;} ();
     if(privateBrowsing){
-	if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);																																																																																																																																																																																																																																																																																						// new QWebEngineProfile(this);
+	if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);																																																																																																																																																																																																																																																																																																																																										// new QWebEngineProfile(this);
 	for(auto &browser : browsers) browser->tabWidget()->setProfile(_private_profile);
     }else{
 	for(auto &browser : browsers){
@@ -1601,3 +1646,195 @@ void sapp_t::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthentica
     if(lastKey == key) *authenticator = _last_authenticator;
 }
 
+#ifdef USE_QTM
+
+
+
+// Application::Application(int &argc, char * *argv)
+//    : QApplication(argc, argv){
+//    qDebug() << "setting up application";
+//    if(arguments().contains("--sandbox") || arguments().contains("--delete-sandbox")){
+//	setOrganizationName("Catkin Project Sandbox");
+//	setOrganizationDomain("qtm-sandbox.blogistan.co.uk");
+//	setApplicationName("QTMsandbox");
+//	setApplicationVersion(QTM_VERSION);
+//	_isSandbox = true;
+//    }else{
+//	setOrganizationName("Catkin Project");
+//	setOrganizationDomain("catkin.blogistan.co.uk");
+//	setApplicationName("QTM");
+//	setApplicationVersion(QTM_VERSION);
+//	_isSandbox = false;
+//    }
+//    _currentEditingWindow = 0;
+
+//    connect(this, SIGNAL(aboutToQuit()), this, SLOT(saveRecentFiles()));
+//    connect(this, SIGNAL(lastWindowClosed()), this, SLOT(handleLastWindowClosed()));
+// }
+
+void sapp_t::setupRecentFiles(){
+#ifdef Q_OS_MAC
+    QString orgString = organizationDomain();
+#else
+    QString orgString = organizationName();
+#endif
+    QSettings settings(orgString, applicationName());
+	// qDebug() << "Settings path:" << settings.fileName();
+    int		i;
+    recentFile	currentRF;
+    QString	crf;
+
+    settings.beginGroup("recentFiles");
+    for(i = 0; i < 20; i ++){
+	crf = settings.value(QString("recentFile%1").arg(i), "").toString();
+	// qDebug() << "Recent file:" << crf;
+	/*    if( crf.isEmpty() )
+	      qDebug() << QString( "recentFile%1" ).arg( i ) << "is empty"; */
+	currentRF.filename	= crf.section("filename:", 1, 1).section(" ##title:", 0, 0);
+	currentRF.title		= crf.section(" ##title:", 1, 1);
+	if(currentRF.filename.isEmpty()) break;
+	_recentFiles.append(currentRF);
+	// qDebug() << "Added one recent file";
+    }
+}
+
+QStringList sapp_t::titles(){
+    int		i;
+    QStringList returnValue;
+    for(i = 0; i < _recentFiles.count(); ++ i){
+	if(_recentFiles.value(i).title.isEmpty()) returnValue << QString();
+	else returnValue << _recentFiles.value(i).title;
+    }
+    return returnValue;
+}
+
+QStringList sapp_t::filenames(){
+    int		i;
+    QStringList returnValue;
+    for(i = 0; i < _recentFiles.count(); ++ i){
+	if(_recentFiles.value(i).filename.isEmpty()) returnValue << QString();
+	else returnValue << _recentFiles.value(i).filename;
+    }
+    return returnValue;
+}
+
+void sapp_t::deleteSandbox(){
+	// First remove configuration settings
+    QSettings	settings;
+    QStringList groupNames;
+    groupNames	<< "accounts" << "application" << "fonts" << "geometry"
+		<< "highlighting" << "recentFiles" << "sysTrayIcon";
+    Q_FOREACH(QString groupName, groupNames){
+	settings.beginGroup(groupName);
+	settings.remove("");
+	settings.endGroup();
+    }
+	// Now remove entry files
+#ifdef Q_OS_WIN
+    QString sandbox = QString("%1\\QTMSandbox").arg(QDir::homePath());
+#else
+    QString sandbox = QString("%1/qtm-sandbox").arg(QDir::homePath());
+#endif
+
+    QDir sandboxDir(sandbox);
+    sandboxDir.remove("qtmaccounts2.xml");
+    sandboxDir.remove("qtmautolinkdict.xml");
+    QStringList cqtFilter, cqtFiles;
+    cqtFilter << "*.cqt";
+
+    cqtFiles = sandboxDir.entryList(cqtFilter);
+    Q_FOREACH(QString cqtFile, cqtFiles) sandboxDir.remove(cqtFile);
+}
+
+QList<sapp_t::recentFile> sapp_t::recentFiles(){
+    return _recentFiles;
+}
+
+sapp_t::recentFile sapp_t::getRecentFile(int index){
+    recentFile return_value;
+    if(index >= _recentFiles.count()){
+	return_value.title	= QString();
+	return_value.filename	= QString();
+    }else return_value = _recentFiles.at(index);
+    return return_value;
+}
+
+
+void sapp_t::setRecentFiles(const QStringList &titles, const QStringList &filenames){
+    int			i;
+    QList<recentFile>	rfs;
+    recentFile		thisFile;
+    for(i = 0; i < titles.count() && i < 20; ++ i){
+	if(titles.at(i).isEmpty()) thisFile.title = QString();
+	else thisFile.title = titles.at(i);
+	if(filenames.at(i).isEmpty()) thisFile.filename = QString();
+	else thisFile.filename = filenames.at(i);
+	rfs << thisFile;
+    }
+    _recentFiles = rfs;
+    emit recentFilesUpdated(titles, filenames);
+}
+
+void sapp_t::addRecentFile(const QString &title, const QString &filename){
+    recentFile	thisFile;
+    int		i;
+
+    thisFile.title	= title;
+    thisFile.filename	= filename;
+    for(i = 0; i < 20; ++ i){
+	if(i == _recentFiles.count()) break;
+	if(_recentFiles.value(i).filename == filename) _recentFiles.removeAt(i);
+    }
+    _recentFiles.prepend(thisFile);
+
+    emit recentFilesUpdated(_recentFiles);
+}
+
+void sapp_t::saveAll(){
+    EditingWindow	*e;
+    QWidgetList		tlw = QApplication::topLevelWidgets();
+    Q_FOREACH(QWidget *w, tlw){
+	e = qobject_cast<EditingWindow *>(w);
+	if(e) e->save();
+    }
+}
+
+void sapp_t::setMainWindow(EditingWindow *ew){
+#ifdef Q_OS_MAC
+    emit mainWindowChanged(ew);
+#endif
+    _currentEditingWindow = ew;
+}
+
+void sapp_t::saveRecentFiles(){
+    int		i;
+    QSettings	settings;
+
+    settings.beginGroup("recentFiles");
+    for(i = 0; i < 20; ++ i){
+	settings.setValue(QString("recentFile%1").arg(i)
+			 , QString("filename:%1 ##title:%2")
+	    .arg(_recentFiles.value(i).filename)
+	    .arg(_recentFiles.value(i).title));
+    }
+}
+
+void sapp_t::handleWindowChange(QWidget *oldW, QWidget *newW){
+#ifdef Q_OS_MAC
+    QWidget		*oldWindow	= oldW->window();
+    QWidget		*newWindow	= newW->window();
+    EditingWindow	*newEW;
+    if(oldWindow != newWindow){
+	newEW = qobject_cast<EditingWindow *>(newWindow);
+	if(newEW) superMenu->setMainWindow(newEW);
+	else superMenu->setMainWindow(0);
+    }
+#endif
+}
+
+void sapp_t::handleLastWindowClosed(){
+    _currentEditingWindow = 0;
+}
+
+
+#endif

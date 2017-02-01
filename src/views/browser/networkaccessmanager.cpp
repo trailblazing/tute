@@ -72,7 +72,7 @@
 #include "views/browser/entrance.h"
 #include "main.h"
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 
 namespace browser {
@@ -123,7 +123,7 @@ namespace browser {
     }
 
     void NetworkAccessManager::loadSettings(){
-	QSettings settings(globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("proxy"));
 	QNetworkProxy proxy;
 	if(settings.value(QLatin1String("enabled"), false).toBool()){

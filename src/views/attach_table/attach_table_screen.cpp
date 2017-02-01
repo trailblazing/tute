@@ -11,7 +11,7 @@
 #include "controllers/attach_table/attach_table_controller.h"
 #include "libraries/global_parameters.h"
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 
 #if QT_VERSION == 0x050600

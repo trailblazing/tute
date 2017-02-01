@@ -80,7 +80,7 @@ class QNetworkReply;
 class QSslError;
 QT_END_NAMESPACE
 
-extern GlobalParameters			globalparameters;
+extern gl_para			globalparameters;
 extern boost::intrusive_ptr<Record>	check_record(const QUrl &_url);
 
 class Record;
@@ -89,6 +89,7 @@ class TreeItem;
 class tm_t;
 class ts_t;
 class rctrl_t;
+class Editentry;
 
 // QT_BEGIN_NAMESPACE
 
@@ -186,7 +187,7 @@ namespace browser {
 	    WebPage(Profile *profile
 		   , boost::intrusive_ptr<TreeItem> item
 		   , ts_t *tree_screen
-		   , MetaEditor *editor_screen
+		   , Editentry *editentry
 		   , Entrance *entrance
 		   , Browser *browser
 		   , TabWidget *tabmanager
@@ -270,7 +271,7 @@ namespace browser {
 	private:
 	    Profile			*_profile;
 	    ts_t			*_tree_screen;
-	    MetaEditor			*_editor_screen;
+	    Editentry			*_editentry;
 	    Entrance			*_entrance;
 	    Browser			*_browser;
 	    TabWidget			*_tabmanager;
@@ -364,7 +365,8 @@ namespace browser {
 	public:
 	    WebView(boost::intrusive_ptr<TreeItem> host_
 		   , Profile *profile		// , bool openinnewtab
-		   , ts_t *tree_screen, MetaEditor *editor_screen
+		   , ts_t *tree_screen
+		   , Editentry *editentry
 		   , Entrance *entrance
 		   , Browser *browser
 		   , TabWidget *tabmanager

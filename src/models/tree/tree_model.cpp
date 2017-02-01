@@ -41,7 +41,7 @@
 
 
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 extern AppConfig	appconfig;
 extern const char	*clipboard_items_root;
 

@@ -15,7 +15,7 @@
 #include "libraries/global_parameters.h"
 #include "views/find_in_base_screen/find_screen.h"
 
-extern GlobalParameters		globalparameters;
+extern gl_para			globalparameters;
 extern const char		*global_root_id;
 extern const char		*standardItem;
 extern const char		*portableItem;
@@ -34,10 +34,10 @@ AppConfig::AppConfig(QObject *pobj){
 
 // Деструктор объекта настройки программы
 AppConfig::~AppConfig(){
-////    if(is_init_flag){
+    if(is_init_flag){
 ////        qDebug() << "Save hapnote config file";
-////        _app_conf->sync();
-////    }
+	_app_conf->sync();
+    }
 //    if(_app_conf){
 //	_app_conf->deleteLater();
 ////        _app_conf = nullptr;
@@ -46,13 +46,13 @@ AppConfig::~AppConfig(){
 
 void AppConfig::init(void){
 	// Создается имя файла конфигурации
-    QString config_file_name = globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/" + globalparameters.config_filename();
+    _config_file_name = globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + globalparameters.config_filename();
 
 	// Проверяется, есть ли файл конфигурации
-    QFile conf_file(config_file_name);
-    if(! conf_file.exists()) critical_error("File " + config_file_name + " not found.");
+    QFile conf_file(_config_file_name);
+    if(! conf_file.exists()) critical_error("File " + _config_file_name + " not found.");
 	// Создается указатель на объект хранилища конфигурации
-    _app_conf = std::make_shared<QSettings>(config_file_name, QSettings::IniFormat);
+    _app_conf = std::make_shared<QSettings>(_config_file_name, QSettings::IniFormat);
 //    _app_conf->setPath(QSettings::IniFormat, QSettings::UserScope, );
 //    _app_conf->setDefaultFormat(QSettings::IniFormat);
 //    _app_conf = new QSettings(config_file_name, QSettings::IniFormat);
@@ -78,12 +78,12 @@ QString AppConfig::get_parameter(QString name) const {
     QString result = "";
     if(_app_conf->contains(name)) result = _app_conf->value(name).toString();
     else{
-	AppConfig	*_this			= const_cast<AppConfig *>(this);
-	QString		config_file_name	= globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/" + globalparameters.config_filename();
-	if(QFile(config_file_name).exists()) QFile::remove(config_file_name);
-	if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/" + globalparameters.config_filename(), config_file_name)) critical_error("Can not copy " + globalparameters.config_filename());
-	if(! (QFile::permissions(config_file_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(config_file_name, QFile::ReadUser | QFile::WriteUser);
-	_this->_app_conf	= std::make_shared<QSettings>(config_file_name, QSettings::IniFormat);
+	AppConfig	*_this = const_cast<AppConfig *>(this);
+//	QString		_config_file_name	= globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + globalparameters.config_filename();
+	if(QFile(_config_file_name).exists()) QFile::remove(_config_file_name);
+	if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/" + globalparameters.config_filename(), _config_file_name)) critical_error("Can not copy " + globalparameters.config_filename());
+	if(! (QFile::permissions(_config_file_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_config_file_name, QFile::ReadUser | QFile::WriteUser);
+	_this->_app_conf	= std::make_shared<QSettings>(_config_file_name, QSettings::IniFormat);
 	result			= _app_conf->value(name).toString();
 	if(result == "") critical_error("In config not found parameter " + name);
     }
@@ -92,17 +92,17 @@ QString AppConfig::get_parameter(QString name) const {
 
 
 
-//bool AppConfig::root_dir(QString dirName){
+// bool AppConfig::root_dir(QString dirName){
 //    QDir directory(dirName);
 //    if(directory.exists() && directory.isReadable()){
 //	_app_conf->setValue("rootdir", dirName);
 
 //	return true;
 //    }else return false;
-//}
+// }
 
 
-//QString AppConfig::root_dir(void) const {return get_parameter("rootdir");}
+// QString AppConfig::root_dir(void) const {return get_parameter("rootdir");}
 
 // Установка имени директории с данными (в которой находится hapnote.xml)
 bool AppConfig::data_dir(QString dirName){
@@ -642,7 +642,7 @@ QStringList AppConfig::replace_parameter_in_table(QString replaceName, QString r
 // ------------------------------------
 
 void AppConfig::update_version_process(void){
-    QString configFileName = globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/conf.ini";
+    QString configFileName = globalparameters.root_path() + "/" + globalparameters.target_os() + "/conf.ini";
 
     AppConfigUpdater updater;
     updater.set_config_file(configFileName);
@@ -908,7 +908,7 @@ template<>QStringList AppConfig::parameter_table<14>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 14
     table << parameter_table<13>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android") table << "uglyQssReplaceHeightForTableView" << "int" << "35";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// Так как не все параметры можно стилизовать через QSS, здесь задается высота ячейки таблицы
+    if(globalparameters.target_os() == "android") table << "uglyQssReplaceHeightForTableView" << "int" << "35";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																					// Так как не все параметры можно стилизовать через QSS, здесь задается высота ячейки таблицы
     else table << "uglyQssReplaceHeightForTableView" << "int" << "0";
     if(withEndSignature) table << "0" << "0" << "0";
     return table;
@@ -939,8 +939,8 @@ template<>QStringList AppConfig::parameter_table<16>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 16
     table << parameter_table<15>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android") table << "showSplashScreen" << "bool" << "true";																																																																																																																																																																																																																																																																																																																																																																																																																																																													// В Андроид долгий запуск, нужно показывать сплешскрин
-    else table << "showSplashScreen" << "bool" << "false";																																																																																																																																																																																																																																																																														// На десктопе быстрый запуск, сплешскрин только мешает
+    if(globalparameters.target_os() == "android") table << "showSplashScreen" << "bool" << "true";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																				// В Андроид долгий запуск, нужно показывать сплешскрин
+    else table << "showSplashScreen" << "bool" << "false";																																																																																																																																																																																																																																																																																																						// На десктопе быстрый запуск, сплешскрин только мешает
     if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
@@ -953,8 +953,8 @@ template<>QStringList AppConfig::parameter_table<17>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 17
     table << parameter_table<16>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android") table << "interfaceMode" << "QString" << "mobile";																																																																																																																																																																																																																																																																																																																																																																																																																																																																								// В Андроид должен быть мобильный интерфейс
-    else table << "interfaceMode" << "QString" << "desktop";																																																																																																																																																																																																																																																																																									// На десктопе должен быть интерфейс адоптированный для работы на рабочем столе
+    if(globalparameters.target_os() == "android") table << "interfaceMode" << "QString" << "mobile";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															// В Андроид должен быть мобильный интерфейс
+    else table << "interfaceMode" << "QString" << "desktop";																																																																																																																																																																																																																																																																																																																	// На десктопе должен быть интерфейс адоптированный для работы на рабочем столе
     if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
@@ -981,8 +981,8 @@ template<>QStringList AppConfig::parameter_table<19>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 19
     table << parameter_table<18>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android") table << "hideEditorTools" << "QString" << "italic,underline,monospace,alignleft,aligncenter,alignright,alignwidth,numericlist,dotlist,indentplus,indentminus,showformatting,showhtml,fontcolor,expand_edit_area,save,createtable,table_add_row,table_remove_row,table_add_col,table_remove_col,table_merge_cells,table_split_cell";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																														// В Андроид прячутся инструменты сложного форматирования текста
-    else table << "hideEditorTools" << "QString" << "";																																																																																																																																																																																																																																																						// На десктопе скрываемых кнопок редактора нет
+    if(globalparameters.target_os() == "android") table << "hideEditorTools" << "QString" << "italic,underline,monospace,alignleft,aligncenter,alignright,alignwidth,numericlist,dotlist,indentplus,indentminus,showformatting,showhtml,fontcolor,expand_edit_area,save,createtable,table_add_row,table_remove_row,table_add_col,table_remove_col,table_merge_cells,table_split_cell";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// В Андроид прячутся инструменты сложного форматирования текста
+    else table << "hideEditorTools" << "QString" << "";																																																																																																																																																																																																																																																																											// На десктопе скрываемых кнопок редактора нет
     if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }

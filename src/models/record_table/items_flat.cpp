@@ -27,7 +27,7 @@
 
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 extern WalkHistory	walkhistory;
 
 const int	add_new_record_to_end	= 0;
@@ -523,7 +523,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_fat(int pos){
     result->text_to_fat(text(pos));
 
 	// Добавление бинарных образов файлов картинок
-    QString directory = globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + result->field<dir_type>();
+    QString directory = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + result->field<dir_type>();
     result->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
     return result;
@@ -836,7 +836,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent(const std::function<b
 	auto it = il->host();
 	if(_equal(il)){
 		// Удаление директории и файлов внутри, с сохранением в резервной директории
-	    QString dir_for_delete = globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + it->field<dir_type>();	// field(i, "dir")
+	    QString dir_for_delete = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + it->field<dir_type>();	// field(i, "dir")
 
 	    qDebug() << "Remove dir " << dir_for_delete;
 
@@ -985,7 +985,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent_recursive(boost::intr
 		if(it && it->count_direct() > 0)
 			for(auto &link : it->_child_linkers) it->delete_permanent_recursive(link, condition);
 		// Удаление директории и файлов внутри, с сохранением в резервной директории
-		QString dir_for_delete = globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + it->field<dir_type>();	// field(i, "dir")
+		QString dir_for_delete = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + it->field<dir_type>();	// field(i, "dir")
 
 		qDebug() << "Remove dir " << dir_for_delete;
 

@@ -20,7 +20,7 @@
 #include "libraries/global_parameters.h"
 
 extern TrashMonitoring	trashmonitoring;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(XmlTree)

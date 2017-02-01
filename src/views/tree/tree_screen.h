@@ -40,9 +40,9 @@
 
 
 
-class GlobalParameters;
+class gl_para;
 extern QString		get_unical_id(void);
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 extern const char	*global_root_id;
 
 

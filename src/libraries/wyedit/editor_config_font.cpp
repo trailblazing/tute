@@ -22,7 +22,7 @@
 
 
 #include "main.h"
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 
 #if QT_VERSION == 0x050600
