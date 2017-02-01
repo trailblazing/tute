@@ -37,7 +37,7 @@ class tkm_t;
 class wn_t;
 class ts_t;
 class FindScreen;
-class MetaEditor;
+class Editentry;
 class AppConfig;
 
 
@@ -67,7 +67,7 @@ class rctrl_t : public QObject {
 
 	//    typedef TreeItem::bind_helper       bind_helper;
 	//    typedef TreeItem::activate_helper   active_helper;
-	rctrl_t(MetaEditor *_editor_screen
+	rctrl_t(Editentry *_editentry
 	       , browser::TabWidget *_tabmanager
 	       , rs_t *_record_screen
 	       , wn_t *_main_window);
@@ -209,7 +209,7 @@ class rctrl_t : public QObject {
 	RecordProxyModel	*_proxy_model;
 	rv_t			*_view;
 	rs_t			*_record_screen;
-	MetaEditor		*_editor_screen;
+	Editentry		*_editentry;
 	wn_t			*_main_window;
 
 //	browser::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true);	// , const int mode = add_new_record_after	// add_new_record_after

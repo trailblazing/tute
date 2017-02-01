@@ -37,12 +37,12 @@
 #include "models/tree/tree_item.h"
 #include "libraries/crypt/password.h"
 #include "libraries/clipboard_branch.h"
+#include "views/record/editentry.h"
 
 
 
 
-
-extern GlobalParameters		globalparameters;
+extern gl_para		globalparameters;
 extern AppConfig		appconfig;
 extern const char		*clipboard_items_root;
 

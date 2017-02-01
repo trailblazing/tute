@@ -23,7 +23,7 @@
 
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para		globalparameters;
 const char		*standardItem	= "Standard";
 const char		*portableItem	= "Portable";
 
@@ -45,15 +45,15 @@ void AppConfigPageMain::setup_ui(void){
 //    QString	portableItem	= tr("Portable");
 
 
-	// Блок работы с выбором языка интерфейса
-    _application_mode_label = new QLabel(this);
-    _application_mode_label->setText(tr("Application Mode"));
+//	// Блок работы с выбором языка интерфейса
+    _application_current_path_label = new QLabel(this);
+    _application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
 
-    _application_mode_option = new MtComboBox(this);
-    _application_mode_option->setMinimumContentsLength(2);
-    _application_mode_option->addItem(standardItem);
-    _application_mode_option->addItem(portableItem);
-    _application_mode_option->setCurrentIndex(_application_mode_option->findText(globalparameters.permanent_application_mode(), Qt::MatchCaseSensitive));
+//    _application_mode_option = new MtComboBox(this);
+//    _application_mode_option->setMinimumContentsLength(2);
+//    _application_mode_option->addItem(standardItem);
+//    _application_mode_option->addItem(portableItem);
+//    _application_mode_option->setCurrentIndex(_application_mode_option->findText(globalparameters.app_mode(), Qt::MatchCaseSensitive));
 
     _rootdir_label = new QLabel(this);
     _rootdir_label->setText(tr("Root directory"));
@@ -64,7 +64,7 @@ void AppConfigPageMain::setup_ui(void){
 
     _rootdir_input = new QLineEdit(this);
     _rootdir_input->setMinimumWidth(50);
-    _rootdir_input->setText(globalparameters.permanent_root_path());
+    _rootdir_input->setText(globalparameters.root_path());
 
     _rootdir_button = new FlatToolButton(this);
     _rootdir_button->setText(tr("..."));
@@ -173,10 +173,10 @@ void AppConfigPageMain::setup_signals(void){
 }
 
 void AppConfigPageMain::assembly(void){
-    QHBoxLayout *application_mode_layout = new QHBoxLayout();
+    QHBoxLayout *application_current_path_layout = new QHBoxLayout();
 
-    application_mode_layout->addWidget(_application_mode_label);
-    application_mode_layout->addWidget(_application_mode_option);
+    application_current_path_layout->addWidget(_application_current_path_label);
+//    application_mode_layout->addWidget(_application_mode_option);
 
     QHBoxLayout *rootdirLayout = new QHBoxLayout();
     rootdirLayout->addWidget(_rootdir_input);
@@ -246,7 +246,7 @@ void AppConfigPageMain::assembly(void){
 
 
     QVBoxLayout *centralLayout = new QVBoxLayout();
-    centralLayout->addLayout(application_mode_layout);
+    centralLayout->addLayout(application_current_path_layout);
     centralLayout->addLayout(dirLayout);
     centralLayout->addLayout(otherSettingLayout);
     centralLayout->addWidget(_datetime_format_box);
@@ -262,10 +262,30 @@ void AppConfigPageMain::open_rootdir_select_dialog(void){
     rootdirSelectDialog.setDirectory(_rootdir_input->text());
 
     rootdirSelectDialog.exec();
-    auto root_path = rootdirSelectDialog.directory().absolutePath();
-    _rootdir_input->setText(root_path);
-    _datadir_input->setText(root_path + "/" + QDir(_datadir_input->text()).dirName());
-    _trashdir_input->setText(root_path + "/" + QDir(_trashdir_input->text()).dirName());
+    auto root_path_ = rootdirSelectDialog.directory().absolutePath();
+    _rootdir_input->setText(root_path_);
+
+//    _datadir_input->setText(root_path_ + "/" + QDir(_datadir_input->text()).dirName());
+//    _trashdir_input->setText(root_path_ + "/" + QDir(_trashdir_input->text()).dirName());
+
+    QDir dir(root_path_);
+	// Проверяется, допустимо ли имя директории
+    if(! dir.isReadable()){
+	QMessageBox::warning(this, tr("Warning")
+			    , tr("The root directory does not exists or unavailable for reading.")
+			    , QMessageBox::Ok);
+    }	// else
+    if(! dir.exists()) DiskHelper::create_directory(QDir::rootPath(), root_path_);
+    if(dir.exists() && dir.isReadable()){
+	// Новое имя запоминается в конфиг
+	globalparameters.root_path(root_path_);
+//	difficult_changes = 1;
+	if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
+	_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
+	_application_current_path_label->update();
+	assert(QDir(globalparameters.root_path()) == dir);
+	assert(dir.absolutePath() == QDir::currentPath());
+    }
 }
 
 // Действия при нажатии кнопки выбора директории данных
@@ -335,25 +355,37 @@ Sample: dd.MM.yyyy - hh:mm:ss";
 int AppConfigPageMain::apply_changes(void){
     qDebug() << "Apply changes main";
 
+	//    if((globalparameters.application_mode() != _application_mode_option->currentText()) || (_rootdir_input->text() != globalparameters.root_path())){
+	//    const auto	is_standard	= (_application_mode_option->currentText() == standardItem);
+    const auto original_root_state = std::tuple<const bool, const QString>(true		// , const bool
+									  , _rootdir_input->text());	// , is_standard
+
     int	difficult_changes = 0;
 
-    QString	root_path	= globalparameters.permanent_root_path();
+    QString	root_path_	= globalparameters.root_path();
     auto	write_root	= [&](){
-	    auto	root_path = _rootdir_input->text();
-	    QDir	dir(root_path);
+	    auto	root_path_ = _rootdir_input->text();
+	    QDir	dir(root_path_);
 		// Проверяется, допустимо ли имя директории
-	    if(dir.isReadable() == false){
+	    if(! dir.isReadable()){
 		QMessageBox::warning(this, tr("Warning")
 				    , tr("The root directory does not exists or unavailable for reading.")
 				    , QMessageBox::Ok);
-	    }else if(dir.exists() == false) DiskHelper::create_directory(QDir::rootPath(), root_path);
-	    else{
+	    }	// else
+	    if(! dir.exists()) DiskHelper::create_directory(QDir::rootPath(), root_path_);
+//	    else{
+//		// Новое имя запоминается в конфиг
+//		globalparameters.root_path(root_path_l);
+//		difficult_changes = 1;
+//	    }
+	    if(dir.exists() && dir.isReadable()){
 		// Новое имя запоминается в конфиг
-		globalparameters.permanent_root_path(root_path);
+		globalparameters.root_path(dir.path());
 		difficult_changes = 1;
+		if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
 	    }
 	};
-    if(globalparameters.permanent_root_path() != _rootdir_input->text()) write_root();
+    if(globalparameters.root_path() != _rootdir_input->text()) write_root();
     auto write_data = [&](){
 	    auto	data_path = _datadir_input->text();
 	    QDir	dir(data_path);
@@ -362,12 +394,14 @@ int AppConfigPageMain::apply_changes(void){
 		QMessageBox::warning(this, tr("Warning")
 				    , tr("The data directory does not exists or unavailable for reading.")
 				    , QMessageBox::Ok);
-	    }else if(dir.exists() == false){
-		DiskHelper::create_directory(root_path, dir.dirName());
-		DiskHelper::create_directory(root_path + dir.dirName(), "base");
-	    }else{
+	    }	// else
+	    if(dir.exists() == false){
+		DiskHelper::create_directory(root_path_, dir.dirName());
+		DiskHelper::create_directory(root_path_ + dir.dirName(), "base");
+	    }
+	    if(dir.exists() && dir.isReadable()){
 		// Новое имя запоминается в конфиг
-		appconfig.data_dir(data_path);
+		appconfig.data_dir(dir.path());
 		difficult_changes = 1;
 	    }
 	};
@@ -381,10 +415,11 @@ int AppConfigPageMain::apply_changes(void){
 		QMessageBox::warning(this, tr("Warning")
 				    , tr("The trash directory does not exists or unavailable for reading.")
 				    , QMessageBox::Ok);
-	    }else if(dir.exists() == false) DiskHelper::create_directory(root_path, dir.dirName());
-	    else{
+	    }	// else
+	    if(dir.exists() == false) DiskHelper::create_directory(root_path_, dir.dirName());
+	    if(dir.exists() && dir.isReadable()){
 		// Новое имя запоминается в конфиг
-		appconfig.trash_dir(trash_path);
+		appconfig.trash_dir(dir.path());
 	    }
 	};
 	// Если был изменен путь к корзине, он запоминается в конфигфайл
@@ -402,27 +437,28 @@ int AppConfigPageMain::apply_changes(void){
 	appconfig.interface_language(_interface_language->currentText());
 	difficult_changes = 1;
     }
-//    if((globalparameters.application_mode() != _application_mode_option->currentText()) || (_rootdir_input->text() != globalparameters.root_path())){
-    const auto	is_standard	= (_application_mode_option->currentText() == standardItem);
-    const auto	original_state	= std::tuple<const bool, const bool, const QString>(true, is_standard, _rootdir_input->text());
-    const auto	result		= globalparameters.initialize_root(is_standard, _rootdir_input->text());
-    if(original_state != result){
-	if(std::get<1>(result) != is_standard) _application_mode_option->setCurrentText(is_standard ?  standardItem : portableItem);
-	if(std::get<2>(result) != _rootdir_input->text()){
-	    _rootdir_input->setText(std::get<2>(result));
-	    write_root();
-	    _datadir_input->setText(std::get<2>(result) + "/" + QDir(_datadir_input->text()).dirName());
-	    write_data();
-	    _trashdir_input->setText(std::get<2>(result) + "/" + QDir(_trashdir_input->text()).dirName());
-	    write_trash();
-	}
+    const auto result = globalparameters.coordinate_root(_rootdir_input->text());// is_standard,
+    if(original_root_state != result){
+//	if(std::get<1>(result) != is_standard) _application_mode_option->setCurrentText(is_standard ?  standardItem : portableItem);
+//	if(std::get<2>(result) != _rootdir_input->text()){
+	_rootdir_input->setText(std::get<1>(result));
+	write_root();
+	_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
+	_application_current_path_label->update();
+	_datadir_input->setText(QDir::cleanPath((std::get<1>(result) + "/" + QDir(_datadir_input->text()).dirName())));
+	write_data();
+	_trashdir_input->setText(QDir::cleanPath((std::get<1>(result) + "/" + QDir(_trashdir_input->text()).dirName())));
+	write_trash();
+//	}
 	difficult_changes = 1;
-	if(std::get<0>(result)){
-	    QMessageBox message;
-	    message.setText("The changes of application mode will take effect after restart the application.");			// You have to restart Mytetra for the configuration changes to take effect.
-	    message.exec();
-	    exit(0);
-	}
+	assert(QDir(globalparameters.root_path()) == QDir(std::get<1>(result)));
+	assert(QDir(std::get<1>(result)).absolutePath() == QDir::currentPath());
+//	if(std::get<0>(result)){
+	QMessageBox message;
+	message.setText("The changes of application mode will take effect after restart the application.");			// You have to restart Mytetra for the configuration changes to take effect.
+	message.exec();
+	exit(0);
+//	}
     }	// else difficult_changes = 0;
 //    }
     return difficult_changes;

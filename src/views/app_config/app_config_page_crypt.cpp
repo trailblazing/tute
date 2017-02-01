@@ -21,7 +21,7 @@
 #include "libraries/disk_helper.h"
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 extern DataBaseConfig	databaseconfig;
 
 

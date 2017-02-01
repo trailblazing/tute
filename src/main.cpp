@@ -69,7 +69,7 @@ using namespace std;
 FixedParameters fixedparameters;
 
 // Глобальные параметры программы (вычислимые на этапе инициализации, иногда меняющиеся в процессе выполнения программы)
-GlobalParameters globalparameters;
+gl_para globalparameters;
 
 // Конфигурация программы (считанная из файла конфигурации)
 AppConfig appconfig;
@@ -96,13 +96,13 @@ bool url_equal(const std::string &url_compare_stored, const std::string &url_com
 std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get){
     std::string compare = "";
     if(url_compare_stored.size() >= url_compare_get.size()){
-	for(std::string::size_type i = 0; i < url_compare_get.size(); i ++)																																																																																																																																						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i);																																																																																																																																																																																													// url_compare_stored.erase(i, 1);
+	for(std::string::size_type i = 0; i < url_compare_get.size(); i ++)																																																																																																																																																																																																																						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i);																																																																																																																																																																																																																																																																																																													// url_compare_stored.erase(i, 1);
 	for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i ++) compare += url_compare_stored.at(i);
     }else{
 	// url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
-	for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++)																																																																																																																																							// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i);																																																																																																																																																																																	// url_compare_get.erase(i, 1);
+	for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++)																																																																																																																																																																																																																							// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i);																																																																																																																																																																																																																																																																																									// url_compare_get.erase(i, 1);
 	for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i ++) compare += url_compare_get.at(i);
     }
 //    std::string::size_type pos;
@@ -445,7 +445,7 @@ QString replace_css_meta_iconsize(QString styleText){
 QString set_css_style(){
     QString style;
 
-    QString	work_directory	= globalparameters.permanent_root_path();
+    QString	work_directory	= globalparameters.root_path();
     auto	target_os	= globalparameters.target_os();
     QString	file_name_to	= work_directory + "/" + target_os + "/stylesheet.css";
 //    QString	file_name_from	= work_directory + "/resource/standardconfig/" + target_os + "/stylesheet.css";
@@ -788,7 +788,100 @@ void init_random(void){
     srand(seed);
 }
 
+
+#ifdef USE_QTM
+
+#include "libraries/qt_single_application5/qtsingleapplication.h"
+
+
+#ifdef USE_SYSTRAYICON
+#include "libraries/qtm/SysTrayIcon.h"
+#ifdef Q_OS_MAC
+#include "SuperMenu.h"
+#endif
+#endif
+
+#endif
+
 int main(int argc, char * *argv){
+#ifdef USE_QTM
+
+
+//    EditingWindow *c;
+#ifdef USE_SYSTRAYICON
+//    SysTrayIcon *sti;
+#endif
+
+#ifdef Q_OS_MAC
+#if QT_VERSION <= 0x050000
+    if(QSysInfo::MacintoshVersion > QSysInfo::MV_10_8){
+	// Fix Mavericks font issue: https://bugreports.qt-project.org/browse/QTBUG-32789
+	QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
+    }
+#endif	// QT_VERSION
+#endif	// Q_OS_MAC
+    {
+//    Application app(argc, argv);
+//    QStringList args = app.arguments();
+//    if(args.contains("--delete-sandbox")){
+//	app.deleteSandbox();
+//	exit(0);
+//    }
+    }
+#ifdef USE_SYSTRAYICON
+    {
+//    if(QSystemTrayIcon::isSystemTrayAvailable()){
+//	sti = new SysTrayIcon;
+//	if(! sti->dontStart()){
+#ifndef Q_OS_MAC
+//	    sti->show();
+#else
+//	    SuperMenu *smenu = new SuperMenu(0, sti);
+//	    smenu->setObjectName("MacGlobalMenu");
+//	    smenu->show();
+//	    smenu->handleNewWindowAtStartup();
+#endif
+	{
+//	    app.setQuitOnLastWindowClosed(false);
+	}
+//	}
+//    }else{
+	{
+//	c = new EditingWindow;
+//	c->setSTI(0);	// No STI
+//	c->setWindowTitle(QObject::tr("QTM - new entry [*]"));
+//	if(c->handleArguments()) c->show();
+//	else c->close();
+	}
+//    }
+    }
+#else
+    app.setupRecentFiles();
+    c = new EditingWindow;
+    c->setWindowTitle(QObject::tr("QTM - new entry [*]"));
+    if(c->handleArguments()){
+#if Q_OS_MAC
+	setNoStatusBar(c);
+#endif
+	c->show();
+    }else{
+	qDebug("closing");
+	c->close();
+    }
+#endif
+    {
+// #ifdef USE_SYSTRAYICON
+//    if(QSystemTrayIcon::isSystemTrayAvailable()){
+//	if(! sti->dontStart()) return app.exec();
+//    }else return app.exec();
+// #else
+//    return app.exec();
+// #endif
+    }
+
+#endif	// USE_QTM
+
+
     printf("\n\rStart Hapnote v. % d. % d. % d\n\r", APPLICATION_RELEASE_VERSION, APPLICATION_RELEASE_SUBVERSION, APPLICATION_RELEASE_MICROVERSION);
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 

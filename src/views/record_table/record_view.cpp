@@ -42,7 +42,7 @@
 #include "views/record_table/vertical_scrollarea.h"
 
 
-extern GlobalParameters								globalparameters;
+extern gl_para								globalparameters;
 extern FixedParameters								fixedparameters;
 extern AppConfig								appconfig;
 extern const char								*record_view_multi_instance_name;

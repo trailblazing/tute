@@ -57,9 +57,9 @@
 
 #include "views/browser/browser.h"
 #include "views/browser/toolbarsearch.h"
+#include "views/record/editentry.h"
 
-
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 extern FixedParameters	fixedparameters;
 extern AppConfig	appconfig;
 extern WalkHistory	walkhistory;
@@ -70,7 +70,7 @@ W_OBJECT_IMPL(rctl_t)
 #endif
 
 
-rctrl_t::rctrl_t(MetaEditor *_editor_screen		// TreeScreen           *_tree_screen        // , FindScreen         *_find_screen        // ,
+rctrl_t::rctrl_t(Editentry *_editentry		// TreeScreen           *_tree_screen        // , FindScreen         *_find_screen        // ,
 		, browser::TabWidget *_tabmanager
 		, rs_t *_record_screen
 		, wn_t *_main_window)
@@ -80,7 +80,7 @@ rctrl_t::rctrl_t(MetaEditor *_editor_screen		// TreeScreen           *_tree_scre
       , _proxy_model(new RecordProxyModel(this))
       , _view(new rv_t(_record_screen, this))	// , qobject_cast<QWidget * >(RecordTableScreen)
       , _record_screen(_record_screen)
-      , _editor_screen(_editor_screen)
+      , _editentry(_editentry)
       , _main_window(_main_window){
 	// setObjectName(screen_name + "_controller");
 
@@ -1588,7 +1588,7 @@ void rctrl_t::edit_field(pos_source pos
     it->field<tags_type>(tags);
 
 	// Обновление инфополей в области редактирования записи
-    MetaEditor *meta_editor = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
+    auto *meta_editor = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
     meta_editor->pin(pin);
     meta_editor->name(name);
     meta_editor->author(author);

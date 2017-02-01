@@ -11,7 +11,7 @@
 
 
 
-class MetaEditor;
+class Editentry;
 
 
 class WindowSwitcher : public QObject {
@@ -22,7 +22,7 @@ class WindowSwitcher : public QObject {
 #endif
 
 public:
-    explicit WindowSwitcher(QString object_name, MetaEditor *meta_editor, QObject *parent = 0);
+    explicit WindowSwitcher(QString object_name, Editentry *meta_editor, QObject *parent = 0);
 
     void enable(void);
     void disable(void);

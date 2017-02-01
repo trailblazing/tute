@@ -34,7 +34,7 @@
 #include "libraries/disk_helper.h"
 #include "libraries/trash_monitoring.h"
 
-extern GlobalParameters				globalparameters;
+extern gl_para				globalparameters;
 extern const char				*clipboard_items_root;
 extern AppConfig				appconfig;
 extern TrashMonitoring				trashmonitoring;
@@ -68,7 +68,7 @@ tkm_t::tkm_t(const QString &index_xml_file_name, tv_t *parent) : tm_t(parent){	/
 
 //    assert(_root_item->linker()->host().get() == _root_item.get());
 //    assert(_root_item->linker()->host_parent().get() != _root_item.get());
-    _xml_file_path = globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + index_xml_file_name;
+    _xml_file_path = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + index_xml_file_name;
     init_from_xml(_xml_file_path);			// _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
     int all_count = count_records_all();
     while(all_count <= 0){
@@ -463,7 +463,7 @@ bool tkm_t::update_sub_version_from_1_to_2(void){
 
 void tkm_t::reload(void){
     globalparameters.main_window()->setDisabled(true);
-    if(_xml_file_path == index_xml_file_name) _xml_file_path = globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + index_xml_file_name;
+    if(_xml_file_path == index_xml_file_name) _xml_file_path = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + index_xml_file_name;
     init_from_xml(_xml_file_path);
     globalparameters.main_window()->setEnabled(true);
 }

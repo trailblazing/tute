@@ -105,7 +105,7 @@
 #include "models/record_table/record_model.h"
 #include "models/record_table/record_model_proxy.h"
 #include "controllers/record_table/record_controller.h"
-
+#include "views/record/editentry.h"
 
 
 
@@ -249,7 +249,7 @@ const char *custom_widget_style =
 
     "}"
 ;
-extern GlobalParameters			globalparameters;
+extern gl_para			globalparameters;
 extern AppConfig			appconfig;
 extern QMap<Qt::CheckState, QString>	_string_from_check_state;
 extern QMap<QString, Qt::CheckState>	_state_check_from_string;
@@ -738,7 +738,7 @@ namespace browser {
 
     TabWidget::TabWidget(ts_t               *tree_screen_
 			, FindScreen        *find_screen_
-			, MetaEditor        *editor_screen_
+			, Editentry	    *editentry_
 			, Browser           *browser_
 			, rs_t              *record_screen_
 			, Entrance          *entrance_
@@ -746,12 +746,12 @@ namespace browser {
 			, browser::Profile  *profile_)
 	: QTabWidget(browser_)
 	  , _tree_screen(tree_screen_)
-	  , _editor_screen(editor_screen_)
+	  , _editentry(editentry_)
 	  , _entrance(entrance_)
 	  , _browser(browser_)
 	  , _record_screen(record_screen_)
 	  , _main_window(main_window_)
-	  , _record_controller(new rctrl_t(_editor_screen, this, _record_screen, _main_window))
+	  , _record_controller(new rctrl_t(_editentry, this, _record_screen, _main_window))
 	  , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
 	  , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
 	  , _closetabaction(new QAction(QIcon(QLatin1String(":closetab.png")), tr("&Close Tab"), this))
@@ -1059,7 +1059,7 @@ namespace browser {
 //                    }
 		    auto _mainwindow = globalparameters.main_window();
 		    if(! _mainwindow->windowTitle().contains(view_current->page()->title())) _mainwindow->setWindowTitle(QString(globalparameters.application_name()) + " : " + view_current->page()->title());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																						// webView->setFocus();
-		    MetaEditor *metaeditor = globalparameters.meta_editor();		// find_object<MetaEditor>(meta_editor_singleton_name);
+		    Editentry *metaeditor = globalparameters.meta_editor();		// find_object<MetaEditor>(meta_editor_singleton_name);
 		    assert(metaeditor);
 		    if(metaeditor->item() != _target_in_browser) view_current->page()->metaeditor_sychronize();																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																														// metaeditor->bind(record);
 		}
@@ -1476,7 +1476,7 @@ namespace browser {
 		view = new WebView(result
 				  , _profile	// use record for return
 				  , _tree_screen
-				  , _editor_screen
+				  , _editentry
 				  , _entrance
 				  , _browser
 				  , this

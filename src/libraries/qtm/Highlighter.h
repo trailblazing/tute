@@ -12,32 +12,30 @@
 #include <QString>
 #include <QTextCharFormat>
 
-class Highlighter : public QSyntaxHighlighter
-{
-Q_OBJECT
+class Highlighter : public QSyntaxHighlighter {
+    Q_OBJECT
 
-public:
-  enum Construct {
-    Entity, Tag, Comment,
-    LastConstruct = Comment
-  };
+    public:
+	enum Construct {
+	    Entity, Tag, Comment,
+	    LastConstruct = Comment
+	};
 
-  Highlighter( QTextDocument *document = 0, QObject *parent = 0 );
-  void setFormatFor( Construct construct, const QTextCharFormat &format );
-  QTextCharFormat formatFor( Construct construct ) const
-  { return m_formats[construct]; }
+	Highlighter(QTextDocument *document = 0, QObject *parent = 0);
+	void setFormatFor(Construct construct, const QTextCharFormat &format);
+	QTextCharFormat formatFor(Construct construct) const
+	{return m_formats[construct];}
 
-protected:
-  enum State {
-    NormalState = -1,
-    InComment, InTag
-  };
+    protected:
+	enum State {
+	    NormalState = - 1,
+	    InComment, InTag
+	};
 
-  virtual void highlightBlock( const QString & );
+	virtual void highlightBlock(const QString &);
 
-private:
-  QMap<Construct, QTextCharFormat> m_formats;
-
+    private:
+	QMap<Construct, QTextCharFormat> m_formats;
 };
 
 

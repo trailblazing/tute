@@ -103,7 +103,7 @@
 #include "views/tree/tree_view.h"
 #include "views/tree/tree_screen.h"
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 // Record *default_record = nullptr;
 const char *profile_storage_name = "cookie";
 
@@ -520,7 +520,7 @@ namespace browser {
 
     Browser::Browser(ts_t *_tree_screen
 		    , FindScreen *_find_screen
-		    , MetaEditor *_editor_screen
+		    , Editentry *_editentry
 		    , rs_t *_record_screen
 		    , Entrance *_entrance
 		    , wn_t *_main_window
@@ -544,7 +544,7 @@ namespace browser {
 	  , _centralwidget(new QWidget(this))
 	  , _layout(new QVBoxLayout)
 	  , _record_screen(_record_screen)	// (new rs_t(_tree_screen, _find_screen, _editor_screen, _entrance, this, _main_window, _profile))
-	  , _tabmanager(new browser::TabWidget(_tree_screen, _find_screen, _editor_screen, this, _record_screen, _entrance, _main_window, _profile))	// (_record_screen->tabmanager())
+	  , _tabmanager(new browser::TabWidget(_tree_screen, _find_screen, _editentry, this, _record_screen, _entrance, _main_window, _profile))	// (_record_screen->tabmanager())
 	  , _entrance(_entrance->prepend(this)){	// , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
 	init();
 
@@ -643,7 +643,7 @@ namespace browser {
     }
 
     void Browser::load_default_state(){
-	QSettings settings(globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("browser"));
 	QByteArray data = settings.value(QLatin1String("default_state")).toByteArray();
 	restore_state(data);
@@ -667,7 +667,7 @@ namespace browser {
 
     void Browser::save(){
 	sapp_t::instance()->saveSession();
-	std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+	std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 //	QSettings settings(globalparameters.work_directory() + "/" + globalparameters.target_os() +  "/browser.conf", QSettings::IniFormat);
 	settings->beginGroup(QLatin1String("browser"));
 	QByteArray data = save_state(false);
@@ -1404,7 +1404,7 @@ namespace browser {
 
 	// deprecated by record::preoperty::home
     void Browser::slotHome(){
-	QSettings settings(globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("MainWindow"));
 	QString home		= settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
 	auto	tree_view	= _tree_screen->view();

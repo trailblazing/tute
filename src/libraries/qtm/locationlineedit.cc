@@ -27,38 +27,33 @@
 
 #include "locationlineedit.h"
 
-LocationLineEdit::LocationLineEdit( QWidget *parent )
-  : QLineEdit( parent )
-{
+LocationLineEdit::LocationLineEdit(QWidget *parent)
+    : QLineEdit(parent)
+{}
+
+void LocationLineEdit::contextMenuEvent(QContextMenuEvent *event){
+    QMenu *menu = new QMenu(this);
+    menu->addAction("mt-xmlrpc.cgi (Movable Type)", this
+		   , SLOT(addMT()));
+    menu->addAction("xmlrpc.php (WordPress)", this
+		   , SLOT(addWordpress()));
+    menu->addAction("/textpattern/xmlrpcs.php (TextPattern)", this
+		   , SLOT(addTextpattern()));
+    menu->addSeparator();
+    QMenu *cm = createStandardContextMenu();
+    cm->setTitle(tr("Editing"));
+    menu->addMenu(cm);
+    menu->exec(event->globalPos());
 }
 
-void LocationLineEdit::contextMenuEvent( QContextMenuEvent *event )
-{
-  QMenu *menu = new QMenu( this );
-  menu->addAction( "mt-xmlrpc.cgi (Movable Type)", this,
-		   SLOT( addMT() ) );
-  menu->addAction( "xmlrpc.php (WordPress)", this,
-		   SLOT( addWordpress() ) );
-  menu->addAction( "/textpattern/xmlrpcs.php (TextPattern)", this,
-		   SLOT( addTextpattern() ) );
-  menu->addSeparator();
-  QMenu *cm = createStandardContextMenu();
-  cm->setTitle( tr( "Editing" ) );
-  menu->addMenu( cm );
-  menu->exec( event->globalPos() );
+void LocationLineEdit::addMT(){
+    insert("mt-xmlrpc.cgi");
 }
 
-void LocationLineEdit::addMT()
-{
-  insert( "mt-xmlrpc.cgi" );
+void LocationLineEdit::addWordpress(){
+    insert("xmlrpc.php");
 }
 
-void LocationLineEdit::addWordpress()
-{
-  insert( "xmlrpc.php" );
-}
-
-void LocationLineEdit::addTextpattern()
-{
-  insert( "/textpattern/xmlrpcs.php" );
+void LocationLineEdit::addTextpattern(){
+    insert("/textpattern/xmlrpcs.php");
 }

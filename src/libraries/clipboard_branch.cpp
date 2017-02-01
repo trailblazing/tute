@@ -23,7 +23,7 @@
 #include "models/record_table/record_model.h"
 
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 const char		*clipboard_items_root = "clipboard_items_root";
 
 

@@ -20,12 +20,12 @@
 #include "views/tree/tree_view.h"
 #include "models/tree/tree_know_model.h"
 #include "views/main_window/hidable_tabwidget.h"
-
+#include "views/record/editentry.h"
 
 extern const char *record_screen_multi_instance_name;
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 
 #if QT_VERSION == 0x050600
@@ -33,7 +33,7 @@ W_OBJECT_IMPL(WindowSwitcher)
 #endif
 
 
-WindowSwitcher::WindowSwitcher(QString object_name, MetaEditor *meta_editor, QObject *parent) : QObject(parent){
+WindowSwitcher::WindowSwitcher(QString object_name, Editentry *meta_editor, QObject *parent) : QObject(parent){
     setObjectName(object_name);
     enable();
 

@@ -89,8 +89,8 @@
 #endif
 
 
-class GlobalParameters;
-extern GlobalParameters			globalparameters;
+class gl_para;
+extern gl_para			globalparameters;
 extern QMap<Qt::CheckState, QString>	_string_from_check_state;
 extern QMap<QString, Qt::CheckState>	_state_check_from_string;
 extern QString				get_unical_id(void);
@@ -135,6 +135,7 @@ class tm_t;
 class RecordModel;
 class rv_t;
 class tv_t;
+class Editentry;
 
 
 
@@ -495,7 +496,7 @@ namespace browser {
 	public:
 	    TabWidget(ts_t		*tree_screen_
 		     , FindScreen	*find_screen_
-		     , MetaEditor	*editor_screen_
+		     , Editentry	*editentry_
 		     , Browser		*browser_
 		     , rs_t		*record_screen_
 		     , Entrance		*entrance_
@@ -695,7 +696,7 @@ namespace browser {
 	    WebView	*view_no_pinned();
 	private:
 	    ts_t		*_tree_screen;
-	    MetaEditor		*_editor_screen;
+	    Editentry		*_editentry;
 	    Entrance		*_entrance;
 	    Browser		*_browser;
 	    rs_t		*_record_screen;

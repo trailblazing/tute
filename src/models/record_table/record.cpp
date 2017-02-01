@@ -25,7 +25,7 @@
 
 extern AppConfig	appconfig;
 extern FixedParameters	fixedparameters;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 
 Record::Record()	// boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
@@ -1043,7 +1043,7 @@ void Record::push_fat_attributes(){
 // Полное имя директории записи
 QString Record::full_dir() const {
     if(_field_data.contains(boost::mpl::c_str < dir_type >::value) == false) const_cast<Record *>(this)->_field_data[boost::mpl::c_str < dir_type > ::value] = _field_data.value(boost::mpl::c_str < id_type >::value);																																																																																																																																																																																																																																																				// critical_error("Record::full_dir() : Not present dir field");
-    return globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + _field_data.value(boost::mpl::c_str < dir_type >::value);
+    return globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + _field_data.value(boost::mpl::c_str < dir_type >::value);
 }
 
 // Короткое имя директории записи
@@ -1083,8 +1083,8 @@ void Record::check_and_fill_file_dir(QString &idir_name, QString &i_file_name){
 	// Проверяется наличие директории, куда будет вставляться файл с текстом записи
     if(! recordDir.exists()){
 	// Создается новая директория в директории base
-	QDir directory(globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base");
-	if(! directory.exists()) QDir(globalparameters.permanent_root_path() + "/" + QDir(appconfig.data_dir()).dirName()).mkdir("base");
+	QDir directory(globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base");
+	if(! directory.exists()) QDir(globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName()).mkdir("base");
 	bool result = directory.mkdir(short_dir());
 	if(! result) critical_error("Record::check_and_fill_file_dir() : Can't create directory '" + short_dir() + "'");
     }

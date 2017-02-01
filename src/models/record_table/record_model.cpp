@@ -36,7 +36,7 @@
 
 extern FixedParameters	fixedparameters;
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 // pages_container::pages_container(browser::TabWidget *_tabmanager)
 //    : _tabmanager(_tabmanager)	// new browser::TabWidget(_browser, _record_controller)

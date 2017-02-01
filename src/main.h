@@ -95,10 +95,10 @@ extern QString	set_css_style();
 void		set_kinetic_scrollarea(QAbstractItemView *object);
 
 class WalkHistory;
-class GlobalParameters;
+class gl_para;
 
 extern WalkHistory	walkhistory;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 //extern const char	*application_name;
 extern const char	*meta_editor_singleton_name;
 extern const char	*record_screen_multi_instance_name;
@@ -207,5 +207,9 @@ extern bool		url_equal(const std::string &url_compare_stored, const std::string 
 
 extern std::ifstream::pos_type filesize(const char* filename);
 extern std::streampos file_size(const char *file_path);
+
+#ifndef USE_QTM
+#define USE_QTM
+#endif
 
 #endif	// __MAIN_H__

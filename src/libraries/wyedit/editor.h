@@ -13,6 +13,7 @@
 #include <QToolBar>
 #include <QSlider>
 #include <QStringList>
+#include <QDockWidget>
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -99,8 +100,8 @@
 #define MINIMUM_ALLOWED_FONT_SIZE	5
 #define MAXIMUM_ALLOWED_FONT_SIZE	100
 
-class GlobalParameters;
-extern GlobalParameters globalparameters;
+class gl_para;
+extern gl_para globalparameters;
 
 
 class EditorConfig;
@@ -113,7 +114,8 @@ class FlatComboBox;
 class FlatFontComboBox;
 class FlatToolButton;
 
-class Editor : public QWidget {
+class Editor : public QWidget
+{
 #if QT_VERSION == 0x050600
     W_OBJECT(Editor)
 #else
@@ -218,7 +220,7 @@ class Editor : public QWidget {
 	QString file_name(void);
 
 	static void editor_load_callback(QObject *editor, QString &loadText);
-	static void editor_save_callback(QObject *editor, QString saveText);
+	static void editor_save_callback(QObject *editor, const QString &saveText);
 	void save_textarea();
 	bool save_textarea_text();
 	bool save_textarea_images(int mode);
@@ -396,9 +398,9 @@ class Editor : public QWidget {
 
     private:
 
-	bool _init_data_enable_assembly;
-	QString _init_data_config_file_name;
-	bool _init_data_enable_random_seed;
+	bool _init_data_enable_assembly		= true;
+	QString _init_data_config_file_name	= "";
+	bool _init_data_enable_random_seed	= false;
 
 	// Рабочая директория редактора и файл текста
 	// Используется при сохранении текста на диск
@@ -480,8 +482,7 @@ class Editor : public QWidget {
 	// в объекте редактора, и считываются из функции обратного вызова
 	QMap<QString, QString> _misc_fields;
 
-	int _dir_file_empty_reaction;
-
+	int _dir_file_empty_reaction = DIRFILEEMPTY_REACTION_SHOW_ERROR;
 	QStringList _tools_list_in_line_0;
 	QStringList _tools_list_in_line_1;
 
@@ -499,6 +500,9 @@ class Editor : public QWidget {
 	    BT_ALIGN_RIGHT,
 	    BT_ALIGN_WIDTH
 	};
+//	QWidget *_hidetitlebar;
+	friend class MetaEditor;
+	friend class Editentry;
 };
 
 #endif /* _EDITOR_H_ */

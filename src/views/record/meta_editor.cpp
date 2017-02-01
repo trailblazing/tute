@@ -39,9 +39,15 @@
 #include "views/tree/tree_view.h"
 #include "views/main_window/hidable_tabwidget.h"
 #include "views/main_window/main_window.h"
+#include "views/record/editentry.h"
 
 
-extern GlobalParameters globalparameters;
+#ifdef USE_QTM
+#include "libraries/qtm/EditingWindow.h"
+#endif
+
+
+extern gl_para		globalparameters;
 extern AppConfig	appconfig;
 
 namespace browser {
@@ -59,8 +65,9 @@ W_OBJECT_IMPL(MetaEditor)
 #endif
 
 
-MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
+MetaEditor::MetaEditor(QString object_name, EditingWindow *editingwindow_, FindScreen *_find_screen)
     : Editor()
+//    : QDockWidget(_find_screen)
       , _find_screen(_find_screen)
       , _editor_main_screen(new QWidget(this))	// Сборка виджета редактирования текста (основной виджет)
       , _editor_main_layer(new QGridLayout(_editor_main_screen))
@@ -78,14 +85,70 @@ MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
       , _item_tags_layout(new QHBoxLayout(_item_tags_container))
       , _label_tags(new QLabel(_item_tags_container))
       , _attachtable_screen(new AttachTableScreen(this))
-      , _meta_editor_join_layer(new QVBoxLayout(this)){
+      , _meta_editor_join_layer(new QVBoxLayout(this))
+      , _editingwindow(editingwindow_){		//      , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint))
     setObjectName(object_name);
+
+// #ifdef USE_QTM
+
+
+//    setWindowFlags(	// Qt::Window |
+//	Qt::FramelessWindowHint
+//	// |Qt::Popup
+//	| Qt::CustomizeWindowHint
+//	// | Qt::SplashScreen  // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
+//	// | Qt::DockWidgetArea::NoDockWidgetArea
+//	| Qt::MaximizeUsingFullscreenGeometryHint
+//	);
+
+//    setAutoFillBackground(true);
+//    adjustSize();
+
+//    setFeatures(QDockWidget::NoDockWidgetFeatures
+////	| QDockWidget::DockWidgetVerticalTitleBar
+//	// | Qt::DockWidgetArea::NoDockWidgetArea
+//	// | Qt::MaximizeUsingFullscreenGeometryHint
+//	);	// AllDockWidgetFeatures
+
+//    QWidget *titleBar = titleBarWidget();
+
+//    setTitleBarWidget(_hidetitlebar);
+//    _hidetitlebar->setGeometry(0, 0, 0, 0);
+//    _hidetitlebar->setVisible(false);
+//    _hidetitlebar->close();
+
+//    delete titleBar;
+
+
+//    _blog_editor = std::make_unique<EditingWindow>();
+//    _blog_editor->setSTI(0);	// No STI
+//    _blog_editor->setWindowTitle(QObject::tr("QTM - new entry [*]"));
+
+
+
+
+//    _editor = std::make_unique<Editor>(new Editor(this));
+////    _editor->hide_all_tools_elements();
+////    _editor->hide();
+
+//    _blog_editor->setParent(_editor.get());
+//    _editor->setWidget(_blog_editor.get());
+//	//    _blog_editor->setParent(this);
+//	//    setWidget(_blog_editor.get());
+//    if(_blog_editor->handleArguments()) _blog_editor->show();
+//    else _blog_editor->close();
+//    _blog_editor->raise();
+//    _editor->show();
+
+// #endif
+
     Editor::disable_tool_list(appconfig.hide_editor_tools());
 
     Editor::init_enable_assembly(false);
-    Editor::init_config_file_name(globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/editorconf.ini");
+    Editor::
+    init_config_file_name(globalparameters.root_path() + "/" + globalparameters.target_os() + "/editorconf.ini");
     Editor::init_enable_random_seed(false);
-    if(appconfig.interface_mode() == "desktop") Editor::init(Editor::WYEDIT_DESKTOP_MODE);
+    if(appconfig.interface_mode() == "desktop")	Editor::init(Editor::WYEDIT_DESKTOP_MODE);
     else if(appconfig.interface_mode() == "mobile") Editor::init(Editor::WYEDIT_MOBILE_MODE);
     else critical_error("In MetaEditor constructor unknown interface mode: " + appconfig.interface_mode());
     setup_labels();
@@ -310,8 +373,8 @@ void MetaEditor::to_attach_layout(void){
 
 // Статическая функция, обрабатывает клик в редакторе по кнопке переключения на список прикрепляемых файлов
 void MetaEditor::to_attach_callback(void){
-    MetaEditor *edView = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
-    edView->to_attach_layout();
+    auto *editentry_ = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
+    editentry_->to_attach_layout();
 }
 
 // Слот для установки значений инфополей на экране
@@ -348,7 +411,7 @@ void MetaEditor::clear_all(void){
     _attachtable_screen->clear();
 }
 
-void MetaEditor::tree_path(QString path){
+void MetaEditor::tree_path(const QString &path){
     _tree_path->setVisible(true);
     _tree_path->setText(tr("<b>Path: </b>") + path);
 }
@@ -412,18 +475,18 @@ void MetaEditor::switch_pin(){
 	// }
 }
 
-void MetaEditor::pin(QString pin_){
+void MetaEditor::pin(const QString &pin_){
 	// recordPin->setVisible(true);
     _item_pin->setCheckState(_state_check_from_string[pin_]);
 	// recordPin->setText("<b>" + pin + "</b>");
 }
 
-void MetaEditor::name(QString name_){
+void MetaEditor::name(const QString &name_){
     _item_name->setVisible(true);
     _item_name->setText("<b>" + name_ + "</b>");
 }
 
-void MetaEditor::author(QString author_){
+void MetaEditor::author(const QString &author_){
     if(author_.length() == 0){
 	_item_author->setVisible(false);
 	_item_author->setText("");
@@ -433,7 +496,7 @@ void MetaEditor::author(QString author_){
     }
 }
 
-void MetaEditor::home(QString url_){
+void MetaEditor::home(const QString &url_){
     if(url_.length() == 0){
 	_label_home->setVisible(false);
 	_item_home->setVisible(false);
@@ -447,7 +510,7 @@ void MetaEditor::home(QString url_){
     }
 }
 
-void MetaEditor::url(QString url_){
+void MetaEditor::url(const QString &url_){
     if(url_.length() == 0){
 	_label_url->setVisible(false);
 	_item_url->setVisible(false);
@@ -461,7 +524,7 @@ void MetaEditor::url(QString url_){
     }
 }
 
-void MetaEditor::tags(QString tags_){
+void MetaEditor::tags(const QString &tags_){
     _item_tags_text_list.clear();
 
 	// Строка с метками запоминается в явном виде

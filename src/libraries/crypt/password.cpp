@@ -24,7 +24,7 @@
 #include "views/tree/tree_screen.h"
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 extern DataBaseConfig	databaseconfig;
 extern const char	*knowtreeview_singleton_name;
 

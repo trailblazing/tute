@@ -170,7 +170,7 @@ namespace browser {
 	// sb.append(QDir::separator());
 	// sb.append("browserview.ini");
 
-	QString configFileName = globalparameters.permanent_root_path() + "/" + globalparameters.target_os() + "/browserview.ini";
+	QString configFileName = globalparameters.root_path() + "/" + globalparameters.target_os() + "/browserview.ini";
 	// check to see if we have a settings file where we started from
 	// if not fall back to system hard coded path
 	QFileInfo file(configFileName.toLatin1());	// file(sb.toLatin1());
@@ -581,7 +581,7 @@ namespace browser {
     Entrance::Entrance(QString object_name
 		      , ts_t *_tree_screen
 		      , FindScreen *_find_screen// browser::ToolbarSearch *toolbarsearch
-		      , MetaEditor *_editor_screen
+		      , Editentry *_editentry
 		      , wn_t *_main_window
 		      , AppConfig   &_appconfig
 		      , const QString &style_source
@@ -591,7 +591,7 @@ namespace browser {
 //	  , _browsers(std::set<Browser * >())	// , _shadow_branch(_record_controller->source_model()->_browser_pages)
 	  , _tree_screen(_tree_screen)
 	  , _find_screen(_find_screen)
-	  , _editor_screen(_editor_screen)	// , _record_controller(_record_controller)
+	  , _editentry(_editentry)	// , _record_controller(_record_controller)
 	  , _main_window(_main_window)
 	  , _appconfig(_appconfig)
 	  , _style_source(style_source)
