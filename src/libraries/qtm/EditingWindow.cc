@@ -636,7 +636,7 @@ bool EditingWindow::handleArguments(){
     QStringList		args = QApplication::arguments();
     if(args.size() > 1){
 	for(i = 1; i < args.size(); i ++){
-	    if(c)																	// if there is a current new window
+	    if(c)																				// if there is a current new window
 			d = c;
 	    c = new EditingWindow;
 #ifdef Q_OS_MAC
@@ -646,7 +646,7 @@ bool EditingWindow::handleArguments(){
 #ifdef USE_SYSTRAYICON
 		c->setSTI(sti);
 #endif
-		if(d)																		// if there's an old window
+		if(d)																					// if there's an old window
 			positionWidget(c, d);
 		c->show();
 		rv = false;

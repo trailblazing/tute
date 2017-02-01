@@ -324,8 +324,7 @@ HEADERS     =   \
     src/libraries/qtm/SysTrayIcon.h \
     src/libraries/qtm/XmlRpcHandler.h \
     src/views/browser/cookiejar.h \
-    src/views/record/editentry.h \
-    src/utility/config_ini.h
+    src/views/record/editentry.h
 #    src/views/browser/cookiejar.h \
 
 
@@ -468,8 +467,7 @@ SOURCES     =   src/main.cpp \
     src/libraries/qtm/EditingWindow.cc \
     src/libraries/qtm/DBusAdaptor.cc \
     src/libraries/qtm/AccountsDialog.cc \
-    src/views/record/editentry.cpp \
-    src/utility/config_ini.cpp
+    src/views/record/editentry.cpp
 #    src/views/browser/cookiejar.cpp \
 
 
