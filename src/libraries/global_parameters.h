@@ -60,7 +60,7 @@ class gl_para : public QObject {
 
 //	void main_program_full_file(QString file);
 	QString main_program_full_file(void) const;
-	QString main_program_dir() const;
+//	QString main_program_dir() const;
 
 	void init(const QString &app_name);
 
@@ -187,7 +187,7 @@ class gl_para : public QObject {
 	QString	_style_source		= "";
 	QString	_main_program_full_file	= "";
 	QString _application_name	= "";
-	QString _main_program_path	= "";
+//	QString _main_program_path	= "";
 //	QString	_root_path				= "./";
 
 	QString _standard_path				= "";
