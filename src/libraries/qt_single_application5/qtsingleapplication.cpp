@@ -637,22 +637,14 @@ void sapp_t::sys_init(char * *argv){
 }
 
 void sapp_t::browser_init(){
-	// QtSingleApplication::QtSingleApplication(int &argc, char **argv)
-	//        : QApplication(argc, argv)
-	//          //, _localServer(0)
-	//        , _privateProfile(0)
-	//        , _privateBrowsing(false)
-	// {
-//    auto test_string = _globalparameters.work_directory();
-    QFileInfo check_file(_globalparameters.root_path() + "/" + _globalparameters.target_os() + "/browser.conf");
-    if(! (check_file.exists() && check_file.isFile())){	// if(! QFile::exists(_globalparameters.work_directory() +"/" + _globalparameters.target_os() +  "browser.conf")){
-//	QFile	file(_globalparameters.work_directory() + "/browser.conf");
-//	auto conf_name = QString(":/resource/standardconfig/") + _globalparameters.target_os() + "/browser.conf";
-//        if(QFile::exists(QString(":/resource/standardconfig/") + _globalparameters.target_os() + "/browser.conf")){
+    auto conf_location = _globalparameters.root_path() + "/" + _globalparameters.target_os();
+    if(! QDir(conf_location).exists()) if(! QDir::root().mkpath(conf_location)) critical_error("void sapp_t::browser_init() can not make path " + conf_location + " for browser.ini");
+    QFileInfo check_file(conf_location + "/browser.conf");
+    if(! (check_file.exists() && check_file.isFile())){
 	// Файл перемещается в корзину
-	if(! QFile::copy(QString(":/resource/standardconfig/") + _globalparameters.target_os() + "/browser.conf", _globalparameters.root_path() + "/" + _globalparameters.target_os() + "/browser.conf")) throw std::runtime_error("Can not copy browser.conf");																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not open browser.conf");
-	else QFile::setPermissions(_globalparameters.root_path() + "/" + _globalparameters.target_os() + "/browser.conf", QFile::ReadUser | QFile::WriteUser);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
-//        }
+	if(! QFile::copy(QString(":/resource/standardconfig/") + _globalparameters.target_os() + "/browser.conf", conf_location + "/browser.conf")) throw std::runtime_error("Can not copy browser.conf");																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																						// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not open browser.conf");
+	else QFile::setPermissions(conf_location + "/browser.conf", QFile::ReadUser | QFile::WriteUser);
+	//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
     }
     QDesktopServices::setUrlHandler(QLatin1String("http"), this, "openUrl");
     QString localSysName = QLocale::system().name();
@@ -745,7 +737,7 @@ void sapp_t::main_window(){
     _globalparameters.main_window(_window);
 
     _window->setWindowTitle(_globalparameters.application_name());
-    if(_globalparameters.target_os() == "android") _window->show();																																																																																																																																																																																																																																				// В Андроиде нет десктопа, на нем нельзя сворачивать окно
+    if(_globalparameters.target_os() == "android") _window->show();																																																																																																																																																																																																																																																																																	// В Андроиде нет десктопа, на нем нельзя сворачивать окно
     else{
 	if(_appconfig.run_in_minimized_window() == false) _window->show();
 	else _window->hide();
@@ -1071,7 +1063,7 @@ void sapp_t::newLocalSocketConnection(){
     QTextStream stream(socket);
     QString	_url;
     stream >> _url;
-    if(_url.isEmpty()) _url = browser::Browser::_defaulthome;																																																																																																																																																																																																																	//    browser::DockedWindow *w = nullptr;
+    if(_url.isEmpty()) _url = browser::Browser::_defaulthome;																																																																																																																																																																																																																																																									//    browser::DockedWindow *w = nullptr;
 
 	// if(!url.isEmpty()) {
 
@@ -1086,7 +1078,7 @@ void sapp_t::newLocalSocketConnection(){
 //    boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
     auto	current_item	= tree_view->current_item();
     auto	parent		= current_item->parent();
-    if(! parent) throw std::runtime_error(formatter() << "! parent");																																																																																																																																																																																																																																											// std::exception();
+    if(! parent) throw std::runtime_error(formatter() << "! parent");																																																																																																																																																																																																																																																																																								// std::exception();
 //    try {
 //        _tree_modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 //            return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
@@ -1581,7 +1573,7 @@ void sapp_t::setPrivateBrowsing(bool privateBrowsing){
     _private_browsing = privateBrowsing;
     auto browsers = [&] {set<browser::Browser *> bs;for(auto rs : _globalparameters.main_window()->vtab_record()->record_screens()) bs.insert(rs->browser());return bs;} ();
     if(privateBrowsing){
-	if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);																																																																																																																																																																																																																																																																																																																																										// new QWebEngineProfile(this);
+	if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);																																																																																																																																																																																																																																																																																																																																																																																																											// new QWebEngineProfile(this);
 	for(auto &browser : browsers) browser->tabWidget()->setProfile(_private_profile);
     }else{
 	for(auto &browser : browsers){

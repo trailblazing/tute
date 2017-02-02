@@ -197,7 +197,7 @@ class Editor : public QWidget
 	const char *version(void);
 
 	void init_enable_assembly(bool flag);
-	void init_config_file_name(QString name);
+	void init_config_file_name(QString config_full_name);
 	void init_enable_random_seed(bool flag);
 	void init(int mode);
 

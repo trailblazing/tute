@@ -149,6 +149,13 @@ class gl_para : public QObject {
 //	QMap<QString, QString>	config_ini() const;
 //	QMap<QString, QString>	hapnote_xml() const;
 //	QMap<QString, QString>	editorconf() const;
+	const QString _mode_filename			= "mode.ini";
+	const QString _conf_filename			= "conf.ini";
+	const QString _browser_conf_filename		= "browser.conf";
+	const QString _browserview_conf_filename	= "browserview.ini";
+	const QString _editor_conf_filename		= "editorconf.ini";
+	const QString _entrance_conf_filename		= "entrance.ini";
+	const QString _stylesheet_filename		= "stylesheet.css";
     private:
 #define STANDARD_MODE		true
 #define PORTABLE_MODE		false
@@ -177,18 +184,12 @@ class gl_para : public QObject {
 	AttachTableController			*_attachtable_controller	= nullptr;
 
 	QByteArray _password_hash;
-	QString	_style_source				= "";
-	QString	_main_program_full_file			= "";
-	QString _application_name			= "";
-	QString _main_program_path			= "";
+	QString	_style_source		= "";
+	QString	_main_program_full_file	= "";
+	QString _application_name	= "";
+	QString _main_program_path	= "";
 //	QString	_root_path				= "./";
-	QString	_mode_filename				= "mode.ini";
-	QString	_conf_filename				= "conf.ini";
-	QString	_browser_conf_filename			= "browser.conf";
-	QString	_browserview_conf_filename		= "browserview.ini";
-	QString	_editor_conf_filename			= "editorconf.ini";
-	QString	_entrance_conf_filename			= "entrance.ini";
-	QString	_stylesheet_filename			= "stylesheet.css";
+
 	QString _standard_path				= "";
 	std::pair<QString, QString>_standard_paths	= {"", ""};
 	std::vector<rs_t *>			_table_screens;

@@ -96,13 +96,13 @@ bool url_equal(const std::string &url_compare_stored, const std::string &url_com
 std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get){
     std::string compare = "";
     if(url_compare_stored.size() >= url_compare_get.size()){
-	for(std::string::size_type i = 0; i < url_compare_get.size(); i ++)																																																																																																																																																																																																																						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i);																																																																																																																																																																																																																																																																																																													// url_compare_stored.erase(i, 1);
+	for(std::string::size_type i = 0; i < url_compare_get.size(); i ++)																																																																																																																																																																																																																																																																																																						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i);																																																																																																																																																																																																																																																																																																																																																																																																																													// url_compare_stored.erase(i, 1);
 	for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i ++) compare += url_compare_stored.at(i);
     }else{
 	// url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
-	for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++)																																																																																																																																																																																																																							// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i);																																																																																																																																																																																																																																																																																									// url_compare_get.erase(i, 1);
+	for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++)																																																																																																																																																																																																																																																																																																							// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i);																																																																																																																																																																																																																																																																																																																																																																																																	// url_compare_get.erase(i, 1);
 	for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i ++) compare += url_compare_get.at(i);
     }
 //    std::string::size_type pos;
@@ -445,9 +445,11 @@ QString replace_css_meta_iconsize(QString styleText){
 QString set_css_style(){
     QString style;
 
-    QString	work_directory	= globalparameters.root_path();
+    QString	root_path_	= globalparameters.root_path();
     auto	target_os	= globalparameters.target_os();
-    QString	file_name_to	= work_directory + "/" + target_os + "/stylesheet.css";
+    auto	location	= root_path_ + target_os;
+    if(! QDir(location).exists()) if(! QDir::root().mkpath(location)) critical_error("QString set_css_style() can not make path \"" + location + "\"");
+    QString file_name_to = location + "/" + globalparameters._stylesheet_filename;
 //    QString	file_name_from	= work_directory + "/resource/standardconfig/" + target_os + "/stylesheet.css";
 //    qint64	size_from = 0;
 //    QFile	css_from(file_name_from);
@@ -468,13 +470,13 @@ QString set_css_style(){
 //    }else size_to = css_to.size();
 //    css_to.close();	// ?
 //    if(size_to < size_from){
-    if(css_to.exists())
-		if(! QFile::remove(file_name_to)) critical_error("Can not remove file\n" + file_name_to);
-    if(! QFile::copy(":/resource/standardconfig/" + target_os + "/stylesheet.css", file_name_to)){		// file_name_from, file_name_to
-	//        trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
-	//        }else {
-	critical_error("Can not copy css file to file\t" + file_name_to);
-    }
+    if(! css_to.exists())
+//		if(! QFile::remove(file_name_to)) critical_error("Can not remove file\n" + file_name_to);
+		if(! QFile::copy(":/resource/standardconfig/" + target_os + "/stylesheet.css", file_name_to)){			// file_name_from, file_name_to
+			//        trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
+			//        }else {
+		    critical_error("Can not copy css file to file\t" + file_name_to);
+		}
 //    }
 	// Заново открывается файл
     if(css_to.open(QIODevice::ReadOnly | QIODevice::Text)){
