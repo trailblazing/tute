@@ -31,7 +31,9 @@ const char		*portableItem	= "Portable";
 W_OBJECT_IMPL(AppConfigPageMain)
 #endif
 
-AppConfigPageMain::AppConfigPageMain(QWidget *parent) : ConfigPage(parent){
+AppConfigPageMain::AppConfigPageMain(QWidget *parent)
+    : ConfigPage(parent)
+      , _original_root_state(std::make_tuple(true, globalparameters.root_path())){
     setup_ui();
     setup_signals();
     assembly();
@@ -256,6 +258,7 @@ void AppConfigPageMain::assembly(void){
 }
 // Действия при нажатии кнопки выбора директории данных
 void AppConfigPageMain::open_rootdir_select_dialog(void){
+    _original_root_state = std::tuple<const bool, const QString>(true, _rootdir_input->text());
     QFileDialog rootdirSelectDialog(this);
     rootdirSelectDialog.setFileMode(QFileDialog::Directory);
     rootdirSelectDialog.setWindowTitle(tr("Select root directory"));
@@ -268,24 +271,24 @@ void AppConfigPageMain::open_rootdir_select_dialog(void){
 //    _datadir_input->setText(root_path_ + "/" + QDir(_datadir_input->text()).dirName());
 //    _trashdir_input->setText(root_path_ + "/" + QDir(_trashdir_input->text()).dirName());
 
-    QDir dir(root_path_);
-	// Проверяется, допустимо ли имя директории
-    if(! dir.isReadable()){
-	QMessageBox::warning(this, tr("Warning")
-			    , tr("The root directory does not exists or unavailable for reading.")
-			    , QMessageBox::Ok);
-    }	// else
-    if(! dir.exists()) DiskHelper::create_directory(QDir::rootPath(), root_path_);
-    if(dir.exists() && dir.isReadable()){
-	// Новое имя запоминается в конфиг
-	globalparameters.root_path(root_path_);
-//	difficult_changes = 1;
-	if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
-	_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
-	_application_current_path_label->update();
-	assert(QDir(globalparameters.root_path()) == dir);
-	assert(dir.absolutePath() == QDir::currentPath());
-    }
+//    QDir dir(root_path_);
+//	// Проверяется, допустимо ли имя директории
+//    if(! dir.isReadable()){
+//	QMessageBox::warning(this, tr("Warning")
+//			    , tr("The root directory does not exists or unavailable for reading.")
+//			    , QMessageBox::Ok);
+//    }	// else
+//    if(! dir.exists()) DiskHelper::create_directory(QDir::rootPath(), root_path_);
+//    if(dir.exists() && dir.isReadable()){
+//	// Новое имя запоминается в конфиг
+//	globalparameters.root_path(root_path_);
+////	difficult_changes = 1;
+//	if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
+//	_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
+//	_application_current_path_label->update();
+//	assert(QDir(globalparameters.root_path()) == dir);
+//	assert(dir.absolutePath() == QDir::currentPath());
+//    }
 }
 
 // Действия при нажатии кнопки выбора директории данных
@@ -357,8 +360,7 @@ int AppConfigPageMain::apply_changes(void){
 
 	//    if((globalparameters.application_mode() != _application_mode_option->currentText()) || (_rootdir_input->text() != globalparameters.root_path())){
 	//    const auto	is_standard	= (_application_mode_option->currentText() == standardItem);
-    const auto original_root_state = std::tuple<const bool, const QString>(true		// , const bool
-									  , _rootdir_input->text());	// , is_standard
+
 
     int	difficult_changes = 0;
 
@@ -383,6 +385,10 @@ int AppConfigPageMain::apply_changes(void){
 		globalparameters.root_path(dir.path());
 		difficult_changes = 1;
 		if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
+		_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
+		_application_current_path_label->update();
+		assert(QDir(globalparameters.root_path()) == dir);
+		assert(dir.absolutePath() == QDir::currentPath());
 	    }
 	};
     if(globalparameters.root_path() != _rootdir_input->text()) write_root();
@@ -438,7 +444,7 @@ int AppConfigPageMain::apply_changes(void){
 	difficult_changes = 1;
     }
     const auto result = globalparameters.coordinate_root(_rootdir_input->text());// is_standard,
-    if(original_root_state != result){
+    if(_original_root_state != result){
 //	if(std::get<1>(result) != is_standard) _application_mode_option->setCurrentText(is_standard ?  standardItem : portableItem);
 //	if(std::get<2>(result) != _rootdir_input->text()){
 	_rootdir_input->setText(std::get<1>(result));
