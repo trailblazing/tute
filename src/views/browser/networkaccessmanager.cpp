@@ -107,11 +107,11 @@ namespace browser {
 
     void NetworkAccessManager::requestFinished(QNetworkReply *reply){
 	requestFinishedCount ++;
-	if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true)requestFinishedFromCacheCount ++;
-	if(reply->attribute(QNetworkRequest::HttpPipeliningWasUsedAttribute).toBool() == true)requestFinishedPipelinedCount ++;
-	if(reply->attribute(QNetworkRequest::ConnectionEncryptedAttribute).toBool() == true)requestFinishedSecureCount ++;
-	if(reply->attribute(QNetworkRequest::DownloadBufferAttribute).isValid() == true)requestFinishedDownloadBufferCount ++;
-	if(requestFinishedCount % 10)return;
+	if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true) requestFinishedFromCacheCount ++;
+	if(reply->attribute(QNetworkRequest::HttpPipeliningWasUsedAttribute).toBool() == true) requestFinishedPipelinedCount ++;
+	if(reply->attribute(QNetworkRequest::ConnectionEncryptedAttribute).toBool() == true) requestFinishedSecureCount ++;
+	if(reply->attribute(QNetworkRequest::DownloadBufferAttribute).isValid() == true) requestFinishedDownloadBufferCount ++;
+	if(requestFinishedCount % 10) return;
 #ifdef QT_DEBUG
 	double	pctCached		= (double (requestFinishedFromCacheCount) * 100.0 / double (requestFinishedCount));
 	double	pctPipelined		= (double (requestFinishedPipelinedCount) * 100.0 / double (requestFinishedCount));
@@ -123,11 +123,11 @@ namespace browser {
     }
 
     void NetworkAccessManager::loadSettings(){
-	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + globalparameters._browser_conf_filename, QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("proxy"));
 	QNetworkProxy proxy;
 	if(settings.value(QLatin1String("enabled"), false).toBool()){
-	    if(settings.value(QLatin1String("type"), 0).toInt() == 0)proxy = QNetworkProxy::Socks5Proxy;
+	    if(settings.value(QLatin1String("type"), 0).toInt() == 0) proxy = QNetworkProxy::Socks5Proxy;
 	    else proxy = QNetworkProxy::HttpProxy;
 	    proxy.setHostName(settings.value(QLatin1String("hostName")).toString());
 	    proxy.setPort(settings.value(QLatin1String("port"), 1080).toInt());
@@ -145,7 +145,7 @@ namespace browser {
 	    Entrance *mainWindow = globalparameters.entrance();	// ->main_window(register_record(QUrl(DockedWindow::_defaulthome)));    //QtSingleApplication::instance()->mainWindow();
 
 	    QStringList errorStrings;
-	    for(int i = 0; i < error.count(); ++ i)errorStrings += error.at(i).errorString();
+	    for(int i = 0; i < error.count(); ++ i) errorStrings += error.at(i).errorString();
 	    QString	errors	= errorStrings.join(QLatin1String("\n"));
 	    int		ret	= QMessageBox::warning(mainWindow, QCoreApplication::applicationName()
 						      , tr("SSL Errors:\n\n%1\n\n%2\n\n"
