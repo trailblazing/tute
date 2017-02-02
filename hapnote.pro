@@ -324,7 +324,34 @@ HEADERS     =   \
     src/libraries/qtm/SysTrayIcon.h \
     src/libraries/qtm/XmlRpcHandler.h \
     src/views/browser/cookiejar.h \
-    src/views/record/editentry.h
+    src/views/record/editentry.h \
+    build/ui_aboutbox.h \
+    build/ui_AccountsForm.h \
+    build/ui_addbookmarkdialog.h \
+    build/ui_bookmarks.h \
+    build/ui_cookies.h \
+    build/ui_cookiesexceptions.h \
+    build/ui_downloaditem.h \
+    build/ui_downloads.h \
+    build/ui_history.h \
+    build/ui_ImageEntry.h \
+    build/ui_LinkEntry.h \
+    build/ui_ListDialog.h \
+    build/ui_ListDialogBase.h \
+    build/ui_NewCategoryForm.h \
+    build/ui_password-form.h \
+    build/ui_passworddialog.h \
+    build/ui_PrefsForm.h \
+    build/ui_proxy.h \
+    build/ui_QijSearchWidget.h \
+    build/ui_QuickpostTemplateForm.h \
+    build/ui_settings.h \
+    build/ui_SideWidget.h \
+    build/ui_StatusWidgetBase.h \
+    src/libraries/qtm/Application.h \
+    src/libraries/qtm/markdown_header.h \
+    src/libraries/qtm/qtm_version.h \
+    src/utility/config_ini.h
 #    src/views/browser/cookiejar.h \
 
 
@@ -467,7 +494,117 @@ SOURCES     =   src/main.cpp \
     src/libraries/qtm/EditingWindow.cc \
     src/libraries/qtm/DBusAdaptor.cc \
     src/libraries/qtm/AccountsDialog.cc \
-    src/views/record/editentry.cpp
+    src/views/record/editentry.cpp \
+    build/moc_AccountsDialog.cpp \
+    build/moc_add_new_record.cpp \
+    build/moc_app_config.cpp \
+    build/moc_app_config_dialog.cpp \
+    build/moc_app_config_page_crypt.cpp \
+    build/moc_app_config_page_main.cpp \
+    build/moc_app_config_page_misc.cpp \
+    build/moc_app_config_page_synchro.cpp \
+    build/moc_app_config_page_table.cpp \
+    build/moc_app_config_updater.cpp \
+    build/moc_attach_table_controller.cpp \
+    build/moc_attach_table_model.cpp \
+    build/moc_attach_table_screen.cpp \
+    build/moc_attach_table_view.cpp \
+    build/moc_autosaver.cpp \
+    build/moc_bookmarks.cpp \
+    build/moc_browser.cpp \
+    build/moc_chasewidget.cpp \
+    build/moc_clipboard_branch.cpp \
+    build/moc_clipboard_records.cpp \
+    build/moc_config_dialog.cpp \
+    build/moc_config_page.cpp \
+    build/moc_console_emulator.cpp \
+    build/moc_cookiejar.cpp \
+    build/moc_database_config.cpp \
+    build/moc_DBusAdaptor.cpp \
+    build/moc_downloadmanager.cpp \
+    build/moc_editentry.cpp \
+    build/moc_EditingWindow.cpp \
+    build/moc_editor.cpp \
+    build/moc_editor_add_table_form.cpp \
+    build/moc_editor_config.cpp \
+    build/moc_editor_config_dialog.cpp \
+    build/moc_editor_config_font.cpp \
+    build/moc_editor_config_misc.cpp \
+    build/moc_editor_context_menu.cpp \
+    build/moc_editor_find_dialog.cpp \
+    build/moc_editor_image_properties.cpp \
+    build/moc_editor_multi_line_input_dialog.cpp \
+    build/moc_editor_show_text.cpp \
+    build/moc_editor_split_cell_form.cpp \
+    build/moc_editor_text_area.cpp \
+    build/moc_edittableview.cpp \
+    build/moc_edittreeview.cpp \
+    build/moc_enter_password.cpp \
+    build/moc_entrance.cpp \
+    build/moc_execute_command.cpp \
+    build/moc_featurepermissionbar.cpp \
+    build/moc_find_screen.cpp \
+    build/moc_fixed_parameters.cpp \
+    build/moc_flat_control.cpp \
+    build/moc_fullscreennotification.cpp \
+    build/moc_global_parameters.cpp \
+    build/moc_hidable_tabwidget.cpp \
+    build/moc_Highlighter.cpp \
+    build/moc_history.cpp \
+    build/moc_indent_slider.cpp \
+    build/moc_info_field_enter.cpp \
+    build/moc_locationlineedit.cpp \
+    build/moc_main_window.cpp \
+    build/moc_meta_editor.cpp \
+    build/moc_modelmenu.cpp \
+    build/moc_mt_styled_item_delegate.cpp \
+    build/moc_mt_table_widget.cpp \
+    build/moc_networkaccessmanager.cpp \
+    build/moc_over_text_tool_button.cpp \
+    build/moc_password.cpp \
+    build/moc_PrefsDialog.cpp \
+    build/moc_print_preview.cpp \
+    build/moc_QijSearchWidget.cpp \
+    build/moc_qtlocalpeer.cpp \
+    build/moc_qtsingleapplication.cpp \
+    build/moc_qtsinglecoreapplication.cpp \
+    build/moc_QuickpostTemplate.cpp \
+    build/moc_QuickpostTemplateDialog.cpp \
+    build/moc_record_controller.cpp \
+    build/moc_record_info_fields_editor.cpp \
+    build/moc_record_model.cpp \
+    build/moc_record_print.cpp \
+    build/moc_record_screen.cpp \
+    build/moc_record_view.cpp \
+    build/moc_reduce_message_box.cpp \
+    build/moc_searchlineedit.cpp \
+    build/moc_settings.cpp \
+    build/moc_squeezelabel.cpp \
+    build/moc_StatusWidget.cpp \
+    build/moc_SuperMenu.cpp \
+    build/moc_SysTrayIcon.cpp \
+    build/moc_tabwidget.cpp \
+    build/moc_toolbarsearch.cpp \
+    build/moc_tree_know_model.cpp \
+    build/moc_tree_model.cpp \
+    build/moc_tree_screen.cpp \
+    build/moc_tree_view.cpp \
+    build/moc_tree_xml.cpp \
+    build/moc_urllineedit.cpp \
+    build/moc_vertical_scrollarea.cpp \
+    build/moc_view_preview.cpp \
+    build/moc_wait_clock.cpp \
+    build/moc_walk_history.cpp \
+    build/moc_webview.cpp \
+    build/moc_window_switcher.cpp \
+    src/libraries/qtm/Application.cc \
+    src/utility/config_ini.cpp \
+    qrc_data.cpp \
+    qrc_EditingWindow.cpp \
+    qrc_hapnote.cpp \
+    qrc_htmls.cpp \
+    qrc_QijSearchWidget.cpp \
+    qrc_qtm.cpp
 #    src/views/browser/cookiejar.cpp \
 
 
