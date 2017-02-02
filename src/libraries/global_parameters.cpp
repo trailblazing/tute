@@ -127,14 +127,15 @@ bool gl_para::root_path(QString path_name){
 	app_conf.setValue("rootdir", path_name);
 	app_conf.sync();
 
-/*	// write
-	ConfigINI *ini = new ConfigINI(mode_file_full.toStdString().c_str());
-//	ini->setIntValue("section1", "intValue", 1);
-//	ini->setFloatValue("section1", "floatValue", 0.1);
-	ini->setStringValue("General", "rootdir", path_name.toStdString().c_str());
-//	ini->setBoolValue("section2", "boolValue", true);
-	ini->writeConfigFile();
-	delete ini*/;
+//	// write
+//	ConfigINI *ini = new ConfigINI(mode_file_full.toStdString().c_str());
+////	ini->setIntValue("section1", "intValue", 1);
+////	ini->setFloatValue("section1", "floatValue", 0.1);
+//	ini->setStringValue("General", "rootdir", path_name.toStdString().c_str());
+////	ini->setBoolValue("section2", "boolValue", true);
+//	ini->writeConfigFile();
+//	delete ini;
+
 	return true;
     }else return false;
 }
