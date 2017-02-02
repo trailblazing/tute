@@ -49,7 +49,7 @@ std::shared_ptr<QFileInfo> TrashMonitoring::recover_from_trash(std::shared_ptr<Q
 //    QFileInfo	main_program_file_info(_main_program_file);
 //    QString	full_current_path = main_program_file_info.absolutePath();
 	if(_files_table.size() == 0){
-	    if(! QDir(globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName()).exists()) QDir(globalparameters.main_program_dir()).mkdir(QDir(appconfig.trash_dir()).dirName());
+	    if(! QDir(globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName()).exists()) QDir(globalparameters.root_path()).mkdir(QDir(appconfig.trash_dir()).dirName());
 	    if(! QFile::copy(QString(":/resource/standarddata/") + _file_name, globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name)) throw std::runtime_error("Can not copy hapnote.xml");
 	    else QFile::setPermissions(globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name, QFile::ReadUser | QFile::WriteUser);
 //	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.hapnote_xml());

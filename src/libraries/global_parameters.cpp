@@ -120,11 +120,11 @@ void gl_para::init(const QString &app_name){
 
 bool gl_para::root_path(QString path_name){
     assert("" != _standard_path);
-    auto mode_file_location = _standard_path + "/" + _mode_filename;
+    auto mode_file_full_name = _standard_path + "/" + _mode_filename;
     if(! QFile(_standard_path + "/" + _mode_filename).exists())
-		if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/" + _mode_filename, mode_file_location)) critical_error("Can not copy " + _mode_filename);
-    if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(mode_file_location) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(mode_file_location, QFile::ReadUser | QFile::WriteUser);
-    QSettings	mode_ini(mode_file_location, QSettings::IniFormat);
+		if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/" + _mode_filename, mode_file_full_name)) critical_error("Can not copy " + _mode_filename);
+    if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(mode_file_full_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(mode_file_full_name, QFile::ReadUser | QFile::WriteUser);
+    QSettings	mode_ini(mode_file_full_name, QSettings::IniFormat);
     QDir	directory(path_name);
     if(directory.exists() && directory.isReadable()){
 	mode_ini.setValue("rootdir", path_name);
@@ -147,16 +147,16 @@ bool gl_para::root_path(QString path_name){
 QString gl_para::root_path(void) const {
 //    return get_parameter("rootdir");
     assert("" != _standard_path);
-    auto	mode_file_location = _standard_path + "/" + _mode_filename;
-    QSettings	mode_ini(mode_file_location, QSettings::IniFormat);
+    auto	mode_file_full_name = _standard_path + "/" + _mode_filename;
+    QSettings	mode_ini(mode_file_full_name, QSettings::IniFormat);
     auto	root_name	= "rootdir";
     QString	result		= "";
     if(mode_ini.contains(root_name)) result = mode_ini.value(root_name).toString();
     else{
-	if(QFile(mode_file_location).exists()) QFile::remove(mode_file_location);
-	if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/" + _mode_filename, mode_file_location)) critical_error("Can not copy " + _mode_filename);
-	if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(mode_file_location) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(mode_file_location, QFile::ReadUser | QFile::WriteUser);
-	QSettings mode_new(mode_file_location, QSettings::IniFormat);
+	if(QFile(mode_file_full_name).exists()) QFile::remove(mode_file_full_name);
+	if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/" + _mode_filename, mode_file_full_name)) critical_error("Can not copy " + _mode_filename);
+	if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(mode_file_full_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(mode_file_full_name, QFile::ReadUser | QFile::WriteUser);
+	QSettings mode_new(mode_file_full_name, QSettings::IniFormat);
 	result = mode_new.value(root_name).toString();
 	if(result == "") critical_error("In " + _mode_filename + " not found parameter " + root_name);
     }

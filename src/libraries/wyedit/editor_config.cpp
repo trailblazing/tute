@@ -16,7 +16,7 @@
 
 
 extern AppConfig	appconfig;
-extern gl_para globalparameters;
+extern gl_para		globalparameters;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorConfig)
@@ -29,17 +29,19 @@ EditorConfig::EditorConfig(const QString &config_file_name, QWidget *parent) : Q
     assert(config_file_name != "");
 
 
-    QString full_current_path = globalparameters.main_program_dir();
+    QString full_current_path = globalparameters.root_path();
 	// Информация о файле настроек редактора
     std::shared_ptr<QFileInfo> conf_fileinfo = std::make_shared<QFileInfo>(config_file_name);
 	// Проверяется, есть ли файл конфигурации
     if(! conf_fileinfo->exists()){
 	// critical_error("Editor config file " + config_file_name + " not found.");
-	auto		editor_conf_file = full_current_path + "/" + globalparameters.target_os() + "/editorconf.ini";
-	QFileInfo	editor_conf(editor_conf_file);
-	if(editor_conf.exists() && editor_conf.isFile()) QFile::remove(editor_conf_file);
-	if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/editorconf.ini", editor_conf_file)) throw std::runtime_error("Can not copy editorconf.ini");
-	else QFile::setPermissions(editor_conf_file, QFile::ReadUser | QFile::WriteUser);
+	auto	editor_conf_location	= full_current_path + "/" + globalparameters.target_os();
+	auto	editor_conf_file	= editor_conf_location + "/editorconf.ini";
+	if(! QDir(editor_conf_location).exists()) if(! QDir::root().mkpath(editor_conf_location)) critical_error("EditorConfig::EditorConfig(const QString &config_file_name, QWidget *parent) can not make path \"" + editor_conf_location + "\"");
+	QFileInfo editor_conf(editor_conf_file);
+	if(! editor_conf.exists())											// if(editor_conf.exists() && editor_conf.isFile()) QFile::remove(editor_conf_file);
+		if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/editorconf.ini", editor_conf_file)) throw std::runtime_error("Can not copy editorconf.ini");
+	QFile::setPermissions(editor_conf_file, QFile::ReadUser | QFile::WriteUser);
 //	bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.editorconf());//editorconf.ini
 //	assert(succedded);
 	conf_fileinfo = std::make_shared<QFileInfo>(editor_conf_file);
@@ -51,7 +53,7 @@ EditorConfig::EditorConfig(const QString &config_file_name, QWidget *parent) : Q
     QString	file_dir	= conf_fileinfo->path();
 
 	// Создается объект работы с конфигурацией редактора
-    _editor_conf = new QSettings(config_file_name, QSettings::IniFormat);
+    _editor_conf = std::make_unique<QSettings>(config_file_name, QSettings::IniFormat);
 	// conf->setPath(QSettings::IniFormat,QSettings::UserScope,file_dir);
 	// conf->setPath(QSettings::IniFormat,QSettings::SystemScope,file_dir);
 
@@ -440,8 +442,8 @@ void EditorConfig::update_version(int versionFrom, int versionTo, QStringList ba
 	QMap< QString, QString > line;
 	line.clear();
 	line["type"] = type;
-	if(_editor_conf->contains(name)) line["value"] = _editor_conf->value(name).toString();																																																																																																																								// Значение из конфига
-	else line["value"] = defaultValue;																																																											// Дефолтное значение
+	if(_editor_conf->contains(name)) line["value"] = _editor_conf->value(name).toString();																																																																																																																																																																																																																								// Значение из конфига
+	else line["value"] = defaultValue;																																																																																																											// Дефолтное значение
 
 	// Для текущего имени параметра запоминается массив
 	fromTable[name] = line;
@@ -502,8 +504,8 @@ void EditorConfig::update_version(int versionFrom, int versionTo, QStringList ba
 	    qDebug() << "Line2: " << line2;
 	    qDebug() << "From type: " << fromType;
 	    qDebug() << "From value: " << fromValue;
-	    if(toType == fromType) beforeParamFlag = 1;																																																																						// Параметр есть, и типы совпадают
-	    else beforeParamFlag = 2;																																																		// Параметр есть, но типы не совпадают
+	    if(toType == fromType) beforeParamFlag = 1;																																																																																																																														// Параметр есть, и типы совпадают
+	    else beforeParamFlag = 2;																																																																																										// Параметр есть, но типы не совпадают
 	}
 	// Параметра в предыдущей версии конфига небыло
 	if(beforeParamFlag == 0){
@@ -554,7 +556,7 @@ void EditorConfig::update_version(int versionFrom, int versionTo, QStringList ba
 	QString				toValue = line["value"];
 	if(toType == "QString") _editor_conf->setValue(toName, toValue);
 	else if(toType == "int") _editor_conf->setValue(toName, toValue.toInt());
-	else if(toType == "bool") _editor_conf->setValue(toName, toValue.toInt());																																																																																																													// Булевые переменные как 0 или 1
+	else if(toType == "bool") _editor_conf->setValue(toName, toValue.toInt());																																																																																																																																																																																																					// Булевые переменные как 0 или 1
     }
 	// Устанавливается новый номер версии
     set_config_version(versionTo);

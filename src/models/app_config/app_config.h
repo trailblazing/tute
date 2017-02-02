@@ -231,7 +231,7 @@ class AppConfig : public QObject {
     private:
 
 	std::shared_ptr<QSettings> _app_conf;
-	QString _config_file_name = "";		// было static
+	QString _config_file_full_name = "";		// было static
 	QString	get_parameter(QString name) const;
 
 	QStringList remove_parameter_from_table(QString removeName, QStringList table);

@@ -59,9 +59,8 @@ W_OBJECT_IMPL(Editor)
 #endif
 
 
-Editor::Editor(QWidget *parent) : QWidget(parent)
+Editor::Editor(QWidget *parent) : QWidget(parent){
 // , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint))
-{
 //    _init_data_enable_assembly		= true;
 //    _init_data_config_file_name		= "";
 //    _init_data_enable_random_seed	= false;
@@ -98,7 +97,6 @@ Editor::Editor(QWidget *parent) : QWidget(parent)
 //    _hidetitlebar->close();
 
 //    delete titleBar;
-
 }
 
 Editor::~Editor(void){
@@ -159,14 +157,16 @@ void Editor::init_enable_assembly(bool flag){
     _init_data_enable_assembly = flag;
 }
 
-void Editor::init_config_file_name(QString name){
+void Editor::init_config_file_name(QString config_full_name){
 //    name				= globalparameters.work_directory() + "/" + globalparameters.target_os() + "/editorconf.ini"
-    QDir conf_dir(globalparameters.root_path() + "/" + globalparameters.target_os());
-    if(! conf_dir.exists()) QDir(globalparameters.root_path()).mkdir(globalparameters.target_os());
-    QFile conf_file(name);
-    if(! conf_file.exists()) QFile::copy(":/resource/standardconfig/" + globalparameters.target_os() + "/editorconf.ini", name);
-    conf_file.setPermissions(name, QFile::ReadUser | QFile::WriteUser);
-    _init_data_config_file_name	= name;
+    auto location = globalparameters.root_path() + "/" + globalparameters.target_os();
+    assert(config_full_name.contains(location));
+    QDir conf_dir(location);
+    if(! conf_dir.exists()) if(! QDir::root().mkpath(location)) critical_error("void Editor::init_config_file_name(QString config_full_name) can not make dir \"" + globalparameters.target_os() + "\"");
+    QFile conf_file(config_full_name);
+    if(! conf_file.exists()) if(! QFile::copy(":/resource/standardconfig/" + globalparameters.target_os() + "/editorconf.ini", config_full_name)) critical_error("void Editor::init_config_file_name(QString config_full_name) can not copy file \"" + config_full_name + "\"");
+    conf_file.setPermissions(config_full_name, QFile::ReadUser | QFile::WriteUser);
+    _init_data_config_file_name	= config_full_name;
 }
 
 void Editor::init_enable_random_seed(bool flag){
@@ -683,7 +683,7 @@ void Editor::insert_button_to_tools_line(QString toolName, QToolBar *line){
 		line->addWidget(tool);	// Инструмент добавляется на панель инструментов
 
 		FlatToolButton *tb = qobject_cast<FlatToolButton *>(tool);
-		if(tb != 0) tb->setAutoRaise(true);																																																																																																				// false
+		if(tb != 0) tb->setAutoRaise(true);																																																																																																																																																					// false
 	    }else{
 		FlatToolButton *tb = qobject_cast<FlatToolButton *>(tool);
 		if(tb != 0) tb->setEnabled(false);
@@ -891,7 +891,7 @@ void Editor::editor_load_callback(QObject *editor, QString &loadText){
 	//        critical_error("File " + fileName + " not readable. Check permission.");
 	// Если незашифровано
 	if(workWithCrypt == false) loadText = QString::fromUtf8(f.readAll());
-	else loadText = CryptService::decryptStringFromByteArray(globalparameters.crypt_key(), f.readAll());																																																																																																																																																																																																					// Если зашифровано
+	else loadText = CryptService::decryptStringFromByteArray(globalparameters.crypt_key(), f.readAll());																																																																																																																																																																																																																																																																																																							// Если зашифровано
     }else loadText = "";
 }
 
@@ -1018,7 +1018,7 @@ bool Editor::save_textarea_images(int mode = SAVE_IMAGES_SIMPLE){
 
 	// Перебираются файлы в директории
 	foreach(QString fileName, imageInDirectory)
-	if(fileName.contains(QRegExp("\\.png$")))																																																																																																			// Обрабатыватся только *.png файлы
+	if(fileName.contains(QRegExp("\\.png$")))																																																																																																																																																				// Обрабатыватся только *.png файлы
 		if(! imagesNames.contains(fileName)){
 			// Если в списке картинок нет текущего png файла,
 			// значит этот файл лишний и он удаляется
@@ -1146,8 +1146,8 @@ void Editor::on_bold_clicked(void){
 	// Если выделение есть
     if(_text_area->textCursor().hasSelection()){
 	// Обычное форматирование
-	if(_text_area->fontWeight() != QFont::Bold) _text_area->setFontWeight(QFont::Bold);																																																																																																																																																																									// Bold
-	else _text_area->setFontWeight(0);																																																																																					// Remove Bold
+	if(_text_area->fontWeight() != QFont::Bold) _text_area->setFontWeight(QFont::Bold);																																																																																																																																																																																																																																																													// Bold
+	else _text_area->setFontWeight(0);																																																																																																																															// Remove Bold
     }else{
 	// Иначе надо выделить дополнительным курсором слово на
 	// котором стоит курсор
@@ -1304,9 +1304,9 @@ void Editor::on_code_clicked(void){
 	int	selectStop	= _text_area->textCursor().selectionEnd();
 
 	qDebug() << "Code format action, block " << blockStart << blockStop << " selection " << selectStart << selectStop;
-	if(blockStart <= selectStart && blockStop >= selectStop) enableIndent = false;																																																																																																																																																											// Выбран кусок текста в пределах блока
+	if(blockStart <= selectStart && blockStop >= selectStop) enableIndent = false;																																																																																																																																																																																																																																								// Выбран кусок текста в пределах блока
 	else return;
-    }else enableIndent = true;																																																									// Выбран четко блок (блоки) текста, нужно делать отступ
+    }else enableIndent = true;																																																																																					// Выбран четко блок (блоки) текста, нужно делать отступ
 
     _text_area->textCursor().beginEditBlock();
 
@@ -1637,7 +1637,7 @@ void Editor::on_fontcolor_clicked(){
 	// Меняется цвет кнопки
 	_font_color->setPalette(QPalette(selectedColor));
 	// Если выделение есть
-	if(_text_area->textCursor().hasSelection()) _text_area->setTextColor(selectedColor);																																																																																																																																																																									// Меняется цвет текста
+	if(_text_area->textCursor().hasSelection()) _text_area->setTextColor(selectedColor);																																																																																																																																																																																																																																																													// Меняется цвет текста
 	else{
 		// Иначе надо выделить дополнительным курсором слово на
 		// котором стоит курсор
@@ -1709,11 +1709,11 @@ void Editor::on_selection_changed(void){
 	if(cursor.movePosition(QTextCursor::NextCharacter) == false) break;
     }
 	// Список выбора шрифта начинает указывать на нужный шрифт
-    if(differentFontFlag == 0) set_fontselect_on_display(startFontFamily);																																																																																																																																													// Если всё выделение одним шрифтом
+    if(differentFontFlag == 0) set_fontselect_on_display(startFontFamily);																																																																																																																																																																																																																			// Если всё выделение одним шрифтом
     else set_fontselect_on_display("");
 	// Список выбора размера начинает указывать на нужный размер
     if(differentSizeFlag == 0) set_fontsize_on_display((int) startSize);// Если всё отформатировано одним размером
-    else set_fontsize_on_display(0);																																																																							// В выделении есть разные размеры
+    else set_fontsize_on_display(0);																																																																																																										// В выделении есть разные размеры
 	// Кнопка Bold выключается, если есть разное Bold форматирование
 	// и включается, если форматирование одинаковое,
 	// и выделение начиналось с Bold
@@ -1836,7 +1836,7 @@ void Editor::on_copy(void){
 
 	// Копирвание картинки в буфер обмена
 	clipboard->setImage(image);
-    }else _text_area->copy();																																																									// Обычное копирование
+    }else _text_area->copy();																																																																																					// Обычное копирование
 
     update_tool_line_to_actual_format();// Обновляется панель с кнопками
 }
@@ -2508,8 +2508,8 @@ void Editor::switch_expand_tools_lines(int flag){
 	// Если метод был вызван без параметра
     if(flag == 0){
 	bool is_expand = _editor_config->get_expand_tools_lines();
-	if(is_expand) setFlag = false;																																																																							// Если панель инструментов распахнута, надо сомкнуть
-	else setFlag = true;																																																									// Иначе распахнуть
+	if(is_expand) setFlag = false;																																																																																																										// Если панель инструментов распахнута, надо сомкнуть
+	else setFlag = true;																																																																																					// Иначе распахнуть
     }else{
 	// Иначе метод вызывался с каким-то параметром
 	if(flag == 1) setFlag = true;
