@@ -1,0 +1,164 @@
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>SearchWidgetBase</class>
+ <widget class="QWidget" name="SearchWidgetBase" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>676</width>
+    <height>46</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Search</string>
+  </property>
+  <layout class="QHBoxLayout" >
+   <property name="margin" >
+    <number>2</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item>
+    <widget class="QToolButton" name="tbClose" >
+     <property name="toolTip" >
+      <string>Close</string>
+     </property>
+     <property name="whatsThis" >
+      <string>Close the searcher</string>
+     </property>
+     <property name="text" >
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="lFind" >
+     <property name="text" >
+      <string>&amp;Find:</string>
+     </property>
+     <property name="buddy" >
+      <cstring>leFindText</cstring>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="leFindText" />
+   </item>
+   <item>
+    <widget class="QToolButton" name="tbSearchDown" >
+     <property name="enabled" >
+      <bool>false</bool>
+     </property>
+     <property name="text" >
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="tbSearchUp" >
+     <property name="enabled" >
+      <bool>false</bool>
+     </property>
+     <property name="text" >
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="tbSelectAll" >
+     <property name="enabled" >
+      <bool>false</bool>
+     </property>
+     <property name="text" >
+      <string>&amp;All</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chMatchCase" >
+     <property name="text" >
+      <string>&amp;Match case</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chWholeWords" >
+     <property name="text" >
+      <string>&amp;Whole words</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chRegExp" >
+     <property name="whatsThis" >
+      <string>Select this to search using regular expressions, a form of text matching used by programmers.</string>
+     </property>
+     <property name="text" >
+      <string>E&amp;xpert</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+  <action name="actionExit_find" >
+   <property name="text" >
+    <string>Exit find</string>
+   </property>
+   <property name="shortcut" >
+    <string/>
+   </property>
+  </action>
+ </widget>
+ <pixmapfunction></pixmapfunction>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>tbClose</sender>
+   <signal>clicked()</signal>
+   <receiver>SearchWidgetBase</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>22</x>
+     <y>21</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>337</x>
+     <y>21</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionExit_find</sender>
+   <signal>triggered()</signal>
+   <receiver>SearchWidgetBase</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>337</x>
+     <y>22</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

@@ -1,0 +1,754 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CategoryWidget</class>
+ <widget class="QWidget" name="CategoryWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>284</width>
+    <height>428</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <layout class="QHBoxLayout">
+     <item>
+      <spacer>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QComboBox" name="cbPageSelector">
+       <item>
+        <property name="text">
+         <string>Basics</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Categories</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Excerpt</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>WP tags</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Technorati tags</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Trackbacks</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <spacer>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QStackedWidget" name="stackedWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="basicsPage">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QGridLayout">
+         <item row="3" column="1">
+          <widget class="QComboBox" name="cbStatus">
+           <property name="whatsThis">
+            <string>Whether the entry is to be published immediately, or just stored in the blog database for publication later</string>
+           </property>
+           <item>
+            <property name="text">
+             <string>Draft</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Publish</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="leTitle"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="cbAccountSelector"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="lStatus">
+           <property name="whatsThis">
+            <string>Whether the entry is to be published immediately, or stored in the blog database for publication later</string>
+           </property>
+           <property name="text">
+            <string>&amp;Status</string>
+           </property>
+           <property name="buddy">
+            <cstring>cbStatus</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="cbBlogSelector">
+           <property name="whatsThis">
+            <string>If your blog software allows you to publish more than one blog, as with Movable Type, you must choose which blog here.  (If you use Wordpress, ignore this.)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="lePassword">
+           <property name="echoMode">
+            <enum>QLineEdit::Password</enum>
+           </property>
+           <property name="whatsThis">
+            <string>A password to read this post. Leave this blank if you do not want to apply a password. Note that the title will be visible.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="lBlog">
+           <property name="text">
+            <string>&amp;Blog</string>
+           </property>
+           <property name="buddy">
+            <cstring>cbBlogSelector</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="lTitle">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Entry &amp;title</string>
+           </property>
+           <property name="buddy">
+            <cstring>leTitle</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lAccount">
+           <property name="text">
+            <string>&amp;Account</string>
+           </property>
+           <property name="buddy">
+            <cstring>cbAccountSelector</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="lPassword">
+           <property name="text">
+            <string>Pass&amp;word</string>
+           </property>
+           <property name="buddy">
+            <cstring>lePassword</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QCheckBox" name="chShowPassword">
+           <property name="text">
+            <string>Show passwor&amp;d</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QWidget" name="wBlankWidget" native="true"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QGridLayout">
+         <item row="0" column="0" rowspan="2">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>&lt;b&gt;Feedback&lt;/b&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="chAllowComments">
+           <property name="whatsThis">
+            <string>Click here if comments are to be allowed</string>
+           </property>
+           <property name="text">
+            <string>Comments</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="chAllowTB">
+           <property name="whatsThis">
+            <string>Trackbacks are links to other sites, or other people's blog entries, placed by other people.  If you want to allow this, tick this box. Note that if you configure your blog software to refuse trackbacks, or not publish trackback locations, ticking this box will have no effect.</string>
+           </property>
+           <property name="text">
+            <string>Trackback</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chSticky">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="whatsThis">
+          <string>Sticky posts will always appear at the top of your Wordpress blog, usually in a distinctive style.</string>
+         </property>
+         <property name="text">
+          <string>Make this post stick&amp;y</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbDoTB">
+         <property name="text">
+          <string>Trackback this entry</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="copyURLWidget" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>56</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pbCopyURL">
+            <property name="toolTip">
+             <string>Copy the uploaded file's URL to the clipboard</string>
+            </property>
+            <property name="whatsThis">
+             <string>Copy the location of the file you just uploaded to the clipboard, so you can paste it into your entry</string>
+            </property>
+            <property name="text">
+             <string>Copy URL</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>55</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="progressWidget" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="lProgressBarLabel">
+            <property name="text">
+             <string>Uploading:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="progressBar">
+            <property name="value">
+             <number>24</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="categoryPage">
+      <layout class="QVBoxLayout">
+       <item>
+        <widget class="QGroupBox" name="gbCategory">
+         <property name="title">
+          <string>Categories</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lMainCat">
+            <property name="text">
+             <string>Primary</string>
+            </property>
+            <property name="buddy">
+             <cstring>cbMainCat</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QComboBox" name="cbMainCat">
+            <property name="whatsThis">
+             <string>The main category under which your entry is to be published.  If you are choosing only one category, choose it here.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lOtherCats">
+            <property name="text">
+             <string>Others</string>
+            </property>
+            <property name="buddy">
+             <cstring>lwOtherCats</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QListWidget" name="lwOtherCats">
+            <property name="contextMenuPolicy">
+             <enum>Qt::ActionsContextMenu</enum>
+            </property>
+            <property name="whatsThis">
+             <string>Secondary categories, if your blog system supports them.  To select more than one category, hold down Ctrl and click the main mouse button.</string>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::MultiSelection</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QCheckBox" name="chNoCats">
+            <property name="toolTip">
+             <string>Don't use any categories</string>
+            </property>
+            <property name="text">
+             <string>No categories</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QPushButton" name="pbRefresh">
+            <property name="whatsThis">
+             <string>Fetches an updated category list from the blog server</string>
+            </property>
+            <property name="text">
+             <string>&amp;Refresh</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QPushButton" name="pbAddCategory">
+            <property name="toolTip">
+             <string>Add a category</string>
+            </property>
+            <property name="whatsThis">
+             <string>Add a new category to your blog.  Your blog needs to support the Wordpress API for this to work.</string>
+            </property>
+            <property name="text">
+             <string>Add category</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="excerptPage">
+      <layout class="QVBoxLayout">
+       <item>
+        <widget class="QGroupBox" name="gbExcerpt">
+         <property name="title">
+          <string>RSS Excerpt</string>
+         </property>
+         <layout class="QVBoxLayout">
+          <item>
+           <widget class="QTextEdit" name="teExcerpt"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="lExcerptExplanation">
+            <property name="text">
+             <string>RSS E&amp;xcerpt: This will appear in your summarised RSS feeds if you choose to enter anything here.  If you do not, your blog engine will use the first few lines of the post (or the entire post, if it is short enough).</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+            <property name="buddy">
+             <cstring>teExcerpt</cstring>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="keywordTagsPage">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QGroupBox" name="gbKeywordTags">
+         <property name="title">
+          <string>Wordpress-style tags</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="7" column="0" colspan="3">
+             <widget class="QLineEdit" name="leAddKeywordTag">
+              <property name="toolTip">
+               <string>Enter tag; no need for quotes</string>
+              </property>
+              <property name="whatsThis">
+               <string>Enter the tag name here; no need to use quotes if there are two or more words</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="4">
+             <widget class="QListWidget" name="lwAvailKeywordTags">
+              <property name="contextMenuPolicy">
+               <enum>Qt::ActionsContextMenu</enum>
+              </property>
+              <property name="toolTip">
+               <string>Wordpress-style tags already in use on your blog</string>
+              </property>
+              <property name="whatsThis">
+               <string>These are the tags that your blog already knows about. Double-click any of these to add it to this entry. You can add another one using the line box below.</string>
+              </property>
+              <property name="sortingEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0" colspan="4">
+             <widget class="QListWidget" name="lwKeywordTags">
+              <property name="contextMenuPolicy">
+               <enum>Qt::ActionsContextMenu</enum>
+              </property>
+              <property name="toolTip">
+               <string>Wordpress-style tags for this post</string>
+              </property>
+              <property name="whatsThis">
+               <string>These are the tags used in Wordpress (known as keywords in Movable Type and TypePad)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="3">
+             <widget class="QToolButton" name="tbAddKeywordTag">
+              <property name="toolTip">
+               <string>Add tag</string>
+              </property>
+              <property name="whatsThis">
+               <string>Click here to add the tag to the list</string>
+              </property>
+              <property name="text">
+               <string>&amp;Add</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QToolButton" name="tbSelectKeywordTag">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QToolButton" name="tbRemoveKeywordTag">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2" colspan="2">
+             <widget class="QPushButton" name="pbRefreshKeywordTags">
+              <property name="text">
+               <string>Refresh</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tagsPage">
+      <layout class="QHBoxLayout">
+       <item>
+        <widget class="QGroupBox" name="gbTags">
+         <property name="title">
+          <string>Technorati tags</string>
+         </property>
+         <layout class="QGridLayout">
+          <item row="2" column="0">
+           <layout class="QHBoxLayout">
+            <item>
+             <widget class="QLineEdit" name="leAddTag">
+              <property name="whatsThis">
+               <string>Enter a new Technorati tag here; use the Technorati format which uses plus signs, not spaces, to separate</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="tbAddTag">
+              <property name="toolTip">
+               <string>Add this tag</string>
+              </property>
+              <property name="whatsThis">
+               <string>Add this tag to the entry</string>
+              </property>
+              <property name="text">
+               <string>Add</string>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextOnly</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <widget class="QListWidget" name="lwTags">
+            <property name="contextMenuPolicy">
+             <enum>Qt::ActionsContextMenu</enum>
+            </property>
+            <property name="whatsThis">
+             <string>Technorati tags (see www.technorati.com) for this entry.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QGroupBox" name="gbTagPlace">
+            <property name="title">
+             <string>Position of tags</string>
+            </property>
+            <layout class="QVBoxLayout">
+             <item>
+              <widget class="QRadioButton" name="rbStartOfMainEntry">
+               <property name="whatsThis">
+                <string>Place the tags at the start of the entry</string>
+               </property>
+               <property name="text">
+                <string>Start of main entry</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="rbEndOfMainEntry">
+               <property name="whatsThis">
+                <string>Place the tags at the end of the main entry, which means before the More tag if there is one</string>
+               </property>
+               <property name="text">
+                <string>End of main entry</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tbPingsPage">
+      <layout class="QGridLayout">
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="gbTrackbacks">
+         <property name="title">
+          <string>Trackback pings</string>
+         </property>
+         <layout class="QVBoxLayout">
+          <item>
+           <widget class="QListWidget" name="lwTBPings">
+            <property name="contextMenuPolicy">
+             <enum>Qt::ActionsContextMenu</enum>
+            </property>
+            <property name="whatsThis">
+             <string>Locations of web articles (usually blog entries) you want to trackback when posting this entry.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout">
+            <item>
+             <widget class="QLineEdit" name="leTBPingURL"/>
+            </item>
+            <item>
+             <widget class="QToolButton" name="tbTBAdd">
+              <property name="text">
+               <string>Add</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>cbPageSelector</tabstop>
+  <tabstop>leTitle</tabstop>
+  <tabstop>cbAccountSelector</tabstop>
+  <tabstop>cbBlogSelector</tabstop>
+  <tabstop>cbStatus</tabstop>
+  <tabstop>chAllowComments</tabstop>
+  <tabstop>chAllowTB</tabstop>
+  <tabstop>cbDoTB</tabstop>
+  <tabstop>cbMainCat</tabstop>
+  <tabstop>lwOtherCats</tabstop>
+  <tabstop>chNoCats</tabstop>
+  <tabstop>pbRefresh</tabstop>
+  <tabstop>pbAddCategory</tabstop>
+  <tabstop>teExcerpt</tabstop>
+  <tabstop>leAddKeywordTag</tabstop>
+  <tabstop>rbStartOfMainEntry</tabstop>
+  <tabstop>rbEndOfMainEntry</tabstop>
+  <tabstop>lwTags</tabstop>
+  <tabstop>leAddTag</tabstop>
+  <tabstop>tbAddTag</tabstop>
+  <tabstop>lwTBPings</tabstop>
+  <tabstop>leTBPingURL</tabstop>
+  <tabstop>tbTBAdd</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>cbPageSelector</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>stackedWidget</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>217</x>
+     <y>25</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>252</x>
+     <y>90</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chNoCats</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>cbMainCat</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>63</x>
+     <y>57</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>75</x>
+     <y>64</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chNoCats</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>lwOtherCats</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>81</x>
+     <y>57</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>72</x>
+     <y>62</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

@@ -1,0 +1,745 @@
+Changelog:
+
+1.3.15 (1st Jan 2014):
+
+Compatibility: Now compatible with Qt 5.2 on Mac, thanks to a dock icon
+menu setter
+Compatibility: Always shows a new window on startup on Mac, as a workaround
+for a bug in Qt
+Qt update: Mac and Windows versions ship with Qt 5.2
+Under hood: Uses Wordpress XML-RPC methods to submit entries if the
+WP API is enabled. This gets round the irritating bugs caused by posting
+content and categories in two or three stages
+New feature: Setting entry password (Wordpress blogs only)
+Bug fix: Doesn't show the "New window at startup" option if Unity is present,
+as there's always a new window at startup under Unity.
+
+1.3.14 (28th Jul 2013):
+
+Bug fix: On Wordpress, publishes post after setting the categories
+rather than before (this is to get around a bug in the Social plugin)
+
+1.3.13 (18th Jan 2013):
+
+Bug fix: No longer thinking an entry has been blogged when the attempt
+failed (and thus, user can correct the problem and resubmit)
+Bug fix: Adds content-type to header when posting (to suppress command
+line warnings, although inconsequential)
+Compatibility: Qt 5 compatible on Linux, can be made to work on Windows
+(not Mac if tray icon/quickpost is compiled).
+
+1.3.12 (16th Oct 2012):
+
+Under hood: Mac global menu now used for the main menu on all
+platforms (not the Qt Designer spec)
+Bug fix: Crash when opening a new window at startup on the Mac
+Bug fix: Crash when opening new window from the tray after closing
+a window opened at startup
+
+1.3.11 (11th Oct 2012):
+
+Bug fix: About doesn't disappear when closing all windows on Mac (this
+is because the same menu bar is used for all windows on the Mac)
+Bug fix: Adds in newlines appropriately when pasting as Markdown block
+quote
+Bug fix: Shell syntax error in desktop spec generator script
+Bug fix: Removed some unused variables that caused compiler warnings
+Bug fix: Better positioning when opening a new window from the system
+tray icon or Mac dock icon
+UI improvement: Now possible to get out of Console by pressing Escape,
+as with the entry preview
+UI improvement: Ctrl+W now closes a window (#W on Mac)
+UI improvement: Shortcuts that used to add and remove Technorati tags
+re-assigned to the more commonly used Wordpress-style tags
+UI improvement: Ctrl+Z shortcut for Undo, Shift+Ctrl+Z for Redo, as is
+normal in GUI editing apps
+
+1.3.10 (6th May 2012):
+
+Bug fix: Category choosers no longer greyed out when you first use QTM
+Bug fix: Return now activates OK button in all dialogs
+Bug fix: Proper separators on Windows for all paths in the Preferences
+dialog
+
+1.3.9 (2nd May 2012):
+
+New feature: Setting borders and margins when inserting images into an entry
+Compatibility: Uses CSS float: property rather than the deprecated HTML
+align attribute for images
+
+1.3.8 (6th March 2012):
+
+Mac UI improvement: Preferences dialog now accessible from global menu bar
+Mac UI improvement: Added recent-file menu to the Mac no-window menu
+
+1.3.7 (21st February 2012):
+
+Compatibility: Dialog for choosing quickpost templates and recent files
+to be called through the Ubuntu Unity launcher.
+Bug fix: Now displays recent files at startup on Mac
+
+1.3.6 (3rd January 2012):
+
+Compatibility: removed the Mac unified title & toolbar, as it causes
+problems in Cocoa (a Qt bug that also appears in Designer)
+Improvement: moved the "Copy URL" button from the status bar into the
+side widget, to reduce size of the status bar (esp. on the Mac)
+Bug fix: Removed code that links against Carbon (that finds the
+Mac bundle directory) and replaced it with Qt code
+Bug fix: No longer splits the main from the extended entry when using
+Wordpress (as it was causing first two paragraphs to be joined, even if
+they were split when the entry was written).
+UI Improvement: reduced the size of the margins around some of the controls
+on the side panel
+UI Improvement: move the "copy URL" button and upload progress bar to the
+side panel
+
+1.3.5 (3rd November 2011):
+
+New feature: Quit item for Unity icon menu
+New feature: Option to always use UTF-8 when saving and loading
+Bug fix: Converts correctly from UTF-8 when fetching WP tags
+Bug fix: Purge empty accounts
+(Last three entries in response to Chema Cortes)
+
+1.3.4 (10th October 2011):
+
+New feature: New post, Open and Quickpost menu entries in the launcher
+(dock) on Ubuntu's Unity
+Bug fix: Can now close a new window without being prompted to save
+
+1.3.3 (18th September 2011):
+
+Bug fix: Encodes quote marks in image and link titles and "alt" text
+Bug fix: Copy acts on the Preview window, not the main editing window,
+while in Preview mode
+Bug fix: Disables all editing actions while in Preview mode
+Bug fix: Closes and clears the search bar when entering or leaving
+Preview mode
+Improvement: Escape key leaves Preview mode
+
+1.3.2 (7th August 2011):
+
+Compatibility: always opens a new window on startup when Unity is
+detected (to make sure the icon always appears)
+New feature: adding a title to an embedded image, and XHTML-friendly
+terminated image tags
+New feature: Suppress "read more" inserts from newspaper websites
+Improvement: less strict HTML entity detection; entity highlighting
+now ends with a space or a semicolon. (This is because browsers are
+not strict about XML validity, and will display an invalid entity as
+plain text, and content management systems will convert ampersands.)
+
+1.3.1 (29th September 2010):
+
+Bug fix: In syntax highlighting, the colour specified for colouring
+HTML tags was used as the background for entities at start-up due to
+typo
+
+1.3 (7th September 2010):
+
+New feature: HTML syntax highlighting with configurable colours
+Qt update: Now requires Qt v4.4
+
+1.2 (3rd Aug 2010):
+
+New feature: Posting of entries using HTTPS
+New feature: Ability to fetch existing tags on a Wordpress blog
+Bug fix: blogid is now always a string, as per the standard metaWeblog
+API (SF bug 2846390)
+Bug fix: was including newlines in category IDs, causing failures
+(SF bug 2846454)
+Bug fix: Checkbox values in new accounts wouldn't take
+Bug fix: Values written automatically when selecting a self-hosted blog
+type might not have taken
+Bug fix: Port settings now honoured
+Bug fix: Now only submits date and time when posting an edit when the 
+relevant option is enabled (this had been causing posts to de-publish as
+a result of wrong times being sent)
+
+1.1.1 (3rd July 2009):
+
+Licensing: Added appropriate GPL header to search widget source files
+
+1.1 (26th June 2009):
+
+New feature: Ability to create categories (in Wordpress blogs only)
+New feature: Decodes XML entities such as &amp; in category, blog and
+account names
+Improvement: Will now run Markdown from the Markdown subdirectory of the
+source bundle, whether QTM is built in-source or in a 'build' directory
+Bug fix: Now includes [*] placeholder whenever setting the main window title
+(to stop console warnings when "setWindowModified" is called)
+Bug fix: "Allow trackbacks" setting in accounts form wouldn't keep on second
+account down.
+
+1.0 (14th June 2009):
+
+New feature: Support for Wordpress-style tags
+User interface: Pressing Esc closes the search widget
+User interface: Progress bar, which monitors progress of posting operations
+(only, at the moment)
+New feature: Save all
+Build system: New "confclean" target
+Bug fix: About box didn't display version number when invoked from the Mac
+supermenu
+Bug fix: In Tidy Paste, replace single newlines with single spaces rather
+than just removing them
+Bug fix: Now fetches the first blog's categories when switching accounts
+Bug fix: Now fetches account attributes (allow comments, etc) when starting
+up (may have fixed bug where categories were not posted)
+Bug fix: Now sets allow comments/trackback boxes in side widget according to
+preferences
+Bug fix: Changed the shortcuts in the Insert menu to make them unique
+Bug fix: Fixed typo which was preventing "allow comments" working in the
+second account in the list
+
+0.7.4.1 (25th April 2009):
+
+Bug fix: Removed ampersands from commands in the desktop entry spec files,
+and stopped attempts to open filenames consisting solely of an ampersand
+
+0.7.4 (28th Feb 2009):
+
+New feature: "Tidy paste", which allows pasting a selection with multiple
+spaces reduced to single spaces, and newlines within paragraphs removed
+(both are commonly found in PDFs, and may cause problems with blogging
+systems which convert line breaks, although not with normal HTML)
+
+0.7.3.2 (12th Feb 2009):
+
+Bug fix: Sets the default Perl location to the ActivePerl standard install
+path on Windows, rather than /usr/bin/perl
+Bug fix: Corrected enforcement of UTF-8 encoding for Markdown, so that it
+doesn't come out with weird characters instead of apostrophes or UK pound
+signs
+Bug fix: Disabled "strip paragraph tags" as this feature clashes with some
+multi-paragraph tags such as "blockquote"
+
+0.7.3.1 (27th Jan 2009):
+
+Bug fix: Correctly set the default Markdown script location when installing
+it to a "share" location
+
+0.7.3 (24th Jan 2009):
+
+New feature: Running Markdown before posting a new entry, with the option to
+strip paragraph tags
+
+0.7.2 (20th January 2009):
+
+New feature: Support for Markdown in the Preview window (requires an
+external Markdown script)
+
+0.7.1.3 (8th January 2009):
+
+Compatibility: Finally restored Qt 4.1 compatibility by correcting typos in
+compile-time isolators, and removing left-over isolators from the accounts
+dialog class.
+
+0.7.1.2 (8th January 2009):
+
+Compatibility: Restored Qt 4.1 compatibility by isolating references to
+certain widgets which are absent when that version of Qt is used.
+
+0.7.1.1 (3rd January 2009):
+
+Bug fix: Fixed bug which caused the wrong blog ID to be sent out in XML-RPC
+requests after changing accounts in certain circumstances
+
+0.7.1 (3rd January 2009):
+
+New feature: Ability to set background and text colours in the editor,
+preview and console (requires Qt 4.2 at present)
+Improvement: Auto-sets local storage directory if there isn't one
+Improvement: Runs the prefs then the accounts for a first-time user if they
+click "Yes" in the start-up dialog (and displays "Stage [1/2] of 2" on the
+dialog titles)
+Improvement: When the category selectors are displayed, searches for
+categories if there are already none
+Improvement: Sets the status to "dirty" when changing the blogs or 
+categories only if there is text in the main entry widget
+Improvement: Removed redundant EditingWindow constructor
+Improvement: Prepends / to the location field, as webservers require full
+paths (e.g. /mt/mt-xmlrpc.cgi or /xmlrpc.php, NOT just xmlrpc.php)
+Bug fix: Fixed crash which occurred in the accounts dialog after a new
+account was deleted and it was the only account
+Bug fix: Corrects start-up behaviour for new users, i.e. stops prompting
+them for prefs even after they have specified their preferences
+Bug fix: Now auto-refreshes blog list after using accounts dialog when 
+there is only one account
+Bug fix: Failed to store auto-filled server and location details (esp.
+on wordpress.com sites)
+
+0.7 (22nd Oct 2008):
+
+New feature: Ability to specify "no categories" for a post, via a checkbox
+in the categories page
+New feature: Ability to "export" a blog entry, meaning save it with the full
+blog details as in previous versions of QTM
+UI improvement: Preview and Console menu entries changed to "Exit
+Preview/Console" when they are activated, and changed back when deactivated
+Bug fix: sorted the "deprecated type conversion" warnings stemming from the
+included XPM files
+UI improvement: Number of secondary categories displayed next to "Others" in
+the heading
+Bug fix: displays ampersands in recent file menu properly
+Bug fix: stopped adding XML-RPC fault codes to the main account tree
+
+0.7-b1 (29th Sept 2008):
+
+Bug fixes to account dialog; fills in wordpress.com details correctly
+Bug fix: parses rsd.xml properly so that server/login details for MT blogs
+can be filled in automatically
+Bug fix: tenth entry in "Recent files" now has hotkey 0, not 1
+
+0.7-m2 (28th Sept 2008):
+
+New feature: Multiple accounts
+New feature: Assistance to user in filling out account details based on what
+CMS or blogging system is being used (in progress)
+Build system: Ability to block the use of the QPlainTextEdit widget even if
+it is present (as it is buggy)
+
+0.6.3 (7th June 2008):
+
+New feature: recent files menu in both the system tray icon and each window
+New feature: two new D-Bus signals, quickpostTemplatesUpdated and
+quickpostTemplateTitlesUpdated
+Bug fix: use double newlines when pasting text as Blockquotes
+Bug fix: strips out extra newlines when pasting text as lists
+Bug fix: proportions of the two sides of the quickpost template dialog set
+correctly
+Build system: now use a CMake configure_file command to generate
+qtm_version.h (had not been generating properly on Mac for some reason)
+Also, the files account_form.ui and account_form41.ui have been renamed
+PrefsForm.ui and PrefsForm41.ui, in preparation for separating the accounts
+and preferences dialogs in 0.7
+
+0.6.2.2 (18th May 2008):
+
+Bug fix: now loads categories with saved entries from D-Bus
+
+0.6.2.1 (18th May 2008):
+
+Build system: adds workaround for failure of CMake 2.4 to include and link
+the Qt DBus module (causing packages to not build on most recent Linux
+distros).
+
+0.6.2 (17th May 2008):
+
+New feature: D-Bus interface, allowing other programs to utilise QTM's
+quickpost feature and to open saved or blank documents
+Bug fix: "New entry on startup" in the system tray icon works again
+
+0.6.1 (14th May 2008):
+
+New feature: now includes user agent string when making HTTP requests, so
+that QTM shows up in web server statistics
+Improvement: now uses a QPlainTextEdit on Qt 4.4, rather than the heavier
+old QTextEdit, as console and editor widgets
+Search widget: can now interact with a QPlainTextEdit as well as an old 
+QTextEdit
+Build system: building universal binaries no longer the default as it is
+really only necessary for distributors, not end users building from source
+Build system: version number now inserted into the program dynamically,
+using a define in a header built by a shell script/batch file
+Bug fix: stopped loading of system-try icon image on the Mac, where it is
+not displayed
+
+0.6.0.2 (8th May 2008):
+
+Bug fix: removed "skip rpath" line in the CMake build file, so that it is
+possible again to link against sandboxed local installs of Qt.
+Bug fix: hid unused widget labelled "Trackback this entry" in the side panel
+of the main window
+
+0.6.0.1 (27th April 2008):
+
+Comptibility: restored compatibility with Qt 4.2 by removing Qt 4.3 layout
+features.
+
+0.6 (22nd April 2008):
+
+New feature: ability to quickpost articles downloaded through HTTPS as well
+as HTTP (requires Qt 4.3, doesn't work on Windows, at least not out of the
+box)
+User interface: new yellow system-tray icon displayed while quickpost is in
+progress (Windows only)
+User interface: now displays busy cursors when posting blog entries or
+refreshing blog or category lists
+Improvement: when setting the title of a new quickpost article, sets the
+window title to it as well
+Bug fix: now displays categories in proper alphabetical order, with shorter
+entries (e.g. KDE) appearing before longer ones (e.g. KDE Apps)
+Bug fix: now checks for and, if necessary, creates the local storage
+directory before writing the templates file
+
+0.6 beta 1 or 0.5.90 (7th April 2008):
+
+Installer: new Nullsoft Windows installer
+New feature: blog lists and categories are saved from session to session
+until the blog list is refreshed or the account changed, so that lists
+are not refreshed every time a new blog is selected
+New feature: can now load entry files from the command line
+Compatibility: regex searching in the documents now disabled on Qt 4.1
+which doesn't offer the required methods
+
+0.5.8.2 (24th February 2008):
+
+Build system: Enabled out-of-directory builds (patch by Patryk Cisek)
+Build system: Now inserts date into manpage automatically, rather than
+having to be inserted manually
+Bug fix: Category selectors now show categories in proper alphabetical
+order, without prioritising uppercase (like abbreviations)
+UI improvement: Title field now takes keyboard focus when a fresh window 
+is shown
+
+0.5.8.1 (17th February 2008):
+
+Bug fix: The search bar actually stops using expert (i.e. regex-based) Find
+when it is disabled through the setExpertEnabled slot (in QTM's case,
+through the "Enable expert search preference)
+
+0.5.8 (15th February 2008):
+
+New feature: A search bar, similar to that in Firefox (but actually largely
+derived from Qt Assistant)
+Bug fix: When loading entries from files, now displays the blog name in the
+selector rather than its ID.
+
+0.5.7.1 (10th February 2008):
+
+New feature: Copy title extended to allow non-template quickposts to use
+this feature (set in general preferences).  In addition, if this is set, it
+becomes the default for the Copy Title option in new QP templates (and the
+reverse if it is not).
+Unix: Now includes manpage (rudimentary, to satisfy Debian packaging
+guidelines).
+
+0.5.7 (7th February 2008):
+
+New feature: "Copy title", allowing the user to automatically name an entry
+after the online resource it is based on when quickposting
+Improvement: now sorts the categories alphabetically, rather than in the
+apparent non-order in which they have previously appeared
+Improvement: unedited, fresh Quickposts are no longer "dirty", i.e. if user
+tries to close the window, if will not prompt him to save
+Removed: accept and reset buttons in the Quickpost Template configuration
+dialog; a new template is now "accepted" if any details are entered, while
+reset had intractable bugs and can be achieved in any case by cancelling and
+reopening the dialog
+User interface: added What's This help to the preference item "Save
+passwords with entries"
+
+0.5.6.1 (21st October 2007):
+
+Bug fix: bug in associated hosts system, by which empty associated hosts
+entries were trapping the // marker in URLs (and thus causing QTM to use the
+wrong templates) fixed.
+
+0.5.6 (20th October 2007):
+
+New feature: "associated hosts" in quickpost templates.  The user can
+specify a number of hosts in a template, and when he then quickposts an
+article with that hostname in the URL, that template will be used.
+Improvement: two new template tags: %host% (which is just the hostname of a
+page being blogged) and %domain% (which is %host% without the www.).
+Bug fix: fixed crashes when shutting the quickpost template config window
+when there are no templates.
+Build system: fixed relinking behaviour; no longer relinks when QDEBUG is
+not set (from CMake command line).
+
+0.5.5 (6th October 2007):
+
+Bug fix: restored compatibility with Qt 4.1 (v0.5.4 had required Qt 4.3, due
+to my using Qt Designer 4.3 for designing some widgets)
+User interface: Added application icons for menus and the Mac OS X dock
+Build system: now uses shell script to generate the X11 desktop entry file
+at build time, so that it specifies where exactly the executable and icons
+are.
+
+0.5.4 (25th August 2007):
+
+Security: no longer outputs passwords to the console when displaying XML-RPC
+listings
+New feature: now stores titles and targets for auto links
+New feature: ability to clear the console
+Improvement: now does base 64 conversions internally, with progress dialog,
+rather than the old method of using Qt's built-in converter which blocked
+the GUI.
+Bug fix: no longer outputs entire encoded file to console when uploading a
+file (caused crash)
+Bug fix: now detects faults in file upload responses accurately and displays
+"406" errors on console as HTML code, not as "displayed" HTML
+
+0.5.4 (beta 2) (1st July 2007):
+
+New feature: Auto link, allowing a certain URL to be associated with a
+certain word, so that the author can highlight that word, click Auto link,
+and the link to that URL will appear.  (Note: at the moment, it does not
+store the title or target.)
+
+0.5.4-beta1 (20th June 2007):
+
+New feature: File upload implemented.  A file can be uploaded, using an
+XML-RPC method (metaWeblog.newMediaObject), in Base64 format.  This uses a
+blocking base-64 converter which is part of Qt's QByteArray class, and
+causes the program to hang while the conversion is going on (noticeable on
+large files such as images).
+
+0.5.3 (18th June 2007):
+
+Removed feature: Blogger support.  Blogger no longer supports the APIs that
+QTM uses.
+New feature: Abort, which stops the current network job (refresh blog or
+category list, blog entry posting or whatever)
+New features: New variants on Paste: paste as ordered/unordered list, marked
+paragraphs (with <p> tags), normal blockquotes and Markdown blockquotes, and
+ability to mark up a block as an ordered or unordered list.
+New feature: Ability to set whether to submit a date and time or not at
+posting time, to avoid clock skews (problem on Wordpress and Textpattern, not
+on MT).
+New feature: Ability to set the post's remote categories explicitly, through
+action "Send categories" in File menu
+Build system: Fixed relinking issue at install time, in which (on sandboxed
+installs of Qt 4.3.0) the executable was relinked to the normal install of
+Qt, even if it was older than 4.3 (causing unresolved symbol errors).
+Bug fix: now saves entry numbers when saving entries, so that you can reopen
+a posted entry and have QTM post an edit, rather than a new post.
+User interface: removed (from view) the unused actions, Print and "Close and
+delete".
+
+0.5.2 (20th May 2007):
+
+New feature: Drupal compatibility.  This had always been mentioned in the
+documentation, but certain practices, such as identifying blogs and
+categories using Movable Type patterns which are not replicated in Drupal,
+were preventing Drupal compatibility.  In particular, blogs in MT are the
+equivalent of content types in Drupal, and are identified by strings rather
+than numbers.
+Improvement: now strips whitespaces from titles in Quickposts (Qt 4.2+)
+Improvement: now always rebuilds when posting an entry to an MT blog (using
+mt.publishPost method)
+Qt 4.3: now gives alerts when opening up windows (esp. on Mac, where the
+icon bounces)
+Bug fix: when quitting, looks for QTM main windows specifically, rather than
+visible widgets in general (this was preventing quitting on Qt 4.3)
+Build system: Mac users can specify non-universality with a CMake option,
+rather than by commenting out a line in CMakeLists.txt
+Build system: Location of desktop spec file (qtm.desktop) can be specified
+at configure time; category list now includes
+X-MandrivaLinux-Internet-Other
+Bug fix: menu entry to view TB ping list now works (also has Ctrl+5
+shortcut)
+
+0.5.1.2 (8th May 2007):
+
+Bug fix: fixed a crash which happened when processing XML-RPC responses to
+category requests to blogs which have no categories - such as Drupal content
+types with no taxonomies.  This makes for Drupal compatibility.
+
+0.5.1.1 (7th May 2007):
+
+Bug fix: fixed a crash which happened when doing a templateless quickpost. 
+This was caused by trying to fetch the default publish status for a
+non-existent template.
+
+0.5.1 (6th May 2007):
+
+User interface: the system-tray icon no longer displays on the Mac. 
+Instead, the same menu is displayed by double-clicking on the dock icon.  A
+bare-bones default main menu, with New, Open and Quit functions (the latter
+displayed in the dock and application menus), appears when there is no
+top-level window present on the Mac (only on Qt 4.2; this may change in
+future releases).
+User interface: the Abort Quick Post action in the STI menu appears (albeit
+greyed out) even when it is disabled; this is to get round a bug in Qt on
+the Mac
+New feature: the user can now reset changes made to quickpost templates
+before closing the dialog (Qt 4.2 only)
+New feature: option to "treat posting as saving" - in other words, when this
+is on, if you write a post and post it (draft or publish) and then try to
+close the window, QTM will not ask you if you want to save it.
+New feature: in Quickpost Templates (Qt 4.2), to set whether posts written 
+using a given template should be draft or publish (or simply to use the 
+default setting)
+New feature: qtm.desktop file, which provides a KDE/GNOME menu entry on
+platforms which support it
+
+0.5.0.1 (12th April 2007):
+
+Bug fix: All qDebugs (causing console output) commented out and use of the
+macro QT_NO_DEBUG_OUTPUT stopped (this caused compile failure on Debian
+Etch, which uses Qt 4.2.1)
+Bug fix: the Qt Designer file for the main window (CatkinMainWindow.ui) now
+has a new version (CatkinMainWindow41.ui) for Qt 4.1.
+
+0.5 (25th March 2007):
+
+Bug fix: Quit now works (from system-tray icon and File menu) on Windows
+(tested on XP only)
+Improvement: Newlines now stripped from title of a quickposted article (some
+websites have newlines in their page titles, eg. telegraph.co.uk)
+Bug fix: Various memory leaks (dialogs undeleted) fixed
+
+0.5 RC1 (19th March 2007):
+
+User interface: New keyboard shortcuts for new, open and save in File menu,
+and Mac standard Ctrl+comma for preferences is now present on all platforms
+Bug fix: App now has Quit action in the main application menu, and the quit
+actions there and in the STI actually work (as they didn't in the beta)
+Bug fix: Removed a few more references to Catkin QTM
+Bug fix: Debug-related console output stopped, unless debug is specifically
+enabled at CMake stage
+
+0.5-beta1 (10th March 2007):
+
+The app is now called QTM throughout, rather than Catkin QTM (a remnant of
+the old Catkin client for Blosxom), except in the internal application name,
+which is maintained so that it finds config files correctly
+New feature: Quickpost templates, which can be set-up and used through the
+system tray icon (req. Qt 4.2)
+New feature: The user can send trackback pings from QTM (4.1 & 4.2)
+Bug fix: App crashed after closing prefs dialog when system tray icon was in
+use (4.2)
+Bug fix: Now shuts down when the Quit option is chosen from the STI on the
+Mac (so the STI is now viable on the Mac) (4.2)
+
+0.4 (14th January 2007):
+
+New feature: Quickpost, the ability to use the system-tray icon to post the
+contents of the clipboard or, on X11, the mouse selection. (Qt 4.2 only)
+User interface: the "round" icon (susesystray.xpm), introduced for SUSE 10.2 
+binary in 0.3.10, is now standard on X11.
+Bug fix: Program no longer sporadically echoes various debugging information
+to the console (achieved by commenting out all qDebug lines)
+
+0.3.10 (12th December 2006):
+
+Bug fix: the warning message which was being displayed while requesting
+missing passwords for entries loaded from files is now gone.
+Build change: the useSTI.h header file is gone; to compile with the system
+tray icon (recommended on KDE/GNOME, absolutely not on Mac OS X), build as
+follows: cmake -D USE_STI:BOOL=TRUE . (the dot is necessary and represents
+the current directory).  Otherwise, cmake . as before.
+
+0.3.10-beta1 (12th November 2006):
+
+QTM can now post to Blogger blogs (however, the posts have to be *displayed*
+from within the Blogger web interface; this is a problem at Blogger's end
+and affects other similar applications).
+Added system tray icon which can presently start a new entry, open a saved
+one and quit the application.  This is supported by Qt 4.2 only and can be
+activated, or de-activated, by editing the file useSTI.h.  Not recommended
+for use on Windows and Mac OS X.
+Fonts for editing, previewing and the console now set using Qt 4.2 font
+combos when built on a system with Qt 4.2.
+Now possible to set the console font (from the Edit menu on Qt 4.1, from the
+prefs dialog on 4.2)
+Redesigned the preferences dialog on 4.2 (the old one, albeit with new
+options, is present on 4.1)
+User can now set whether to allow comments and TBs by default in the prefs
+window
+Bug fix: fixed crash when occurred when the program attempted to access
+non-existent web servers or services.
+
+0.3.9.1 (2nd September 2006):
+Bug fix: fixed signal-slot mismatch which was preventing the host lookup
+added in 0.3.9 being acted upon.  (Note: there are still some ways of making
+the app crash by getting it to post to non-existent web servers or services. 
+I intend to fix this in the forthcoming 0.3.10 release.)
+(3rd Sept) Included CMakeLists.txt file for building QTM using CMake.
+
+0.3.9 (24th August 2006):
+The application now uses DOM to generate all submissions to the web service,
+in order to make proper encoding more reliable.
+Bug fix: the application now stops when the web service is not found or
+refuses access (eg. due to the user supplying the wrong password).  This had
+been the cause of crashes in the past.
+
+0.3.8.2 (7th August 2006):
+Bug fix: removed line which was causing the previewer, not the editor, to
+appear when starting up
+Bug fix: preventing switching from console to previewer and vice versa, as
+it was impossible to switch back to the editor.  One can now only enact
+either the previewer or the console from the editor.
+
+0.3.8.1 (6th August 2006):
+Bug fix: blocked network actions when app starts up with no account details
+(to block routes to crash bug otherwise fixed in 0.3.8).
+
+0.3.8 (6th August 2006):
+Feature: added the ability to forget account details with one click of a
+push button.
+Bug fix: when there are no account details present, all routes to network
+access are now blocked.  This is because they caused the program to crash
+(such as when the user deleted his account details by hand and then closed
+the preferences dialog; the program would try to refresh the blog and
+category lists, causing the crash).
+
+0.3.7 (3rd July 2006):
+Feature: directory browse button in the preferences dialog enabled
+Feature: possible to use right mouse button in the location space in the
+prefs dialog to insert custom filenames mt-xmlrpc.cgi and xmlrpc.php (common
+XML-RPC receivers)
+
+0.3.6 (3rd July 2006):
+Bug fix: categories now set properly when loading an entry
+Bug fix: status bar errors no longer appear when changing blogs (and just
+after start-up)
+Bug fix: UK pound signs now encoded
+Improvement: QTM now prompts for a password when loading an entry saved
+without one (and then sets the categories properly)
+Improvement: QTM no longer refreshes the blog list if the server and
+location are the same after the preferences dialog has been used
+Feature: new toolbar button to mark a block of text as blockquote
+
+0.3.5 (13th June 2006):
+Bug fix: QTM now changes tildes in the drafts directory to the actual path of the
+home directory, compensating from the failure of the QFileDialog to convert
+them.
+Feature: ability to set the font used in the entry preview
+Feature: ability to mark up a block of text as a blockquote
+
+0.3.4 (3rd June 2006):
+Feature: program now monitors when text has not been saved, and prompts the
+writer to save before closing a window or opening a new file in that window
+Improvement: now possible to open the font selection dialog from the prefs
+dialog
+Bug fix: "open file" dialog now looks in correct directory
+Bug fix: added line to the project file to explicitly make it a release
+project file (as on some OS's it was looking for debug libraries).
+
+0.3.3 (28th May 2006):
+Feature: now possible to set the editor font, and for this to be saved to
+the application's preferences.
+
+0.3.2 (26th May 2006):
+Feature: Support for Technorati tags, which can be saved to disk with an
+entry and posted at the start *or end* of a main entry body
+Bug fix: Edits now submit properly on Wordpress blogs (as dates sent as ISO
+dates and not strings)
+Bug fix: Ampersands and other special characters properly encoded
+end of a main entry
+
+0.3.1 (14th March 2006):
+User can now add RSS excerpt
+Left panel redesigned with less clutter and more room, using multi-page Qt
+widget
+Bugs fixed, including one which caused HTML tags to be submitted as
+plain-text "sample tags"
+
+0.3 (8th March 2006):
+Toolbar set to display icons only to get around Qt 4.1.1's problem of
+resizing text when an action is toggled (as with the Preview button).
+Italic and bold icons tidied up a little bit
+
+0.3 beta 2 (28th Feb 2006):
+Save and load implemented (beta 1)
+Now possible to choose whether to save a password with a saved entry
+
+2006-01-28:
+Now possible to edit and resubmit as edits
+Now possible to open new editing windows
+Some unused actions greyed out in menus and toolbars

@@ -42,7 +42,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT    +=  widgets             \
                                             printsupport        \
                                             webenginewidgets
 #QT  +=  widgets
-#QT +=  webkit
+#QT  +=  webkit
 #QT  +=  webenginewidgets
 
 qtHaveModule(uitools):!embedded: QT +=  uitools
@@ -95,9 +95,8 @@ PROJECT_QT_LIBS      = $$PROJECT_QT_VERSION/lib
 
 
 INCLUDEPATH     += $$PROJECT_QT_VERSION/include
-#DEPENDPATH      += $$PROJECT_QT_VERSION/include
 
-#INCLUDEPATH     += $$PROJECT_QT_VERSION/lib/
+
 DEPENDPATH      += . $$PROJECT_QT_LIBS
 
 LIBS            += -L$$PROJECT_QT_LIBS -lQt5Svg -lQt5WebEngineWidgets -lQt5PrintSupport -lQt5Widgets -lQt5WebEngineCore -lQt5Quick -lQt5Gui -lQt5Xml -lQt5Qml -lQt5Network -lQt5WebChannel -lQt5Core -lQt5WebEngine -lQt5Positioning
@@ -107,17 +106,18 @@ DESTDIR     =   bin
 OBJECTS_DIR =   build
 MOC_DIR     =   build
 UI_DIR      =   build
+SOURCE_OS   =   any
 }
 
 VERSION     =   0.0.1
 DEFINES     +=  APP_VERSION=\\\"$$VERSION\\\"
 
 TARGET      =   mytetra_webengine
-RESOURCES   =   bin/mytetra.qrc     \
+RESOURCES   =   mytetra.qrc     \
     src/views/browser/data/data.qrc \
     src/views/browser/htmls/htmls.qrc
 
-TRANSLATIONS    =   bin/resource/translations/mytetra_ru.ts
+TRANSLATIONS    =   resource/translations/mytetra_ru.ts
 CODECFORTR      =   utf8
 
 # QMAKE_LFLAGS  +=  -L/usr/lib/qt4/lib
@@ -477,12 +477,13 @@ DISTFILES   +=          \
     doc/up_linker.png \
     doc/binder.png \
     bin/browser.conf \
-    bin/resource/standartconfig/android/browser.conf \
-    bin/resource/standartconfig/android/entrance.ini \
-    bin/resource/standartconfig/android/mode.ini \
-    bin/resource/standartconfig/meego/browser.conf \
-    bin/resource/standartconfig/meego/entrance.ini \
-    bin/resource/standartconfig/meego/mode.ini
+    resource/standardconfig/$${SOURCE_OS}/mode.ini \
+    resource/standardconfig/$${SOURCE_OS}/browser.conf \
+    resource/standardconfig/$${SOURCE_OS}/browserview.ini \
+    resource/standardconfig/$${SOURCE_OS}/conf.ini \
+    resource/standardconfig/$${SOURCE_OS}/editorconf.ini \
+    resource/standardconfig/$${SOURCE_OS}/entrance.ini \
+    resource/standardconfig/$${SOURCE_OS}/stylesheet.css
 
 FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \
