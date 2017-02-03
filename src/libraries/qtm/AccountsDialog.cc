@@ -411,6 +411,8 @@ void AccountsDialog::handleHttpDone(QNetworkReply *reply){
 		networkBiz = FindingRsdXml;
 		}  */
 		break;
+	    case NoBusiness:
+		break;
 	}
     }else{
 	QMessageBox::information(this, tr("QTM - Network failure (%1)").arg((int) reply->error())

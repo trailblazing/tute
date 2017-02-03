@@ -63,6 +63,7 @@ void XmlRpcHandler::setProtocol(EditingWindow::HttpBusinessType x){
 }
 
 bool XmlRpcHandler::startElement(const QString &, const QString &, const QString &qName, const QXmlAttributes &attr){
+    (void) attr;
     QString superElementName;
 	/*if( qName == "struct" )
 	  currentString = "";
@@ -74,6 +75,7 @@ bool XmlRpcHandler::startElement(const QString &, const QString &, const QString
 	    switch(reqType){
 		case _BLOGGER_GETUSERSBLOGS: superElementName	= QString("blog");break;
 		case _MT_GETCATEGORYLIST:    superElementName	= QString("category");break;
+		default: break;
 	    }
 		// qDebug() << "Creating super element: " << superElementName.toAscii().data();
 	    currentSuperElement = doc.createElement(superElementName);

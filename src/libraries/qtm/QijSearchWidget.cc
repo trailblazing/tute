@@ -258,14 +258,17 @@ void QijSearchWidget::on_tbSelectAll_clicked(bool)
 {}
 
 void QijSearchWidget::on_chMatchCase_toggled(bool state){
+    (void)state;
     if(! leFindText->text().isEmpty()) findInTextEdit(leFindText->text(), Stay);
 }
 
 void QijSearchWidget::on_chWholeWords_toggled(bool state){
+    (void)state;
     if(! leFindText->text().isEmpty()) findInTextEdit(leFindText->text(), Stay);
 }
 
 void QijSearchWidget::on_chRegExp_toggled(bool state){
+    (void)state;
 #if QT_VERSION >= 0x040200
     if(! leFindText->text().isEmpty()) findInTextEdit(leFindText->text(), Stay);
 #endif

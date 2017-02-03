@@ -65,9 +65,9 @@
        <property name="text" >
         <string>Refresh</string>
        </property>
-       <property name="icon" >
+       <!--property name="icon" >
         <iconset/>
-       </property>
+       </property-->
        <property name="toolButtonStyle" >
         <enum>Qt::ToolButtonTextUnderIcon</enum>
        </property>
@@ -81,9 +81,9 @@
        <property name="text" >
         <string>Delete</string>
        </property>
-       <property name="icon" >
+       <!--property name="icon" >
         <iconset/>
-       </property>
+       </property-->
        <property name="toolButtonStyle" >
         <enum>Qt::ToolButtonTextUnderIcon</enum>
        </property>

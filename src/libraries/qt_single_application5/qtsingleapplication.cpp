@@ -739,7 +739,7 @@ void sapp_t::main_window(){
     _globalparameters.main_window(_window);
 
     _window->setWindowTitle(_globalparameters.application_name());
-    if(_globalparameters.target_os() == "android") _window->show();																																																																																																																																																																																																																																																																																																																																																									// В Андроиде нет десктопа, на нем нельзя сворачивать окно
+    if(_globalparameters.target_os() == "android") _window->show();																																																																																																																																																																																																																																																																																																																																																																		// В Андроиде нет десктопа, на нем нельзя сворачивать окно
     else{
 	if(_appconfig.run_in_minimized_window() == false) _window->show();
 	else _window->hide();
@@ -1065,7 +1065,7 @@ void sapp_t::newLocalSocketConnection(){
     QTextStream stream(socket);
     QString	_url;
     stream >> _url;
-    if(_url.isEmpty()) _url = browser::Browser::_defaulthome;																																																																																																																																																																																																																																																																																																																									//    browser::DockedWindow *w = nullptr;
+    if(_url.isEmpty()) _url = browser::Browser::_defaulthome;																																																																																																																																																																																																																																																																																																																																	//    browser::DockedWindow *w = nullptr;
 
 	// if(!url.isEmpty()) {
 
@@ -1080,7 +1080,7 @@ void sapp_t::newLocalSocketConnection(){
 //    boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
     auto	current_item	= tree_view->current_item();
     auto	parent		= current_item->parent();
-    if(! parent) throw std::runtime_error(formatter() << "! parent");																																																																																																																																																																																																																																																																																																																																																																// std::exception();
+    if(! parent) throw std::runtime_error(formatter() << "! parent");																																																																																																																																																																																																																																																																																																																																																																									// std::exception();
 //    try {
 //        _tree_modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 //            return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
@@ -1575,7 +1575,7 @@ void sapp_t::setPrivateBrowsing(bool privateBrowsing){
     _private_browsing = privateBrowsing;
     auto browsers = [&] {set<browser::Browser *> bs;for(auto rs : _globalparameters.main_window()->vtab_record()->record_screens()) bs.insert(rs->browser());return bs;} ();
     if(privateBrowsing){
-	if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																			// new QWebEngineProfile(this);
+	if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																// new QWebEngineProfile(this);
 	for(auto &browser : browsers) browser->tabWidget()->setProfile(_private_profile);
     }else{
 	for(auto &browser : browsers){
@@ -1814,6 +1814,8 @@ void sapp_t::saveRecentFiles(){
 }
 
 void sapp_t::handleWindowChange(QWidget *oldW, QWidget *newW){
+    (void) oldW;
+    (void) newW;
 #ifdef Q_OS_MAC
     QWidget		*oldWindow	= oldW->window();
     QWidget		*newWindow	= newW->window();

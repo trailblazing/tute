@@ -636,7 +636,7 @@ bool EditingWindow::handleArguments(){
     QStringList		args = QApplication::arguments();
     if(args.size() > 1){
 	for(i = 1; i < args.size(); i ++){
-	    if(c)																				// if there is a current new window
+	    if(c)																										// if there is a current new window
 			d = c;
 	    c = new EditingWindow;
 #ifdef Q_OS_MAC
@@ -646,7 +646,7 @@ bool EditingWindow::handleArguments(){
 #ifdef USE_SYSTRAYICON
 		c->setSTI(sti);
 #endif
-		if(d)																					// if there's an old window
+		if(d)																											// if there's an old window
 			positionWidget(c, d);
 		c->show();
 		rv = false;
@@ -727,7 +727,7 @@ void EditingWindow::resizeEvent(QResizeEvent *event){
 void EditingWindow::doQuit(){
 #ifndef NO_DEBUG_OUTPUT
     int i = QApplication::topLevelWidgets().size();
-	// qDebug() << i << " top level widgets";
+    qDebug() << i << " top level widgets";
 #endif
 
     qApp->setQuitOnLastWindowClosed(true);
@@ -1875,8 +1875,9 @@ void EditingWindow::placeNetworkRequest(HttpBusinessType hbtype, QByteArray &arr
     bool ok;
 
     int p = port.toInt(&ok);
+    (void)p;
 #ifdef DONT_USE_SSL
-    if(! ok) pp = ":80";
+    if(! ok) p = ":80";
 #else
     if(! ok) p = 0;
 #endif
@@ -1974,6 +1975,7 @@ void EditingWindow::handleDone(QNetworkReply *reply){
 	    case _wp_newCategory:             wp_newCategory(responseData);break;
 	    case _wp_newPost:                 wp_newPost(responseData);break;
 	    case _wp_editPost:                wp_editPost(responseData);break;
+	    case None: break;
 	}
     }
     netmgr->disconnect();
