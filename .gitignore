@@ -26,9 +26,9 @@ ui_*.h
 
 
 /bin/*
-!/bin/resource
-!/bin/resource/*
-!/bin/mytetra.qrc
+#!/bin/resource
+#!/bin/resource/*
+#!/bin/mytetra.qrc
 
 
 # Ignore compiled Object files
@@ -59,9 +59,9 @@ ui_*.h
 *.Release
 
 # Ignore gitignore self
-.gitignore
-data
-trash
+#.gitignore
+#data
+#trash
 backup
 
 # QtCreator
