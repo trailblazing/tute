@@ -63,7 +63,7 @@ CONFIG  +=  gnu++14
 #CONFIG  +=  staticlib static
 
 QMAKE_CXXFLAGS += -std=c++14 -std=gnu++14
-
+#QMAKE_LFLAGS += -static-libgcc
 
 # http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
 

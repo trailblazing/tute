@@ -180,7 +180,7 @@ class tv_t : public QTreeView {
 
 	void				cut(bool _cut_branch_confirm = false);
 	QModelIndexList			copy(void);	// const;
-	void				edit(void);
+	void				modify(void);
 	boost::intrusive_ptr<TreeItem>	merge(boost::intrusive_ptr<TreeLevel> _tree_merge);	// boost::intrusive_ptr<TreeIndex> tree_index, boost::intrusive_ptr<TreeItem> source);
 
 
@@ -235,7 +235,7 @@ class tv_t : public QTreeView {
 	}
 	//    bool is_owner();
 	void		setModel(QAbstractItemModel *model) override;
-	virtual void	drawBranches(QPainter *painter, const QRect &rect, const QModelIndex &index) const;
+	virtual void	drawBranches(QPainter *painter, const QRect &rect, const QModelIndex &index) const override;
     private:
 	ts_t		*_tree_screen;
 	tkm_t		*_know_model_board;	// for tree screen

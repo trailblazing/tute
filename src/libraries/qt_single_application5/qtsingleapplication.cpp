@@ -407,7 +407,7 @@ void sapp_t::sys_init(char * *argv){
 
 #if QT_VERSION < 0x050000
 	// Установка кодека текстов
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF - 8"));
+    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
 #endif
 
 	//    // Инициализация глобальных параметров,

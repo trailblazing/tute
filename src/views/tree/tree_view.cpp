@@ -3264,7 +3264,7 @@ QModelIndexList tv_t::copy(void){	// const
     return _selectitems;					// copy_result;
 }
 
-void tv_t::edit(void){
+void tv_t::modify(void){
     qDebug() << "In edit_branch()";
 
 	// Получение списка индексов QModelIndex выделенных элементов

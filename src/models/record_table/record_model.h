@@ -163,7 +163,7 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 
 	int count() const;	// {return _tabmanager->count();}
 
-	boost::intrusive_ptr<TreeItem>	sibling(boost::intrusive_ptr<TreeItem> it) const;// override
+//	boost::intrusive_ptr<TreeItem>	sibling_s(boost::intrusive_ptr<TreeItem> it) const;// override
 	boost::intrusive_ptr<TreeItem>	current_item() const;
 	index_source current_index() const;
 
@@ -211,6 +211,7 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 	rctrl_t    *_record_controller;
 	friend class rs_t;
 	friend class browser::TabWidget;
+	friend struct RecordIndex;
 };
 
 #endif	// __RECORDTABLEMODEL_H__

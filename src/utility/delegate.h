@@ -688,7 +688,8 @@ namespace sd {
                         inner_impl(void *_return
                                   , typename static_if_shared<object_type_, object_pointer_type>::type object
                                   , std::shared_ptr<transmitter<object_type_, void, _Arg_ ...> > real_functor
-                                  , sequence<_I ...>){
+				  , sequence<_I ...>){
+			    (void)_return;
                             try{
                                 (*object.*real_functor->_func)(std::get<_I>(*(real_functor->_arg)) ...);
                             }catch(std::exception &e){
@@ -813,7 +814,7 @@ namespace sd {
                     transmitter(const transmitter &);
             };
 
-            template <typename _object_pointer_type>struct transmitter<nullptr_t, _object_pointer_type> {
+	    template <typename _object_pointer_type>struct transmitter<std::nullptr_t, _object_pointer_type> {
                 // typedef _return_type return_type;
                 typedef _object_pointer_type object_pointer_type;
                 return_type (*_func)(Arg ...);
@@ -848,8 +849,8 @@ namespace sd {
                 : meta_info(object_pointer_type(nullptr), "")
                   , _method_name(_method_name)
                   , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name())
-                  , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<nullptr_t, object_pointer_type> >(f)))
-                  , _transmit(transmitter<nullptr_t, object_pointer_type>::transmit)
+		  , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<std::nullptr_t, object_pointer_type> >(f)))
+		  , _transmit(transmitter<std::nullptr_t, object_pointer_type>::transmit)
             {}
 
             _interface &operator =(const _interface &) = delete;// because of deep copy
@@ -946,7 +947,7 @@ namespace sd {
                 // struct transmitter_static;
 
             template <typename _object_pointer_type>	// typename ... _Arg
-            struct transmitter<nullptr_t, _object_pointer_type> {	// <void, Arg ...>
+	    struct transmitter<std::nullptr_t, _object_pointer_type> {	// <void, Arg ...>
                 typedef _object_pointer_type object_pointer_type;
                 void (*_func)(Arg ...);
 
@@ -982,8 +983,8 @@ namespace sd {
                 : meta_info(object_pointer_type(nullptr), "")
                   , _method_name(_method_name)
                   , _return_type_name(typeid(void).name())
-                  , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<nullptr_t, object_pointer_type> >(f)))
-                  , _transmit(transmitter<nullptr_t, object_pointer_type>::transmit)
+		  , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<std::nullptr_t, object_pointer_type> >(f)))
+		  , _transmit(transmitter<std::nullptr_t, object_pointer_type>::transmit)
             {}
 
             _interface &operator=(const _interface &) = delete;	// because of deep copy
@@ -1303,7 +1304,7 @@ namespace sd {
     template <typename _element>struct table {	// : public _element::meta_info
         protected:
             friend ::boost::serialization::access;
-            template<class Archive>void serialize(Archive &ar, const unsigned int version){}	// ** note that this is empty **
+	    template<class Archive>void serialize(Archive &ar, const unsigned int version){(void)ar;(void)version;}	// ** note that this is empty **
 
         public:
                 // for already defined object prototype, not all objects container with same name
@@ -1311,7 +1312,7 @@ namespace sd {
             typedef _element element_type;
             std::map<std::string, std::shared_ptr<element_type> > _object_map;
 
-            table(std::string name_){}	// : meta_info(boost::shared_ptr<table>(this), name_)   // dangerous
+	    table(std::string name_){(void)name_;}	// : meta_info(boost::shared_ptr<table>(this), name_)   // dangerous
 
 
             table(std::map<std::string, std::shared_ptr<element_type> > &&object_map_) : _object_map(object_map_){}

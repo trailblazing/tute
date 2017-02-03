@@ -1058,10 +1058,10 @@ namespace browser {
 //                        }
 //                    }
 		    auto _mainwindow = globalparameters.main_window();
-            if(! _mainwindow->windowTitle().contains(view_current->page()->title())) _mainwindow->setWindowTitle(QString(globalparameters.application_name()) + " : " + view_current->page()->title());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	// webView->setFocus();
+		    if(! _mainwindow->windowTitle().contains(view_current->page()->title())) _mainwindow->setWindowTitle(QString(globalparameters.application_name()) + " : " + view_current->page()->title());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												// webView->setFocus();
 		    MetaEditor *metaeditor = globalparameters.meta_editor();		// find_object<MetaEditor>(meta_editor_singleton_name);
 		    assert(metaeditor);
-		    if(metaeditor->item() != _target_in_browser) view_current->page()->metaeditor_sychronize();																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												// metaeditor->bind(record);
+		    if(metaeditor->item() != _target_in_browser) view_current->page()->metaeditor_sychronize();																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																// metaeditor->bind(record);
 		}
 	    };
 
@@ -1280,7 +1280,7 @@ namespace browser {
     QAction *TabWidget::newTabAction() const {return _newtabaction;}
 
     WebView *TabWidget::newTab(boost::intrusive_ptr<RecordIndex> record_index, bool make_current){	// boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
-	if(count() > 20){
+	if(count() > 30){
 	    auto	_view	= _record_controller->view();
 	    auto	current	= _view->current_item();
 ////	    auto	_proxy_model	= _record_controller->proxy_model();
@@ -1310,34 +1310,38 @@ namespace browser {
 ////		// find_object<TreeScreen>(tree_screen_singleton_name)
 ////	    globalparameters.tree_screen()->view()->know_model_save();
 ////	    _record_screen->tools_update();
-	    for(int i = 0; i < count(); i ++){	// for(std::vector<browser::WebView *>::size_type i = 20; i < static_cast<std::vector<browser::WebView *>::size_type>(count()); i ++){
-		auto v = webView(i);	// v_list[i];
-		if(v){
-		    auto p = v->page();
-		    if(p){
-			auto h = p->host();
-			if(  h
-//		      && ! TreeIndex::is_ancestor_of(current, p->host())
-			  && (! h->is_ancestor_of(current) || h->distance(current) > 1)
-			  && count() > 20
-			  && h->field<pin_type>() != _string_from_check_state[Qt::Checked]
-			  && v != currentWebView()
-			  && v != webView(0)
-			    ){
-//		    v_list[i]->page()->deleteLater();
-//		    v_list[i]->page(nullptr);
-//		    v_list[i]->page()->setUrl(QUrl(Browser::_defaulthome));
-
+//
+//
+//
+//	    for(int i = 0; i < count(); i ++){	// for(std::vector<browser::WebView *>::size_type i = 20; i < static_cast<std::vector<browser::WebView *>::size_type>(count()); i ++){
+//		auto v = webView(i);	// v_list[i];
+//		if(v){
+//		    auto p = v->page();
+//		    if(p){
 //			auto h = p->host();
-			    closeTab(webViewIndex(v));
-//			_browser->bind(RecordIndex::instance(record_index->current_model(), h, sibling(v)->page()->host()), false);// horrible
-//			v = nullptr;
-			}
-		    }
-		}
-	    }
+//			if(  h
+////		      && ! TreeIndex::is_ancestor_of(current, p->host())
+//			  && (! h->is_ancestor_of(current) || h->distance(current) > 1)
+//			  && count() > 30
+////			  && h->field<pin_type>() != _string_from_check_state[Qt::Checked]
+//			  && v != currentWebView()
+//			  && v != webView(0)
+//			    ){
+////		    v_list[i]->page()->deleteLater();
+////		    v_list[i]->page(nullptr);
+////		    v_list[i]->page()->setUrl(QUrl(Browser::_defaulthome));
+////			auto h = p->host();
+//			    closeTab(webViewIndex(v));
+////			_browser->bind(RecordIndex::instance(record_index->current_model(), h, sibling(v)->page()->host()), false);// horrible
+////			v = nullptr;
+//			}
+//		    }
+//		}
+//	    }
+		//
 	    if(count() > 30){
-		std::vector<boost::intrusive_ptr<TreeItem> > list;
+//		std::vector<boost::intrusive_ptr<TreeItem> >	list;
+		std::vector<WebView *>				list_v;
 		for(int i = 0; i < count(); i ++){	// for(std::vector<browser::WebView *>::size_type i = 20; i < static_cast<std::vector<browser::WebView *>::size_type>(count()); i ++){
 		    auto v = webView(i);	// v_list[i];
 		    if(v){
@@ -1353,23 +1357,52 @@ namespace browser {
 				){
 				//
 				bool found = false;
-				[&] {for(auto &i : list) if(i == h){found = true;break;}return;} ();
-				if(found) list.push_back(h);
+//				[&] {for(auto &j : list) if(j->id() == h->id()){found = true;break;}return;} ();
+				[&] {for(auto &j : list_v) if(j == v){found = true;break;}return;} ();
+				if(! found){
+//				    list.push_back(h);
+				    list_v.push_back(v);
+				}
 				// closeTab(webViewIndex(v));
 			    }
 			}
 		    }
 		}
-		std::sort(list.begin(), list.end(), [&](boost::intrusive_ptr<TreeItem> t0, boost::intrusive_ptr<TreeItem> t1){
-			return t0 ? t1 ? t1 != *list.end() ? (  (current->distance(t0) != - 1 && current->distance(t0) < current->distance(t1))
-							     || (- 1 == current->distance(t1))
-							     || (t0->field<rating_type>().toInt() > t1->field<rating_type>().toInt())
-			) : false : true : false
+//		std::sort(list.begin(), list.end(), [&](boost::intrusive_ptr<TreeItem> t0, boost::intrusive_ptr<TreeItem> t1){
+////			auto _e = list.end();
+////			auto _re = _e.base();
+////			auto _se = _re->get();
+//			return	// &t0 != _re ? &t1 != _re ?
+//			t0	// && t0 != *list.end()
+//			? t1	// && t1 != *list.end()
+//			?    (current->distance(t0) != - 1 && current->distance(t0) < current->distance(t1))
+//			|| (- 1 == current->distance(t1))
+//			|| (t0->field<rating_type>().toInt() > t1->field<rating_type>().toInt())
+//			: true
+//			: false	//: true : false
+//			;
+//		    });
+
+		qSort(list_v.begin(), list_v.end(), [&](WebView *v0, WebView *v1)->int{
+//			auto _e = list.end();
+//			auto _re = _e.base();
+//			auto _se = _re->get();
+			return	// &t0 != _re ? &t1 != _re ?
+			v0	// && t0 != *list.end()
+			? v1	// && t1 != *list.end()
+			?    (current->distance(v0->page()->host()) != - 1 && current->distance(v0->page()->host()) < current->distance(v1->page()->host()))
+			|| (- 1 == current->distance(v1->page()->host()))
+			|| (v0->page()->host()->field<rating_type>().toInt() > v1->page()->host()->field<rating_type>().toInt())
+			: true
+			: false	//: true : false
 			;
 		    });
-		while(list.size() > 30) list.pop_back();
-		std::set<boost::intrusive_ptr<TreeItem> > list_set;
-		for(auto i : list) list_set.insert(i);
+//		while(list.size() > 30) list.pop_back();
+		while(list_v.size() > 30) list_v.pop_back();
+//		std::set<boost::intrusive_ptr<TreeItem> > list_set;
+		std::set<WebView *> list_v_set;
+//		for(auto i : list) list_set.insert(i);
+		for(auto i : list_v) list_v_set.insert(i);
 		for(int i = 0; i < count(); i ++){	// for(std::vector<browser::WebView *>::size_type i = 20; i < static_cast<std::vector<browser::WebView *>::size_type>(count()); i ++){
 		    auto v = webView(i);	// v_list[i];
 		    if(v){
@@ -1377,14 +1410,13 @@ namespace browser {
 			if(p){
 			    auto h = p->host();
 			    if(  h
-//			      && (! h->is_ancestor_of(current) || h->distance(current) > 1)
-//			      && count() > 30
-////				      && h->field<pin_type>() != _string_from_check_state[Qt::Checked]
+			      && h->field<pin_type>() != _string_from_check_state[Qt::Checked]
 			      && v != currentWebView()
 			      && v != webView(0)
 				){
 				//
-				if(list_set.find(h) == list_set.end()) closeTab(webViewIndex(v));
+//				if(list_set.find(h) == list_set.end()) closeTab(webViewIndex(v));
+				if(list_v_set.find(v) == list_v_set.end()) closeTab(webViewIndex(v));
 			    }
 			}
 		    }
@@ -1514,7 +1546,8 @@ namespace browser {
 		_previous_index	= static_cast<QModelIndex>(record_index->sibling_index()).row();// tab_brother ? tab_brother->binder() ? webViewIndex(tab_brother->binder()->page()->view()) + 1 : 0 : 0;
 		QIcon icon;
 		//
-		int index = insertTab(_previous_index + 1, view, icon, title);	// index = _tabbar->insertPage(pre_index, view, icon, title);  //
+		int index = insertTab(_previous_index + 1
+				     , view, icon, title);	// index = _tabbar->insertPage(pre_index, view, icon, title);  //
 //		_tabbar->setTabButton(index, QTabBar::RightSide, new FlatToolButton(_tabbar));
 		record_index->sibling_index(record_index->current_model()()->createIndex(index, 0, static_cast<void *>(result.get())));
 		_record_controller->addnew_item(record_index, make_current);
@@ -1566,7 +1599,7 @@ namespace browser {
 	    assert(result->binder()->integrity_external(result, view->page()));
 	}else{	// id is equal
 	    auto item_with_same_id = view->page()->host();
-	    if(item_with_same_id != result) result = TreeLevel::instance(TreeIndex::create_treeindex_from_item([&](){return _tree_screen->view()->source_model();}, item_with_same_id), result)->merge();																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																								// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
+	    if(item_with_same_id != result) result = TreeLevel::instance(TreeIndex::create_treeindex_from_item([&](){return _tree_screen->view()->source_model();}, item_with_same_id), result)->merge();																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																				// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
 		// if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
 //	    result = page_item;	// target;
@@ -1576,7 +1609,7 @@ namespace browser {
 	assert(result == view->page()->binder()->host());	// old one choosed
 	assert(result == result || result->field<url_type>() == result->field<url_type>());
 	// assert(result->record_binder()->bounded_page());
-	if(! result->binder()->page()) result->binder()->page(view->page());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																				// result->bind();   // this is recursively call
+	if(! result->binder()->page()) result->binder()->page(view->page());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																// result->bind();   // this is recursively call
 	assert(result->binder()->host());	// 0
 	assert(result->binder()->page());	// 1
 	assert(view->page()->binder());	// 8
@@ -1850,7 +1883,7 @@ namespace browser {
 	int	index		= webViewIndex(webView);
 	auto	_real_title	= title.leftJustified(5, '.', true);
 	if(- 1 != index) setTabText(index, _real_title);
-	if(currentIndex() == index) emit setCurrentTitle(_real_title);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										// "test"
+	if(currentIndex() == index) emit setCurrentTitle(_real_title);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																								// "test"
 	//
 //	if(_real_title != "")
 	if(title != webView->page()->title()) webView->page()->record_info_update(webView->page()->url(), title);
@@ -2197,7 +2230,7 @@ namespace browser {
 		    auto v = p->view();
 		    if(v){
 			auto index = webViewIndex(v) - 1;
-			if(index < 0) index = 0;																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												// count() - 1;		// if(index != - 1 && index > 0)
+			if(index < 0) index = 0;																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																														// count() - 1;		// if(index != - 1 && index > 0)
 			r = webView(index)->page()->binder()->host();
 		    }
 		}
@@ -2365,319 +2398,7 @@ namespace browser {
 	}
     }
 
-// boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree_impl(const QUrl &_url)
-// {
-// TreeScreen *_tree_screen    = _tree_screen;
-////    auto _know_model_root = tree_screen->know_root();
-// auto _know_model_board      = _tree_screen->know_model_board();
-// auto _current_view_model    = _tree_screen->tree_view()->source_model();
 
-// boost::intrusive_ptr<TreeItem> _result(nullptr);    // =  _know_model_board->root_item();
-////    boost::intrusive_ptr<TreeItem> _source_root_item = tree_screen->know_branch()->item(TreeModel::delegater(_url));    // on know_root semantic
-// boost::intrusive_ptr<TreeItem> _source_item = _know_model_board->item_by_url(_url);
-
-////    if(_source_root_item && !_source_item) {
-////        auto result = tree_screen->cut_from_root(_source_root_item);
-
-////        if(result)_source_item = tree_screen->paste_to_branch(result, _know_model_branch);
-
-////        assert(result);
-////        assert(_source_item);
-////        assert((_source_item == result) && (result == _source_root_item));
-////    }
-
-// bool item_is_brand_new = false;
-////    //    if(_record_controller) {
-////    auto browser_pages = this->_source_model->browser_pages();
-////    assert(browser_pages);
-
-////    if(browser_pages) {
-// auto v = find(_url);
-
-// if(v) {
-// _result = v->page()->record_binder()->bounded_item();
-// assert(_result->url() == _url);
-// }
-
-// if(_source_item && _source_item != _know_model_board->root_item()) {
-// if(!_result) {
-
-// if(_source_item->is_lite())_source_item->to_fat();
-
-////            //            _source_item->binder(generator);
-////            //            _source_item->activator(activator);
-
-////            //            _item = register_item_to_browser_source_model(_source_item);
-
-////            _source_item->is_registered_to_record_controller_and_tabmanager(false);
-////            // _source_item->self_bind();
-// _result = _source_item;
-// } else {
-// assert(_result->url() == _url);
-//// assert(_result->fragment() == _source_item->fragment());
-
-// if(_result != _source_item) {
-// _result = _source_item; // assert(_item.get() == _source_item.get());
-//// _result = const_cast<KnowModel *>(_know_model_board)->duplicated_remove(_result, _source_item);
-// }
-
-// if(_result->is_lite())_result->to_fat();
-
-// if(_result->field("id") == "")_result->field("id", get_unical_id());
-
-// assert(_result->is_registered_to_browser() || _result->field("url") == browser::Browser::_defaulthome);
-
-////            //            _result->binder(generator);
-////            //            _result->activator(activator);
-
-////            _result->is_registered_to_record_controller_and_tabmanager(false);
-////            // _item->self_bind();
-// }
-
-// assert(!_result->is_lite());
-////        assert(_result->is_registered_to_record_controller_and_tabmanager());
-
-// } else {
-// item_is_brand_new = true;
-
-// if(!_result) {
-
-////                int pos = _record_ontroller->getFirstSelectionPos();
-////                Record *previous_record = _record_ontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
-
-////                if(previous_record) {
-
-////                    Record record;
-
-////                    if(record.isLite())record.switchToFat();
-
-////                    //QString title = d->view->title(); // not ready yet
-////                    //record.setNaturalFieldSource("id",   previous_record->getNaturalFieldSource("id"));   // id concept?
-////                    record.setNaturalFieldSource("pin",   "");
-////                    record.setNaturalFieldSource("name",   previous_record->getNaturalFieldSource("name"));
-////                    record.setNaturalFieldSource("author", previous_record->getNaturalFieldSource("author"));
-////                    record.setNaturalFieldSource("url",    _url.toString());    // only changed
-////                    record.setNaturalFieldSource("tags",   previous_record->getNaturalFieldSource("tags"));
-
-////                    _record_ontroller->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
-////                    _record = recordtabledata->getRecordByUrl(_url);
-////                    //                int pos = _record_ontroller->getFirstSelectionPos();
-////                    //                _record = _record_ontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
-////                } else {
-
-
-
-
-////    record.generator(generator);
-
-
-//// Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
-// QString directory = DiskHelper::create_temp_directory();  //
-
-// QMap<QString, QString> data;
-// data["id"]      = get_unical_id();
-// data["pin"]     = _string_from_check_state[Qt::Unchecked];
-// data["name"]    = "";
-// data["author"]  = "";
-// data["home"]    = _url.toString();
-// data["url"]     = _url.toString();
-// data["tags"]    = "";
-// data["dir"]     = data["id"];
-// data["file"]    = "text.html";
-
-// boost::intrusive_ptr<TreeItem> item
-// = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
-
-////                if(record.isLite())
-// item->to_fat();
-// item->text_to_fat("");
-////            //                QString title = _url.toString(); // not ready yet
-////            item->field("id",       get_unical_id());
-////            item->field("pin",      _check_state[Qt::Unchecked]);
-////            item->field("name",     "");
-////            item->field("author",   "");
-////            item->field("home",     _url.toString());    // only changed
-////            item->field("url",      _url.toString());    // only changed
-////            item->field("tags",     "");
-
-////            //                _record_ontroller->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
-////            //                _record = recordtabledata->getRecordByUrl(_url);
-////            //                //                int pos = _record_ontroller->getFirstSelectionPos();
-////            //                //                _record = _record_ontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
-
-////            //                //            }
-
-////            //                record->binder(generator);
-////            //                record->activator(activator);
-
-// item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
-
-
-//// Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
-//// Запись должна быть создана, потом можно аттачить файлы.
-//// Это ограничение для "ленивого" программинга, но пока так
-//// record->setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
-
-//// Временная директория с картинками и приаттаченными файлами удаляется
-// DiskHelper::remove_directory(directory);
-
-// if(item->is_lite())item->to_fat();
-
-////            //            item->binder(generator);
-////            //            item->activator(activator);
-
-////            //            _item = register_item_to_browser_source_model(item);
-////            item->is_registered_to_record_controller_and_tabmanager(true);
-////            // item->self_bind();
-////            //                assert(_record);
-////            //                assert(_record->is_registered());
-////            //                _record->active_immediately(active_immediately);
-////            //                _record->generator(generator);
-
-
-// _result = item; // assert(_item.get() == item.get());
-// } else {
-// assert(_result->url() == _url);
-
-// if(_result->is_lite())_result->to_fat();
-
-// if(_result->field("id") == "")_result->field("id", get_unical_id());
-
-// assert(_result->is_registered_to_browser() || _result->field("url") == browser::Browser::_defaulthome);
-
-////            //            _result->binder(generator);
-////            //            _result->activator(activator);
-
-////            _result->is_registered_to_record_controller_and_tabmanager(true);
-////            // _item->self_bind();
-// }
-
-// {
-// auto _view_index = _tree_screen->tree_view()->index_current();
-
-//// if(idx.isValid()) {
-
-// auto it = _current_view_model->item(_view_index);  //item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
-// assert(it);
-// assert(_current_view_model->is_id_exists(it->id()));
-
-////        if(_item->is_lite())_item->to_fat();
-
-// if(it != _result && item_is_brand_new) {
-// assert(_result->url() == _url);
-//// assert(_result->fragment() == _url.fragment());
-//// int pos
-// _result = _tree_screen->branch_add(_view_index, _result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
-// assert(_result);
-// _tree_screen->synchronized(false);
-//// assert(_result == it->child(pos));
-// }
-
-// _tree_screen->knowtree_save();
-//// }
-// }
-// }
-
-// if(_result->is_lite())_result->to_fat();
-
-////    //        //            else {
-////    //        //                //                assert(_record->is_registered());
-////    //        //                _record->binder(generator);
-////    //        //                _record->activator(activator);
-////    //        //                //                _record->generate();    // why?
-////    //        //            }
-
-////    _result->record_binder(_record_binder);
-////    //    _result->activator(activator);
-
-// assert(_result != _know_model_board->root_item());
-////    //    assert(_result->is_registered_to_record_controller_and_tabmanager());
-////    assert(_result->field("url") == _url.toString());   // maybe other url loaded !
-////    //    } // browser_pages
-
-////    //    }
-
-////    //    }
-
-// if(_result->field("dir") == "")_result->field("dir", _result->field("id"));
-
-// if(_result->field("file") == "")_result->field("file", "text.html");
-
-////    //    assert(_record);
-// assert(_result->url() == _url);
-//// assert(_result->fragment() == _url.fragment());
-// return _result;
-// }
-
-
-// boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree_fragment(const QUrl &_url)
-// {
-// boost::intrusive_ptr<TreeItem> re;
-// auto it = item_request_from_tree_impl<url_fragment>(_url);
-
-// re = item_registered_resetup_record_binder(it);
-
-// return re;
-// }
-
-// boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree(const QUrl &_url)
-// {
-// boost::intrusive_ptr<TreeItem> re;
-// auto it = item_request_from_tree_impl<url_full>(_url);
-
-// re = item_registered_resetup_record_binder(it);
-
-// return re;
-////        auto ar = boost::make_shared<TabWidget::Coupler>(this, true);
-
-////        //        bind_helper binder = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem> // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
-////        //                             >>("", &TabWidget::RecordBinder::binder, ar);
-////        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &TabWidget::RecordBinder::activator, ar);
-
-////        return _record_controller->item_request_from_tree(_url
-////                                                          , std::make_shared<CouplerDelegation>(
-////                                                              std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, ar)
-////                                                              , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, ar)
-////                                                              , std::make_shared<bind_interface>("", &Coupler::binder, ar)
-////                                                              , std::make_shared<activate_interface> ("", &Coupler::activator, ar)
-////                                                          ));
-// }
-
-// boost::intrusive_ptr<TreeItem> TabWidget::item_bind(boost::intrusive_ptr<TreeItem> item)
-// {
-////        auto binder = [](boost::shared_ptr<TabWidget::RecordBinder> ar) {
-////            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
-////                   >> ("", &TabWidget::RecordBinder::binder, ar);
-////        };
-////        auto activator = [](boost::shared_ptr<TabWidget::RecordBinder> ar) {
-////            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>> ("", &TabWidget::RecordBinder::activator, ar);
-////        };
-
-//// registered record, but have no generator:
-////        boost::shared_ptr<TabWidget::Coupler> ar =
-
-
-// item->binder(std::make_shared<TreeItem::coupler>(std::make_shared<TabWidget::coupler>(this, item)));
-
-////        std::make_shared<TabWidget::Coupler>(this, item);
-
-////        //        record->binder(
-////        //            binder(ar)
-////        //        );
-
-////        //        record->activator(
-////        //            activator(ar)
-////        //        );
-
-////        item->record_binder(std::make_shared<CouplerDelegation>(
-////                                std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, ar)
-////                                , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, ar)
-////                                , std::make_shared<bind_interface>("", &Coupler::binder, ar)
-////                                , std::make_shared<activate_interface> ("", &Coupler::activator, ar)
-////                            ));
-// assert(item->binder());
-// return  item;
-// }
 
 #if QT_VERSION == 0x050600
     W_OBJECT_IMPL(WebActionMapper)
