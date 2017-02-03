@@ -571,7 +571,7 @@ DISTFILES   +=          \
     doc/html/doxygen.css \
     doc/html/tabs.css \
     resource/standardconfig/$${SOURCE_OS}/mode.ini \
-    resource/standardconfig/$${TARGET_OS}/browser.conf \
+    resource/standardconfig/$${SOURCE_OS}/browser.conf \
     resource/standardconfig/$${SOURCE_OS}/browserview.ini \
     resource/standardconfig/$${SOURCE_OS}/conf.ini \
     resource/standardconfig/$${SOURCE_OS}/editorconf.ini \
