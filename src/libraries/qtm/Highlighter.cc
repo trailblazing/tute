@@ -10,6 +10,7 @@
 
 Highlighter::Highlighter(QTextDocument *document, QObject *parent)
     : QSyntaxHighlighter(parent){
+    (void) document;
     QTextCharFormat format;
 
 	// Formatting for HTML tags

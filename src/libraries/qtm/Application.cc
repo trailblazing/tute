@@ -201,6 +201,8 @@ void Application::saveRecentFiles(){
 }
 
 void Application::handleWindowChange(QWidget *oldW, QWidget *newW){
+    (void) oldW;
+    (void) newW;
 #ifdef Q_OS_MAC
     QWidget		*oldWindow	= oldW->window();
     QWidget		*newWindow	= newW->window();

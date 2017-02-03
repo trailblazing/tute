@@ -42,7 +42,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT    +=  widgets             \
                                             printsupport        \
                                             webenginewidgets
 #QT  +=  widgets
-#QT +=  webkit
+#QT  +=  webkit
 #QT  +=  webenginewidgets
 
 qtHaveModule(uitools):!embedded: QT +=  uitools
@@ -74,8 +74,8 @@ DEFINES += DONT_USE_DBUS
 
 PROJECT_QT_VERSION      = $$(QT5DIR)
 
-#PROJECT_QT_LIBS      = PROJECT_QT_VERSION/lib64
-#PROJECT_QT_LIBS      = PROJECT_QT_VERSION/lib
+#PROJECT_QT_LIBS      = $$PROJECT_QT_VERSION/lib64
+#PROJECT_QT_LIBS      = $$PROJECT_QT_VERSION/lib
 PROJECT_QT_LIBS      = $$PROJECT_QT_VERSION/lib
 
 
@@ -99,9 +99,8 @@ PROJECT_QT_LIBS      = $$PROJECT_QT_VERSION/lib
 
 
 INCLUDEPATH     += $$PROJECT_QT_VERSION/include
-#DEPENDPATH      += $$PROJECT_QT_VERSION/include
 
-#INCLUDEPATH     += $$PROJECT_QT_VERSION/lib/
+
 DEPENDPATH      += . $$PROJECT_QT_LIBS
 
 LIBS            += -L$$PROJECT_QT_LIBS -lQt5Svg -lQt5WebEngineWidgets -lQt5PrintSupport -lQt5Widgets -lQt5WebEngineCore -lQt5Quick -lQt5Gui -lQt5Xml -lQt5Qml -lQt5Network -lQt5WebChannel -lQt5Core -lQt5WebEngine -lQt5Positioning
@@ -111,21 +110,21 @@ DESTDIR     =   bin
 OBJECTS_DIR =   build
 MOC_DIR     =   build
 UI_DIR      =   build
-SOURCE_OS    =   any
+SOURCE_OS   =   any
 }
 
 VERSION     =   0.0.1
 DEFINES     +=  APP_VERSION=\\\"$$VERSION\\\"
 
 TARGET      =   hapnote
-RESOURCES   =   bin/hapnote.qrc     \
+RESOURCES   =   hapnote.qrc     \
     src/views/browser/data/data.qrc \
     src/views/browser/htmls/htmls.qrc \
     src/libraries/qtm/EditingWindow.qrc \
     src/libraries/qtm/QijSearchWidget.qrc \
     src/libraries/qtm/qtm.qrc
 
-TRANSLATIONS    =   bin/resource/translations/hapnote_ru.ts
+TRANSLATIONS    =   resource/translations/hapnote_ru.ts
 CODECFORTR      =   utf8
 
 # QMAKE_LFLAGS  +=  -L/usr/lib/qt4/lib
@@ -571,10 +570,13 @@ DISTFILES   +=          \
     src/libraries/qtm/x11systray.xpm \
     doc/html/doxygen.css \
     doc/html/tabs.css \
-    bin/resource/standardconfig/android/entrance.ini \
-    bin/resource/standardconfig/android/mode.ini \
-    bin/resource/standardconfig/meego/entrance.ini \
-    bin/resource/standardconfig/meego/mode.ini \
+    resource/standardconfig/$${SOURCE_OS}/mode.ini \
+    resource/standardconfig/$${TARGET_OS}/browser.conf \
+    resource/standardconfig/$${SOURCE_OS}/browserview.ini \
+    resource/standardconfig/$${SOURCE_OS}/conf.ini \
+    resource/standardconfig/$${SOURCE_OS}/editorconf.ini \
+    resource/standardconfig/$${SOURCE_OS}/entrance.ini \
+    resource/standardconfig/$${SOURCE_OS}/stylesheet.css \
     src/libraries/qtm/markdown_header.h.in \
     src/libraries/qtm/qtm-installer.nsi \
     src/libraries/qtm/qtm.rc \
@@ -589,7 +591,11 @@ DISTFILES   +=          \
     src/libraries/qtm/qtm-chooseTemplate.py \
     src/libraries/qtm/qtm-new.py \
     src/libraries/qtm/qtm-quickpost.py \
-    src/libraries/qtm/README
+    src/libraries/qtm/README \
+#    resource/standardconfig/android/entrance.ini \
+#    resource/standardconfig/android/mode.ini \
+#    resource/standardconfig/meego/entrance.ini \
+#    resource/standardconfig/meego/mode.ini \
 
 FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \
