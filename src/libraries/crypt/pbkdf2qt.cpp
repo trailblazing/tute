@@ -1,3 +1,4 @@
+
 /*
 Pbkdf2Qt C++ library
 
@@ -138,3 +139,4 @@ QByteArray Pbkdf2Qt::Pbkdf2(QByteArray pass, QByteArray salt, unsigned int round
 
     return result;
 }
+

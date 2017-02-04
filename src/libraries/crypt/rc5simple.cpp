@@ -1,3 +1,4 @@
+
 /*
 RC5Simple C++ library
 
@@ -868,3 +869,4 @@ void RC5Simple::RC5_LogPrint(char *lpszText, ...)
 
     return;
 }
+
