@@ -1,0 +1,163 @@
+Installing QTM from source
+==========================
+
+QTM is built using CMake, a cross-platform build tool.  Although it is still
+possible to use qmake, I don't recommend it and am not maintaining the qmake
+project file at the moment as there are no translations.  A version of CMake
+may be in your operating system's package repositories and installable using
+APT, YUM or whatever.  Failing that, you can download it from
+http://www.cmake.org/.
+
+You need version 2.4.3 or later.  Note: version 2.4.4 is buggy.  I recommend
+getting the most recent version possible; you can get the sources from the
+CMake homepage and build the latest version using the version supplied with
+your OS.
+
+CMake replaces the "configure" stage which appears with many applications
+distibuted as source.
+
+You must also have the common build tools, including the GNU C++ compiler
+and GNU Make.  If you are using Ubuntu, type:
+
+	sudo apt-get install build-essential
+
+On other systems, there will be a group of common software development
+packages which you may find in the package installation program, such as
+Synaptic.
+
+CMake options
+-------------
+
+If you do not specify any of these, the defaults will be used.
+
+USE_STI:BOOL - If you are using Qt 4.2 or later, and your desktop includes a system tray -
+i.e. a set of icons which you can use to control programs without going
+through their main window - you can compile in the QTM system-tray icon. 
+This provides much of QTM's distinctive functionality, such as QuickPost and
+the templates that go with it.  Default: TRUE (automatically TRUE if
+USE_DBUS is TRUE).
+
+USE_DBUS:BOOL - Use the DBus interfaces (these allow other apps to issue
+instructions to QTM, which was intended to allow web browsers, RSS readers
+etc to post a blog entry based on a web page the user was viewing, but
+to my knowledge has never been used for this; it is used for controlling
+QTM from the dock menu on Ubuntu Unity). Default: TRUE on X11, FALSE on
+Windows and Mac.
+
+QDEBUG:BOOL - If you are a developer and are helping to fix bugs with QTM, set
+this option.  This will mean that messages will appear in the terminal
+window at certain intervals, a mechanism I use to identify when things go
+wrong.  If you just want to use QTM for blogging, do not enable this. On
+Windows, this suspends the command prompt if you have one open, and opens
+one if you run QTM from Explorer.  Default: FALSE
+
+DESKTOP_ENTRY_PATH:PATH - QTM's build-system generates a file called 
+qtm.desktop, which the desktop uses to decide where to put QTM in its menu 
+system, such as in KDE and GNOME.  Different systems look for this file in 
+different places. Ubuntu, for example, uses /usr/share/applications, while 
+Mandriva and PCLinuxOS use /usr/share/applications/kde (at least, if they 
+are using KDE).  Default: /usr/share/applications
+
+MANPAGE_DIRECTORY:PATH - This supplies the location of the QTM manual page,
+which is displayed when someone types "man qtm" at the Unix command prompt.
+This is a rudimentary page, supplied mostly to comply with Debian packaging
+guidelines.  Default: /usr/local/share/man/man1 (if compiled to install to
+/usr/local)
+
+CMAKE_INSTALL_PREFIX:PATH - When you run "make install", this tells your
+system where to put QTM.  If you are building a binary package, you should
+specify /usr, so that QTM goes to /usr/bin.  Leave this out if installing
+it for your own use.  Default: /usr/local (so that qtm will be in 
+/usr/local/bin)
+
+DONT_USE_PTE:BOOL - This disables the use of QPlainTextEdit when Qt 4.4 is
+present (the class was only introduced with that version of Qt), forcing the
+use of QTextEdit for the main editing widget.  This is recommended, as
+QPlainTextEdit is buggy.
+
+INSTALL_MARKDOWN:BOOL - Installs Markdown to a "share" location in the file 
+system (e.g. /usr/share or /usr/local/share) so that it can be used to 
+process text when previewingentries formatted with Markdown. Note that some 
+distributions provide a package of Markdown, so you might not need this 
+option. Default: FALSE
+
+MARKDOWN_LOCATION:PATH - Only in 0.7.2 or later on Windows and non-Mac Unix
+platforms.  This specifies a default location where QTM might find Markdown
+(the user can override it); you will normally need to specify this if you
+are using a non-Debian Linux platform.  It will not install Markdown to that
+location but relies on it being there.  Default: /usr/bin/markdown on Unix
+and %APPDIRPATH%/Markdown on Windows.
+
+Qt5:BOOL - Build with Qt 5 if it is present. At the time of writing, the
+system tray icon class in Qt does not function in Qt 5 and the function which
+sets the menu for the Mac dock icon is not present. So, the app is Qt 5 ready
+but Qt 5 itself (still in beta) is not ready yet. Default: FALSE
+
+If building on Windows, you will likely need o set the Makefile generator.
+This requires the -G option, followed by the generator name, and if you are
+using the standard MinGW compiler kit, this becomes -G "MinGW Makefiles"
+(including the quotes).
+
+Configuring
+-----------
+
+By this point, I presume you have already unpacked the bundle.  If not, type
+this:
+
+tar zxvf qtm-x.x.x.tar.gz
+cd qtm-x.x.x.tar.gz
+
+Of course, substitute the numbers for x.x.x.  You may be able to use the
+mouse and your desktop's copy and paste features rather than to type the
+file's name out.
+
+Then, to configure without any options, type this:
+
+	cmake .
+
+To configure with options, type this:
+
+	cmake -D [option]=[value] .
+
+Do not type the brackets.  So, to configure with the system tray included,
+debugging messages off and the desktop spec file at
+/usr/share/applications/kde, type this:
+
+	cmake -D USE_STI:BOOL=TRUE .
+
+Remember, as the desktop spec is in /usr/share/applications and debug is off
+by default, you don't need to include these options.  You must type -D before
+each option.
+
+Also, remember the dot.  It refers to the current directory and tells CMake
+to look for a file called CMakeLists.txt there.  CMake will not do anything
+if you just type "cmake".
+
+CMake will look for Qt; it will expect to find a file called either qmake or
+qmake-qt4 in your search path.  If you have a Unix-type OS, the normal place
+for such files is the /usr/bin directory.  Some operating systems are buggy,
+however, and do not make sure that qmake is in the search path.  Your
+easiest way round this is to find out where qmake is, and add that directory
+to the search path.  A likely location is /usr/lib/qt4/bin.  So, to add that
+to the search path, type this:
+
+	PATH=/usr/lib/qt4/bin
+	export PATH
+
+If the computer is yours, you can also type this, as root or with sudo:
+
+	ln -s /usr/lib/qt4/bin/qmake /usr/bin/qmake-qt4
+
+Building and installing
+-----------------------
+
+Now comes the easy bit.  Type this:
+
+	make
+	
+Then, as root or with sudo:
+
+	make install
+
+And it will install QTM in the /usr/local/bin, unless you have specified
+otherwise.

@@ -1,0 +1,66 @@
+QTM, version 1.3.15
+Copyright (C) 2004-2014, Matthew J Smith
+This program is released under the terms of the GNU General Public License,
+version 2.  This applies to all files written by me, or produced by me by
+the use of tools like Qt Designer, in this package, and any binary produced
+using them.
+
+QTM allows the user to compose, format and submit entries to Drupal and
+Wordpress blogs (and possibly other content management systems using the
+same interfaces; your mileage may vary).  It uses the standard Blogger,
+MetaWeblog, Movable Type and WordPress APIs.  It requires Qt 4.4.  
+Presently this is available from Digia as Windows and Mac installers, 
+and from sources of Linux distributions, and sometimes from third parties,
+as RPM or .deb packages. Although the interfaces used for connecting 
+to the blog server are XML-RPC based, it does not require any special 
+libraries for this; it uses Qt's own network classes.
+
+As for QTM's present capabilities, it is possible to compose, format, 
+preview and submit blog entries in either one category or several, and
+compose an entry based on a specified webpage, rather like Movable 
+Type's QuickPost or Wordpress's "Press This" or the "Share" feature on
+smartphone operating systems.  Entries may be saved to disk, with or 
+without a password.
+
+For installation instructions, see the separate file INSTALL.
+
+Issues:
+
+(1) Although QTM supports Qt's plain text editor widget, I have found
+that the performance of this widget is sub-par compared to the full text
+editor in Qt; this particularly concerns the appearance of scroll bars.
+Until that is fixed, the full text editor widget is used.
+
+(2) When using QuickPost to copy multiple paragraphs of text from a web 
+page into a new entry, you may find that there is no blank line between
+paragraphs, just a single carriage return.  This may be fixed in a future
+release.
+
+(3) When posting an entry, your categories may not be posted; specifically
+it may update the blog's category list rather than post those you chose for
+the entry to hand.  If you find your post has not been categorised, use the
+"Update this post's categories" entry in the File menu.
+
+(4) Markdown support requires an external Markdown parser, which requires
+Perl (there are versions for other scripting languages).  On the Mac, the
+parser is provided in the bundle; on Linux, the QTM binary may depend on
+another Markdown package.  On Windows, the script is provided, and you will
+need to install Perl yourself, and configure QTM so that it knows where to
+find Perl.
+
+(Markdown support is provided, and not Textile or any other formatting,
+because the Markdown parser works on the command line, and the others do
+not.  It also seems to be the most popular outside the Textpattern
+community.  I do have an internal Markdown parser in the works and am
+considering porting Textile to Qt, so I may provide those features in the
+future.)
+
+Any enquiries and suggestions to me at indigojo@blogistan.co.uk.  Please, no
+requests for the normal features of blog managers like ecto - most of these
+are on my wish list anyway.
+
+
+Matthew J Smith
+New Malden, Surrey, England
+23rd Jan, 2006 - 1st Jan, 2014
+

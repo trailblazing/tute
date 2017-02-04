@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file>images/qtm-logo1.png</file>
+  <file>images/qtm-bold.png</file>
+  <file>images/qtm-italic.png</file>
+  <file>images/qtm-underline.png</file>
+</qresource>
+</RCC>

@@ -1,0 +1,79 @@
+# Ignore directories
+/build
+/Debug
+/Release
+/release
+/misc
+/qtc-gdbmacros
+Makefile*
+qdevelop-settings.db
+qrc_*
+Makefile.user*
+
+# Qt-es
+
+/.qmake.cache
+/.qmake.stash
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+*build-*
+
+
+/bin/*
+!/bin/resource
+!/bin/resource/*
+!/bin/hapnote.qrc
+!/src/views/browser/data/data.qrc
+
+# Ignore compiled Object files
+*.slo
+*.lo
+*.o
+
+# Ignore compiled Dynamic libraries
+*.so
+
+# Ignore compiled Static libraries
+*.lai
+*.la
+*.a
+# C++ objects and libs
+
+*.dll
+*.dylib
+
+
+
+# C++ objects and libs
+# Ignore bash files
+#*.sh
+
+# Ignore IDE files
+*.Debug
+*.Release
+
+# Ignore gitignore self
+#.gitignore
+#data
+#trash
+backup
+#!/src/views/browser/data
+
+# QtCreator
+
+*.autosave
+
+# QtCtreator Qml
+*.qmlproject.user
+*.qmlproject.user.*
+
+# QtCtreator CMake
+CMakeLists.txt.user*
+
+*.swp
