@@ -34,13 +34,9 @@ AppConfig::AppConfig(QObject *pobj){
 
 // Деструктор объекта настройки программы
 AppConfig::~AppConfig(){
-    if(is_init_flag){
+//    if(is_init_flag){
 ////        qDebug() << "Save hapnote config file";
-	_app_conf->sync();
-    }
-//    if(_app_conf){
-//	_app_conf->deleteLater();
-////        _app_conf = nullptr;
+//	_app_conf->sync();
 //    }
 }
 
