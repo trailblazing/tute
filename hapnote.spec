@@ -8,11 +8,11 @@
 #AutoReqProv: no
 
 Name:           ru.webhamster.mytetra
-Version:        1.28.5
+Version:        00.00.01
 Release:        1
 License:        GPL v.3.0
 Summary:        Personal manager for information accumulation
-Url:            http://webhamster.ru/site/page/index/articles/projectcode/138
+Url:            https://github.com/beimprovised/happenote.git
 Group:          Utility
 Source0:        %{name}-%{version}.tar.gz
 #BuildRequires:  pkgconfig(QtCore)

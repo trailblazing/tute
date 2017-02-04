@@ -34,9 +34,9 @@ AppConfigPageMisc::AppConfigPageMisc(QWidget *parent) : ConfigPage(parent){
     printDebugMessages->setText(tr("Print debug messages to console"));
     printDebugMessages->setChecked(appconfig.print_debug_messages());
 
-	// Настройка запуска MyTetra в свернутом окне
+	// Настройка запуска Hapnote в свернутом окне
     runInMinimizedWindow = new QCheckBox(this);
-    runInMinimizedWindow->setText(tr("Run MyTetra in a minimized window"));
+    runInMinimizedWindow->setText(tr("Run Hapnote in a minimized window"));
     runInMinimizedWindow->setChecked(appconfig.run_in_minimized_window());
 
 
@@ -80,7 +80,7 @@ int AppConfigPageMisc::apply_changes(void){
     if(appconfig.cut_branch_confirm() != cutBranchConfirm->isChecked())appconfig.cut_branch_confirm(cutBranchConfirm->isChecked());
 // Сохраняется настройка отображения отладочных сообщений в консоли
     if(appconfig.print_debug_messages() != printDebugMessages->isChecked())appconfig.print_debug_messages(printDebugMessages->isChecked());
-// Сохраняется настройка режима запуска MyTetra - обычный или свернутый
+// Сохраняется настройка режима запуска Hapnote - обычный или свернутый
     if(appconfig.run_in_minimized_window() != runInMinimizedWindow->isChecked())appconfig.run_in_minimized_window(runInMinimizedWindow->isChecked());
 // Сохраняется настройка нужно ли вспоминать позицию курсора при перемещении
 // по истории

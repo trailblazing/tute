@@ -16,13 +16,13 @@
 #include "libraries/global_parameters.h"
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 
 // Объект для работы с конфигурацией (с настройками) базы данных
 // Конфигурация базы данных хранится в файле database.ini
 
-// Под базой данных понимается совокупность файлов - корневой mytetra.xml
+// Под базой данных понимается совокупность файлов - корневой hapnote.xml
 // и все директории и файлы с записями
 
 
@@ -48,8 +48,8 @@ DataBaseConfig::~DataBaseConfig(){
 
 void DataBaseConfig::init(void){
 	// Создается имя файла конфигурации
-	// QString configFileName=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir()+"/database.ini";
-    QString configFileName = appconfig.tetra_dir() + "/database.ini";
+	// QString configFileName=globalParameters.getWorkDirectory()+"/"+hapnoteConfig.datadir()+"/database.ini";
+    QString configFileName = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + "/database.ini";
 
 	// Проверяется, есть ли файл конфигурации
     QFile confFile(configFileName);
@@ -80,7 +80,7 @@ bool DataBaseConfig::is_init(void){
 // Получение параметра по имени в виде строки с проверкой его существования
 QString DataBaseConfig::get_parameter(QString name) const {
     QString t = conf->value(name).toString();
-    if(t.length() == 0)critical_error("In database config not found parameter " + name);
+    if(t.length() == 0) critical_error("In database config not found parameter " + name);
     return t;
 }
 
@@ -121,7 +121,7 @@ void DataBaseConfig::set_middle_hash_check_data(QString hash){
 // --------------------
 
 int DataBaseConfig::get_config_version(void) const {
-    if(conf->contains("version"))return conf->value("version").toInt();
+    if(conf->contains("version")) return conf->value("version").toInt();
     else return 0;
 }
 

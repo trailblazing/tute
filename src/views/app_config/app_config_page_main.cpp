@@ -22,15 +22,18 @@
 #include "libraries/disk_helper.h"
 
 
-extern AppConfig		appconfig;
-extern GlobalParameters globalparameters;
-
+extern AppConfig	appconfig;
+extern gl_para		globalparameters;
+const char		*standardItem	= "Standard";
+const char		*portableItem	= "Portable";
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfigPageMain)
 #endif
 
-AppConfigPageMain::AppConfigPageMain(QWidget *parent) : ConfigPage(parent){
+AppConfigPageMain::AppConfigPageMain(QWidget *parent)
+    : ConfigPage(parent)
+      , _original_root_state(std::make_tuple(true, globalparameters.root_path())){
     setup_ui();
     setup_signals();
     assembly();
@@ -40,32 +43,40 @@ void AppConfigPageMain::setup_ui(void){
     qDebug() << "Create main config page";
 
 
-    QString	standartItem	= tr("Standard");
-    QString	portableItem	= tr("Portable");
+//    QString	standardItem	= tr("Standard");
+//    QString	portableItem	= tr("Portable");
 
 
-	// Блок работы с выбором языка интерфейса
-    _application_mode_label = new QLabel(this);
-    _application_mode_label->setText(tr("Application Mode"));
+//	// Блок работы с выбором языка интерфейса
+    _application_current_path_label = new QLabel(this);
+    _application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
 
-    _application_mode_option = new MtComboBox(this);
-    _application_mode_option->setMinimumContentsLength(2);
-    _application_mode_option->addItem(standartItem);
-    _application_mode_option->addItem(portableItem);
-    _application_mode_option->setCurrentIndex(_application_mode_option->findText(globalparameters.application_mode(), Qt::MatchCaseSensitive));
+//    _application_mode_option = new MtComboBox(this);
+//    _application_mode_option->setMinimumContentsLength(2);
+//    _application_mode_option->addItem(standardItem);
+//    _application_mode_option->addItem(portableItem);
+//    _application_mode_option->setCurrentIndex(_application_mode_option->findText(globalparameters.app_mode(), Qt::MatchCaseSensitive));
 
-
+    _rootdir_label = new QLabel(this);
+    _rootdir_label->setText(tr("Root directory"));
 
 	// Блок работы с путем до каталога данных
-    _tetradir_label = new QLabel(this);
-    _tetradir_label->setText(tr("Data directory"));
+    _datadir_label = new QLabel(this);
+    _datadir_label->setText(tr("Data directory"));
 
-    _tetradir_input = new QLineEdit(this);
-    _tetradir_input->setMinimumWidth(50);
-    _tetradir_input->setText(appconfig.tetra_dir());
+    _rootdir_input = new QLineEdit(this);
+    _rootdir_input->setMinimumWidth(50);
+    _rootdir_input->setText(globalparameters.root_path());
 
-    _tetradir_button = new FlatToolButton(this);
-    _tetradir_button->setText(tr("..."));
+    _rootdir_button = new FlatToolButton(this);
+    _rootdir_button->setText(tr("..."));
+
+    _datadir_input = new QLineEdit(this);
+    _datadir_input->setMinimumWidth(50);
+    _datadir_input->setText(appconfig.data_dir());
+
+    _datadir_button = new FlatToolButton(this);
+    _datadir_button->setText(tr("..."));
 
 
 	// Блок работы с путем до корзины
@@ -119,28 +130,28 @@ void AppConfigPageMain::setup_ui(void){
     _datetime_format_box = new QGroupBox(this);
     _datetime_format_box->setTitle(tr("Date and time show settings"));
 
-    _disable_custom_datetime_format = new QRadioButton(tr("Show date and time by OS locale settings"), this);
+    _disable_custom_datetime_format	= new QRadioButton(tr("Show date and time by OS locale settings"), this);
     _enable_custom_datetime_format	= new QRadioButton(tr("Custom date and time show format"), this);
-    custom_datetime_format			= new QLineEdit(this);
+    custom_datetime_format		= new QLineEdit(this);
     _datetime_format_help_button	= new FlatToolButton(this);
     QCommonStyle styleHelp;
     _datetime_format_help_button->setIcon(styleHelp.standardIcon(QStyle::SP_MessageBoxQuestion));
 	// Точка устанавливается возле того пункта, который настроен в конфиге
     if(appconfig.enable_custom_datetime_format() == false){
-        _disable_custom_datetime_format->setChecked(true);
-        _enable_custom_datetime_format->setChecked(false);
-        custom_datetime_format->setEnabled(false);
+	_disable_custom_datetime_format->setChecked(true);
+	_enable_custom_datetime_format->setChecked(false);
+	custom_datetime_format->setEnabled(false);
     }else{
-        // Если разрешен пользовательский формат даты и времени
-        _disable_custom_datetime_format->setChecked(false);
-        _enable_custom_datetime_format->setChecked(true);
-        custom_datetime_format->setEnabled(true);
-        custom_datetime_format->setText(appconfig.custom_datetime_format());
+	// Если разрешен пользовательский формат даты и времени
+	_disable_custom_datetime_format->setChecked(false);
+	_enable_custom_datetime_format->setChecked(true);
+	custom_datetime_format->setEnabled(true);
+	custom_datetime_format->setText(appconfig.custom_datetime_format());
     }
 }
 
 AppConfigPageMain::~AppConfigPageMain(void){
-//    delete tetradirInput;
+//    delete datadirInput;
 //    delete trashdirInput;
 //    delete trashsizeInput;
 //    delete trashmaxfilecountInput;
@@ -153,7 +164,8 @@ AppConfigPageMain::~AppConfigPageMain(void){
 }
 
 void AppConfigPageMain::setup_signals(void){
-    connect(_tetradir_button, &FlatToolButton::clicked, this, &AppConfigPageMain::open_tetradir_select_dialog);
+    connect(_rootdir_button, &FlatToolButton::clicked, this, &AppConfigPageMain::open_rootdir_select_dialog);
+    connect(_datadir_button, &FlatToolButton::clicked, this, &AppConfigPageMain::open_datadir_select_dialog);
     connect(_trashdir_button, &FlatToolButton::clicked, this, &AppConfigPageMain::open_trashdir_select_dialog);
 
     connect(_disable_custom_datetime_format, &QRadioButton::toggled, this, &AppConfigPageMain::on_disable_custom_datetime_format_toggle);
@@ -163,14 +175,19 @@ void AppConfigPageMain::setup_signals(void){
 }
 
 void AppConfigPageMain::assembly(void){
-    QHBoxLayout *application_mode_layout = new QHBoxLayout();
+    QHBoxLayout *application_current_path_layout = new QHBoxLayout();
 
-    application_mode_layout->addWidget(_application_mode_label);
-    application_mode_layout->addWidget(_application_mode_option);
+    application_current_path_layout->addWidget(_application_current_path_label);
+//    application_mode_layout->addWidget(_application_mode_option);
+
+    QHBoxLayout *rootdirLayout = new QHBoxLayout();
+    rootdirLayout->addWidget(_rootdir_input);
+    rootdirLayout->addWidget(_rootdir_button);
+
 	// Блок работы с путем до каталога данных
-    QHBoxLayout *tetradirLayout = new QHBoxLayout();
-    tetradirLayout->addWidget(_tetradir_input);
-    tetradirLayout->addWidget(_tetradir_button);
+    QHBoxLayout *datadirLayout = new QHBoxLayout();
+    datadirLayout->addWidget(_datadir_input);
+    datadirLayout->addWidget(_datadir_button);
 
 	// Блок работы с путем до корзины
     QHBoxLayout *trashdirLayout = new QHBoxLayout();
@@ -207,10 +224,13 @@ void AppConfigPageMain::assembly(void){
 
 	// Сборка всех блоков
     QGridLayout *dirLayout = new QGridLayout();
-    dirLayout->addWidget(_tetradir_label, 0, 0);
-    dirLayout->addLayout(tetradirLayout, 0, 1);
-    dirLayout->addWidget(_trashdir_label, 1, 0);
-    dirLayout->addLayout(trashdirLayout, 1, 1);
+
+    dirLayout->addWidget(_rootdir_label, 0, 0);
+    dirLayout->addLayout(rootdirLayout, 0, 1);
+    dirLayout->addWidget(_datadir_label, 1, 0);
+    dirLayout->addLayout(datadirLayout, 1, 1);
+    dirLayout->addWidget(_trashdir_label, 2, 0);
+    dirLayout->addLayout(trashdirLayout, 2, 1);
 
 
     QGridLayout *otherSettingLayout = new QGridLayout();
@@ -228,7 +248,7 @@ void AppConfigPageMain::assembly(void){
 
 
     QVBoxLayout *centralLayout = new QVBoxLayout();
-    centralLayout->addLayout(application_mode_layout);
+    centralLayout->addLayout(application_current_path_layout);
     centralLayout->addLayout(dirLayout);
     centralLayout->addLayout(otherSettingLayout);
     centralLayout->addWidget(_datetime_format_box);
@@ -236,17 +256,51 @@ void AppConfigPageMain::assembly(void){
 
     setLayout(centralLayout);
 }
+// Действия при нажатии кнопки выбора директории данных
+void AppConfigPageMain::open_rootdir_select_dialog(void){
+    _original_root_state = std::tuple<const bool, const QString>(true, _rootdir_input->text());
+    QFileDialog rootdirSelectDialog(this);
+    rootdirSelectDialog.setFileMode(QFileDialog::Directory);
+    rootdirSelectDialog.setWindowTitle(tr("Select root directory"));
+    rootdirSelectDialog.setDirectory(_rootdir_input->text());
+
+    rootdirSelectDialog.exec();
+    auto root_path_ = rootdirSelectDialog.directory().absolutePath();
+    _rootdir_input->setText(root_path_);
+
+//    _datadir_input->setText(root_path_ + "/" + QDir(_datadir_input->text()).dirName());
+//    _trashdir_input->setText(root_path_ + "/" + QDir(_trashdir_input->text()).dirName());
+
+//    QDir dir(root_path_);
+//	// Проверяется, допустимо ли имя директории
+//    if(! dir.isReadable()){
+//	QMessageBox::warning(this, tr("Warning")
+//			    , tr("The root directory does not exists or unavailable for reading.")
+//			    , QMessageBox::Ok);
+//    }	// else
+//    if(! dir.exists()) DiskHelper::create_directory(QDir::rootPath(), root_path_);
+//    if(dir.exists() && dir.isReadable()){
+//	// Новое имя запоминается в конфиг
+//	globalparameters.root_path(root_path_);
+////	difficult_changes = 1;
+//	if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
+//	_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
+//	_application_current_path_label->update();
+//	assert(QDir(globalparameters.root_path()) == dir);
+//	assert(dir.absolutePath() == QDir::currentPath());
+//    }
+}
 
 // Действия при нажатии кнопки выбора директории данных
-void AppConfigPageMain::open_tetradir_select_dialog(void){
-    QFileDialog tetradirSelectDialog(this);
-    tetradirSelectDialog.setFileMode(QFileDialog::Directory);
-    tetradirSelectDialog.setWindowTitle(tr("Select data directory"));
-    tetradirSelectDialog.setDirectory(_tetradir_input->text());
+void AppConfigPageMain::open_datadir_select_dialog(void){
+    QFileDialog datadirSelectDialog(this);
+    datadirSelectDialog.setFileMode(QFileDialog::Directory);
+    datadirSelectDialog.setWindowTitle(tr("Select data directory"));
+    datadirSelectDialog.setDirectory(_datadir_input->text());
 
-    tetradirSelectDialog.exec();
+    datadirSelectDialog.exec();
 
-    _tetradir_input->setText(tetradirSelectDialog.directory().absolutePath());
+    _datadir_input->setText(datadirSelectDialog.directory().absolutePath());
 }
 
 // Действия при нажатии кнопки выбора директории корзины
@@ -265,8 +319,8 @@ void AppConfigPageMain::open_trashdir_select_dialog(void){
 void AppConfigPageMain::on_disable_custom_datetime_format_toggle(bool checked){
     qDebug() << "In onDisableCustomDateTimeFormat(): " << checked;
     if(checked == true){
-        custom_datetime_format->setEnabled(false);
-        custom_datetime_format->setText("");
+	custom_datetime_format->setEnabled(false);
+	custom_datetime_format->setText("");
     }
 }
 
@@ -304,41 +358,78 @@ Sample: dd.MM.yyyy - hh:mm:ss";
 int AppConfigPageMain::apply_changes(void){
     qDebug() << "Apply changes main";
 
-    int			difficult_changes	= 0;
-    auto		_main_program_file	= globalparameters.main_program_file();
-    QFileInfo	main_program_file_info(_main_program_file);
-    QString		full_current_path = main_program_file_info.absolutePath();
+	//    if((globalparameters.application_mode() != _application_mode_option->currentText()) || (_rootdir_input->text() != globalparameters.root_path())){
+	//    const auto	is_standard	= (_application_mode_option->currentText() == standardItem);
+
+
+    int	difficult_changes = 0;
+
+    QString	root_path_	= globalparameters.root_path();
+    auto	write_root	= [&](){
+	    auto	root_path_ = _rootdir_input->text();
+	    QDir	dir(root_path_);
+		// Проверяется, допустимо ли имя директории
+	    if(! dir.isReadable()){
+		QMessageBox::warning(this, tr("Warning")
+				    , tr("The root directory does not exists or unavailable for reading.")
+				    , QMessageBox::Ok);
+	    }	// else
+	    if(! dir.exists()) DiskHelper::create_directory(QDir::rootPath(), root_path_);
+//	    else{
+//		// Новое имя запоминается в конфиг
+//		globalparameters.root_path(root_path_l);
+//		difficult_changes = 1;
+//	    }
+	    if(dir.exists() && dir.isReadable()){
+		// Новое имя запоминается в конфиг
+		globalparameters.root_path(dir.path());
+		difficult_changes = 1;
+		if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
+		_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
+		_application_current_path_label->update();
+		assert(QDir(globalparameters.root_path()) == dir);
+		assert(dir.absolutePath() == QDir::currentPath());
+	    }
+	};
+    if(globalparameters.root_path() != _rootdir_input->text()) write_root();
+    auto write_data = [&](){
+	    auto	data_path = _datadir_input->text();
+	    QDir	dir(data_path);
+		// Проверяется, допустимо ли имя директории
+	    if(dir.isReadable() == false){
+		QMessageBox::warning(this, tr("Warning")
+				    , tr("The data directory does not exists or unavailable for reading.")
+				    , QMessageBox::Ok);
+	    }	// else
+	    if(dir.exists() == false){
+		DiskHelper::create_directory(root_path_, dir.dirName());
+		DiskHelper::create_directory(root_path_ + dir.dirName(), "base");
+	    }
+	    if(dir.exists() && dir.isReadable()){
+		// Новое имя запоминается в конфиг
+		appconfig.data_dir(dir.path());
+		difficult_changes = 1;
+	    }
+	};
 	// Если был изменен путь к базе, он запоминается в конфигфайл
-    if(appconfig.tetra_dir() != _tetradir_input->text()){
-        QDir dir(_tetradir_input->text());
-        // Проверяется, допустимо ли имя директории
-        if(dir.isReadable() == false){
-            QMessageBox::warning(this, tr("Warning")
-                                , tr("The data directory does not exists or unavailable for reading.")
-                                , QMessageBox::Ok);
-        }else if(dir.exists() == false){
-            DiskHelper::create_directory(full_current_path, "data");
-            DiskHelper::create_directory(full_current_path + "data", "base");
-        }else{
-            // Новое имя запоминается в конфиг
-            appconfig.tetra_dir(_tetradir_input->text());
-            difficult_changes = 1;
-        }
-	}
+    if(appconfig.data_dir() != _datadir_input->text()) write_data();
+    auto write_trash = [&](){
+	    auto	trash_path = _trashdir_input->text();
+	    QDir	dir(trash_path);
+		// Проверяется, допустимо ли имя директории
+	    if(dir.isReadable() == false){
+		QMessageBox::warning(this, tr("Warning")
+				    , tr("The trash directory does not exists or unavailable for reading.")
+				    , QMessageBox::Ok);
+	    }	// else
+	    if(dir.exists() == false) DiskHelper::create_directory(root_path_, dir.dirName());
+	    if(dir.exists() && dir.isReadable()){
+		// Новое имя запоминается в конфиг
+		appconfig.trash_dir(dir.path());
+	    }
+	};
 	// Если был изменен путь к корзине, он запоминается в конфигфайл
-    if(appconfig.trash_dir() != _trashdir_input->text()){
-        QDir dir(_trashdir_input->text());
-        // Проверяется, допустимо ли имя директории
-        if(dir.isReadable() == false){
-            QMessageBox::warning(this, tr("Warning")
-                                , tr("The trash directory does not exists or unavailable for reading.")
-                                , QMessageBox::Ok);
-        }else if(dir.exists() == false) DiskHelper::create_directory(full_current_path, "trash");
-        else{
-            // Новое имя запоминается в конфиг
-            appconfig.trash_dir(_trashdir_input->text());
-        }
-	}
+    if(appconfig.trash_dir() != _trashdir_input->text()) write_trash();
 	// Если был изменен размер корзины
     if((int) appconfig.trash_size() != (int) _trashsize_input->text().toInt()) appconfig.trash_size(_trashsize_input->text().toInt());
 	// Если было изменено максимально возможное количество файлов в корзине
@@ -349,24 +440,33 @@ int AppConfigPageMain::apply_changes(void){
     if(appconfig.custom_datetime_format() != custom_datetime_format->text()) appconfig.custom_datetime_format(custom_datetime_format->text());
 	// Если был изменен язык
     if(appconfig.interface_language() != _interface_language->currentText()){
-        appconfig.interface_language(_interface_language->currentText());
-        difficult_changes = 1;
+	appconfig.interface_language(_interface_language->currentText());
+	difficult_changes = 1;
     }
-    if(globalparameters.application_mode() != _application_mode_option->currentText()){
-        if(! globalparameters.is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){
-            QFileInfo file(full_current_path + "/conf.ini");
-            if(! (file.exists() && file.isFile())) QFile::remove(full_current_path + "/conf.ini");
-            if(! QFile::copy(QString(":/resource/standartconfig/") + globalparameters.target_os() + "/conf.ini", full_current_path + "/conf.ini")) throw std::runtime_error("Can not copy conf.ini");
-            else QFile::setPermissions(full_current_path + "/conf.ini", QFile::ReadUser | QFile::WriteUser);
-//	    bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.config_ini());
-//	    assert(succedded);
-        }
-        globalparameters.application_mode(_application_mode_option->currentText());
-        QMessageBox message;
-        message.setText("The changes of application mode will take effect after restart the application.");	// You have to restart Mytetra for the configuration changes to take effect.
-        message.exec();
-        exit(0);
-    }
+    const auto result = globalparameters.coordinate_root(_rootdir_input->text());// is_standard,
+    if(_original_root_state != result){
+//	if(std::get<1>(result) != is_standard) _application_mode_option->setCurrentText(is_standard ?  standardItem : portableItem);
+//	if(std::get<2>(result) != _rootdir_input->text()){
+	_rootdir_input->setText(std::get<1>(result));
+	write_root();
+	_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
+	_application_current_path_label->update();
+	_datadir_input->setText(QDir::cleanPath((std::get<1>(result) + "/" + QDir(_datadir_input->text()).dirName())));
+	write_data();
+	_trashdir_input->setText(QDir::cleanPath((std::get<1>(result) + "/" + QDir(_trashdir_input->text()).dirName())));
+	write_trash();
+//	}
+	difficult_changes = 1;
+	assert(QDir(globalparameters.root_path()) == QDir(std::get<1>(result)));
+	assert(QDir(std::get<1>(result)).absolutePath() == QDir::currentPath());
+//	if(std::get<0>(result)){
+	QMessageBox message;
+	message.setText("The changes of application mode will take effect after restart the application.");			// You have to restart Mytetra for the configuration changes to take effect.
+	message.exec();
+	exit(0);
+//	}
+    }	// else difficult_changes = 0;
+//    }
     return difficult_changes;
 }
 

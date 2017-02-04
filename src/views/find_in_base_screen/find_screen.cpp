@@ -51,7 +51,7 @@
 
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 extern const char	*global_root_id;
 
 

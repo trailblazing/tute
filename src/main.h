@@ -27,30 +27,20 @@
 
 using namespace std;
 
-// ----------------------------------------------------------
-// MyTetra - программа для накопления осмысленной информации
-// Волгодонск, 2010 - 2015 г.
-// Контакты: xintrea@gmail.com, www.webhamster.ru
-// Данный исходный код распространяется под лицензиями:
-// - GPL v.3
-// - Modified BSD
-// © Степанов С. М. и товарищи 2010 - 2015
-// ----------------------------------------------------------
-
-// MyTetra - a program to accumulate meaningful information
-// Volgodonsk, 2010 - 2015 g.
-// Contact: xintrea@gmail.com, www.webhamster.ru
-// hughvonyoung@gmail.com (version 1.32.164)
+// Hapnote - a program to accumulate meaningful information
+// 2015 -
+// Contact: hughvonyoung@gmail.com,
+// version 0.0.1
 // This source code is licensed under:
 // - GPL v.3
 // - Modified BSD
-// © Stepanov SM and fellow 2010 - 2015
 
-// Версия программы
+
+
 // Software Version
-#define APPLICATION_RELEASE_VERSION		1
-#define APPLICATION_RELEASE_SUBVERSION		32
-#define APPLICATION_RELEASE_MICROVERSION	164
+#define APPLICATION_RELEASE_VERSION		0
+#define APPLICATION_RELEASE_SUBVERSION		0
+#define APPLICATION_RELEASE_MICROVERSION	1
 
 // Поддерживаемая версия формата базы (хранилища)
 // Format supported version of the database (repository)
@@ -105,10 +95,10 @@ extern QString	set_css_style();
 void		set_kinetic_scrollarea(QAbstractItemView *object);
 
 class WalkHistory;
-class GlobalParameters;
+class gl_para;
 
 extern WalkHistory	walkhistory;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 //extern const char	*application_name;
 extern const char	*meta_editor_singleton_name;
 extern const char	*record_screen_multi_instance_name;
@@ -217,5 +207,9 @@ extern bool		url_equal(const std::string &url_compare_stored, const std::string 
 
 extern std::ifstream::pos_type filesize(const char* filename);
 extern std::streampos file_size(const char *file_path);
+
+#ifndef USE_QTM
+#define USE_QTM
+#endif
 
 #endif	// __MAIN_H__

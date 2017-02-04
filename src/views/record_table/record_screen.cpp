@@ -34,8 +34,10 @@
 #include "views/browser/tabwidget.h"
 #include "models/record_table/linker.hxx"
 #include "models/tree/tree_know_model.h"
+#include "views/record/editentry.h"
 
-extern GlobalParameters globalparameters;
+
+extern gl_para globalparameters;
 extern AppConfig	appconfig;
 extern const char	*tree_screen_viewer_name;
 
@@ -50,7 +52,7 @@ W_OBJECT_IMPL(rs_t)
 
 rs_t::rs_t(ts_t			*_tree_screen
 	  , FindScreen          *_find_screen
-	  , MetaEditor          *_editor_screen
+	  , Editentry		*_editentry
 	  , browser::Entrance   *_entrance	//	  , browser::Browser    *_browser
 	  , wn_t		*_main_window
 	  , const QString	&_style_source
@@ -93,7 +95,7 @@ rs_t::rs_t(ts_t			*_tree_screen
       , _toolsline(new QToolBar(this))
       , _extra_toolsline(new QToolBar(this))
       , _treepathlabel(new QLabel(this))
-      ,	_browser(new browser::Browser(_tree_screen, _find_screen, _editor_screen, this, _entrance, _main_window, _style_source, _profile, Qt::MaximizeUsingFullscreenGeometryHint))	// , _vtab_tree
+      ,	_browser(new browser::Browser(_tree_screen, _find_screen, _editentry, this, _entrance, _main_window, _style_source, _profile, Qt::MaximizeUsingFullscreenGeometryHint))	// , _vtab_tree
       , _record_controller(_browser->tabmanager()->record_controller())	// , _tabmanager(_browser->tabmanager())
       , _vertical_scrollarea(new VerticalScrollArea(_record_controller->view(), this))	// std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void *> > >(&RecordView::resizeEvent, _tabmanager->record_controller()->view())
       , _records_toolslayout(new QHBoxLayout())
@@ -208,13 +210,13 @@ rs_t::rs_t(ts_t			*_tree_screen
 rs_t::~rs_t(){
 	// delete _recordtree_search;
 	// delete
-    if(_record_controller)_record_controller->deleteLater();
+    if(_record_controller) _record_controller->deleteLater();
 	// delete
     if(_browser){_browser->close();_browser->deleteLater();_browser = nullptr;}
     _vertical_scrollarea->deleteLater();
 }
 
-//void rs_t::save_in_new_branch(bool checked){
+// void rs_t::save_in_new_branch(bool checked){
 //    Q_UNUSED(checked)
 //    ts_t * _tree_screen = globalparameters.tree_screen();											// find_object<TreeScreen>(tree_screen_singleton_name);
 //    assert(_tree_screen);
@@ -286,7 +288,7 @@ rs_t::~rs_t(){
 //		// tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
 //	}
 //    }
-//}
+// }
 
 // Настройка возможных действий
 void rs_t::setup_actions(void){
@@ -400,7 +402,7 @@ void rs_t::setup_actions(void){
 //////	    _tree_hide->setText(_hide_tree_text);
 ////////	    emit _tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
 //	});
-    if(_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen"))emit _main_window->h_record_splitter()->splitterMoved(_main_window->h_record_splitter()->sizes()[0], 1);
+    if(_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen")) emit _main_window->h_record_splitter()->splitterMoved(_main_window->h_record_splitter()->sizes()[0], 1);
 // emit _tree_hide->triggered();
 
 //	// _save_in_new_branch = new QAction(tr("Save in new branch"), this);
@@ -475,7 +477,7 @@ void rs_t::setup_actions(void){
 	    Q_UNUSED(checked)
 		// Обновление инфополей в области редактирования записи
 	    MetaEditor * metaeditor = globalparameters.meta_editor();																														// MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
-	    if(metaeditor)metaeditor->switch_pin();
+	    if(metaeditor) metaeditor->switch_pin();
 	}
 	);
 #endif
@@ -785,7 +787,7 @@ void rs_t::setup_ui(void){
 	// int width = recordTableController->getView()->contentsRect().width();
 	// treePathLabel->setMaximumWidth(contentsRect().width());
 	// treePathLabel->setMinimumWidth(contentsRect().width());
-    if(appconfig.interface_mode() == "desktop")_treepathlabel->hide();
+    if(appconfig.interface_mode() == "desktop") _treepathlabel->hide();
 	// _vertical_scrollarea = new VerticalScrollArea(
 	// std::make_shared<sd::_interface<sd::meta_info<void *>, void, QResizeEvent *>>("", &RecordView::resizeEvent, _record_controller->view())
 	// , this
@@ -1022,7 +1024,7 @@ void rs_t::tools_update(){
 	// едактировать можно только тогда, когда выбрана только одна строка
     if(has_selection	// item_selection_model->hasSelection()
 //      && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
-	)_edit_field->setEnabled(true);
+	) _edit_field->setEnabled(true);
 	// Удаление записи
 	// Пункт активен только если запись (или записи) выбраны в списке
     if(has_selection){											// item_selection_model->hasSelection()
@@ -1058,7 +1060,7 @@ void rs_t::tools_update(){
 	){
 	const QMimeData *mime_data = QApplication::clipboard()->mimeData();
 	if(mime_data != nullptr)
-		if(mime_data->hasFormat("mytetra/records"))_paste->setEnabled(true);
+		if(mime_data->hasFormat("hapnote/records")) _paste->setEnabled(true);
     }
 #endif
 	// Перемещение записи вверх
@@ -1081,7 +1083,7 @@ void rs_t::tools_update(){
 //      && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
       && false == sorting_enabled										// view->isSortingEnabled() == false
       && _view->is_selected_set_to_bottom() == false
-	)_action_move_dn->setEnabled(true);
+	) _action_move_dn->setEnabled(true);
 	// Обновляется состояние области редактирования текста
     if(  has_selection	// item_selection_model->hasSelection()
       && _record_controller->row_count() > 0

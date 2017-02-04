@@ -36,7 +36,7 @@
 
 extern FixedParameters	fixedparameters;
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 // pages_container::pages_container(browser::TabWidget *_tabmanager)
 //    : _tabmanager(_tabmanager)	// new browser::TabWidget(_browser, _record_controller)
@@ -266,7 +266,7 @@ RecordModel::RecordModel(rctrl_t *_record_controller)	// TreeScreen *_tree_scree
     : QAbstractTableModel(_record_controller)	// _record_controller	//
 //      , pages_container(_tabmanager)
       , _record_controller(_record_controller){
-	// _browser_pages->init_from_xml(_appconfig.get_tetradir() + "/default_page.xml");
+	// _browser_pages->init_from_xml(_appconfig.datadir() + "/default_page.xml");
 	// _browser_pages->root_item()->field("id", "0");  // get_unical_id()
 	// _browser_pages->root_item()->field("name", "_shadow_branch");
 

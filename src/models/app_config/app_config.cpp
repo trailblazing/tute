@@ -15,8 +15,10 @@
 #include "libraries/global_parameters.h"
 #include "views/find_in_base_screen/find_screen.h"
 
-extern GlobalParameters globalparameters;
+extern gl_para			globalparameters;
 extern const char		*global_root_id;
+extern const char		*standardItem;
+extern const char		*portableItem;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfig)
@@ -32,28 +34,34 @@ AppConfig::AppConfig(QObject *pobj){
 
 // Деструктор объекта настройки программы
 AppConfig::~AppConfig(){
-//    if(is_init_flag){
-//        qDebug() << "Save mytetra config file";
-//        _app_conf->sync();
-//    }
-    if(_app_conf){
-        _app_conf->deleteLater();
-//        _app_conf = nullptr;
+    if(is_init_flag){
+////        qDebug() << "Save hapnote config file";
+	_app_conf->sync();
     }
+//    if(_app_conf){
+//	_app_conf->deleteLater();
+////        _app_conf = nullptr;
+//    }
 }
 
 void AppConfig::init(void){
+    auto location = globalparameters.root_path() + "/" + globalparameters.target_os();
 	// Создается имя файла конфигурации
-    QString config_file_name = globalparameters.work_directory() + "/conf.ini";
-
-	// Проверяется, есть ли файл конфигурации
-    QFile conf_file(config_file_name);
-    if(! conf_file.exists()) critical_error("File " + config_file_name + " not found.");
+    _config_file_full_name = location + "/" + globalparameters.config_filename();
+//	// Проверяется, есть ли файл конфигурации
+//    QFile conf_file(_config_file_name);
+//    if(! conf_file.exists()) critical_error("File " + _config_file_name + " not found.");
+    if(! QFile(_config_file_full_name).exists()){
+	if(! QDir(location).exists()) if(! QDir::root().mkpath(location)) critical_error("void AppConfig::init(void) can not make path \"" + location + "\"");
+	if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/" + globalparameters.config_filename(), _config_file_full_name)) critical_error("void AppConfig::init(void) can not copy " + globalparameters.config_filename());
+    }
+	// throw std::runtime_error("Can not copy " + name.toStdString());
+    if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_config_file_full_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_config_file_full_name, QFile::ReadUser | QFile::WriteUser);
 	// Создается указатель на объект хранилища конфигурации
-//    _app_conf = std::make_shared<QSettings>(config_file_name, QSettings::IniFormat);
+    _app_conf = std::make_shared<QSettings>(_config_file_full_name, QSettings::IniFormat);
 //    _app_conf->setPath(QSettings::IniFormat, QSettings::UserScope, );
 //    _app_conf->setDefaultFormat(QSettings::IniFormat);
-    _app_conf = new QSettings(config_file_name, QSettings::IniFormat);
+//    _app_conf = new QSettings(config_file_name, QSettings::IniFormat);
     update_version_process();
 
     sync();
@@ -73,31 +81,54 @@ void AppConfig::sync(void){
 
 // Получение параметра по имени в виде строки с проверкой его существования
 QString AppConfig::get_parameter(QString name) const {
-    if(_app_conf->contains(name)) return _app_conf->value(name).toString();
-    else critical_error("In config not found parameter " + name);
-    return QString();
+    QString result = "";
+    if(_app_conf->contains(name)) result = _app_conf->value(name).toString();
+    else{
+	AppConfig	*_this = const_cast<AppConfig *>(this);
+	if(QFile(_config_file_full_name).exists()) QFile::remove(_config_file_full_name);
+	if(! QFile::copy(QString(":/resource/standardconfig/") + globalparameters.target_os() + "/" + globalparameters.config_filename(), _config_file_full_name)) critical_error("Can not copy " + globalparameters.config_filename());
+	if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_config_file_full_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_config_file_full_name, QFile::ReadUser | QFile::WriteUser);
+	_this->_app_conf	= std::make_shared<QSettings>(_config_file_full_name, QSettings::IniFormat);
+	result			= _app_conf->value(name).toString();
+	if(result == "") critical_error("In config not found parameter " + name);
+    }
+    return result;
 }
 
-// Установка имени директории с данными (в которой находится mytetra.xml)
-bool AppConfig::tetra_dir(QString dirName){
+
+
+// bool AppConfig::root_dir(QString dirName){
+//    QDir directory(dirName);
+//    if(directory.exists() && directory.isReadable()){
+//	_app_conf->setValue("rootdir", dirName);
+
+//	return true;
+//    }else return false;
+// }
+
+
+// QString AppConfig::root_dir(void) const {return get_parameter("rootdir");}
+
+// Установка имени директории с данными (в которой находится hapnote.xml)
+bool AppConfig::data_dir(QString dirName){
     QDir directory(dirName);
     if(directory.exists() && directory.isReadable()){
-        _app_conf->setValue("tetradir", dirName);
+	_app_conf->setValue("datadir", dirName);
 
-        return true;
+	return true;
     }else return false;
 }
 
-// Получение имени директории с данными (в которой находится mytetra.xml)
-QString AppConfig::tetra_dir(void) const {return get_parameter("tetradir");}
+// Получение имени директории с данными (в которой находится hapnote.xml)
+QString AppConfig::data_dir(void) const {return get_parameter("datadir");}
 
 // Установка имени директории с корзиной
 bool AppConfig::trash_dir(QString dirName){
     QDir directory(dirName);
     if(directory.exists() && directory.isReadable()){
-        _app_conf->setValue("trashdir", dirName);
+	_app_conf->setValue("trashdir", dirName);
 
-        return true;
+	return true;
     }else return false;
 }
 
@@ -110,9 +141,9 @@ unsigned int AppConfig::trash_size(void) const {return get_parameter("trashsize"
 // Установка максимального размера директории корзины в мегабайтах
 bool AppConfig::trash_size(unsigned int mbSize){
     if(mbSize > 0){
-        _app_conf->setValue("trashsize", mbSize);
+	_app_conf->setValue("trashsize", mbSize);
 
-        return true;
+	return true;
     }else return false;
 }
 
@@ -122,9 +153,9 @@ int AppConfig::trash_max_file_count(void) const {return get_parameter("trashmaxf
 // Установка максимально допустимого числа файлов в корзине
 bool AppConfig::trash_max_file_count(int count){
     if(count > 0){
-        _app_conf->setValue("trashmaxfilecount", count);
+	_app_conf->setValue("trashmaxfilecount", count);
 
-        return true;
+	return true;
     }else return false;
 }
 
@@ -193,8 +224,8 @@ void AppConfig::add_new_record_expand_info(QString state){
 // }
 
 QRect AppConfig::mainwin_geometry(void) const {
-    QRect		rect;
-    QString		rectString;
+    QRect	rect;
+    QString	rectString;
     QStringList rectParameter;
 
     rectString = _app_conf->value("mainwingeometry", "0,0,500,400").toString();
@@ -267,8 +298,8 @@ void AppConfig::splitter_sizelist(QString name, QList<int> list){
 
 std::pair<QString, QStringList> AppConfig::tree_position(void) const {
     return std::make_pair(
-        _app_conf->value("tree_intercept", global_root_id).toString(), _app_conf->value("tree_position", "1").toString().split(",")
-        );
+	_app_conf->value("tree_intercept", global_root_id).toString(), _app_conf->value("tree_position", "1").toString().split(",")
+	);
 }
 
 void AppConfig::tree_position(QString view_root_id, QStringList current_item_absolute_path){
@@ -487,15 +518,15 @@ void AppConfig::hide_editor_tools(QStringList toolsNames){
 
 bool AppConfig::find_in_base_expand(void) const {
     return _app_conf->value(
-        FindScreen::_find_in_base_expand		// "findInBaseExpand"
-        ).toBool();
+	FindScreen::_find_in_base_expand		// "findInBaseExpand"
+	).toBool();
 }
 
 void AppConfig::find_in_base_expand(bool state){
     _app_conf->setValue(
-        FindScreen::_find_in_base_expand	// "findInBaseExpand"
-                       , state
-        );
+	FindScreen::_find_in_base_expand	// "findInBaseExpand"
+		       , state
+	);
 }
 
 // Разрешено ли использовать собственный формат вывода даты и времени
@@ -534,7 +565,7 @@ void AppConfig::attach_save_as_dir(QString dir){
     _app_conf->setValue("attachSaveAsDir", dir);
 }
 
-// Разрешать ли для просмотра расшифровывать зашифрованные файлы в директорию корзины MyTetra
+// Разрешать ли для просмотра расшифровывать зашифрованные файлы в директорию корзины Hapnote
 bool AppConfig::enable_decrypt_file_to_trash_directory(void) const {
     return _app_conf->value("enableDecryptFileToTrashDirectory").toBool();
 }
@@ -559,16 +590,16 @@ void AppConfig::config_version(int i){
 QStringList AppConfig::remove_parameter_from_table(QString removeName, QStringList table){
 	// Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i ++){
-        // Выясняется имя параметра
-        QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
-        // Если имя совпадает с удаляемым
-        if(name == removeName){
-            // Удаляются данные об элементе (удаляется ячейка с одним и тем же номером
-            // столько раз, сколько полей в таблице)
-            for(int j = 0; j < MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD; j ++) table.removeAt(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
-            break;
-        }
+	// Выясняется имя параметра
+	QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
+	// Если имя совпадает с удаляемым
+	if(name == removeName){
+		// Удаляются данные об элементе (удаляется ячейка с одним и тем же номером
+		// столько раз, сколько полей в таблице)
+	    for(int j = 0; j < MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD; j ++) table.removeAt(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
+	    break;
 	}
+    }
     return table;
 }
 
@@ -576,9 +607,9 @@ QStringList AppConfig::remove_parameter_from_table(QString removeName, QStringLi
 QString AppConfig::parameter_type_from_table(QString parameterName, QStringList table) const {
 	// Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i ++){
-        // Выясняется имя параметра
-        QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
-        if(name == parameterName) return table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1);
+	// Выясняется имя параметра
+	QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
+	if(name == parameterName) return table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1);
     }
     return "";
 }
@@ -587,9 +618,9 @@ QString AppConfig::parameter_type_from_table(QString parameterName, QStringList 
 QString AppConfig::parameter_value_from_table(QString parameterName, QStringList table) const {
 	// Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i ++){
-        // Выясняется имя параметра
-        QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
-        if(name == parameterName) return table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2);
+	// Выясняется имя параметра
+	QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
+	if(name == parameterName) return table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2);
     }
     return "";
 }
@@ -598,16 +629,16 @@ QString AppConfig::parameter_value_from_table(QString parameterName, QStringList
 QStringList AppConfig::replace_parameter_in_table(QString replaceName, QString replaceType, QString replaceValue, QStringList table){
 	// Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i ++){
-        // Выясняется имя параметра
-        QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
-        // Если имя совпадает с заменяемым
-        if(name == replaceName){
-            table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1]	= replaceType;
-            table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2]	= replaceValue;
+	// Выясняется имя параметра
+	QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
+	// Если имя совпадает с заменяемым
+	if(name == replaceName){
+	    table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1]	= replaceType;
+	    table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2]	= replaceValue;
 
-            break;
-        }
+	    break;
 	}
+    }
     return table;
 }
 
@@ -616,7 +647,7 @@ QStringList AppConfig::replace_parameter_in_table(QString replaceName, QString r
 // ------------------------------------
 
 void AppConfig::update_version_process(void){
-    QString configFileName = globalparameters.work_directory() + "/conf.ini";
+    QString configFileName = globalparameters.root_path() + "/" + globalparameters.target_os() + "/conf.ini";
 
     AppConfigUpdater updater;
     updater.set_config_file(configFileName);
@@ -671,8 +702,8 @@ template<>QStringList AppConfig::parameter_table<0>(bool withEndSignature){	// Q
     table << "lastprefixnum" << "int" << "7540";
     table << "mainwingeometry" << "QString" << "155,24,864,711)";
     table << "recordtable_position" << "int" << "0";
-    table << "tetradir" << "QString" << "/opt/mytetra/data";
-    table << "trashdir" << "QString" << "/opt/mytetra/trash";
+    table << "datadir" << "QString" << "/opt/hapnote/data";
+    table << "trashdir" << "QString" << "/opt/hapnote/trash";
     table << "trashmaxfilecount" << "int" << "200";
     table << "trashsize" << "int" << "5";
     table << "tree_position" << "QString" << "0,1818,1819";
@@ -882,7 +913,7 @@ template<>QStringList AppConfig::parameter_table<14>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 14
     table << parameter_table<13>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android") table << "uglyQssReplaceHeightForTableView" << "int" << "35";																																																																																																																																																																																																																																																																																																																																			// Так как не все параметры можно стилизовать через QSS, здесь задается высота ячейки таблицы
+    if(globalparameters.target_os() == "android") table << "uglyQssReplaceHeightForTableView" << "int" << "35";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																					// Так как не все параметры можно стилизовать через QSS, здесь задается высота ячейки таблицы
     else table << "uglyQssReplaceHeightForTableView" << "int" << "0";
     if(withEndSignature) table << "0" << "0" << "0";
     return table;
@@ -913,8 +944,8 @@ template<>QStringList AppConfig::parameter_table<16>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 16
     table << parameter_table<15>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android") table << "showSplashScreen" << "bool" << "true";																																																																																																																																																																																																																																																																																																	// В Андроид долгий запуск, нужно показывать сплешскрин
-    else table << "showSplashScreen" << "bool" << "false";																																																																																																																																																																														// На десктопе быстрый запуск, сплешскрин только мешает
+    if(globalparameters.target_os() == "android") table << "showSplashScreen" << "bool" << "true";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												// В Андроид долгий запуск, нужно показывать сплешскрин
+    else table << "showSplashScreen" << "bool" << "false";																																																																																																																																																																																																																																																																																																																																																																						// На десктопе быстрый запуск, сплешскрин только мешает
     if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
@@ -927,8 +958,8 @@ template<>QStringList AppConfig::parameter_table<17>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 17
     table << parameter_table<16>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android") table << "interfaceMode" << "QString" << "mobile";																																																																																																																																																																																																																																																																																																												// В Андроид должен быть мобильный интерфейс
-    else table << "interfaceMode" << "QString" << "desktop";																																																																																																																																																																																									// На десктопе должен быть интерфейс адоптированный для работы на рабочем столе
+    if(globalparameters.target_os() == "android") table << "interfaceMode" << "QString" << "mobile";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																							// В Андроид должен быть мобильный интерфейс
+    else table << "interfaceMode" << "QString" << "desktop";																																																																																																																																																																																																																																																																																																																																																																																	// На десктопе должен быть интерфейс адоптированный для работы на рабочем столе
     if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
@@ -955,8 +986,8 @@ template<>QStringList AppConfig::parameter_table<19>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 19
     table << parameter_table<18>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android") table << "hideEditorTools" << "QString" << "italic,underline,monospace,alignleft,aligncenter,alignright,alignwidth,numericlist,dotlist,indentplus,indentminus,showformatting,showhtml,fontcolor,expand_edit_area,save,createtable,table_add_row,table_remove_row,table_add_col,table_remove_col,table_merge_cells,table_split_cell";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										// В Андроид прячутся инструменты сложного форматирования текста
-    else table << "hideEditorTools" << "QString" << "";																																																																																																																																																																		// На десктопе скрываемых кнопок редактора нет
+    if(globalparameters.target_os() == "android") table << "hideEditorTools" << "QString" << "italic,underline,monospace,alignleft,aligncenter,alignright,alignwidth,numericlist,dotlist,indentplus,indentminus,showformatting,showhtml,fontcolor,expand_edit_area,save,createtable,table_add_row,table_remove_row,table_add_col,table_remove_col,table_merge_cells,table_split_cell";																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																			// В Андроид прячутся инструменты сложного форматирования текста
+    else table << "hideEditorTools" << "QString" << "";																																																																																																																																																																																																																																																																																																																																			// На десктопе скрываемых кнопок редактора нет
     if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
@@ -970,8 +1001,8 @@ template<>QStringList AppConfig::parameter_table<20>(bool withEndSignature){	// 
     table << parameter_table<19>(false);
 
     table	<<
-        FindScreen::_find_in_base_expand	// "findInBaseExpand"
-            << "bool" << "true";
+	FindScreen::_find_in_base_expand	// "findInBaseExpand"
+		<< "bool" << "true";
     if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
@@ -1058,7 +1089,7 @@ template<>QStringList AppConfig::parameter_table<26>(bool withEndSignature){	// 
 
     table << "vertical_scrollbar_style_sheet" << "QString" << "QTabWidget::pane { border: 0 px; } ";
     table << "horizontal_scrollbar_style_sheet" << "QString" << "QTabWidget::pane { border: 0 px; } ";
-    table << "application_mode" << "QString" << "Portable";
+    table << "application_mode" << "QString" << portableItem;
 	//    table << "enableDecryptFileToTrashDirectory" << "bool" << "false";
     if(withEndSignature) table << "0" << "0" << "0";
     return table;

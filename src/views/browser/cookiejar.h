@@ -59,160 +59,154 @@ class QKeyEvent;
 QT_END_NAMESPACE
 
 
-QT_BEGIN_NAMESPACE
+    QT_BEGIN_NAMESPACE
 
 
 namespace browser {
-
-
-
     class AutoSaver;
 
     class CookieJar : public QNetworkCookieJar {
-        friend class CookieModel;
-        Q_OBJECT
-        Q_PROPERTY(AcceptPolicy acceptPolicy READ acceptPolicy WRITE setAcceptPolicy)
-        Q_PROPERTY(KeepPolicy keepPolicy READ keepPolicy WRITE setKeepPolicy)
-        Q_PROPERTY(QStringList blockedCookies READ blockedCookies WRITE setBlockedCookies)
-        Q_PROPERTY(QStringList allowedCookies READ allowedCookies WRITE setAllowedCookies)
-        Q_PROPERTY(QStringList allowForSessionCookies READ allowForSessionCookies WRITE setAllowForSessionCookies)
-        Q_ENUMS(KeepPolicy)
-        Q_ENUMS(AcceptPolicy)
+	friend class CookieModel;
+	Q_OBJECT
+	Q_PROPERTY(AcceptPolicy acceptPolicy READ acceptPolicy WRITE setAcceptPolicy)
+	Q_PROPERTY(KeepPolicy keepPolicy READ keepPolicy WRITE setKeepPolicy)
+	Q_PROPERTY(QStringList blockedCookies READ blockedCookies WRITE setBlockedCookies)
+	Q_PROPERTY(QStringList allowedCookies READ allowedCookies WRITE setAllowedCookies)
+	Q_PROPERTY(QStringList allowForSessionCookies READ allowForSessionCookies WRITE setAllowForSessionCookies)
+	Q_ENUMS(KeepPolicy)
+	Q_ENUMS(AcceptPolicy)
 
-    signals:
-        void cookiesChanged();
+	signals:
+	    void cookiesChanged();
 
-    public:
-        enum AcceptPolicy {
-            AcceptAlways,
-            AcceptNever,
-            AcceptOnlyFromSitesNavigatedTo
-        };
+	public:
+	    enum AcceptPolicy {
+		AcceptAlways,
+		AcceptNever,
+		AcceptOnlyFromSitesNavigatedTo
+	    };
 
-        enum KeepPolicy {
-            KeepUntilExpire,
-            KeepUntilExit,
-            KeepUntilTimeLimit
-        };
+	    enum KeepPolicy {
+		KeepUntilExpire,
+		KeepUntilExit,
+		KeepUntilTimeLimit
+	    };
 
-        CookieJar(QObject *parent = 0);
-        ~CookieJar();
+	    CookieJar(QObject *parent = 0);
+	    ~CookieJar();
 
-        QList<QNetworkCookie> cookiesForUrl(const QUrl &url) const;
-        bool setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url);
+	    QList<QNetworkCookie> cookiesForUrl(const QUrl &url) const;
+	    bool setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const QUrl &url);
 
-        AcceptPolicy acceptPolicy() const;
-        void setAcceptPolicy(AcceptPolicy policy);
+	    AcceptPolicy acceptPolicy() const;
+	    void setAcceptPolicy(AcceptPolicy policy);
 
-        KeepPolicy keepPolicy() const;
-        void setKeepPolicy(KeepPolicy policy);
+	    KeepPolicy keepPolicy() const;
+	    void setKeepPolicy(KeepPolicy policy);
 
-        QStringList blockedCookies() const;
-        QStringList allowedCookies() const;
-        QStringList allowForSessionCookies() const;
+	    QStringList blockedCookies() const;
+	    QStringList allowedCookies() const;
+	    QStringList allowForSessionCookies() const;
 
-        void setBlockedCookies(const QStringList &list);
-        void setAllowedCookies(const QStringList &list);
-        void setAllowForSessionCookies(const QStringList &list);
+	    void setBlockedCookies(const QStringList &list);
+	    void setAllowedCookies(const QStringList &list);
+	    void setAllowForSessionCookies(const QStringList &list);
 
-    public slots:
-        void clear();
-        void loadSettings();
+	public slots:
+	    void clear();
+	    void loadSettings();
 
-    private slots:
-        void save();
+	private slots:
+	    void save();
 
-    private:
-        void purgeOldCookies();
-        void load();
-        bool        _loaded;
-        AutoSaver   *_save_timer;
+	private:
+	    void purgeOldCookies();
+	    void load();
+	    bool _loaded;
+	    AutoSaver   *_save_timer;
 
-        AcceptPolicy    _accept_cookies;
-        KeepPolicy      _keep_cookies;
+	    AcceptPolicy _accept_cookies;
+	    KeepPolicy _keep_cookies;
 
-        QStringList _exceptions_block;
-        QStringList _exceptions_allow;
-        QStringList _exceptions_allow_for_session;
+	    QStringList _exceptions_block;
+	    QStringList _exceptions_allow;
+	    QStringList _exceptions_allow_for_session;
     };
 
     class CookieModel : public QAbstractTableModel {
-        Q_OBJECT
+	Q_OBJECT
 
-    public:
-        CookieModel(CookieJar *jar, QObject *parent = 0);
-        QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-        QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-        int columnCount(const QModelIndex &parent = QModelIndex()) const;
-        int rowCount(const QModelIndex &parent = QModelIndex()) const;
-        bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+	public:
+	    CookieModel(CookieJar *jar, QObject *parent = 0);
+	    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+	    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+	    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
-    private slots:
-        void cookiesChanged();
+	private slots:
+	    void cookiesChanged();
 
-    private:
-        CookieJar *m_cookieJar;
+	private:
+	    CookieJar *m_cookieJar;
     };
 
-    //#include "ui_cookies.h"
-    //#include "ui_cookiesexceptions.h"
+	// #include "ui_cookies.h"
+	// #include "ui_cookiesexceptions.h"
 
     class CookiesDialog : public QDialog, public Ui_CookiesDialog {
-        Q_OBJECT
+	Q_OBJECT
 
-    public:
-        CookiesDialog(CookieJar *cookieJar, QWidget *parent = 0);
+	public:
+	    CookiesDialog(CookieJar *cookieJar, QWidget *parent = 0);
 
-    private:
-        QSortFilterProxyModel *m_proxyModel;
+	private:
+	    QSortFilterProxyModel *m_proxyModel;
     };
 
     class CookieExceptionsModel : public QAbstractTableModel {
-        Q_OBJECT
-        friend class CookiesExceptionsDialog;
+	Q_OBJECT
+	friend class CookiesExceptionsDialog;
 
-    public:
-        CookieExceptionsModel(CookieJar *cookieJar, QObject *parent = 0);
-        QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-        QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-        int columnCount(const QModelIndex &parent = QModelIndex()) const;
-        int rowCount(const QModelIndex &parent = QModelIndex()) const;
-        bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+	public:
+	    CookieExceptionsModel(CookieJar *cookieJar, QObject *parent = 0);
+	    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+	    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+	    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
-    private:
-        CookieJar *m_cookieJar;
+	private:
+	    CookieJar *m_cookieJar;
 
-        // Domains we allow, Domains we block, Domains we allow for this session
-        QStringList m_allowedCookies;
-        QStringList m_blockedCookies;
-        QStringList m_sessionCookies;
+		// Domains we allow, Domains we block, Domains we allow for this session
+	    QStringList m_allowedCookies;
+	    QStringList m_blockedCookies;
+	    QStringList m_sessionCookies;
     };
 
     class CookiesExceptionsDialog : public QDialog, public Ui_CookiesExceptionsDialog {
-        Q_OBJECT
+	Q_OBJECT
 
-    public:
-        CookiesExceptionsDialog(CookieJar *cookieJar, QWidget *parent = 0);
+	public:
+	    CookiesExceptionsDialog(CookieJar *cookieJar, QWidget *parent = 0);
 
-    private slots:
-        void block();
-        void allow();
-        void allowForSession();
-        void textChanged(const QString &text);
+	private slots:
+	    void block();
+	    void allow();
+	    void allowForSession();
+	    void textChanged(const QString &text);
 
-    private:
-        CookieExceptionsModel *m_exceptionsModel;
-        QSortFilterProxyModel *m_proxyModel;
-        CookieJar *m_cookieJar;
+	private:
+	    CookieExceptionsModel *m_exceptionsModel;
+	    QSortFilterProxyModel *m_proxyModel;
+	    CookieJar *m_cookieJar;
     };
-
-
-
 }
 
 QT_END_NAMESPACE
 
-#endif // COOKIEJAR_H
+#endif	// COOKIEJAR_H
 
 
 

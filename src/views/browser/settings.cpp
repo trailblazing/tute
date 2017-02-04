@@ -112,7 +112,7 @@ namespace browser {
     }
 
     void SettingsDialog::loadFromSettings(){
-	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + globalparameters._browser_conf_filename, QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("MainWindow"));
 	const QString default_home_ = QLatin1String(Browser::_defaulthome);
 	homeLineEdit->setText(settings.value(QLatin1String("home"), default_home_).toString());
@@ -188,7 +188,7 @@ namespace browser {
     }
 
     void SettingsDialog::saveToSettings(){
-	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
+	QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + globalparameters._browser_conf_filename, QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("MainWindow"));
 	settings.setValue(QLatin1String("home"), homeLineEdit->text());
 	settings.endGroup();
@@ -315,7 +315,7 @@ namespace browser {
     void SettingsDialog::setHomeToCurrentPage(){
 	Browser *mw		= static_cast<Browser *>(parent());
 	WebView *webView	= mw->currentTab();
-	if(webView)homeLineEdit->setText(webView->page()->url().toString());
+	if(webView) homeLineEdit->setText(webView->page()->url().toString());
     }
 }
 

@@ -21,7 +21,7 @@
 #include "libraries/disk_helper.h"
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 extern DataBaseConfig	databaseconfig;
 
 
@@ -71,7 +71,7 @@ void AppConfigPageCrypt::setup_ui(void){
     howPassRequestBox->setTitle(tr("Access to encrypted data"));
 
     howPassRequestRadio1	= new QRadioButton(tr("Ask the password when you click on an encrypted item"));
-    howPassRequestRadio2	= new QRadioButton(tr("Ask the password at MyTetra startup"));
+    howPassRequestRadio2	= new QRadioButton(tr("Ask the password at Hapnote startup"));
 	// Точка устанавливается возле того пункта, который настроен в конфиге
     if(appconfig.howpassrequest() == "atClickOnCryptBranch")howPassRequestRadio1->setChecked(true);
     else howPassRequestRadio2->setChecked(true);

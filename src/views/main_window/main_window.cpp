@@ -39,12 +39,12 @@
 #include "views/browser/history.h"
 #include "views/browser/bookmarks.h"
 #include "views/tree/tree_view.h"
-
+#include "views/record/editentry.h"
 
 
 extern AppConfig			appconfig;
 extern TrashMonitoring			trashmonitoring;
-extern GlobalParameters			globalparameters;
+extern gl_para			globalparameters;
 extern WalkHistory			walkhistory;
 const char				*meta_editor_singleton_name		= "editor_screen";
 const char				*record_screen_multi_instance_name	= "record_screen";
@@ -63,7 +63,7 @@ W_OBJECT_IMPL(wn_t)
 #endif
 
 
-wn_t::wn_t(GlobalParameters     &_globalparameters
+wn_t::wn_t(gl_para     &_globalparameters
 	  , AppConfig           &_appconfig
 	  , DataBaseConfig      &_databaseconfig
 	  , browser::Profile    *_profile
@@ -89,12 +89,12 @@ wn_t::wn_t(GlobalParameters     &_globalparameters
       , _helpmenu(new QMenu(tr("&Help"), this))
       , _tree_screen(new ts_t(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, this))		// _vtabwidget
       , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen, this))
-      , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))		// _find_screen -> for find_text
-      , _entrance(new browser::Entrance(entrance_singleton_name, _tree_screen, _find_screen, _editor_screen, this, _appconfig, _globalparameters.style_source(), _profile, Qt::Widget))							// Qt::MaximizeUsingFullscreenGeometryHint
+      , _editenty(new Editentry("", _tree_screen, _find_screen, this, _appconfig, _globalparameters.style_source(), _profile, Qt::Widget))
+      , _entrance(new browser::Entrance(entrance_singleton_name, _tree_screen, _find_screen, _editenty, this, _appconfig, _globalparameters.style_source(), _profile, Qt::Widget))							// Qt::MaximizeUsingFullscreenGeometryHint
 //      , _download(new browser::DownloadManager(download_manager_singleton_name, _vtab_record))
-      , _vtab_record([&](QString style_source_){auto vr = new HidableTabWidget(_tree_screen, _find_screen, _editor_screen, _entrance, this, _profile, style_source_);_globalparameters.vtab_record(vr);return vr;} (_style))
+      , _vtab_record([&](QString style_source_){auto vr = new HidableTabWidget(_tree_screen, _find_screen, _editenty, _entrance, this, _profile, style_source_);_globalparameters.vtab_record(vr);return vr;} (_style))
       , _statusbar(new QStatusBar(this))
-      , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
+      , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editenty, this))
       , _enable_real_close(false){
 	// _page_screen->setVisible(false);
 	// _page_screen->hide();
@@ -188,7 +188,8 @@ wn_t::~wn_t(){
 	// delete
     _statusbar->deleteLater();
 	// delete
-    _editor_screen->deleteLater();
+//    _editor_screen->deleteLater();
+    _editenty->deleteLater();
 	// delete
     _find_screen->deleteLater();
 	// delete  _download;
@@ -232,7 +233,7 @@ wn_t::~wn_t(){
 }
 
 void wn_t::setup_ui(void){
-    if(_globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																																																				// Для Андроида окно просто разворачивается на весь экран
+    if(_globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																																																																																																																																																																																																																																																																																																																																																													// Для Андроида окно просто разворачивается на весь экран
     else{
 	QRect rect = _appconfig.mainwin_geometry();
 	resize(rect.size());
@@ -269,14 +270,17 @@ void wn_t::setup_ui(void){
 
 	// _editor_screen = new MetaEditor();
 	// _editor_screen->setObjectName(meta_editor_singleton_name);  // "editorScreen"
-    _globalparameters.meta_editor(_editor_screen);
+//    _globalparameters.meta_editor(_editor_screen);
 
-
+    _globalparameters.meta_editor(_editenty);
 	// _find_screen = new FindScreen(this);
 	// _find_screen->setObjectName(find_screen_singleton_name);  // "findScreenDisp"
     _globalparameters.find_screen(_find_screen);
 	// findScreenDisp->hide();
-    if(! _appconfig.editor_show()) _editor_screen->hide();
+    if(! _appconfig.editor_show()){
+//	_editor_screen->hide();
+	_editenty->hide();
+    }
 	// _statusbar = new QStatusBar(this);
     _statusbar->setObjectName("status_bar");		// "statusBar"
     setStatusBar(_statusbar);
@@ -306,8 +310,8 @@ void wn_t::setup_ui(void){
 }
 
 void wn_t::setup_signals(void){
-    connect(_editor_screen, &MetaEditor::send_expand_edit_area, this, &wn_t::on_expand_edit_area);
-
+//    connect(_editor_screen, &MetaEditor::send_expand_edit_area, this, &wn_t::on_expand_edit_area);
+    connect(_editenty->editor(), &MetaEditor::send_expand_edit_area, this, &wn_t::on_expand_edit_area);
 	// Сигнал, генерирующийся при выходе из оконных систем X11 и Windows
     connect(sapp_t::instance(), &QApplication::commitDataRequest, this, &wn_t::commit_data);
 
@@ -320,8 +324,8 @@ void wn_t::setup_signals(void){
 
 	// if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
-    connect(_editor_screen, &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
-
+//    connect(_editor_screen, &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
+    connect(_editenty->editor(), &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
 	// auto hide_others = [this](int index) {
 	// if(-1 != index) {
 	// auto count = _vtabwidget->count();
@@ -812,7 +816,8 @@ void wn_t::setup_signals(void){
 void wn_t::assembly(void){
 	// v_right_splitter = new QSplitter(Qt::Vertical);
     _v_right_splitter->addWidget(_entrance);
-    _v_right_splitter->addWidget(_editor_screen);			// Text entries // Текст записи
+//    _v_right_splitter->addWidget(_editor_screen);			// Text entries // Текст записи
+    _v_right_splitter->addWidget(_editenty);
     _v_right_splitter->setCollapsible(0, true);				// if true, make editor can overload it    // The list of final entries can not link up    // Список конечных записей не может смыкаться
     _v_right_splitter->setCollapsible(1, false);				// The contents of the recording can not link up    // Содержимое записи не может смыкаться
     _v_right_splitter->setObjectName("v_right_splitter");
@@ -1021,7 +1026,7 @@ void wn_t::commit_data(QSessionManager &manager){
 
 // Восстанавливается геометрия окна и позиции основных разделителей
 void wn_t::restore_geometry(void){
-    if(globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																																			// Для Андроида окно просто разворачивается на весь экран
+    if(globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																																																																																																																																																																																																																																																																																																																																												// Для Андроида окно просто разворачивается на весь экран
     else{
 	QRect rect = appconfig.mainwin_geometry();
 	resize(rect.size());
@@ -1131,7 +1136,7 @@ void wn_t::save_geometry(void){
     appconfig.mainwin_geometry(geom.x(), geom.y()
 			      ,	geom.width(), geom.height());
 
-	// mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
+	// hapnoteconfig.set_mainwingeometry(geometry().x(), geometry().y(),
 	// geometry().width(), geometry().height());
 
     appconfig.v_right_splitter_sizelist(_v_right_splitter->sizes());
@@ -1165,7 +1170,7 @@ void wn_t::save_tree_position(void){
 	//// Получение QModelIndex выделенного в дереве элемента
 	// const QModelIndex index = _tree_screen->tree_view()->current_index();
     auto current_item = _tree_screen->view()->current_item();
-    if(current_item) appconfig.tree_position(_current_source_model()->root_item()->id(), current_item->path_list());																																																																																																																																																																																																				// _tree_screen->know_model_board()->root_item()->id()
+    if(current_item) appconfig.tree_position(_current_source_model()->root_item()->id(), current_item->path_list());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									// _tree_screen->know_model_board()->root_item()->id()
     else if(item){			// if(index.isValid()) {
 	////    if(index.isValid()) {   // this line is to be remove
 	//// Получаем указатель вида TreeItem
@@ -1284,27 +1289,28 @@ bool wn_t::is_tree_position_crypt(){
 
 
 void wn_t::save_editor_cursor_position(void){
-    int n = _editor_screen->cursor_position();
-
+//    int n = _editor_screen->cursor_position();
+    int n = _editenty->cursor_position();
     appconfig.editor_cursor_position(n);
 }
 
 void wn_t::restore_editor_cursor_position(void){
     int n = appconfig.editor_cursor_position();
 
-    _editor_screen->cursor_position(n);
+//    _editor_screen->cursor_position(n);
+    _editenty->cursor_position(n);
 }
 
 void wn_t::save_editor_scrollbar_position(void){
-    int n = _editor_screen->scrollbar_position();
-
+//    int n = _editor_screen->scrollbar_position();
+    int n = _editenty->scrollbar_position();
     appconfig.editor_scroll_bar_position(n);
 }
 
 void wn_t::restore_editor_scrollbar_position(void){
     int n = appconfig.editor_scroll_bar_position();
-
-    _editor_screen->scrollbar_position(n);
+//    _editor_screen->scrollbar_position(n);
+    _editenty->scrollbar_position(n);
 }
 
 void wn_t::restore_find_in_base_visible(void){
@@ -1447,8 +1453,8 @@ void wn_t::init_help_menu(void){
 
     QAction *a;
 
-    a = new QAction(tr("About MyTetra"), this);
-    connect(a, &QAction::triggered, this, &wn_t::on_click_help_about_mytetra);
+    a = new QAction(tr("About Hapnote"), this);
+    connect(a, &QAction::triggered, this, &wn_t::on_click_help_about_hapnote);
     _helpmenu->addAction(a);
 
     a = new QAction(tr("About Qt"), this);
@@ -1476,14 +1482,19 @@ void wn_t::file_print(void){
 
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
     dlg->setWindowTitle(tr("Print Document"));
-    if(dlg->exec() == QDialog::Accepted) _editor_screen->textarea_document()->print(&printer);
+    if(dlg->exec() == QDialog::Accepted){
+//	    _editor_screen->textarea_document()->print(&printer);
+	_editenty->textarea_document()->print(&printer);
+    }
     delete dlg;
 #endif
 }
 
 // Предпросмотр печати текущей статьи
 void wn_t::file_print_preview(void){
-    PrintPreview *preview = new PrintPreview(_editor_screen->textarea_document(), this);
+    PrintPreview *preview = new PrintPreview(	// _editor_screen->textarea_document()
+	_editenty->textarea_document()
+					    , this);
 
     preview->setModal(true);
     preview->setAttribute(Qt::WA_DeleteOnClose);
@@ -1500,7 +1511,8 @@ void wn_t::file_print_pdf(void){
 	QPrinter printer(QPrinter::HighResolution);
 	printer.setOutputFormat(QPrinter::PdfFormat);
 	printer.setOutputFileName(fileName);
-	_editor_screen->textarea_document()->print(&printer);
+//	_editor_screen->textarea_document()->print(&printer);
+	_editenty->textarea_document()->print(&printer);
     }
 #endif
 }
@@ -1534,12 +1546,12 @@ void wn_t::tools_find(void){
 }
 
 void wn_t::editor_switch(void){
-    MetaEditor *editorScreen = globalparameters.meta_editor();			// find_object<MetaEditor>(meta_editor_singleton_name);
-    if(! (editorScreen->isVisible())){
-	editorScreen->show();
+    auto *editentry_ = globalparameters.meta_editor();			// find_object<MetaEditor>(meta_editor_singleton_name);
+    if(! (editentry_->isVisible())){
+	editentry_->show();
 	appconfig.editor_show(true);
     }else{
-	editorScreen->hide();
+	editentry_->hide();
 	appconfig.editor_show(false);
     }
 }
@@ -1611,7 +1623,7 @@ void wn_t::on_expand_edit_area(bool flag){
     }
 }
 
-void wn_t::on_click_help_about_mytetra(void){
+void wn_t::on_click_help_about_hapnote(void){
     QString version = QString::number(APPLICATION_RELEASE_VERSION) + "." + QString::number(APPLICATION_RELEASE_SUBVERSION) + "." + QString::number(APPLICATION_RELEASE_MICROVERSION);
 
     QString	infoProgramName;
@@ -1627,14 +1639,14 @@ void wn_t::on_click_help_about_mytetra(void){
     QString	infoPhysicalDpiX;
     QString	infoPhysicalDpiY;
 
-    infoProgramName	= "<b>MyTetra</b> - smart manager<br/>for information collecting<br/><br/>";
+    infoProgramName	= "<b>Hapnote</b> - smart manager<br/>for information collecting<br/><br/>";
     infoVersion		= "v." + version + "<br/><br/>";
-    infoAuthor		= "Author: Sergey M. Stepanov<br/>";
-    infoEmail		= "Author Email:<i>xintrea@gmail.com</i><br/>Author Email:<i>hughvonyoung@gmail.com</i><br/>";
+    infoAuthor		= "Author: Hugh Von Young<br/>";
+    infoEmail		= "Author Email:<i>hughvonyoung@gmail.com</i><br/>";
     infoLicense		= "GNU General Public License v.3.0<br/><br/>";
     infoTargetOs	= "Target OS: " + globalparameters.target_os() + "<br/>";
-    infoProgramFile	= "Program file: " + globalparameters.main_program_file() + "<br/>";
-    infoWorkDirectory	= "Work directory: " + globalparameters.work_directory() + "<br/>";
+    infoProgramFile	= "Program file: " + globalparameters.main_program_full_file() + "<br/>";
+    infoWorkDirectory	= "Work directory: " + globalparameters.root_path() + "<br/>";
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
     infoDevicePixelRatio	= "Device pixel ratio: " + (QString::number(sapp_t::instance()->devicePixelRatio(), 'f', 8)) + "<br/>";
@@ -1659,7 +1671,7 @@ void wn_t::on_click_help_about_mytetra(void){
 
     auto msgBox = std::make_shared<QMessageBox>(this);
     msgBox->about(this
-		 , "MyTetra v." + version
+		 , "hapnote v." + version
 		 , info);
 }
 
@@ -1684,22 +1696,22 @@ void wn_t::synchronization(void){
 	// Если команда синхронизации пуста
     if(command.trimmed().length() == 0){
 	QMessageBox::warning(this
-			    , tr("MyTetra: can't synchronization")
+			    , tr("hapnote: can't synchronization")
 			    , tr("Do not set synchronization command.<br>Check the setting in \"Syncro\" section in \"Tools\" menu")
 			    , QMessageBox::Close);
 
 	return;
     }
 	// Макрос %a заменяется на путь к директории базы данных
-	// QString databasePath=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir();
-    QDir	databaseDir(appconfig.tetra_dir());
+	// QString databasePath=globalParameters.getWorkDirectory()+"/"+hapnoteConfig.datadir();
+    QDir	databaseDir(globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName());
     QString	databasePath = databaseDir.canonicalPath();
 
     command.replace("%a", databasePath);
 
 	// Запуск команды синхронизации
     ExecuteCommand cons;
-    cons.setWindowTitle(tr("MyTetra synchronization"));
+    cons.setWindowTitle(tr("hapnote synchronization"));
     cons.setMessageText(tr("Synchronization in progress, please wait..."));
 
     cons.setCommand(command);
@@ -1799,20 +1811,30 @@ bool wn_t::eventFilter(QObject *o, QEvent *e){
 }
 
 void wn_t::go_walk_history_previous(void){
-    _editor_screen->save_textarea();
-
-    id_value id = id_value(_editor_screen->misc_field("id"));
-    walkhistory.add<WALK_HISTORY_GO_PREVIOUS>(id, _editor_screen->cursor_position(), _editor_screen->scrollbar_position());
+//    _editor_screen->save_textarea();
+    _editenty->save_textarea();
+    id_value id = id_value(	// _editor_screen->misc_field("id")
+	_editenty->misc_field("id")
+	);
+    walkhistory.add<WALK_HISTORY_GO_PREVIOUS>(id
+					     , _editenty->cursor_position()	// _editor_screen->cursor_position()
+					     , _editenty->scrollbar_position()	// _editor_screen->scrollbar_position()
+	);
     walkhistory.set_drop(true);
 
     go_walk_history();
 }
 
 void wn_t::go_walk_history_next(void){
-    _editor_screen->save_textarea();
-
-    id_value id = id_value(_editor_screen->misc_field("id"));
-    walkhistory.add<WALK_HISTORY_GO_NEXT>(id, _editor_screen->cursor_position(), _editor_screen->scrollbar_position());
+//    _editor_screen->save_textarea();
+    _editenty->save_textarea();
+    id_value id = id_value(	// _editor_screen->misc_field("id")
+	_editenty->misc_field("id")
+	);
+    walkhistory.add<WALK_HISTORY_GO_NEXT>(id
+					 , _editenty->cursor_position()	// _editor_screen->cursor_position()
+					 , _editenty->scrollbar_position()	// _editor_screen->scrollbar_position()
+	);
     walkhistory.set_drop(true);
 
     go_walk_history();
@@ -1857,8 +1879,10 @@ void wn_t::go_walk_history(void){
 	    set_tree_position(global_root_id, absolute_path);
 		// select_id(id);
 	    if(appconfig.remember_cursor_at_history_navigation()){
-		_editor_screen->cursor_position(walkhistory.cursor_position(record_id));
-		_editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
+//		_editor_screen->cursor_position(walkhistory.cursor_position(record_id));
+		_editenty->cursor_position(walkhistory.cursor_position(record_id));
+//		_editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
+		_editenty->scrollbar_position(walkhistory.scrollbar_position(record_id));
 	    }
 //	    }
 	    auto url_target = item->field<url_type>();
@@ -1881,13 +1905,17 @@ void wn_t::go_walk_history(void){
 // переход к другой записи. Метод вызывается до перехода, чтобы сохранить
 // текст редактируемой записи
 void wn_t::save_text_area(void){
-    id_value id = id_value(_editor_screen->misc_field("id"));
+    id_value id = id_value(	// _editor_screen->misc_field("id")
+	_editenty->misc_field("id")
+	);
 
     qDebug() << "MainWindow::saveTextarea() : id :" << id;
 
-    _editor_screen->save_textarea();
-
-    walkhistory.add<WALK_HISTORY_GO_NONE>(id, _editor_screen->cursor_position(), _editor_screen->scrollbar_position());
+//    _editor_screen->save_textarea();
+    _editenty->save_textarea();
+    walkhistory.add<WALK_HISTORY_GO_NONE>(id
+					 , _editenty->cursor_position()	// _editor_screen->cursor_position()
+					 , _editenty->scrollbar_position());	// _editor_screen->scrollbar_position());
 }
 
 // Слот, обрабатывающий смену фокуса на виджетах

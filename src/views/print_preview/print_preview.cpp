@@ -42,7 +42,7 @@ W_OBJECT_IMPL(PrintPreview)
 
 PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
     : QDialog(parent), printer(QPrinter::HighResolution){
-    setWindowTitle(tr("MyTetra - Print Preview"));
+    setWindowTitle(tr("hapnote - Print Preview"));
 
     printer.setFullPage(true);
     doc = document->clone();

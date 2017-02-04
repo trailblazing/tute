@@ -91,7 +91,7 @@ void EnterPassword::setupUI(void){
     cancelButton = new QPushButton(tr("Cancel"), this);
     cancelButton->setIcon(this->style()->standardIcon(QStyle::SP_DialogCancelButton));
 
-    this->setWindowTitle(tr("MyTetra: Password"));
+    this->setWindowTitle(tr("Hapnote: Password"));
 
     this->setMaximumSize(350, 450);
 }

@@ -89,8 +89,8 @@ template<typename field_type>struct switch_type {
 	    >::type >::type >::type type;
 };
 
-// Неизменяемые параметры, то есть параметры, которые заданы жестко в текущей версии MyTetra
-// Immutable parameters, ie parameters that are hard-coded in the current version MyTetra
+// Неизменяемые параметры, то есть параметры, которые заданы жестко в текущей версии Hapnote
+// Immutable parameters, ie parameters that are hard-coded in the current version Hapnote
 
 class FixedParameters : public QObject {
 #if QT_VERSION == 0x050600

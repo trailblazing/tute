@@ -40,7 +40,7 @@ ClipboardRecords::~ClipboardRecords(void)
 void ClipboardRecords::init(void){
     if(_records._child_items.size() > 0)_records._child_items.clear();
     _clipboard_records_format.clear();
-    _clipboard_records_format << "mytetra/records";
+    _clipboard_records_format << "hapnote/records";
 }
 
 // Очистка объекта

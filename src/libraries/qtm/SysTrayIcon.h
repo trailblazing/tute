@@ -6,7 +6,7 @@
     This file is part of QTM.
 
     QTM is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License (version 2), as 
+    it under the terms of the GNU General Public License (version 2), as
     published by the Free Software Foundation.
 
     This program is distributed in the hope that it will be useful,
@@ -26,7 +26,7 @@
 #include <QtGlobal>
 
 // #include "useSTI.h"
-//#ifdef USE_SYSTRAYICON
+// #ifdef USE_SYSTRAYICON
 
 #include <QSystemTrayIcon>
 #include <QByteArray>
@@ -35,7 +35,7 @@
 #include <QList>
 #include <QStringList>
 #include <QDomElement>
-#include "Application.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 #ifdef UNITY_LAUNCHER
 #include "ui_ListDialogBase.h"
 #endif
@@ -48,98 +48,97 @@ class QListWidgetItem;
 
 class QNetworkAccessManager;
 class QNetworkReply;
+class sapp_t;
 
 #ifdef Q_OS_MAC
-#if QT_VERSION >= 0x050000  // This function is in QMenu in Qt 5.2
-void qt_mac_set_dock_menu( QMenu * );
+#if QT_VERSION >= 0x050000	// This function is in QMenu in Qt 5.2
+void qt_mac_set_dock_menu(QMenu *);
 #endif
 #endif
 
-class SysTrayIcon : public STI_SUPERCLASS
-{
-Q_OBJECT
+class SysTrayIcon : public STI_SUPERCLASS {
+    Q_OBJECT
 
-public:
-  SysTrayIcon( bool noWindow = false, QObject *parent = 0 );
-  ~SysTrayIcon();
-  void setDoubleClickFunction( int );
-  bool dontStart() { return _dontStart; }
-  QStringList templates();
-  QStringList templateTitles();
-  void quickpostFromDBus( QString &, QString & );
-				    
-public slots:
-  void configureQuickpostTemplates( QWidget *parent = 0 );
-  void setCopyTitle( bool );
-  void newDoc();
-  void openRecentFile();
-  void choose( QString fname = QString() );
-  void chooseRecentFile();
-  void quickpost( QClipboard::Mode mode = QClipboard::Clipboard );
-  void chooseQuickpostTemplate();
-  bool handleArguments();
-  void doQuit();
-  void saveAll();
-  void setRecentFiles( const QList<Application::recentFile> & );
+    public:
+	SysTrayIcon(bool noWindow = false, QObject *parent = 0);
+	~SysTrayIcon();
+	void setDoubleClickFunction(int);
+	bool dontStart(){return _dontStart;}
+	QStringList templates();
+	QStringList templateTitles();
+	void quickpostFromDBus(QString &, QString &);
 
-private slots:
-  void iconActivated( QSystemTrayIcon::ActivationReason );
-  void quickpostFromTemplate( int, QString, QString t = QString() );
-  void setNewWindowAtStartup( bool );
-  void handleDone( QNetworkReply * );
-  void abortQP();
-  void openRecentFileFromDialog( QListWidgetItem * );
-  void actOnChooseQuickpostTemplate( QListWidgetItem * );
+    public slots:
+	void configureQuickpostTemplates(QWidget *parent = 0);
+	void setCopyTitle(bool);
+	void newDoc();
+	void openRecentFile();
+	void choose(QString fname = QString());
+	void chooseRecentFile();
+	void quickpost(QClipboard::Mode mode = QClipboard::Clipboard);
+	void chooseQuickpostTemplate();
+	bool handleArguments();
+	void doQuit();
+	void saveAll();
+	void setRecentFiles(const QList<sapp_t::recentFile> &);
 
-signals:
-  void quickpostTemplateTitlesUpdated( QStringList );
-  void quickpostTemplatesUpdated( QStringList );
+    private slots:
+	void iconActivated(QSystemTrayIcon::ActivationReason);
+	void quickpostFromTemplate(int, QString, QString t = QString());
+	void setNewWindowAtStartup(bool);
+	void handleDone(QNetworkReply *);
+	void abortQP();
+	void openRecentFileFromDialog(QListWidgetItem *);
+	void actOnChooseQuickpostTemplate(QListWidgetItem *);
 
-private:
-  Application *qtm;
-  //enum _cbtextIsURL { No, Yes, Untested };
-  //enum _cbtextIsURL cbtextIsURL;
-  bool _copyTitle;
-  int activeTemplate;
-  QAction *newWindowAtStartup;
-  QAction *abortAction;
-  QAction *configureTemplates;
+    signals:
+	void quickpostTemplateTitlesUpdated(QStringList);
+	void quickpostTemplatesUpdated(QStringList);
+
+    private:
+	sapp_t *qtm;
+	// enum _cbtextIsURL { No, Yes, Untested };
+	// enum _cbtextIsURL cbtextIsURL;
+	bool _copyTitle;
+	int activeTemplate;
+	QAction *newWindowAtStartup;
+	QAction *abortAction;
+	QAction *configureTemplates;
 #ifndef SUPERMENU
-  QAction *quitAction;
+	QAction *quitAction;
 #endif
-  QList<QuickpostTemplate *> quickpostTemplateActions;
-  QMenu *menu;
-  QMenu *templateMenu;
-  bool _newWindowAtStartup;
-  QNetworkAccessManager *netmgr;
-  QNetworkReply *currentReply;
-  QByteArray responseData;
-  QString cbtext;
-  // bool cbtextIsURL;
-  int doubleClickFunction;
-  bool httpBusy;
-  bool templateQPActive;
-  bool _dontStart;
-  QStringList templateTitleList, templateList;
-  QList<int> defaultPublishStatusList;
-  QList<bool> copyTitleStatusList;
-  QList<QStringList> assocHostLists;
-  QList<Application::recentFile> recentFiles;
-  QAction *recentFileActions[10];
-  QAction *openRecent;
-  QAction *noRecentFilesAction;
-  QMenu *recentFilesMenu;
-  QByteArray userAgentString;
+	QList<QuickpostTemplate *> quickpostTemplateActions;
+	QMenu *menu;
+	QMenu *templateMenu;
+	bool _newWindowAtStartup;
+	QNetworkAccessManager *netmgr;
+	QNetworkReply *currentReply;
+	QByteArray responseData;
+	QString cbtext;
+	// bool cbtextIsURL;
+	int doubleClickFunction;
+	bool httpBusy;
+	bool templateQPActive;
+	bool _dontStart;
+	QStringList templateTitleList, templateList;
+	QList<int> defaultPublishStatusList;
+	QList<bool> copyTitleStatusList;
+	QList<QStringList> assocHostLists;
+	QList<sapp_t::recentFile> recentFiles;
+	QAction *recentFileActions[10];
+	QAction *openRecent;
+	QAction *noRecentFilesAction;
+	QMenu *recentFilesMenu;
+	QByteArray userAgentString;
 #ifndef DONT_USE_DBUS
-  //QDBusConnection *dbus;
+	// QDBusConnection *dbus;
 #endif
 
-  void setupQuickpostTemplates();
-  void doQP( QString );
-  QDomElement templateElement( QDomDocument &, QString &, QString &, 
-			       int &, bool &, QStringList & );
-  void updateRecentFileMenu();
+	void setupQuickpostTemplates();
+	void doQP(QString);
+	QDomElement templateElement(QDomDocument &, QString &, QString &, int &, bool &, QStringList &);
+	void updateRecentFileMenu();
 };
 
-//#endif
+// #endif
 #endif

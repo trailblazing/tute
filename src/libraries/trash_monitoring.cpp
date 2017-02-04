@@ -12,7 +12,7 @@
 #include "libraries/disk_helper.h"
 
 extern AppConfig	appconfig;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 TrashMonitoring::TrashMonitoring(void)
 {}
@@ -23,7 +23,7 @@ TrashMonitoring::~TrashMonitoring(void)
 std::shared_ptr<QFileInfo> TrashMonitoring::recover_from_trash(std::shared_ptr<QFileInfo> target_file, bool force_remove){
     std::shared_ptr<QFileInfo>	result(nullptr);//				= false;
     auto			need			= false;
-    auto			_file_name		= target_file->fileName();	// "mytetra.xml";
+    auto			_file_name		= target_file->fileName();	// "hapnote.xml";
     auto			file_name_fullpath	= target_file->filePath();	// appconfig.tetra_dir() + "/" + _file_name;
 //    if(QFile::exists(appconfig.tetra_dir() + "/" + _file_name))remove_oldest_file(_file_name);
     if(QFile::exists(file_name_fullpath)){
@@ -49,11 +49,12 @@ std::shared_ptr<QFileInfo> TrashMonitoring::recover_from_trash(std::shared_ptr<Q
 //    QFileInfo	main_program_file_info(_main_program_file);
 //    QString	full_current_path = main_program_file_info.absolutePath();
 	if(_files_table.size() == 0){
-	    if(! QFile::copy(QString(":/resource/standartdata/") + _file_name, appconfig.trash_dir() + "/" + _file_name)) throw std::runtime_error("Can not copy mytetra.xml");
-	    else QFile::setPermissions(appconfig.trash_dir() + "/" + _file_name, QFile::ReadUser | QFile::WriteUser);
-//	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.mytetra_xml());
+	    if(! QDir(globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName()).exists()) QDir(globalparameters.root_path()).mkdir(QDir(appconfig.trash_dir()).dirName());
+	    if(! QFile::copy(QString(":/resource/standarddata/") + _file_name, globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name)) throw std::runtime_error("Can not copy hapnote.xml");
+	    else QFile::setPermissions(globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name, QFile::ReadUser | QFile::WriteUser);
+//	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.hapnote_xml());
 //	assert(succedded);
-	    add_file(_file_name);	// globalparameters.mytetra_xml().keys()[0]
+	    add_file(_file_name);	// globalparameters.hapnote_xml().keys()[0]
 	    result = std::make_shared<QFileInfo>(file_name_fullpath);	// target_file;
 	}
 //    else{
@@ -71,7 +72,7 @@ std::shared_ptr<QFileInfo> TrashMonitoring::recover_from_trash(std::shared_ptr<Q
 	    }
 	    return r;
 	} ();			// _files_table.first();
-	if(file_data) result = DiskHelper::copy_file_to_data_folder(file_name_fullpath, appconfig.trash_dir() + '/' + file_data->_name);
+	if(file_data) result = DiskHelper::copy_file_to_data_folder(file_name_fullpath, globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + file_data->_name);
 //        result = target_file;
 //    }
     }
@@ -85,7 +86,7 @@ void TrashMonitoring::init(QString _trash_path){
 	// Инит объекта директории с указанным путем
     _dir.setPath(_trash_path);
     if(! _dir.exists()){
-	DiskHelper::create_directory(globalparameters.work_directory()	// full_current_path
+	DiskHelper::create_directory(globalparameters.root_path()	// full_current_path
 				    , "trash");
 //	critical_error("Can not open trash directory " + _trash_path);
 //	exit(1);
@@ -146,7 +147,7 @@ void TrashMonitoring::update(void){
 	// условие что количество файлов слишком велико или
 	// суммарный размер файлов превышает предельно допустимый размер корзины
     while(_files_table.size() > appconfig.trash_max_file_count() || _dir_size > appconfig.trash_size() * 1000000){
-	if(_files_table.size() <= 10)																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												// Оставляется последний файл, какого бы размера он не был
+	if(_files_table.size() <= 10)																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										// Оставляется последний файл, какого бы размера он не был
 		break;
 	else remove_oldest_file();
     }

@@ -20,7 +20,7 @@
 #include "libraries/global_parameters.h"
 
 extern TrashMonitoring	trashmonitoring;
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(XmlTree)
@@ -34,15 +34,15 @@ XmlTree::~XmlTree(void){
     delete _dom_model;
 }
 
-bool XmlTree::load(QString _file_name){
+bool XmlTree::load(QString _file_path){
 
 	// Загрузка файла дерева разделов
-    QFile xmlFile(_file_name);
+    QFile xmlFile(_file_path);
 	// Если файл не может быть открыт
     if(! xmlFile.open(QIODevice::ReadOnly | QIODevice::Text)){
 	QMessageBox::information(0, tr("Error")
 				, tr("Cannot read file %1:\n%2.")
-	    .arg(_file_name)
+	    .arg(_file_path)
 	    .arg(xmlFile.errorString()));
 
 	return false;

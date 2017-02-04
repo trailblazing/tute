@@ -79,10 +79,11 @@ class FindScreen;
 class WindowSwitcher;
 class sapp_t;
 class rctrl_t;
-class GlobalParameters;
+class gl_para;
 class AppConfig;
 class DataBaseConfig;
 class tsv_t;
+class Editentry;
 
 
 class wn_t
@@ -94,32 +95,32 @@ class wn_t
 #endif
 
     public:
-	wn_t(GlobalParameters &_globalparameters
+	wn_t(gl_para &_globalparameters
 	    , AppConfig &_appconfig
 	    , DataBaseConfig &_databaseconfig
 	    , browser::Profile *_profile, QString style_source);
 
 	~wn_t();
 
-	void	restore_geometry(void);
-	void	restore_tree_position(void);
+	void restore_geometry(void);
+	void restore_tree_position(void);
 //    void restore_recordtable_position(void);// too many _record_screen objects, deprecated
-	void	restore_editor_cursor_position(void);
-	void	restore_editor_scrollbar_position(void);
-	void	restore_find_in_base_visible(void);
+	void restore_editor_cursor_position(void);
+	void restore_editor_scrollbar_position(void);
+	void restore_find_in_base_visible(void);
 
-	void	set_tree_position(QString view_root_id, QStringList current_item_absolute_path);
-	bool	is_tree_position_crypt();
+	void set_tree_position(QString view_root_id, QStringList current_item_absolute_path);
+	bool is_tree_position_crypt();
 
 //    void select_id(QString id);// too many _record_screen objects, deprecated
 
 	void synchronization(void);
 
-	void	go_walk_history_previous(void);
-	void	go_walk_history_next(void);
+	void go_walk_history_previous(void);
+	void go_walk_history_next(void);
 
-	void	save_text_area(void);
-	void	save_all_state(void);
+	void save_text_area(void);
+	void save_all_state(void);
 
 	HidableTabWidget	*vtab_record() const;
 	ts_t			*tree_screen() const;
@@ -137,28 +138,28 @@ class wn_t
 	QSplitter		*h_tree_splitter() const;
 //	std::vector<tsv_t *>	tree_viewers() const;
     public slots:
-	void	application_exit(void);
-	void	application_fast_exit(void);
-	void	commit_data(QSessionManager &manager);
-	void	editor_switch(void);
+	void application_exit(void);
+	void application_fast_exit(void);
+	void commit_data(QSessionManager &manager);
+	void editor_switch(void);
 
     private slots:
-	void	file_new(void);
-	void	file_open(void);
-	bool	file_save(void);
-	bool	file_save_as(void);
-	void	file_print(void);
-	void	file_print_preview(void);
-	void	file_print_pdf(void);
-	void	tools_find(void);
-	void	tools_preferences(void);
+	void file_new(void);
+	void file_open(void);
+	bool file_save(void);
+	bool file_save_as(void);
+	void file_print(void);
+	void file_print_preview(void);
+	void file_print_pdf(void);
+	void tools_find(void);
+	void tools_preferences(void);
 //    void editor_switch(void);
 
 
 	void on_expand_edit_area(bool flag);
 
-	void	on_click_help_about_mytetra(void);
-	void	on_click_help_about_qt(void);
+	void on_click_help_about_hapnote(void);
+	void on_click_help_about_qt(void);
 
 	void icon_activated(QSystemTrayIcon::ActivationReason reason);
 
@@ -166,32 +167,32 @@ class wn_t
 
     private:
 
-	void	setup_ui(void);
-	void	setup_signals(void);
-	void	assembly(void);
+	void setup_ui(void);
+	void setup_signals(void);
+	void assembly(void);
 
-	void	init_file_menu(void);
-	void	append_quit_menu();
-	void	init_tools_menu(void);
-	void	init_preferences_menu(QMenu *menu);
-	void	init_help_menu(void);
+	void init_file_menu(void);
+	void append_quit_menu();
+	void init_tools_menu(void);
+	void init_preferences_menu(QMenu *menu);
+	void init_help_menu(void);
 
 	void init_itemsflat_actions(void);
 
-	void	setup_icon_actions(void);
-	void	create_tray_icon(void);
-	void	set_icon(void);
+	void setup_icon_actions(void);
+	void create_tray_icon(void);
+	void set_icon(void);
 
-	void	save_geometry(void);
-	void	save_tree_position(void);
+	void save_geometry(void);
+	void save_tree_position(void);
 //    void save_recordtable_position(void);// too many _record_screen objects, deprecated
-	void	save_editor_cursor_position(void);
-	void	save_editor_scrollbar_position(void);
+	void save_editor_cursor_position(void);
+	void save_editor_scrollbar_position(void);
 
 
 	QString _style;
 
-	GlobalParameters	&_globalparameters;
+	gl_para	&_globalparameters;
 	AppConfig		&_appconfig;
 	DataBaseConfig		&_databaseconfig;
 
@@ -225,7 +226,8 @@ class wn_t
 
 	ts_t				*_tree_screen;
 	FindScreen			*_find_screen;
-	MetaEditor			*_editor_screen;
+
+	Editentry *_editenty;
 	browser::Entrance		*_entrance;
 //	browser::DownloadManager	*_download;
 	HidableTabWidget	*_vtab_record;

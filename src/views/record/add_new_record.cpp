@@ -25,7 +25,7 @@
 #include "libraries/wyedit/editor.h"
 #include "libraries/disk_helper.h"
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 extern AppConfig	appconfig;
 
 // Окно добавления новой записи
@@ -60,7 +60,7 @@ void AddNewRecord::setupUI(void){
     recordTextEditor = new Editor();
     recordTextEditor->disable_tool_list(appconfig.hide_editor_tools() + (QStringList() << "save" << "show_text" << "attach"));
     recordTextEditor->init_enable_assembly(true);
-    recordTextEditor->init_config_file_name(globalparameters.work_directory() + "/editorconf.ini");
+    recordTextEditor->init_config_file_name(globalparameters.root_path() + "/" + globalparameters.target_os() + "/editorconf.ini");
     recordTextEditor->init_enable_random_seed(false);
     recordTextEditor->init(Editor::WYEDIT_DESKTOP_MODE);// Так как это окно, в мобильном режие его инициализировать ненужно, так как есть кнопка Отмена
 
@@ -172,7 +172,7 @@ QString AddNewRecord::getField(QString name){
 	name == "home" ||
 	name == "url" ||
 	name == "tags") return infoField->getField(name);
-    if(name == "text")return recordTextEditor->textarea();
+    if(name == "text") return recordTextEditor->textarea();
 	// Если запрашиваемого поля нет, возвращается пустая строка
     return QString();
 }

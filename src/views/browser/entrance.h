@@ -40,16 +40,18 @@ class wn_t;
 class AppConfig;
 class Record;
 class TreeItem;
-class GlobalParameters;
+class gl_para;
 
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 
 namespace browser {
     class WebView;
     class Browser;
     class ToolbarSearch;
 }
+
+class Editentry;
 
 // extern boost::intrusive_ptr<Record> request_record(const QUrl &_url
 //                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
@@ -92,7 +94,7 @@ namespace browser {
 	    Entrance(QString object_name
 		    , ts_t *_tree_screen
 		    , FindScreen *_find_screen
-		    , MetaEditor *_editor_screen	// , RecordController *_record_controller
+		    , Editentry *_editentry	// , RecordController *_record_controller
 		    , wn_t *_main_window
 		    , AppConfig &_appconfig, const QString &style_source
 		    , browser::Profile *_profile
@@ -153,8 +155,8 @@ namespace browser {
 		// BrowserView *create_view(Record *record, BrowserWindow *window);
 
 		//        Q_INVOKABLE void runScriptOnOpenViews(const QString &);
-	    void	style_source(const QString &style_source);
-	    QString	style_source();
+	    void style_source(const QString &style_source);
+	    QString style_source();
 		//        ItemsFlat const *shadow_branch()const {return _shadow_branch;}
 
 //        WebView *find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;
@@ -167,10 +169,10 @@ namespace browser {
 	    void init_setting(void);
 
 
-	    void	set_scrollbars(bool hide);
-	    void	set_cache(bool cache, int cache_size);
-	    void	finished(QNetworkReply *reply);
-	    void	ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors);
+	    void set_scrollbars(bool hide);
+	    void set_cache(bool cache, int cache_size);
+	    void finished(QNetworkReply *reply);
+	    void ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors);
 		//        QAction *getactionFreeze() { return _actionFreeze; }
 		//        void openLinkInNewTab();
 		//        void onLoadFinished(bool);
@@ -187,7 +189,7 @@ namespace browser {
 		//        Browser *activate_browser(boost::intrusive_ptr<TreeItem> item);
 
 	    Entrance	*prepend(Browser *);
-	    void	on_activate_window();
+	    void on_activate_window();
 		//        void on_splitter_moved(int pos, int index);
 
 #if defined(Q_OS_OSX)
@@ -213,12 +215,12 @@ namespace browser {
 		//        ItemsFlat                       *_shadow_branch;
 	    ts_t				*_tree_screen;
 	    FindScreen				*_find_screen;
-	    MetaEditor				*_editor_screen;
+	    Editentry				*_editentry;
 //        HidableTabWidget                *_vtab_tree;
 	    wn_t				*_main_window;
 	    AppConfig				&_appconfig;
 		// RecordController                *_record_controller;
-	    QString				_style_source;
+	    QString _style_source;
 	    browser::Profile			*_profile;
 		// void urlChanged(const QUrl &_url){onUrlChanged(_url);}
 		//        QAction                         *_actionFreeze;
@@ -226,7 +228,7 @@ namespace browser {
 		//        QDockWidget *_dockwidget;
 		//        DockedWindow *_browser;
 	    QWidget				*_hidetitlebar;
-	    QMetaObject::Connection		_home_connection;		// for disconnect
+	    QMetaObject::Connection _home_connection;			// for disconnect
 	    friend class sapp_t;
     };
 }

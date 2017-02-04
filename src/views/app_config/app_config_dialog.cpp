@@ -29,12 +29,12 @@ W_OBJECT_IMPL(AppConfigDialog)
 
 AppConfigDialog::AppConfigDialog(rctrl_t *_record_controller, QString first_page_name) : QWidget(), _record_controller(_record_controller){
     if(appconfig.interface_mode() == "mobile"){	// if(true)
-        qDebug() << "Screen size X Y: " << screen_size_x() << screen_size_y();
-        this->setMinimumSize(screen_size_x(), screen_size_y());
-        this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+	qDebug() << "Screen size X Y: " << screen_size_x() << screen_size_y();
+	this->setMinimumSize(screen_size_x(), screen_size_y());
+	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     }
     config_dialog = new ConfigDialog(this);
-    config_dialog->set_window_title(tr("MyTetra settings"));
+    config_dialog->set_window_title(tr("Hapnote settings"));
 
     pageMain		= config_dialog->add_widget(new AppConfigPageMain(this), tr("Main"));
     pageCrypt		= config_dialog->add_widget(new AppConfigPageCrypt(this), tr("Crypt"));

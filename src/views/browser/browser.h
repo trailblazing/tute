@@ -81,6 +81,7 @@ class tm_t;
 class ts_t;
 class tsv_t;
 struct RecordIndex;
+class Editentry;
 
 extern const char *profile_storage_name;
 
@@ -132,7 +133,7 @@ namespace browser {
 	public:
 	    Browser(ts_t		*_tree_screen
 		   , FindScreen		*_find_screen
-		   , MetaEditor		*_editor_screen
+		   , Editentry		*_editentry
 		   , rs_t		*_record_screen
 		   , Entrance		*_entrance
 		   , wn_t		*_main_window

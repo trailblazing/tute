@@ -19,7 +19,7 @@
 #include "views/main_window/main_window.h"
 
 
-extern GlobalParameters globalparameters;
+extern gl_para globalparameters;
 extern const char	*record_screen_multi_instance_name;
 const char		*custom_hidabletabwidget_style =
     "QTabWidget::pane {"
@@ -92,7 +92,7 @@ W_OBJECT_IMPL(HidableTabWidget)
 
 HidableTabWidget::HidableTabWidget(ts_t *tree_screen_
 				  , FindScreen *find_screen_
-				  , MetaEditor *_editor_screen
+				  , Editentry *_editentry
 				  , browser::Entrance *entrance_
 				  , wn_t *main_window_
 				  , browser::Profile *profile_
@@ -102,7 +102,7 @@ HidableTabWidget::HidableTabWidget(ts_t *tree_screen_
       , _layout(new QStackedLayout(this))
       , _tree_screen(tree_screen_)
       , _find_screen(find_screen_)
-      , _editor_screen(_editor_screen)
+      , _editentry(_editentry)
       , _entrance(entrance_)
       , _main_window(main_window_)
       , _profile(profile_)
@@ -151,24 +151,26 @@ HidableTabWidget::HidableTabWidget(ts_t *tree_screen_
 	});
 
     connect(this, &::HidableTabWidget::currentChanged, [&](int index){
-	    auto w = widget(index);
-	    if(w->objectName() == record_screen_multi_instance_name){
+	    QWidget *w = nullptr;
+	    w = widget(index);
+	    if(w)
+			if(w->objectName() == record_screen_multi_instance_name){
 //		auto rs = dynamic_cast<rs_t *>(w);
-		auto _browser = dynamic_cast<rs_t *>(w)->browser();
-		if(_browser){
+			    auto _browser = dynamic_cast<rs_t *>(w)->browser();
+			    if(_browser){
 //		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-		    if(_browser->tabmanager()->count() > 0){
-			auto v = _browser->currentTab();
-			if(v){
-			    auto p = v->page();
-			    if(p){
-				auto it = p->host();
-				if(_tree_screen->view()->current_item()->id() != it->id()) _tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
+				if(_browser->tabmanager()->count() > 0){
+				    auto v = _browser->currentTab();
+				    if(v){
+					auto p = v->page();
+					if(p){
+					    auto it = p->host();
+					    if(_tree_screen->view()->current_item()->id() != it->id()) _tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
+					}
+				    }
+				}
 			    }
 			}
-		    }
-		}
-	    }
 	    w = nullptr;
 	});
     setUsesScrollButtons(true);
@@ -247,7 +249,7 @@ std::set<rs_t *> HidableTabWidget::record_screens() const {
 
 void HidableTabWidget::onHideAction(bool checked){
     if(checked){
-	if(this->tabPosition() == North || tabPosition() == South)																			// , West, East
+	if(this->tabPosition() == North || tabPosition() == South)																																																																// , West, East
 		this->setMaximumHeight(this->tabBar()->height());
 	else this->setMaximumWidth(this->tabBar()->width());
 	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -329,14 +331,19 @@ browser::Browser *HidableTabWidget::new_browser(){
 //			  , Qt::MaximizeUsingFullscreenGeometryHint
 //		   );	// , dock_widget
 
-    auto rs = new rs_t(_tree_screen, _find_screen, _editor_screen, _entrance, _main_window, _style_source, _profile);
+    auto rs = new rs_t(_tree_screen, _find_screen, _editentry, _entrance, _main_window, _style_source, _profile);
 
     setUpdatesEnabled(false);
     addTab(rs, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(vtab_record->count())
     bool found = false;
     for(int i = 0; i < count(); i ++){
 	auto r = widget(i);
-	if(r == rs) found = true;
+	if(r == rs){
+	    rs->browser()->activateWindow();
+	    rs->browser()->setVisible(true);
+	    this->setCurrentWidget(r);
+	    found = true;
+	}
     }
     assert(found);
 ////    bool found = false;
@@ -369,11 +376,13 @@ browser::Browser *HidableTabWidget::activated_browser(){
 // );
 // } else { //
 //    if(count() > 0)
+    int count_browser = 0;
     for(int i = 0; i < count(); i ++){		// for(auto i : _record_screens){
-	auto w = widget(i);
-	if(w->objectName() == record_screen_multi_instance_name){
+	auto rs = widget(i);
+	if(rs->objectName() == record_screen_multi_instance_name){
+	    count_browser ++;
 //	    auto	rs		= dynamic_cast<rs_t *>(w);
-	    auto browser_ = dynamic_cast<rs_t *>(w)->browser();
+	    auto browser_ = dynamic_cast<rs_t *>(rs)->browser();
 	    if(browser_){
 		if(browser_->isVisible() || browser_->isActiveWindow()){
 		    _browser = browser_;		// .data();

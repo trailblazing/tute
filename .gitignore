@@ -7,7 +7,7 @@
 /qtc-gdbmacros
 Makefile*
 qdevelop-settings.db
-qrc_mytetra.cpp
+qrc_*
 Makefile.user*
 
 # Qt-es
@@ -26,10 +26,10 @@ ui_*.h
 
 
 /bin/*
-#!/bin/resource
-#!/bin/resource/*
-#!/bin/mytetra.qrc
-
+!/bin/resource
+!/bin/resource/*
+!/bin/hapnote.qrc
+!/src/views/browser/data/data.qrc
 
 # Ignore compiled Object files
 *.slo
@@ -52,7 +52,7 @@ ui_*.h
 
 # C++ objects and libs
 # Ignore bash files
-*.sh
+#*.sh
 
 # Ignore IDE files
 *.Debug
@@ -63,6 +63,7 @@ ui_*.h
 #data
 #trash
 backup
+#!/src/views/browser/data
 
 # QtCreator
 
@@ -74,3 +75,5 @@ backup
 
 # QtCtreator CMake
 CMakeLists.txt.user*
+
+*.swp
