@@ -175,7 +175,7 @@ public:
 	FlatToolButton		*_save						= nullptr;
 
 	FlatToolButton		*_back			= nullptr;
-	FlatToolButton		*_freeze		= nullptr;          // reserved for read only
+//	FlatToolButton		*_freeze		= nullptr;          // reserved for read only
 	FlatToolButton		*_find_in_base	= nullptr;
 
 	FlatToolButton		*_show_text = nullptr;
@@ -373,7 +373,7 @@ private slots:
 	void on_expand_tools_lines_clicked(void);
 	void on_save_clicked(void);
 	void on_back_clicked(void);
-	void on_freeze_clicked(void);
+//	void on_freeze_clicked(void);
 	void on_find_in_base_clicked(void);
 	void on_show_text_clicked(void);
 	void on_to_attach_clicked(void);

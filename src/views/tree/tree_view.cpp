@@ -66,7 +66,7 @@ extern const char	*action_paste_branch;
 extern const char	*action_paste_sub_branch;
 extern const char	*action_encrypt_branch;
 extern const char	*action_decrypt_branch;
-extern const char	*action_freeze_browser_view;
+//extern const char	*action_freeze_browser_view;
 extern const char	*action_edit_field;
 extern const char	*action_editor_switch;
 

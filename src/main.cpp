@@ -854,7 +854,7 @@ int main(int argc, char * *argv){
 	{
 //	c = new EditingWindow;
 //	c->setSTI(0);	// No STI
-//	c->setWindowTitle(QObject::tr("QTM - new entry [*]"));
+//	c->setWindowTitle(QObject::tr((program_title_string + " - new entry [*]").c_str()));
 //	if(c->handleArguments()) c->show();
 //	else c->close();
 	}
@@ -863,7 +863,7 @@ int main(int argc, char * *argv){
 #else
     app.setupRecentFiles();
     c = new EditingWindow;
-    c->setWindowTitle(QObject::tr("QTM - new entry [*]"));
+    c->setWindowTitle(QObject::tr((program_title_string + " - new entry [*]").c_str()));
     if(c->handleArguments()){
 #if Q_OS_MAC
 	setNoStatusBar(c);

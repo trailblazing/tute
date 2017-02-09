@@ -4,10 +4,10 @@
 #include <wobjectimpl.h>
 #endif
 
-#include <QWebEngineView>	// #include <QWebView> //#include <QtWebKitWidgets/QWebView>
+#include <QWebEngineView>   // #include <QWebView> //#include <QtWebKitWidgets/QWebView>
 
 // #include <QWebElement>
-#include <QWebEnginePage>	// #include <QWebPage>
+#include <QWebEnginePage>   // #include <QWebPage>
 #include <QtWebEngineWidgets>
 
 // #include <QWebFrame>
@@ -173,10 +173,10 @@ void Editentry::init_setting(void){
 	// sb.append("browserview.ini");
 
 	QString configFileName = globalparameters.root_path() + "/" +
-		globalparameters.target_os() + "/browserview.ini";
+	    globalparameters.target_os() + "/browserview.ini";
 	// check to see if we have a settings file where we started from
 	// if not fall back to system hard coded path
-	QFileInfo file(configFileName.toLatin1());	// file(sb.toLatin1());
+	QFileInfo file(configFileName.toLatin1());  // file(sb.toLatin1());
 	if(file.exists()){
 		qDebug() << "using local settings file";
 		settingsFile.setFile(file.filePath());
@@ -190,8 +190,8 @@ void Editentry::init_setting(void){
 
 	// if(_url.isEmpty()) {
 	url =
-		(settings.value("browser_view")
-		.toString());	// QUrl url(settings.value("browser_view").toString());
+	    (settings.value("browser_view")
+	    .toString());   // QUrl url(settings.value("browser_view").toString());
 
 	// } else {
 	// url = _url;
@@ -228,7 +228,7 @@ void Editentry::init_setting(void){
 	}
 	this->set_scrollbars(settings.value("hide_scrollbars", false).toBool());
 	this->set_cache(settings.value("enable_cache", false).toBool()
-				   , settings.value("cache_size_megabytes", 5).toInt());
+		       , settings.value("cache_size_megabytes", 5).toInt());
 
 	settings.endGroup();
 
@@ -355,39 +355,39 @@ void Editentry::on_activate_window(){
 
 	_home_connection = QObject::connect(
 		findscreen->historyhome(), &QAction::triggered, this
-									   , [this](bool checked = true) -> void {
-			Q_UNUSED(checked)
-			assert(_main_window->vtab_record()->activated_browser());
-			auto view = _main_window->vtab_record()
-			->activated_browser()
-			->tabmanager()
-			->currentWebView();
-			assert(view);
-			if(view){
-				browser::WebPage *page = view->page();
-				if(page){
-					boost::intrusive_ptr<TreeItem> _item = page->host();
-					assert(_item);
-					QString home = _item->field<home_type>();
-					QUrl homeurl = QUrl(home);
-					if(homeurl.isValid() && homeurl != page->url()){
-						_item->field<url_type>(home);	// "url",
-						// boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
+					       , [this](bool checked = true) -> void {
+		Q_UNUSED(checked)
+		assert(_main_window->vtab_record()->activated_browser());
+		auto view = _main_window->vtab_record()
+		->activated_browser()
+		->tabmanager()
+		->currentWebView();
+		assert(view);
+		if(view){
+		    browser::WebPage *page = view->page();
+		    if(page){
+			boost::intrusive_ptr<TreeItem> _item = page->host();
+			assert(_item);
+			QString home = _item->field<home_type>();
+			QUrl homeurl = QUrl(home);
+			if(homeurl.isValid() && homeurl != page->url()){
+			    _item->field<url_type>(home);       // "url",
+			    // boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
 
-						// try {
-						// record_index = new RecordModel::ModelIndex([&] {return
-						// page->record_controller()->source_model();},
-						// page->record_controller()->source_model()->sibling(_item),
-						// _item);
-						// } catch(std::exception &e) {throw e;}
-						page->bind(_item)->activate(std::bind(
-							&HidableTabWidget::find
-															 , globalparameters.main_window()->vtab_record()
-															 , std::placeholders::_1));	// page->load(record, true);
-					}
+			    // try {
+			    // record_index = new RecordModel::ModelIndex([&] {return
+			    // page->record_controller()->source_model();},
+			    // page->record_controller()->source_model()->sibling(_item),
+			    // _item);
+			    // } catch(std::exception &e) {throw e;}
+			    page->bind(_item)->activate(std::bind(
+						&HidableTabWidget::find
+										 , globalparameters.main_window()->vtab_record()
+										 , std::placeholders::_1));     // page->load(record, true);
 				}
 			}
-		});
+		}
+	});
 }
 
 void Editentry::resizeEvent(QResizeEvent *e){
@@ -618,17 +618,17 @@ void Editentry::resizeEvent(QResizeEvent *e){
 W_OBJECT_IMPL(Editentry)
 #endif
 
-Editentry::Editentry(QString object_name, ts_t *tree_screen, FindScreen *find_screen	// browser::ToolbarSearch *toolbarsearch
-					, browser::Entrance *entrance, wn_t *main_window, AppConfig &appconfig
-					, const QString &style_source
-					, browser::Profile *profile
-					, Qt::WindowFlags flags)
-	: QDockWidget(main_window, flags)	// , _application(application)
-		//      , _browsers(std::set<Browser * >())   // ,
-		// _shadow_branch(_record_controller->source_model()->_browser_pages)
+Editentry::Editentry(QString object_name, ts_t *tree_screen, FindScreen *find_screen    // browser::ToolbarSearch *toolbarsearch
+		    , browser::Entrance *entrance, wn_t *main_window, AppConfig &appconfig
+		    , const QString &style_source
+		    , browser::Profile *profile
+		    , Qt::WindowFlags flags)
+	: QDockWidget(main_window, flags)   // , _application(application)
+	  //      , _browsers(std::set<Browser * >())   // ,
+	  // _shadow_branch(_record_controller->source_model()->_browser_pages)
 	  , _tree_screen(tree_screen), _find_screen(find_screen)
-		//      , _editor_screen(_editor_screen)      // ,
-		//      _record_controller(_record_controller)
+	  //      , _editor_screen(_editor_screen)      // ,
+	  //      _record_controller(_record_controller)
 	  , _entrance(entrance), _main_window(main_window), _appconfig(appconfig)
 	  , _style_source(style_source), _profile(profile), _flags(flags)
 	  , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint))
@@ -682,7 +682,7 @@ Editentry::Editentry(QString object_name, ts_t *tree_screen, FindScreen *find_sc
 	////    //    browser->setLayout(layout);
 	// _mainWindows[0]->setParent(_dockwidget);
 
-	setWindowFlags(		// Qt::Window |
+	setWindowFlags(     // Qt::Window |
 		Qt::FramelessWindowHint
 		// |Qt::Popup
 		| Qt::CustomizeWindowHint
@@ -695,10 +695,10 @@ Editentry::Editentry(QString object_name, ts_t *tree_screen, FindScreen *find_sc
 	adjustSize();
 
 	setFeatures(QDockWidget::NoDockWidgetFeatures |
-		QDockWidget::DockWidgetVerticalTitleBar
-		// | Qt::DockWidgetArea::NoDockWidgetArea
-		// | Qt::MaximizeUsingFullscreenGeometryHint
-		);		// AllDockWidgetFeatures
+	    QDockWidget::DockWidgetVerticalTitleBar
+	    // | Qt::DockWidgetArea::NoDockWidgetArea
+	    // | Qt::MaximizeUsingFullscreenGeometryHint
+		   ); // AllDockWidgetFeatures
 
 	// this->titleBarWidget()->hide();
 
@@ -738,8 +738,8 @@ Editentry::Editentry(QString object_name, ts_t *tree_screen, FindScreen *find_sc
 	delete titleBar;
 
 	//    _blog_editor = new EditingWindow();
-	blog_editor()->setSTI(0);		// No STI
-	blog_editor()->setWindowTitle(QObject::tr("QTM - new entry [*]"));
+	blog_editor()->setSTI(0);       // No STI
+	blog_editor()->setWindowTitle(QObject::tr((program_title_string + " - new entry [*]").c_str()));
 
 	blog_editor()->setParent(this);
 	setWidget(blog_editor());
@@ -753,9 +753,9 @@ Editentry::Editentry(QString object_name, ts_t *tree_screen, FindScreen *find_sc
 	assembly();
 
 	connect(this, &Editentry::editing_activated, blog_editor()->_super_menu
-		   , &SuperMenu::editing_win);
+	       , &SuperMenu::editing_win);
 	connect(this, &Editentry::editing_activated
-		   , [&](EditingWindow *){blog_editor()->adjustSize();});
+	       , [&](EditingWindow *){blog_editor()->adjustSize();});
 
 	init_setting();
 
@@ -1077,9 +1077,9 @@ void Editentry::set_cache(bool cache, int cache_size){
 	if(cache){
 		QNetworkDiskCache	*diskCache	= new QNetworkDiskCache(this);
 		QString				location	=
-			QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+		    QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
 		diskCache->setCacheDirectory(location);
-		diskCache->setMaximumCacheSize(cache_size * 1024 * 1024);	// in MB's
+		diskCache->setMaximumCacheSize(cache_size * 1024 * 1024);   // in MB's
 		// d->nam->setCache(diskCache);
 		// browser->setCache(diskCache);
 		qDebug() << QString("Cache location: %1").arg(location);
@@ -1206,7 +1206,7 @@ void Editentry::set_cache(bool cache, int cache_size){
 void Editentry::finished(QNetworkReply *reply){
 	if(reply->error() != QNetworkReply::NoError) qDebug() << QString("Network Error: %1").arg(reply->errorString());
 	if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() ==
-		true){
+	    true){
 		QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
 		qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
 	}
@@ -1622,11 +1622,12 @@ QString Editentry::style_source(){return _style_source;}
 
 void Editentry::name(const QString &nm){blog_editor()->editor()->name(nm);}
 
-void Editentry::tree_path(const QString &path){
-	blog_editor()->editor()->tree_path(path);
-}
+//void Editentry::tree_path(const QString &path){
+//	blog_editor()->editor()->tree_path(path);
+//}
 void Editentry::pin(const QString &pin_){blog_editor()->editor()->pin(pin_);}
-void Editentry::switch_pin(){blog_editor()->editor()->switch_pin();}
+
+// void Editentry::switch_pin(bool checked){blog_editor()->editor()->switch_pin(checked);}
 void Editentry::author(const QString &author_){
 	blog_editor()->editor()->author(author_);
 }
@@ -1766,16 +1767,16 @@ EditingWindow *Editentry::blog_editor() const {return _blog_editor;}
 
 EditingWindow *Editentry::blog_editor(){
 	if(! _blog_editor)
-			_blog_editor = add_blog_editor(
-				new EditingWindow(
-					_tree_screen
-								 , _entrance
-								 , _profile
-								 , _find_screen
-								 , this
-								 , _flags
-								 , _style_source
-					));
+		_blog_editor = add_blog_editor(
+			new EditingWindow(
+				_tree_screen
+					     , _entrance
+					     , _profile
+					     , _find_screen
+					     , this
+					     , _flags
+					     , _style_source
+					 ));
 	return _blog_editor;
 }
 

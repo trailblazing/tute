@@ -92,9 +92,9 @@ class Editentry : public QDockWidget {
 		QString style_source();
 
 		void name(const QString &nm);
-		void tree_path(const QString &path);
+//		void tree_path(const QString &path);
 		void pin(const QString &pin_);
-		void switch_pin();
+//		void switch_pin(bool checked);
 		void author(const QString &author_);
 		void home(const QString &home_);
 		void url(const QString &url_);

@@ -49,6 +49,8 @@ extern TrashMonitoring		trashmonitoring;
 extern gl_para				globalparameters;
 extern WalkHistory			walkhistory;
 const char					*program_title							= "Tute";
+const QString				program_title_qstring					= "Tute";
+const std::string			program_title_string					= "Tute";
 const char					*meta_editor_singleton_name				= "editor_screen";
 const char					*record_screen_multi_instance_name		= "record_screen";
 const char					*tree_screen_singleton_name				= "tree_screen";

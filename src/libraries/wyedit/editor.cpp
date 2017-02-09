@@ -140,7 +140,7 @@ Editor::~Editor(void){
 	delete _expand_tools_lines;
 	delete _save;
 	delete _back;
-	delete _freeze;
+//	delete _freeze;
 	delete _find_in_base;
 	delete _show_text;
 	delete _to_attach;
@@ -298,7 +298,7 @@ void Editor::setup_signals(void){
 	connect(_expand_tools_lines, &FlatToolButton::clicked, this, &Editor::on_expand_tools_lines_clicked);
 	connect(_save, &FlatToolButton::clicked, this, &Editor::on_save_clicked);
 	connect(_back, &FlatToolButton::clicked, this, &Editor::on_back_clicked);
-	connect(_freeze, &FlatToolButton::clicked, this, &Editor::on_freeze_clicked);
+//	connect(_freeze, &FlatToolButton::clicked, this, &Editor::on_freeze_clicked);
 
 	connect(_find_in_base, &FlatToolButton::clicked, this, &Editor::on_find_in_base_clicked);
 	connect(_show_text, &FlatToolButton::clicked, this, &Editor::on_show_text_clicked);
@@ -585,10 +585,10 @@ void Editor::setup_buttons(void){
 	_back->setIcon(QIcon(":/resource/pic/mobile_back.svg"));
 	_back->setObjectName("editor_tb_back");
 
-	_freeze = new FlatToolButton("", this);
-	_freeze->setStatusTip(tr("Pin/freeze browser view"));
-	_freeze->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
-	_freeze->setObjectName("editor_tb_freeze_browser_view");
+//	_freeze = new FlatToolButton("", this);
+//	_freeze->setStatusTip(tr("Pin/freeze browser view"));
+//	_freeze->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
+//	_freeze->setObjectName("editor_tb_freeze_browser_view");
 
 	// Кнопка "поиск по базе", используется в мобильном интерфейсе
 	_find_in_base = new FlatToolButton("", this);
@@ -1376,11 +1376,11 @@ void Editor::on_back_clicked(void){
 	back_callback_func();
 }
 
-void Editor::on_freeze_clicked(void){
-	// Обновление инфополей в области редактирования записи
-	auto *metaeditor = globalparameters.edit_entry();   // MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
-	if(metaeditor) metaeditor->switch_pin();
-}
+//void Editor::on_freeze_clicked(void){
+//	// Обновление инфополей в области редактирования записи
+//	auto *metaeditor = globalparameters.edit_entry();   // MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
+//	if(metaeditor) metaeditor->switch_pin();
+//}
 // Очистка форматирования, т.е. установка стандартного шрифта,
 // размера и убирание утолщения, наклона, подчеркивания
 void Editor::on_clear_clicked(void){

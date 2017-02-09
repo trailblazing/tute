@@ -68,10 +68,10 @@ W_OBJECT_IMPL(MetaEditor)
 MetaEditor::MetaEditor(FindScreen *find_screen, EditingWindow *editing_win, QStackedWidget *main_stack_, QString object_name)
 	: Editor(main_stack_)
 //    : QDockWidget(_find_screen)
-	  , _find_screen(find_screen)
 	  , _editor_main_screen(new QWidget(this))  // Сборка виджета редактирования текста (основной виджет)
 	  , _editor_main_layer(new QGridLayout(_editor_main_screen))
-	  , _tree_path(new QLabel(_editor_main_screen))
+	  , _label_pin(new QLabel(_editor_main_screen))
+//	  , _tree_path_content(new QLabel(_editor_main_screen))
 	  , _item_pin(new QCheckBox(_editor_main_screen))
 	  , _item_name(new QLabel(_editor_main_screen))
 	  , _item_author(new QLabel(_editor_main_screen))
@@ -86,6 +86,7 @@ MetaEditor::MetaEditor(FindScreen *find_screen, EditingWindow *editing_win, QSta
 	  , _label_tags(new QLabel(_item_tags_container))
 	  , _attachtable_screen(new AttachTableScreen(this))
 	  , _meta_editor_join_layer(new QVBoxLayout(this))
+	  , _find_screen(find_screen)
 	  , _main_stack(main_stack_)
 	  , _editing_win(editing_win){      //      , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint))
 	setObjectName(object_name);
@@ -163,10 +164,10 @@ MetaEditor::MetaEditor(FindScreen *find_screen, EditingWindow *editing_win, QSta
 	attach_callback(&MetaEditor::to_attach_callback);
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	Editor::update_indentline_geometry();
+	connect(_item_pin, &QCheckBox::clicked, [&](bool checked){pin(checked ? _string_from_check_state[Qt::CheckState::Checked] : _string_from_check_state[Qt::CheckState::Unchecked]);});
 }
 
-MetaEditor::~MetaEditor(void)
-{_url_connection_initialized = false;}
+MetaEditor::~MetaEditor(void){_url_connection_initialized = false;}
 
 
 void MetaEditor::setup_signals(FindScreen *_find_screen){
@@ -174,12 +175,14 @@ void MetaEditor::setup_signals(FindScreen *_find_screen){
 }
 
 void MetaEditor::setup_labels(void){
-	// Путь в дереве до данной записи в виде названий веток (только для мобильного интерфейса)
-	// _tree_path = new QLabel(this);
-	_tree_path->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-	if(appconfig.interface_mode() == "desktop") _tree_path->setVisible(true);
-	else _tree_path->setVisible(false);
-	_tree_path->setWordWrap(true);
+	_label_pin->setText(tr("<B>Pin status:</B> "));
+	_label_pin->setVisible(true);
+//	// Путь в дереве до данной записи в виде названий веток (только для мобильного интерфейса)
+//	// _tree_path = new QLabel(this);
+//	_tree_path_content->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+//	if(appconfig.interface_mode() == "desktop") _tree_path_content->setVisible(false);
+//	else _tree_path_content->setVisible(true);
+//	_tree_path_content->setWordWrap(true);
 
 	// _item_pin = new QCheckBox(this);
 	// recordPin->setTextInteractionFlags(Qt::TextSelectableByMouse |
@@ -250,6 +253,11 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
 	// set_textarea(r->getTextDirectFromLite());
 	// else
 	// set_textarea(r->getTextFromFat());
+	pin(_item->field < pin_type > ());
+	name(_item->field < name_type > ());
+	author(_item->field < author_type > ());                  // Надпись Author(s)
+	home(_item->field < home_type > ());
+	url(_item->field < url_type > ());
 	if(_url_connection_initialized) QObject::disconnect(_url_connection);
 	_url_connection = QObject::connect(_item_url, &ClickableLabel::mousePressEvent  // linkActivated		// , _record->binded_only_page()
 					  , [this](QMouseEvent *ev){
@@ -314,8 +322,9 @@ void MetaEditor::assembly(void){
 	// _editor_main_layer     = new QGridLayout(_editor_main_screen);
 
 	_editor_main_layer->addLayout(_textformat_buttons_layout, 0, 0, 1, 2);
-	_editor_main_layer->addWidget(_item_pin, 1, 0, 1, 1);
-	_editor_main_layer->addWidget(_tree_path, 1, 1, 1, 1);
+	_editor_main_layer->addWidget(_label_pin, 1, 0, 1, 1);
+	_editor_main_layer->addWidget(_item_pin, 1, 1, 1, 1);
+//	_editor_main_layer->addWidget(_tree_path_content, 1, 1, 1, 1);
 
 	_editor_main_layer->addWidget(_item_name, 2, 0, 1, 2);
 	_editor_main_layer->addWidget(_item_author, 3, 0, 1, 2);
@@ -410,86 +419,89 @@ void MetaEditor::clear_all(void){
 	_attachtable_screen->clear();
 }
 
-void MetaEditor::tree_path(const QString &path){
-	_tree_path->setVisible(true);
-	_tree_path->setText(tr("<b>Path: </b>") + path);
-}
-
-void MetaEditor::switch_pin(){
-	// if(globalparameters.entrance()->activiated_browser()) {
-	browser::TabWidget *_tabmanager = globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager();
-	// record_screens()->record_controller();
-	if(_tabmanager){
-		RecordModel	*source_model		= _tabmanager->source_model();
-		auto		_record_controller	= _tabmanager->record_controller();
-		rv_t		*record_view		= _tabmanager->view();
-		pos_source	pos_source_(_tabmanager->currentIndex());   // first_selectionpos();
-		if(source_model && - 1 != pos_source_){
-			// Выясняется ссылка на таблицу конечных данных
-			// auto item = source_model->tree_item();  //->record_table();    //getTableData();
-
-			QString p = source_model->item(pos_source_)->field<pin_type>(); // "pin"
-			_item_pin->setCheckState(_state_check_from_string[p]);
-
-			QString h = source_model->item(pos_source_)->field<url_type>(); // "url"
-
-			// Переданные отредактированные поля преобразуются в вид имя-значение
-			QMap<QString, QString> edit_data;
-			if(_item_pin->checkState() == Qt::CheckState::Checked){
-				_item_pin->setCheckState(Qt::CheckState::Unchecked);
-
-				pin(p = _string_from_check_state[Qt::CheckState::Unchecked]);
-
-				edit_data["pin"] = p;
-			}else{
-				_item_pin->setCheckState(Qt::CheckState::Checked);
-
-				pin(p = _string_from_check_state[Qt::CheckState::Checked]);
-				home(h);
-
-				edit_data["pin"]	= p;
-				edit_data["home"]	= h;
-			}
-			//// Переданные отредактированные поля преобразуются в вид имя-значение
-			// QMap<QString, QString> editData;
-			// editData["pin"] = pin;
-			// editData["name"] = name;
-			// editData["author"] = author;
-			// editData["home"] = home;
-			// editData["url"] = url;
-			// editData["tags"] = tags;
-
-			// Обновление новых данных в таблице конечных записей
-			source_model->item(pos_source_)->field<pin_type>(edit_data["pin"]);
-			source_model->item(pos_source_)->field<home_type>(edit_data["home"]);
+// void MetaEditor::tree_path(const QString &path){
+//	_tree_path_content->setVisible(true);
+//	_tree_path_content->setText(tr("<b>Path: </b>") + path);
+// }
 
 
-			// Сохранение дерева веток
-			// find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
-			ts_t *_tree_screen = globalparameters.tree_screen();
-			if(record_view){
-				_record_controller->select_as_current(_record_controller->index<pos_proxy>(pos_source_));
-				auto _binder = _item->binder();
-				if(_binder){
-					auto host = _binder->host();
-					if(host){
-						RecordIndex::synchronize(host);
-						auto source_model = [&](){return _tree_screen->view()->source_model();};
-						source_model()->emit_datachanged_signal(source_model()->index(host));
-					}
-					_record_controller->on_recordtable_configchange();
-				}
-			}
-			if(_tree_screen) _tree_screen->view()->know_model_save();
-		}
-	}
-	// }
-}
 
 void MetaEditor::pin(const QString &pin_){
+	auto set_pin = [&](bool checked){
+			//	if(checked != ("" != _string_from_check_state[_item_pin->checkState()])){
+			// if(globalparameters.entrance()->activiated_browser()) {
+			browser::TabWidget *_tabmanager = globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager();
+			// record_screens()->record_controller();
+			if(_tabmanager){
+				RecordModel	*source_model		= _tabmanager->source_model();
+				auto		_record_controller	= _tabmanager->record_controller();
+				rv_t		*record_view		= _tabmanager->view();
+				pos_source	pos_source_(_tabmanager->currentIndex()); // first_selectionpos();
+				if(source_model && - 1 != pos_source_){
+					// Выясняется ссылка на таблицу конечных данных
+					// auto item = source_model->tree_item();  //->record_table();    //getTableData();
+
+					QString p = source_model->item(pos_source_)->field<pin_type>(); // "pin"
+					_item_pin->setCheckState(_state_check_from_string[p]);
+
+					QString h = source_model->item(pos_source_)->field<url_type>(); // "url"
+
+					// Переданные отредактированные поля преобразуются в вид имя-значение
+					QMap<QString, QString> edit_data;
+					if(checked){
+						_item_pin->setCheckState(Qt::CheckState::Checked);
+
+						//				pin(p = _string_from_check_state[Qt::CheckState::Checked]);
+						home(h);
+
+						edit_data["pin"]	= p;
+						edit_data["home"]	= h;
+					}else{// (_item_pin->checkState() == Qt::CheckState::Checked)
+						_item_pin->setCheckState(Qt::CheckState::Unchecked);
+
+						//				pin(p = _string_from_check_state[Qt::CheckState::Unchecked]);
+
+						edit_data["pin"] = p;
+					}
+					//// Переданные отредактированные поля преобразуются в вид имя-значение
+					// QMap<QString, QString> editData;
+					// editData["pin"] = pin;
+					// editData["name"] = name;
+					// editData["author"] = author;
+					// editData["home"] = home;
+					// editData["url"] = url;
+					// editData["tags"] = tags;
+
+					// Обновление новых данных в таблице конечных записей
+					source_model->item(pos_source_)->field<pin_type>(edit_data["pin"]);
+					source_model->item(pos_source_)->field<home_type>(edit_data["home"]);
+
+
+					// Сохранение дерева веток
+					// find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
+					ts_t *_tree_screen = globalparameters.tree_screen();
+					if(record_view){
+						_record_controller->select_as_current(_record_controller->index<pos_proxy>(pos_source_));
+						auto _binder = _item->binder();
+						if(_binder){
+							auto host = _binder->host();
+							if(host){
+								RecordIndex::synchronize(host);
+								auto source_model = [&](){return _tree_screen->view()->source_model();};
+								source_model()->emit_datachanged_signal(source_model()->index(host));
+							}
+							_record_controller->on_recordtable_configchange();
+						}
+					}
+					if(_tree_screen) _tree_screen->view()->know_model_save();
+				}
+			}
+			//	}
+		};
 	// recordPin->setVisible(true);
 	_item_pin->setCheckState(_state_check_from_string[pin_]);
 	// recordPin->setText("<b>" + pin + "</b>");
+	if(_item && (_state_check_from_string[_item->field < pin_type > ()] != _item_pin->checkState())) set_pin(pin_ != "");
 }
 
 void MetaEditor::name(const QString &name_){

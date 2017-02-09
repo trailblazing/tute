@@ -118,7 +118,7 @@
 #include "models/record_table/record_model.h"
 #include "models/record_table/items_flat.h"
 #include "controllers/record_table/record_controller.h"
-
+#include "views/main_window/main_window.h"
 
 // using namespace std;
 
@@ -328,8 +328,9 @@
 #endif
 
 
-extern const char	*program_title;
-
+extern const char			*program_title;
+extern const QString		program_title_qstring;
+extern const std::string	program_title_string;
 extern TrashMonitoring		trashmonitoring;
 browser::DownloadManager	*sapp_t::_downloadmanager		= nullptr;
 browser::HistoryManager		*sapp_t::_historymanager		= nullptr;
@@ -337,9 +338,9 @@ QNetworkAccessManager		*sapp_t::_networkaccessmanager	= nullptr;
 browser::BookmarksManager	*sapp_t::_bookmarksmanager		= nullptr;
 
 static void set_user_style_sheet(QWebEngineProfile *profile
-								, const QString &styleSheet
-								, browser::Entrance *_entrance	// , browser::BrowserWindow *mainWindow = 0
-	){
+				, const QString &styleSheet
+				, browser::Entrance *_entrance // , browser::BrowserWindow *mainWindow = 0
+				){
 	Q_ASSERT(profile);
 	QString					scriptName(QStringLiteral("userStyleSheet"));
 	QWebEngineScript		script;
@@ -352,16 +353,16 @@ static void set_user_style_sheet(QWebEngineProfile *profile
 		script.setRunsOnSubFrames(true);
 		script.setWorldId(QWebEngineScript::ApplicationWorld);
 	}
-	QString source = QString::fromLatin1("(function() {"														  \
-										 "var css = document.getElementById(\"_qt_testBrowser_userStyleSheet\");" \
-										 "if (css == undefined) {"												  \
-										 "    css = document.createElement(\"style\");"							  \
-										 "    css.type = \"text/css\";"											  \
-										 "    css.id = \"_qt_testBrowser_userStyleSheet\";"						  \
-										 "    document.head.appendChild(css);"									  \
-										 "}"																	  \
-										 "css.innerText = \"%1\";"												  \
-										 "})()").arg(styleSheet);
+	QString source = QString::fromLatin1("(function() {"                                                          \
+					     "var css = document.getElementById(\"_qt_testBrowser_userStyleSheet\");" \
+					     "if (css == undefined) {"                                                \
+					     "    css = document.createElement(\"style\");"                           \
+					     "    css.type = \"text/css\";"                                           \
+					     "    css.id = \"_qt_testBrowser_userStyleSheet\";"                       \
+					     "    document.head.appendChild(css);"                                    \
+					     "}"                                                                      \
+					     "css.innerText = \"%1\";"                                                \
+					     "})()").arg(styleSheet);
 	script.setSourceCode(source);
 	profile->scripts()->insert(script);
 	// run the script on the already loaded views
@@ -384,7 +385,7 @@ void sapp_t::sys_init(char * *argv){
 	// Файл запущенной программы (нулевой аргумент функции main)
 	// Store the file name running binaries
 	// File running program (a zero argument to main)
-	QString main_program_file = QString::fromLatin1(argv[0]);		// Todo: This code must not work correctly with ways to UTF 8   // todo: Этот код наверно некорректно работает с путями в UTF8
+	QString main_program_file = QString::fromLatin1(argv[0]);       // Todo: This code must not work correctly with ways to UTF 8   // todo: Этот код наверно некорректно работает с путями в UTF8
 	qDebug() << "Set main program file to " << main_program_file;
 	// Инициализация глобальных параметров,
 	// внутри происходит установка рабочей директории
@@ -593,7 +594,7 @@ void sapp_t::sys_init(char * *argv){
 	QString version = QString::number(APPLICATION_RELEASE_VERSION) + "." + QString::number(APPLICATION_RELEASE_SUBVERSION) + "." + QString::number(APPLICATION_RELEASE_MICROVERSION);
 	QCoreApplication::setOrganizationName(QLatin1String(globalparameters.application_name().toLatin1()));
 	QCoreApplication::setApplicationName(QLatin1String(_globalparameters.application_name().toLatin1()));
-	QCoreApplication::setApplicationVersion(version);	// QLatin1String("0.1")
+	QCoreApplication::setApplicationVersion(version);   // QLatin1String("0.1")
 
 	QString serverName = QCoreApplication::applicationName() + QString::fromLatin1(QT_VERSION_STR).remove('.') + QLatin1String("webengine");
 
@@ -628,7 +629,7 @@ void sapp_t::sys_init(char * *argv){
 #ifndef QT_NO_OPENSSL
 	if(! QSslSocket::supportsSsl()){
 		QMessageBox::information(0, _globalparameters.main_program_full_file()
-								, "This system does not support OpenSSL. SSL websites will not be available.");
+					, "This system does not support OpenSSL. SSL websites will not be available.");
 	}
 #endif
 
@@ -662,7 +663,7 @@ void sapp_t::browser_init(){
 
 	// QTranslator langTranslator;
 	// langTranslator.load(langFileName);
-	installTranslator(langFileName);	// &langTranslator
+	installTranslator(langFileName);    // &langTranslator
 
 
 	QSettings settings(_globalparameters.root_path() + "/" + _globalparameters.target_os() + "/" + _globalparameters._browser_conf_filename, QSettings::IniFormat);
@@ -685,13 +686,13 @@ void sapp_t::qtm_init(){
 	if(arguments().contains("--sandbox") || arguments().contains("--delete-sandbox")){
 		setOrganizationName("Catkin Project Sandbox");
 		setOrganizationDomain("qtm-sandbox.blogistan.co.uk");
-		setApplicationName("QTMsandbox");
+		setApplicationName(program_title_qstring + "sandbox");
 		setApplicationVersion(QTM_VERSION);
 		_isSandbox = true;
 	}else{
 		setOrganizationName("Catkin Project");
 		setOrganizationDomain("catkin.blogistan.co.uk");
-		setApplicationName("QTM");
+		setApplicationName(program_title_qstring);
 		setApplicationVersion(QTM_VERSION);
 		_isSandbox = false;
 	}
@@ -707,7 +708,7 @@ void sapp_t::main_window(){
 	if(isRunning()){
 		QString message = "Another hapnote exemplar is running.\n";
 
-		printf("%s", message.toStdString().c_str());	// message.toLocal8Bit()
+		printf("%s", message.toStdString().c_str());    // message.toLocal8Bit()
 
 		QMessageBox msgBox;
 		msgBox.setIcon(QMessageBox::Warning);
@@ -735,12 +736,12 @@ void sapp_t::main_window(){
 
 
 	// Создание объекта главного окна
-	_window = new wn_t(_globalparameters, _appconfig, _databaseconfig, _profile, _style);	// std::make_shared<MainWindow>(_globalparameters, _appconfig, _databaseconfig);
+	_window = new wn_t(_globalparameters, _appconfig, _databaseconfig, _profile, _style);   // std::make_shared<MainWindow>(_globalparameters, _appconfig, _databaseconfig);
 
 	_globalparameters.main_window(_window);
 
-	_window->setWindowTitle(program_title);	// _globalparameters.application_name()
-	if(_globalparameters.target_os() == "android") _window->show();																																																																																																																																																																																																																																																																																																																																																																																																																																// В Андроиде нет десктопа, на нем нельзя сворачивать окно
+	_window->setWindowTitle(program_title); // _globalparameters.application_name()
+	if(_globalparameters.target_os() == "android") _window->show();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             // В Андроиде нет десктопа, на нем нельзя сворачивать окно
 	else{
 		if(! _appconfig.run_in_minimized_window()) _window->show();
 		else _window->hide();
@@ -769,21 +770,21 @@ void sapp_t::main_window(){
 	// Если в конфиге настроено, что нужно синхронизироваться при старте
 	// И задана команда синхронизации
 	if(_appconfig.synchro_on_startup())
-			if(_appconfig.synchro_command().trimmed().length() > 0) _window->synchronization();
+		if(_appconfig.synchro_command().trimmed().length() > 0) _window->synchronization();
 	// Если настроено в конфиге, сразу запрашивается пароль доступа
 	// к зашифрованным данным
 	// И если есть хоть какие-то зашифрованные данные
 	if(_appconfig.howpassrequest() == "atStartProgram")
-			if(_globalparameters.crypt_key().length() == 0)
-					if(_databaseconfig.get_crypt_mode() > 0){
-						// Запрашивается пароль только в том случае, если ветка,
-						// на которую установливается курсор при старте, незашифрована
-						// Если ветка зашифрована, пароль и так будет запрошен автоматически
-						if(_window->is_tree_position_crypt() == false){
-							Password password;
-							password.retrievePassword();
-						}
-					}
+		if(_globalparameters.crypt_key().length() == 0)
+			if(_databaseconfig.get_crypt_mode() > 0){
+				// Запрашивается пароль только в том случае, если ветка,
+				// на которую установливается курсор при старте, незашифрована
+				// Если ветка зашифрована, пароль и так будет запрошен автоматически
+				if(_window->is_tree_position_crypt() == false){
+					Password password;
+					password.retrievePassword();
+				}
+			}
 	// Если в общем конфиге стоит опция хранения пароля
 	// И хранимый пароль (точнее его хеш) заполнен
 	if(_globalparameters.crypt_key().length() == 0){
@@ -832,11 +833,11 @@ void sapp_t::main_window(){
  */
 
 sapp_t::sapp_t(int &argc
-			  , char * *argv
-			  , gl_para    &globalparameters
-			  , AppConfig           &appconfig
-			  , DataBaseConfig      &databaseconfig
-			  , bool GUIenabled)
+	      , char * *argv
+	      , gl_para    &globalparameters
+	      , AppConfig           &appconfig
+	      , DataBaseConfig      &databaseconfig
+	      , bool GUIenabled)
 	: QApplication(argc, argv)
 	  , _peer(new QtLocalPeer(this, QString()))
 	  , _act_window(nullptr)
@@ -869,11 +870,11 @@ sapp_t::sapp_t(int &argc
  */
 
 sapp_t::sapp_t(const QString &appId
-			  , int &argc
-			  , char * *argv
-			  , gl_para    &globalparameters
-			  , AppConfig           &appconfig
-			  , DataBaseConfig      &databaseconfig)
+	      , int &argc
+	      , char * *argv
+	      , gl_para    &globalparameters
+	      , AppConfig           &appconfig
+	      , DataBaseConfig      &databaseconfig)
 	: QApplication(argc, argv)
 	  , _peer(new QtLocalPeer(this, appId))
 	  , _act_window(nullptr)
@@ -1066,7 +1067,7 @@ void sapp_t::newLocalSocketConnection(){
 	QTextStream stream(socket);
 	QString		_url;
 	stream >> _url;
-	if(_url.isEmpty()) _url = browser::Browser::_defaulthome;																																																																																																																																																																																																																																																																																																																																																																																									//    browser::DockedWindow *w = nullptr;
+	if(_url.isEmpty()) _url = browser::Browser::_defaulthome;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   //    browser::DockedWindow *w = nullptr;
 
 	// if(!url.isEmpty()) {
 
@@ -1081,14 +1082,14 @@ void sapp_t::newLocalSocketConnection(){
 //    boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
 	auto	current_item	= tree_view->current_item();
 	auto	parent			= current_item->parent();
-	if(! parent) throw std::runtime_error(formatter() << "! parent");																																																																																																																																																																																																																																																																																																																																																																																																																																								// std::exception();
+	if(! parent) throw std::runtime_error(formatter() << "! parent");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // std::exception();
 //    try {
 //        _tree_modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 //            return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
 //        }));
 //    } catch(std::exception &e) {} //    Record *record = request_record(url);
 //    //    std::pair<browser::Browser *, browser::WebView *> dp;
-	if(entrance && tree_screen){	// && _tree_modelindex
+	if(entrance && tree_screen){    // && _tree_modelindex
 		if(openLinksIn == 1){
 			auto browser = _globalparameters.main_window()->vtab_record()->new_browser();
 //            boost::intrusive_ptr<TreeIndex> tree_index;
@@ -1097,15 +1098,15 @@ void sapp_t::newLocalSocketConnection(){
 			boost::intrusive_ptr<TreeItem> it;
 
 //            if(tree_index)
-			it = TreeIndex::create_treeitem_from_url(_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});	// instance([&] {return tree_view->source_model();}, tree_view->current_item())->
+			it = TreeIndex::create_treeitem_from_url(_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});    // instance([&] {return tree_view->source_model();}, tree_view->current_item())->
 
 //            boost::intrusive_ptr<RecordIndex> record_index(nullptr);
 
 //            try {
-			boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, it);	// , browser->record_screen()->record_controller()->source_model()->sibling(it)
+			boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, it);    // , browser->record_screen()->record_controller()->source_model()->sibling(it)
 //            } catch(std::exception &) {}
 //            if(record_index){
-			browser->bind(record_index)->activate(std::bind(&HidableTabWidget::find, _globalparameters.main_window()->vtab_record(), std::placeholders::_1));	// tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
+			browser->bind(record_index)->activate(std::bind(&HidableTabWidget::find, _globalparameters.main_window()->vtab_record(), std::placeholders::_1));   // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
 //            }
 //            else{
 //                tree_view->index_invoke(tree_view->source_model()->index(it));
@@ -1116,11 +1117,11 @@ void sapp_t::newLocalSocketConnection(){
 
 //            if(tree_index)
 			TreeIndex::activate([&] {return tree_view->source_model();}
-							   , tree_view->current_item()
-							   , _url
-							   , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
-							   , [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());}
-				)->activate(std::bind(&HidableTabWidget::find, _globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+					   , tree_view->current_item()
+					   , _url
+					   , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+					   , [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());}
+					   )->activate(std::bind(&HidableTabWidget::find, _globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		}
 		// browser_view->mainWindow()->load_record(record);
 	}
@@ -1150,7 +1151,7 @@ sapp_t::~sapp_t(){
 	// delete
 	_bookmarksmanager->deleteLater();
 	if(_window){
-		_window->deleteLater();	// delete _window;
+		_window->deleteLater(); // delete _window;
 		_window = nullptr;
 	}
 	if(_profile){_profile->deleteLater();_profile = nullptr;}
@@ -1179,10 +1180,10 @@ void QtSingleApplication::quitBrowser(){
 	for(int i = 0; i < _mainwindows.count(); ++ i) tabCount += _mainwindows.at(i)->tabWidget()->count();
 	if(tabCount > 1){
 		int ret = QMessageBox::warning(mainWindow(), QString()
-									  ,	tr("There are %1 windows and %2 tabs open\n"
-										   "Do you want to quit anyway?").arg(_mainwindows.count()).arg(tabCount)
-									  ,	QMessageBox::Yes | QMessageBox::No
-									  ,	QMessageBox::No);
+					      ,	tr("There are %1 windows and %2 tabs open\n"
+						   "Do you want to quit anyway?").arg(_mainwindows.count()).arg(tabCount)
+					      ,	QMessageBox::Yes | QMessageBox::No
+					      ,	QMessageBox::No);
 		if(ret == QMessageBox::No) return;
 	}
 	exit(0);
@@ -1194,7 +1195,7 @@ void QtSingleApplication::quitBrowser(){
     Any actions that can be delayed until the window is visible
  */
 void sapp_t::postLaunch(){
-	QString directory = _globalparameters.root_path();	// QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+	QString directory = _globalparameters.root_path();  // QStandardPaths::writableLocation(QStandardPaths::DataLocation);
 	if(directory.isEmpty()) directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
 #if defined(QWEBENGINESETTINGS_PATHS)
 	QWebEngineSettings::setIconDatabasePath(directory);
@@ -1205,7 +1206,7 @@ void sapp_t::postLaunch(){
 
 	loadSettings();
 	// newMainWindow() needs to be called in main() for this to happen
-	if(_globalparameters.main_window()->vtab_record()->record_screens().size() > 0){	// _mainWindows.count()
+	if(_globalparameters.main_window()->vtab_record()->record_screens().size() > 0){    // _mainWindows.count()
 		QStringList args = QCoreApplication::arguments();
 //        browser::Browser *browser = _globalparameters.entrance()->activated_browser();
 		//        assert(browser);
@@ -1218,10 +1219,10 @@ void sapp_t::postLaunch(){
 			tv_t	*tree_view	= _globalparameters.tree_screen()->view();
 			auto	it			= tree_view->session_root_auto();
 			TreeIndex::activate([&] {return tree_view->source_model();}
-							   , it
-							   , args.last()
-							   , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), args.last().toStdString()) || url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());}
-				);
+					   , it
+					   , args.last()
+					   , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), args.last().toStdString()) || url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());}
+					   );
 		}
 		//        else
 		//            browser->slotHome(); // mainWindow()->slotHome();
@@ -1262,7 +1263,7 @@ void sapp_t::loadSettings(){
 	QString css = settings.value(QLatin1String("userStyleSheet")).toString();
 	if(css == "" && _style != "") css = _style;
 	else css = instance()->styleSheet();
-	set_user_style_sheet(_profile, css, _globalparameters.entrance());	// ->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
+	set_user_style_sheet(_profile, css, _globalparameters.entrance());  // ->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
 
 
 	_profile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());
@@ -1273,11 +1274,11 @@ void sapp_t::loadSettings(){
 	settings.beginGroup(QLatin1String("cookies"));
 
 	_profile->setHttpCacheType(QWebEngineProfile::HttpCacheType::DiskHttpCache);
-	_profile->setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy::ForcePersistentCookies);	// AllowPersistentCookies
+	_profile->setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy::ForcePersistentCookies);   // AllowPersistentCookies
 
 	QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(
-		settings.value(QLatin1String("persistentCookiesPolicy")).toInt()		// QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
-		);
+		settings.value(QLatin1String("persistentCookiesPolicy")).toInt()        // QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
+														       );
 	_profile->setPersistentCookiesPolicy(persistentCookiesPolicy);
 	QString	persistent_data_path = settings.value(QLatin1String("persistentDataPath")).toString();
 	QDir	cookie_path(persistent_data_path);
@@ -1374,7 +1375,7 @@ void sapp_t::restoreLastSession(){
 		  && _globalparameters.main_window()->vtab_record()->record_screens().size() == 1
 //	  && browser->tabWidget()->count() == 1
 //	  && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome)	// ?
-			){
+		  ){
 //		// newWindow = globalParameters.browsermanager()->main_window();
 //	    globalparameters.entrance()->restore_state(historywindows.at(i));
 			_globalparameters.main_window()->vtab_record()->activated_browser()->restore_state(historywindows.at(i));
@@ -1538,9 +1539,9 @@ QNetworkAccessManager *sapp_t::networkAccessManager(){
 	if(! _networkaccessmanager){
 		_networkaccessmanager = new QNetworkAccessManager();
 		connect(_networkaccessmanager, &QNetworkAccessManager::authenticationRequired
-			   , sapp_t::instance(), &sapp_t::authenticationRequired);
+		       , sapp_t::instance(), &sapp_t::authenticationRequired);
 		connect(_networkaccessmanager, &QNetworkAccessManager::proxyAuthenticationRequired
-			   , sapp_t::instance(), &sapp_t::proxyAuthenticationRequired);
+		       , sapp_t::instance(), &sapp_t::proxyAuthenticationRequired);
 	}
 	return _networkaccessmanager;
 }
@@ -1576,12 +1577,12 @@ void sapp_t::setPrivateBrowsing(bool privateBrowsing){
 	_private_browsing = privateBrowsing;
 	auto browsers = [&] {set<browser::Browser *> bs;for(auto rs : _globalparameters.main_window()->vtab_record()->record_screens()) bs.insert(rs->browser());return bs;} ();
 	if(privateBrowsing){
-		if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									// new QWebEngineProfile(this);
+		if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // new QWebEngineProfile(this);
 		for(auto &browser : browsers) browser->tabWidget()->setProfile(_private_profile);
 	}else{
 		for(auto &browser : browsers){
-			browser->tabWidget()->setProfile(_profile	// QWebEngineProfile::defaultProfile()
-				);
+			browser->tabWidget()->setProfile(_profile   // QWebEngineProfile::defaultProfile()
+							);
 			browser->lastsearch() = QString::null;
 			browser->tabWidget()->clear();
 		}
@@ -1718,7 +1719,7 @@ void sapp_t::deleteSandbox(){
 	QSettings	settings;
 	QStringList groupNames;
 	groupNames	<< "accounts" << "application" << "fonts" << "geometry"
-				<< "highlighting" << "recentFiles" << "sysTrayIcon";
+		    << "highlighting" << "recentFiles" << "sysTrayIcon";
 	Q_FOREACH(QString groupName, groupNames){
 		settings.beginGroup(groupName);
 		settings.remove("");
@@ -1809,9 +1810,9 @@ void sapp_t::saveRecentFiles(){
 	settings.beginGroup("recentFiles");
 	for(i = 0; i < 20; ++ i){
 		settings.setValue(QString("recentFile%1").arg(i)
-						 , QString("filename:%1 ##title:%2")
-			.arg(_recentFiles.value(i).filename)
-			.arg(_recentFiles.value(i).title));
+				 , QString("filename:%1 ##title:%2")
+		    .arg(_recentFiles.value(i).filename)
+		    .arg(_recentFiles.value(i).title));
 	}
 }
 

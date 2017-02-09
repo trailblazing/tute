@@ -59,9 +59,10 @@
 #include <QObject>
 #endif
 
-
-
-extern const char *meta_editor_singleton_name;
+extern const char					*program_title;
+extern const QString				program_title_qstring;
+extern const std::string			program_title_string;
+extern const char					*meta_editor_singleton_name;
 
 namespace browser {
 	class Entrance;

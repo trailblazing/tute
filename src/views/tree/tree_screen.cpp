@@ -73,7 +73,7 @@ const char	*action_paste_branch			= "paste_branch";
 const char	*action_paste_sub_branch		= "paste_sub_branch";
 const char	*action_encrypt_branch			= "encrypt_branch";
 const char	*action_decrypt_branch			= "decrypt_branch";
-const char	*action_freeze_browser_view		= "freeze_browser_view";
+//const char	*action_freeze_browser_view		= "freeze_browser_view";
 const char	*action_edit_field				= "edit_field";
 const char	*action_editor_switch			= "editor_switch";
 const char	*action_main_menu				= "main_menu";
@@ -544,17 +544,17 @@ void ts_t::setup_actions(void){
 	connect(ac, &QAction::triggered, _tree_view, &tv_t::decrypt);
 	_actionlist[action_decrypt_branch] = ac;
 
-	ac = new QAction(tr("Pin / freeze browser view"), this);
-	ac->setStatusTip(tr("Pin / freeze browser view"));	// _pin->setStatusTip(tr("Pin a note"));
-	ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));	// _pin->setIcon(QIcon(":/resource/pic/pin.svg"));
-	connect(ac, &QAction::triggered
-		   , [&](bool checked = false) mutable -> void {
-			Q_UNUSED(checked)
-			// Обновление инфополей в области редактирования записи
-			auto *metaeditor = globalparameters.edit_entry();	// MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
-			if(metaeditor) metaeditor->switch_pin();
-		});
-	_actionlist[action_freeze_browser_view] = ac;
+//	ac = new QAction(tr("Pin / freeze browser view"), this);
+//	ac->setStatusTip(tr("Pin / freeze browser view"));	// _pin->setStatusTip(tr("Pin a note"));
+//	ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));	// _pin->setIcon(QIcon(":/resource/pic/pin.svg"));
+//	connect(ac, &QAction::triggered
+//		   , [&](bool checked = false) mutable -> void {
+//			Q_UNUSED(checked)
+//			// Обновление инфополей в области редактирования записи
+//			auto *metaeditor = globalparameters.edit_entry();	// MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
+//			if(metaeditor) metaeditor->switch_pin(checked);
+//		});
+//	_actionlist[action_freeze_browser_view] = ac;
 
 
 
@@ -735,7 +735,7 @@ void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 	add_action<QToolButton>(_tools_line, _actionlist[action_move_dn_branch]);
 	if(appconfig.interface_mode() == "mobile"){
 		_tools_line->addSeparator();
-		add_action<QToolButton>(_tools_line, _actionlist[action_freeze_browser_view]);
+//		add_action<QToolButton>(_tools_line, _actionlist[action_freeze_browser_view]);
 		add_action<QToolButton>(_tools_line, _actionlist[action_find_in_base]);	// Клик по этой кнопке связывается с действием в MainWindow
 	}
 //    _tools_line->addSeparator();
@@ -937,7 +937,7 @@ void ts_t::assembly_context_menu(){
 	_context_menu->addAction(_actionlist[action_hide_tree_screen]);
 //    _context_menu->addAction(_actionlist[action_set_as_session_root]);
 
-	_context_menu->addAction(_actionlist[action_freeze_browser_view]);
+//	_context_menu->addAction(_actionlist[action_freeze_browser_view]);
 	_context_menu->addAction(_actionlist[action_find_in_base]);
 	_context_menu->addAction(_actionlist[action_edit_field]);
 	_context_menu->addAction(_actionlist[action_editor_switch]);

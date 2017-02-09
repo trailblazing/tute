@@ -101,9 +101,9 @@ public:
 	MetaEditor(FindScreen *find_screen, EditingWindow *editing_win, QStackedWidget *main_stack_ = nullptr, QString object_name = "");
 	~MetaEditor(void);
 
-	void tree_path(const QString &path);
+//	void tree_path(const QString &path);
 	void pin(const QString &pin_);
-	void switch_pin();
+//	void switch_pin(bool checked);
 	void name(const QString &name_);
 	void author(const QString &author_);
 	void home(const QString &url);
@@ -219,10 +219,12 @@ private:
 
 //	std::unique_ptr<EditingWindow> _blog_editor;
 //	std::unique_ptr<Editor> _editor;
-	FindScreen	*_find_screen;
+
 	QWidget		*_editor_main_screen;
 	QGridLayout	*_editor_main_layer;
-	QLabel		*_tree_path;            // Надпись Path (только для мобильного интерфейса)
+
+	QLabel		*_label_pin;
+//	QLabel		*_tree_path_content;            // Надпись Path (только для мобильного интерфейса)
 	QCheckBox	*_item_pin;
 
 	QLabel		*_item_name;            // Надпись Title
@@ -247,7 +249,7 @@ private:
 	QStringList _item_tags_text_list;
 	QList<QLabel *> _item_tags_labels;
 
-	QSplitter       *_editor_and_filetable_splitter;
+//	QSplitter       *_editor_and_filetable_splitter;
 
 	// Виджет слоя прикрепляемых файлов
 	AttachTableScreen   *_attachtable_screen;
@@ -263,6 +265,7 @@ private:
 	bool _url_connection_initialized = false;
 	boost::intrusive_ptr<TreeItem>	_item;
 //	QWidget *_hidetitlebar;
+	FindScreen	*_find_screen;
 	QStackedWidget *_main_stack;
 	EditingWindow *_editing_win;
 };
