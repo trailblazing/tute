@@ -13,14 +13,14 @@ W_OBJECT_IMPL(MtComboBox)
 #endif
 
 MtComboBox::MtComboBox(QWidget *parent) : QComboBox(parent){
-    Q_UNUSED(parent);
-    currentindexchanged = &QComboBox::currentIndexChanged;
-    itemDelegate	= new QStyledItemDelegate();
-    this->setItemDelegate(itemDelegate);
+	Q_UNUSED(parent);
+	currentindexchanged = &QComboBox::currentIndexChanged;
+	itemDelegate		= new QStyledItemDelegate();
+	this->setItemDelegate(itemDelegate);
 }
 
 MtComboBox::~MtComboBox(){
-    delete itemDelegate;
+	delete itemDelegate;
 }
 
 // http://engineer-works.blogspot.com/2010/02/flat-qcombobox.html
@@ -38,51 +38,51 @@ W_OBJECT_IMPL(FlatComboBox)
 
 
 FlatComboBox::FlatComboBox(QWidget *parent)
-    : Super(parent)
-      , itemDelegate(new QStyledItemDelegate())
-      , arrowAlignment_(Qt::AlignRight)
-      , flat_(true){
-    setFlat(true);
-    setAutoFillBackground(true);
+	: Super(parent)
+	  , itemDelegate(new QStyledItemDelegate())
+	  , arrowAlignment_(Qt::AlignRight)
+	  , flat_(true){
+	setFlat(true);
+	setAutoFillBackground(true);
 	//    QPalette plt(palette());
 	//    plt.setColor(QPalette::Background, Qt::white);
 	//    setPalette(plt);
 
-    currentindexchanged = &QComboBox::currentIndexChanged;
+	currentindexchanged = &QComboBox::currentIndexChanged;
 	//    itemDelegate = new QStyledItemDelegate();
-    this->setItemDelegate(itemDelegate);
+	this->setItemDelegate(itemDelegate);
 }
 
 FlatComboBox::~FlatComboBox(){delete itemDelegate;}
 
 void FlatComboBox::paintEvent(QPaintEvent *e){
-    if(flat()){
-	QStylePainter painter(this);
-	painter.setPen(palette().color(QPalette::Text));
-	QStyleOptionComboBox opt;
-	initStyleOption(&opt);
-	QString displayText(opt.currentText);
-	opt.currentText = "";
-	painter.drawItemText(rect(), Qt::AlignCenter, palette(), true, displayText);
-	const QRect rcOld(opt.rect);
-	opt.rect = QStyle::alignedRect(Qt::LeftToRight, arrowAlignment(), QSize(16, rcOld.height()), rcOld);
-	painter.drawPrimitive(QStyle::PE_IndicatorArrowDown, opt);
-	opt.rect = rcOld;
-	painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
-    }else Super::paintEvent(e);
+	if(flat()){
+		QStylePainter painter(this);
+		painter.setPen(palette().color(QPalette::Text));
+		QStyleOptionComboBox opt;
+		initStyleOption(&opt);
+		QString displayText(opt.currentText);
+		opt.currentText = "";
+		painter.drawItemText(rect(), Qt::AlignCenter, palette(), true, displayText);
+		const QRect rcOld(opt.rect);
+		opt.rect = QStyle::alignedRect(Qt::LeftToRight, arrowAlignment(), QSize(16, rcOld.height()), rcOld);
+		painter.drawPrimitive(QStyle::PE_IndicatorArrowDown, opt);
+		opt.rect = rcOld;
+		painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
+	}else Super::paintEvent(e);
 }
 
 void FlatComboBox::mousePressEvent(QMouseEvent *e){
-    if(! isEditable() || ! lineEdit()->rect().contains(e->pos()))emit aboutToPullDown();
-    Super::mousePressEvent(e);
+	if(! isEditable() || ! lineEdit()->rect().contains(e->pos())) emit aboutToPullDown();
+	Super::mousePressEvent(e);
 }
 
 void FlatComboBox::setFlat(bool flat){
-    flat_ = flat;
+	flat_ = flat;
 }
 
 void FlatComboBox::setArrowAlignment(Qt::Alignment a){
-    arrowAlignment_ = a;
+	arrowAlignment_ = a;
 }
 
 //
@@ -96,46 +96,46 @@ W_OBJECT_IMPL(FlatFontComboBox)
 
 
 FlatFontComboBox::FlatFontComboBox(QWidget *parent)
-    : Super(parent)
-      , itemDelegate(new QStyledItemDelegate())
-      , arrowAlignment_(Qt::AlignRight)
-      , flat_(true){
-    setFlat(true);
-    setAutoFillBackground(true);
+	: Super(parent)
+	  , itemDelegate(new QStyledItemDelegate())
+	  , arrowAlignment_(Qt::AlignRight)
+	  , flat_(true){
+	setFlat(true);
+	setAutoFillBackground(true);
 
-    QPalette plt(palette());
-    plt.setColor(QPalette::Background, Qt::darkGray
-	// white
-	);
-    setPalette(plt);
+	QPalette plt(palette());
+	plt.setColor(QPalette::Background, Qt::darkGray
+		// white
+		);
+	setPalette(plt);
 
-    currentindexchanged = &Super::currentIndexChanged;
+	currentindexchanged = &Super::currentIndexChanged;
 	//    itemDelegate = new QStyledItemDelegate();
-    this->setItemDelegate(itemDelegate);
+	this->setItemDelegate(itemDelegate);
 }
 
 FlatFontComboBox::~FlatFontComboBox(){delete itemDelegate;}
 
 void FlatFontComboBox::paintEvent(QPaintEvent *e){
-    if(flat()){
-	QStylePainter painter(this);
-	painter.setPen(palette().color(QPalette::Text));
-	QStyleOptionComboBox opt;
-	initStyleOption(&opt);
-	QString displayText(opt.currentText);
-	opt.currentText = "";
-	painter.drawItemText(rect(), Qt::AlignCenter, palette(), true, displayText);
-	const QRect rcOld(opt.rect);
-	opt.rect = QStyle::alignedRect(Qt::LeftToRight, arrowAlignment(), QSize(16, rcOld.height()), rcOld);
-	painter.drawPrimitive(QStyle::PE_IndicatorArrowDown, opt);
-	opt.rect = rcOld;
-	painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
-    }else Super::paintEvent(e);
+	if(flat()){
+		QStylePainter painter(this);
+		painter.setPen(palette().color(QPalette::Text));
+		QStyleOptionComboBox opt;
+		initStyleOption(&opt);
+		QString displayText(opt.currentText);
+		opt.currentText = "";
+		painter.drawItemText(rect(), Qt::AlignCenter, palette(), true, displayText);
+		const QRect rcOld(opt.rect);
+		opt.rect = QStyle::alignedRect(Qt::LeftToRight, arrowAlignment(), QSize(16, rcOld.height()), rcOld);
+		painter.drawPrimitive(QStyle::PE_IndicatorArrowDown, opt);
+		opt.rect = rcOld;
+		painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
+	}else Super::paintEvent(e);
 }
 
 void FlatFontComboBox::mousePressEvent(QMouseEvent *e){
-    if(! isEditable() || ! lineEdit()->rect().contains(e->pos()))emit aboutToPullDown();
-    Super::mousePressEvent(e);
+	if(! isEditable() || ! lineEdit()->rect().contains(e->pos())) emit aboutToPullDown();
+	Super::mousePressEvent(e);
 }
 
 void FlatFontComboBox::setFlat(bool flat){flat_ = flat;}
@@ -150,12 +150,20 @@ W_OBJECT_IMPL(FlatToolButton)
 
 
 
-FlatToolButton::FlatToolButton(QWidget *parent)
-    : QToolButton(parent){
-	//    , flat_(true)
-	//    setFlat(true);
-    setAutoFillBackground(true);
-    setAutoRaise(true);
+FlatToolButton::FlatToolButton(const QString &name, QWidget *parent, const QIcon &icon)
+	: QToolButton(parent){
+	setAutoFillBackground(true);
+	setAutoRaise(true);
+	setObjectName(name);
+	setIcon(icon);
+}
+
+
+FlatToolButton::FlatToolButton(QWidget *parent, const QString &name)
+	: QToolButton(parent){
+	setAutoFillBackground(true);
+	setAutoRaise(true);
+	setObjectName(name);
 }
 
 // void FlatToolButton::setFlat(bool flat)
@@ -188,7 +196,18 @@ void FlatToolButton::paintEvent(QPaintEvent *e){
 	//                            // CE_ComboBoxLabel
 	//                            , opt);
 	//    } else {
-    Super::paintEvent(e);
+	Super::paintEvent(e);
 	//    }
 }
 
+
+FlatCheckBox::FlatCheckBox(const QString &name){
+	setObjectName(name);
+	//    setAutoRaise(true);
+	setAutoFillBackground(true);
+}
+
+FlatLineEdit::FlatLineEdit(){
+//    setAutoRaise(true);
+	setAutoFillBackground(true);
+}

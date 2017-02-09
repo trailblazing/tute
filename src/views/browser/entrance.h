@@ -94,7 +94,7 @@ namespace browser {
 	    Entrance(QString object_name
 		    , ts_t *_tree_screen
 		    , FindScreen *_find_screen
-		    , Editentry *_editentry	// , RecordController *_record_controller
+//		    , Editentry *_editentry	// , RecordController *_record_controller
 		    , wn_t *_main_window
 		    , AppConfig &_appconfig, const QString &style_source
 		    , browser::Profile *_profile

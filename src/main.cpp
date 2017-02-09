@@ -62,6 +62,9 @@
 #include "models/record_table/items_flat.h"
 #include "controllers/record_table/record_controller.h"
 
+
+
+
 // const int add_new_record_after = 2;
 using namespace std;
 
@@ -120,7 +123,7 @@ void log_print(char *lpszText, ...){
 	// инициализируем список аргументов
     va_start(argList, lpszText);
 	// открываем лог-файл для добавления данных
-    if((pFile = fopen("hapnotelog.txt", "a+")) == nullptr){
+    if((pFile = fopen("tutelog.txt", "a+")) == nullptr){
 	printf("\nLog file not writable\n");
 
 	return;
@@ -449,7 +452,7 @@ QString set_css_style(){
     auto	target_os	= globalparameters.target_os();
     auto	location	= root_path_ + "/" + target_os;
     if(! QDir(location).exists()) if(! QDir::root().mkpath(location)) critical_error("QString set_css_style() can not make path \"" + location + "\"");
-    QString file_name_to = location + "/" + globalparameters._stylesheet_filename;
+    QString file_name_to = location + "/" + gl_para::_stylesheet_filename;
 //    QString	file_name_from	= work_directory + "/resource/standardconfig/" + target_os + "/stylesheet.css";
 //    qint64	size_from = 0;
 //    QFile	css_from(file_name_from);
@@ -797,7 +800,7 @@ void init_random(void){
 
 
 #ifdef USE_SYSTRAYICON
-#include "libraries/qtm/SysTrayIcon.h"
+#include "libraries/qtm/sys_tray_icon.h"
 #ifdef Q_OS_MAC
 #include "SuperMenu.h"
 #endif
@@ -888,9 +891,7 @@ int main(int argc, char * *argv){
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     Q_INIT_RESOURCE(data);		// added by hughvonyoung@gmail.com
-    Q_INIT_RESOURCE(hapnote);
-
-
+    Q_INIT_RESOURCE(tute);
 
     return sapp_t(argc, argv, globalparameters, appconfig, databaseconfig).exec();			// application.exec();
 }

@@ -40,7 +40,7 @@ EditorConfigFont::EditorConfigFont(QWidget *parent) : ConfigPage(parent){
     setup_signals();
     assembly();
 }
-void EditorConfigFont:: setup_ui(void){
+void EditorConfigFont::setup_ui(void){
 	// Настройка основного шрифта
     defaultFontselectLabel = new QLabel(this);
     defaultFontselectLabel->setText(tr("Default font"));
@@ -117,21 +117,21 @@ void EditorConfigFont:: setup_ui(void){
     codeSelectColorLabel = new QLabel(this);
     codeSelectColorLabel->setText(tr("Code color"));
 
-    codeSelectColorButton = new FlatToolButton(this);
-    codeColor = new QColor(conf->get_code_font_color());
+    codeSelectColorButton	= new FlatToolButton("", this);
+    codeColor			= new QColor(conf->get_code_font_color());
 
 	// Квадратик на кнопке выбора цвета кода
     QPixmap pix(16, 16);
     pix.fill(codeColor->rgb());
     codeSelectColorButton->setIcon(pix);
 }
-void EditorConfigFont:: setup_signals(void){
+void EditorConfigFont::setup_signals(void){
     connect(monospaceFontsizeapply, &QCheckBox::stateChanged, this, &EditorConfigFont::on_monospace_applysize_state_changed);
     connect(codeFontsizeapply, &QCheckBox::stateChanged, this, &EditorConfigFont::on_code_applysize_state_changed);
     connect(codeIndentsizeapply, &QCheckBox::stateChanged, this, &EditorConfigFont::on_code_applyindent_state_changed);
     connect(codeSelectColorButton, &FlatToolButton::clicked, this, &EditorConfigFont::on_code_select_color_button_click);
 }
-void EditorConfigFont:: assembly(void){
+void EditorConfigFont::assembly(void){
 	// Сборка всех блоков в окно
 
 	// Основной шрифт
@@ -147,8 +147,8 @@ void EditorConfigFont:: assembly(void){
     monospaceFontLayout->addWidget(monospaceFontselect);
 
     QGridLayout *monospaceGridLayout = new QGridLayout();
-    monospaceGridLayout->addWidget(monospaceFontsizeapply,   0, 0);
-    monospaceGridLayout->addWidget(monospaceFontsize,        0, 1);
+    monospaceGridLayout->addWidget(monospaceFontsizeapply, 0, 0);
+    monospaceGridLayout->addWidget(monospaceFontsize, 0, 1);
 
     QVBoxLayout *monospaceLayout = new QVBoxLayout();
     monospaceLayout->addLayout(monospaceFontLayout);
@@ -164,12 +164,12 @@ void EditorConfigFont:: assembly(void){
     codeFontLayout->addWidget(codeFontselect);
 
     QGridLayout *codeGridLayout = new QGridLayout();
-    codeGridLayout->addWidget(codeSelectColorLabel,   0, 0);
-    codeGridLayout->addWidget(codeSelectColorButton,  0, 1);
-    codeGridLayout->addWidget(codeFontsizeapply,      1, 0);
-    codeGridLayout->addWidget(codeFontsize,           1, 1);
-    codeGridLayout->addWidget(codeIndentsizeapply,    2, 0);
-    codeGridLayout->addWidget(codeIndentsize,         2, 1);
+    codeGridLayout->addWidget(codeSelectColorLabel, 0, 0);
+    codeGridLayout->addWidget(codeSelectColorButton, 0, 1);
+    codeGridLayout->addWidget(codeFontsizeapply, 1, 0);
+    codeGridLayout->addWidget(codeFontsize, 1, 1);
+    codeGridLayout->addWidget(codeIndentsizeapply, 2, 0);
+    codeGridLayout->addWidget(codeIndentsize, 2, 1);
 
     QVBoxLayout *codeLayout = new QVBoxLayout();
     codeLayout->addLayout(codeFontLayout);
@@ -188,19 +188,19 @@ void EditorConfigFont:: assembly(void){
 
     setLayout(centralLayout);
 }
-void EditorConfigFont:: on_monospace_applysize_state_changed(int i){
-    if(i == Qt::Checked)monospaceFontsize->setEnabled(true);
-    else               monospaceFontsize->setEnabled(false);
+void EditorConfigFont::on_monospace_applysize_state_changed(int i){
+    if(i == Qt::Checked) monospaceFontsize->setEnabled(true);
+    else monospaceFontsize->setEnabled(false);
 }
-void EditorConfigFont:: on_code_applysize_state_changed(int i){
-    if(i == Qt::Checked)codeFontsize->setEnabled(true);
-    else               codeFontsize->setEnabled(false);
+void EditorConfigFont::on_code_applysize_state_changed(int i){
+    if(i == Qt::Checked) codeFontsize->setEnabled(true);
+    else codeFontsize->setEnabled(false);
 }
-void EditorConfigFont:: on_code_applyindent_state_changed(int i){
-    if(i == Qt::Checked)codeIndentsize->setEnabled(true);
-    else               codeIndentsize->setEnabled(false);
+void EditorConfigFont::on_code_applyindent_state_changed(int i){
+    if(i == Qt::Checked) codeIndentsize->setEnabled(true);
+    else codeIndentsize->setEnabled(false);
 }
-void EditorConfigFont:: on_code_select_color_button_click(){
+void EditorConfigFont::on_code_select_color_button_click(){
 	// Исходный цвет
     QColor color(conf->get_code_font_color());
 
@@ -220,7 +220,7 @@ void EditorConfigFont:: on_code_select_color_button_click(){
 	codeColor->setNamedColor(selectedColor.name());
     }
 }
-int EditorConfigFont:: apply_changes(void){
+int EditorConfigFont::apply_changes(void){
     qDebug() << "Apply changes editor font";
 
 	// Уровень сложности вносимых изменений
@@ -228,46 +228,26 @@ int EditorConfigFont:: apply_changes(void){
 	// 1 - для принятия изменений нужна перезагрузка
     int difficultChanges = 0;
 	// Если был изменен основной шрифт
-    if(conf->get_default_font() != defaultFontselect->currentFont().toString()){
-	conf->set_default_font(defaultFontselect->currentFont().toString());
-    }
+    if(conf->get_default_font() != defaultFontselect->currentFont().toString())	conf->set_default_font(defaultFontselect->currentFont().toString());
 	// Если был изменен размер основного шрифта
-    if(conf->get_default_font_size() != defaultFontsize->value()){
-	conf->set_default_font_size(defaultFontsize->value());
-    }
+    if(conf->get_default_font_size() != defaultFontsize->value()) conf->set_default_font_size(defaultFontsize->value());
 	// Если был изменен моноширинный шрифт
-    if(conf->get_monospace_font() != monospaceFontselect->currentFont().toString()){
-	conf->set_monospace_font(monospaceFontselect->currentFont().toString());
-    }
+    if(conf->get_monospace_font() != monospaceFontselect->currentFont().toString()) conf->set_monospace_font(monospaceFontselect->currentFont().toString());
 	// Если был изменен размер моноширинного шрифта
-    if(conf->get_monospace_font_size() != monospaceFontsize->value()){
-	conf->set_monospace_font_size(monospaceFontsize->value());
-    }
+    if(conf->get_monospace_font_size() != monospaceFontsize->value()) conf->set_monospace_font_size(monospaceFontsize->value());
 	// Если была изменена галка разрешения установки размера моноширинного шрифта
-    if(conf->get_monospace_font_size_apply() != monospaceFontsizeapply->isChecked()){
-	conf->set_monospace_font_size_apply(monospaceFontsizeapply->isChecked());
-    }
+    if(conf->get_monospace_font_size_apply() != monospaceFontsizeapply->isChecked()) conf->set_monospace_font_size_apply(monospaceFontsizeapply->isChecked());
 	// Если был изменен шрифт форматирования кода
-    if(conf->get_code_font() != codeFontselect->currentFont().toString()){
-	conf->set_code_font(codeFontselect->currentFont().toString());
-    }
+    if(conf->get_code_font() != codeFontselect->currentFont().toString()) conf->set_code_font(codeFontselect->currentFont().toString());
 	// Если был изменен размер шрифта форматирования кода
-    if(conf->get_code_font_size() != codeFontsize->value()){
-	conf->set_code_font_size(codeFontsize->value());
-    }
+    if(conf->get_code_font_size() != codeFontsize->value()) conf->set_code_font_size(codeFontsize->value());
 	// Если была изменена галка разрешения установки размера шрифта кода
-    if(conf->get_code_font_size_apply() != codeFontsizeapply->isChecked()){
-	conf->set_code_font_size_apply(codeFontsizeapply->isChecked());
-    }
+    if(conf->get_code_font_size_apply() != codeFontsizeapply->isChecked()) conf->set_code_font_size_apply(codeFontsizeapply->isChecked());
 	// Если был изменен отступ шрифта кода
-    if(conf->get_code_indent_size() != codeIndentsize->value()){
-	conf->set_code_indent_size(codeIndentsize->value());
-    }
+    if(conf->get_code_indent_size() != codeIndentsize->value())	conf->set_code_indent_size(codeIndentsize->value());
 	// Если была изменена галка разрешения установки отступа шрифта кода
-    if(conf->get_code_indent_size_apply() != codeIndentsizeapply->isChecked()){
-	conf->set_code_indent_size_apply(codeIndentsizeapply->isChecked());
-    }
+    if(conf->get_code_indent_size_apply() != codeIndentsizeapply->isChecked()) conf->set_code_indent_size_apply(codeIndentsizeapply->isChecked());
 	// Если был изменен цвет начертания кода
-    if(conf->get_code_font_color() != codeColor->name())conf->set_code_font_color(codeColor->name());
+    if(conf->get_code_font_color() != codeColor->name()) conf->set_code_font_color(codeColor->name());
     return difficultChanges;
 }

@@ -45,7 +45,7 @@ ConsoleEmulator::~ConsoleEmulator(){
 void ConsoleEmulator::setupUI(void){
     messageLabel = new QLabel(this);
 
-    buttonDetails = new FlatToolButton(this);
+    buttonDetails = new FlatToolButton("", this);
     buttonDetails->setIcon(QIcon(":/resource/pic/expand_console.svg"));
 
     buttonCancel = new QPushButton(this);

@@ -968,7 +968,7 @@ void rctrl_t::cut(void){
 	// обязательно должна быть сохранена, иначе редактирование,
 	// которое было после открытия записи и до нажатия Cut, потеряется
 	// find_object<MetaEditor>(meta_editor_singleton_name)
-    globalparameters.meta_editor()->save_textarea();
+    globalparameters.edit_entry()->save_textarea();
 
     copy();
 
@@ -1012,7 +1012,7 @@ void rctrl_t::paste(void){
 	// Проверяется, содержит ли буфер обмена данные нужного формата
     const QMimeData *mimeData = QApplication::clipboard()->mimeData();
     if(mimeData == nullptr) return;
-    if(! (mimeData->hasFormat("hapnote/records"))) return;
+    if(! (mimeData->hasFormat("tute/records"))) return;
 	// Создается ссылка на буфер обмена
     QClipboard *clipboardBuf = QApplication::clipboard();
 
@@ -1588,7 +1588,7 @@ void rctrl_t::edit_field(pos_source pos
     it->field<tags_type>(tags);
 
 	// Обновление инфополей в области редактирования записи
-    auto *meta_editor = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
+    auto *meta_editor = globalparameters.edit_entry();	// find_object<MetaEditor>(meta_editor_singleton_name);
     meta_editor->pin(pin);
     meta_editor->name(name);
     meta_editor->author(author);
@@ -1882,7 +1882,7 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 
 //        // Надо очистить поля области редактировния, чтобы редактор не пытался сохранить текущую открытую, но удаленную запись
 //        // find_object<MetaEditor>(meta_editor_singleton_name)
-    globalparameters.meta_editor()->clear_all();
+    globalparameters.edit_entry()->clear_all();
 
 	// Вызывается удаление отмеченных записей
 //    browser::WebView *v =
@@ -1906,7 +1906,7 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 	// Нужно очистить поле редактирования чтобы невидно было текста
 	// последней удаленной записи
 	// find_object<MetaEditor>(meta_editor_singleton_name)
-	globalparameters.meta_editor()->clear_all();
+	globalparameters.edit_entry()->clear_all();
     }
 //    qobject_cast<rs_t *>(parent())
     _record_screen->tools_update();

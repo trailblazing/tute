@@ -41,7 +41,7 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QList>
-#include <QHBoxLayout>
+// #include <QHBoxLayout>
 #include <QSplitter>
 #include <QSystemTrayIcon>
 
@@ -64,12 +64,12 @@
 extern const char *meta_editor_singleton_name;
 
 namespace browser {
-    class Entrance;
-    class Browser;
-    class DownloadManager;
-    class HistoryMenu;
-    class BookmarksMenu;
-    class Profile;
+	class Entrance;
+	class Browser;
+	class DownloadManager;
+	class HistoryMenu;
+	class BookmarksMenu;
+	class Profile;
 }
 
 class ts_t;
@@ -84,21 +84,22 @@ class AppConfig;
 class DataBaseConfig;
 class tsv_t;
 class Editentry;
-
+class QHBoxLayout;
+class QVBoxLayout;
 
 class wn_t
-    : public QMainWindow {
+	: public QMainWindow {
 #if QT_VERSION == 0x050600
-    W_OBJECT(wn_t)
+W_OBJECT(wn_t)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
-    public:
+public:
 	wn_t(gl_para &_globalparameters
 	    , AppConfig &_appconfig
-	    , DataBaseConfig &_databaseconfig
-	    , browser::Profile *_profile, QString style_source);
+	    , DataBaseConfig &databaseconfig
+	    , browser::Profile *profile, QString style_source);
 
 	~wn_t();
 
@@ -137,13 +138,13 @@ class wn_t
 	QSplitter		*h_record_splitter() const;
 	QSplitter		*h_tree_splitter() const;
 //	std::vector<tsv_t *>	tree_viewers() const;
-    public slots:
+public slots:
 	void application_exit(void);
 	void application_fast_exit(void);
 	void commit_data(QSessionManager &manager);
-	void editor_switch(void);
 
-    private slots:
+
+private slots:
 	void file_new(void);
 	void file_open(void);
 	bool file_save(void);
@@ -158,14 +159,14 @@ class wn_t
 
 	void on_expand_edit_area(bool flag);
 
-	void on_click_help_about_hapnote(void);
+	void on_click_help_about_this(void);
 	void on_click_help_about_qt(void);
 
 	void icon_activated(QSystemTrayIcon::ActivationReason reason);
 
 	void on_focus_changed(QWidget *, QWidget *);
 
-    private:
+private:
 
 	void setup_ui(void);
 	void setup_signals(void);
@@ -190,14 +191,15 @@ class wn_t
 	void save_editor_scrollbar_position(void);
 
 
-	QString _style;
+
 
 	gl_para	&_globalparameters;
 	AppConfig		&_appconfig;
 	DataBaseConfig		&_databaseconfig;
 
 
-
+	QWidget *_central_widget;
+	QString _style;
 	QAction			*_action_tray_restore;
 	QAction			*_action_tray_maximize;
 	QAction			*_action_tray_minimize;
@@ -212,7 +214,7 @@ class wn_t
 //	HidableTabWidget	*_vtab_tree;
 	QSplitter		*_h_record_splitter;
 	QSplitter		*_h_tree_splitter;
-//    QSplitter           *_h_splitter;
+//	QSplitter           *_h_splitter;
 
 
 	QMenu				*_filemenu;
@@ -226,9 +228,8 @@ class wn_t
 
 	ts_t				*_tree_screen;
 	FindScreen			*_find_screen;
-
-	Editentry *_editenty;
 	browser::Entrance		*_entrance;
+	Editentry *_editentry;
 //	browser::DownloadManager	*_download;
 	HidableTabWidget	*_vtab_record;
 	QStatusBar		*_statusbar;
@@ -239,13 +240,13 @@ class wn_t
 //    bool _treetable_hidden;       // = globalparameters.getTreeScreen()->isHidden();
 //    bool _recordtable_hidden;     // = globalparameters.getRecordTableScreen()->isHidden();
 
-    protected:
+protected:
 
 
 
 	void closeEvent(QCloseEvent *event);
 
-	bool eventFilter(QObject *o, QEvent *e);	// Отслеживание прочих событий
+	bool eventFilter(QObject *o, QEvent *e);        // Отслеживание прочих событий
 
 	void go_walk_history(void);
 

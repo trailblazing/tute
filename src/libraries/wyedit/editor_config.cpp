@@ -216,20 +216,20 @@ void EditorConfig::set_finddialog_geometry(QString geometry){
 // Расположение кнопок форматирования
 // ----------------------------------
 
-QString EditorConfig::get_tools_line_1(void){
+QString EditorConfig::tools_line_0(void){
+    return get_parameter("tools_line_0");
+}
+
+void EditorConfig::tools_line_0(QString line){
+    _editor_conf->setValue("tools_line_0", line);
+}
+
+QString EditorConfig::tools_line_1(void){
     return get_parameter("tools_line_1");
 }
 
-void EditorConfig::set_tools_line_1(QString line){
+void EditorConfig::tools_line_1(QString line){
     _editor_conf->setValue("tools_line_1", line);
-}
-
-QString EditorConfig::get_tools_line_2(void){
-    return get_parameter("tools_line_2");
-}
-
-void EditorConfig::set_tools_line_2(QString line){
-    _editor_conf->setValue("tools_line_2", line);
 }
 
 bool EditorConfig::get_expand_tools_lines(void){

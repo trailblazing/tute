@@ -843,7 +843,7 @@ namespace browser {
 	for(int i = 0; i < _bookmarksmodel->rowCount(_root); ++ i){
 	    QModelIndex idx = _bookmarksmodel->index(i, 0, _root);
 	    if(_bookmarksmodel->hasChildren(idx)){
-		FlatToolButton *button = new FlatToolButton(this);
+		FlatToolButton *button = new FlatToolButton("", this);
 		button->setPopupMode(FlatToolButton::InstantPopup);
 		button->setArrowType(Qt::DownArrow);
 		button->setText(idx.data().toString());

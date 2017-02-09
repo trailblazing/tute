@@ -4,12 +4,12 @@
 # ANDROID_OS - for Android
 TARGET_OS   =   ANY_OS
 
-lessThan(QT_VERSION, 5.7) {
-    error("Hapnote requires at least Qt 5.7!")
+lessThan(QT_VERSION, 5.6) {
+    error("Tute requires at least Qt 5.6!")
 }
 
-lessThan(QT.webengine.VERSION, 5.7) {
-    error("Hapnote requires at least QtWebEngine 5.7!")
+lessThan(QT.webengine.VERSION, 5.6) {
+    error("Tute requires at least QtWebEngine 5.6!")
 }
 
 # Flags for profile application
@@ -38,9 +38,11 @@ QT  =   gui     \
         svg     \
         network
 
-greaterThan(QT_MAJOR_VERSION, 4): QT    +=  widgets             \
-                                            printsupport        \
-                                            webenginewidgets
+greaterThan(QT_MAJOR_VERSION, 4): QT    +=      widgets                 \
+                                                printsupport            \
+                                                webenginewidgets        \
+                                                #webengine
+
 #QT  +=  widgets
 #QT  +=  webkit
 #QT  +=  webenginewidgets
@@ -68,6 +70,8 @@ QMAKE_CXXFLAGS += -std=c++14 -std=gnu++14
 DEFINES += "STI_SUPERCLASS=QSystemTrayIcon"
 DEFINES += USE_SYSTRAYICON
 DEFINES += DONT_USE_DBUS
+DEFINES += DONT_USE_PTE
+DEFINES += USE_WYEDIT
 
 # http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
 
@@ -116,15 +120,15 @@ SOURCE_OS   =   any
 VERSION     =   0.0.1
 DEFINES     +=  APP_VERSION=\\\"$$VERSION\\\"
 
-TARGET      =   hapnote
-RESOURCES   =   hapnote.qrc     \
+TARGET      =   tute
+RESOURCES   =   tute.qrc     \
     src/views/browser/data/data.qrc \
     src/views/browser/htmls/htmls.qrc \
     src/libraries/qtm/EditingWindow.qrc \
     src/libraries/qtm/QijSearchWidget.qrc \
     src/libraries/qtm/qtm.qrc
 
-TRANSLATIONS    =   resource/translations/hapnote_ru.ts
+TRANSLATIONS    =   resource/translations/ru.ts
 CODECFORTR      =   utf8
 
 # QMAKE_LFLAGS  +=  -L/usr/lib/qt4/lib
@@ -134,19 +138,19 @@ INCLUDEPATH     += ../../verdigris/src
 
 contains(TARGET_OS, ANY_OS) {
  message(Building the any OS version...)
- SYSTEM_PROGRAM_NAME    =   hapnote
+ SYSTEM_PROGRAM_NAME    =   tute
  BINARY_INSTALL_PATH    =   /usr/local/bin
 }
 
 contains(TARGET_OS, MEEGO_OS){
  message(Building the MeeGo OS version...)
- SYSTEM_PROGRAM_NAME    =   ru.webhamster.hapnote
+ SYSTEM_PROGRAM_NAME    =   ru.webhamster.tute
  BINARY_INSTALL_PATH    =   /opt/$${SYSTEM_PROGRAM_NAME}/bin
 }
 
 contains(TARGET_OS, ANDROID_OS){
  message(Building the Android OS version...)
- SYSTEM_PROGRAM_NAME    =   hapnote
+ SYSTEM_PROGRAM_NAME    =   tute
  BINARY_INSTALL_PATH    =   /
 }
 
@@ -163,41 +167,41 @@ build_all:!build_pass {
 message(Set installation directory for binary file to $${BINARY_INSTALL_PATH})
 
 
-### hapnote_binary.path   =   "$${buildDir}/bin"
-## hapnote_binary.commands  +=   $(COPY_DIR) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/\" \"$${OUT_PWD}/bin\"
-# hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/mode.ini\" \"$${OUT_PWD}/bin\"
-### hapnote_binary.files  +=   "$${sourceDir}/bin/resource/standardconfig/$${TARGET_OS}/browser.conf"
-### hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/browserview.ini\" \"$${OUT_PWD}/bin/.\"
-### hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/conf.ini\" \"$${OUT_PWD}/bin/.\"
-### hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/editorconf.ini\" \"$${OUT_PWD}/bin/.\"
-### hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/entrance.ini\" \"$${OUT_PWD}/bin/.\"
-### hapnote_binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/stylesheet.css\" \"$${OUT_PWD}/bin/.\"
-# first.depends = $(first) hapnote_binary
+### _binary.path   =   "$${buildDir}/bin"
+## _binary.commands  +=   $(COPY_DIR) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/\" \"$${OUT_PWD}/bin\"
+# _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/mode.ini\" \"$${OUT_PWD}/bin\"
+### _binary.files  +=   "$${sourceDir}/bin/resource/standardconfig/$${TARGET_OS}/browser.conf"
+### _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/browserview.ini\" \"$${OUT_PWD}/bin/.\"
+### _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/conf.ini\" \"$${OUT_PWD}/bin/.\"
+### _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/editorconf.ini\" \"$${OUT_PWD}/bin/.\"
+### _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/entrance.ini\" \"$${OUT_PWD}/bin/.\"
+### _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/stylesheet.css\" \"$${OUT_PWD}/bin/.\"
+# first.depends = $(first) _binary
 # export(first.depends)
-# export(hapnote_binary.commands)
-# QMAKE_EXTRA_TARGETS  +=  first hapnote_binary
+# export(_binary.commands)
+# QMAKE_EXTRA_TARGETS  +=  first _binary
 
 target.path     =   $${BINARY_INSTALL_PATH}
 INSTALLS        +=  target
 
 desktop_file.path   =   /usr/share/applications
 contains(TARGET_OS, ANY_OS) {
- desktop_file.files =   desktop/any/hapnote.desktop
+ desktop_file.files =   desktop/any/tute.desktop
 }
 contains(TARGET_OS, MEEGO_OS) {
- desktop_file.files =   desktop/meego/hapnote.desktop
+ desktop_file.files =   desktop/meego/tute.desktop
 }
 contains(TARGET_OS, ANDROID_OS) {
- desktop_file.files =   desktop/any/hapnote.desktop
+ desktop_file.files =   desktop/any/tute.desktop
 }
 INSTALLS    +=  desktop_file
 
 icon_scalable_file.path     =   /usr/share/icons/hicolor/scalable/apps
-icon_scalable_file.files    =   desktop/hapnote.svg
+icon_scalable_file.files    =   desktop/icon.svg
 INSTALLS    +=  icon_scalable_file
 
 icon_48_file.path   =   /usr/share/icons/hicolor/48x48/apps
-icon_48_file.files  =   desktop/hapnote.png
+icon_48_file.files  =   desktop/icon.png
 INSTALLS    +=  icon_48_file
 
 
@@ -309,25 +313,27 @@ HEADERS     =   \
     src/views/record_table/vertical_scrollarea.h \
     src/views/wait_clock/wait_clock.h \
     src/libraries/wyedit/editor_image_properties.h \
-    src/libraries/qtm/AccountsDialog.h \
-    src/libraries/qtm/DBusAdaptor.h \
-    src/libraries/qtm/EditingWindow.h \
-    src/libraries/qtm/Highlighter.h \
-    src/libraries/qtm/locationlineedit.h \
-    src/libraries/qtm/PrefsDialog.h \
-    src/libraries/qtm/QijSearchWidget.h \
-    src/libraries/qtm/QuickpostTemplate.h \
-    src/libraries/qtm/QuickpostTemplateDialog.h \
-    src/libraries/qtm/StatusWidget.h \
-    src/libraries/qtm/SuperMenu.h \
-    src/libraries/qtm/SysTrayIcon.h \
-    src/libraries/qtm/XmlRpcHandler.h \
     src/views/browser/cookiejar.h \
     src/views/record/editentry.h \
-    src/libraries/qtm/Application.h \
     src/libraries/qtm/markdown_header.h \
     src/libraries/qtm/qtm_version.h \
 #    src/views/browser/cookiejar.h \
+    src/libraries/qtm/accounts_dialog.h \
+    src/libraries/qtm/application.h \
+    src/libraries/qtm/dbus_adaptor.h \
+    src/libraries/qtm/editing_window.h \
+    src/libraries/qtm/highlighter.h \
+    src/libraries/qtm/location_line_edit.h \
+    src/libraries/qtm/prefs_dialog.h \
+    src/libraries/qtm/qij_search_widget.h \
+    src/libraries/qtm/quickpost_template.h \
+    src/libraries/qtm/quickpost_template_dialog.h \
+    src/libraries/qtm/status_widget.h \
+    src/libraries/qtm/super_menu.h \
+    src/libraries/qtm/sys_tray_icon.h \
+    src/libraries/qtm/xml_rpc_handler.h \
+    src/utility/add_action.h \
+    src/libraries/qtm/side_tabwidget.h
 
 
 
@@ -406,9 +412,6 @@ SOURCES     =   src/main.cpp \
     src/libraries/clipboard_records.cpp \
     src/libraries/disk_helper.cpp \
     src/libraries/fixed_parameters.cpp \
-    src/libraries/flat_control.cpp \
-    src/libraries/global_parameters.cpp \
-    src/libraries/mt_styled_item_delegate.cpp \
     src/libraries/mt_table_widget.cpp \
     src/libraries/trash_monitoring.cpp \
     src/libraries/walk_history.cpp \
@@ -454,24 +457,28 @@ SOURCES     =   src/main.cpp \
     src/views/record_table/vertical_scrollarea.cpp \
     src/views/wait_clock/wait_clock.cpp \
     src/views/app_config/app_config_page_table.cpp \
-    src/libraries/qtm/StatusWidget.cc \
-    src/libraries/qtm/SuperMenu.cc \
-    src/libraries/qtm/SysTrayIcon.cc \
-    src/libraries/qtm/XmlRpcHandler.cc \
     src/views/browser/cookiejar.cpp \
-    src/libraries/qtm/QuickpostTemplateDialog.cc \
-    src/libraries/qtm/QuickpostTemplate.cc \
-    src/libraries/qtm/QijSearchWidget.cc \
-    src/libraries/qtm/PrefsDialog.cc \
-    src/libraries/qtm/locationlineedit.cc \
-    src/libraries/qtm/Highlighter.cc \
-    src/libraries/qtm/EditingWindow_ResponseHandlers.cc \
-    src/libraries/qtm/EditingWindow.cc \
-    src/libraries/qtm/DBusAdaptor.cc \
-    src/libraries/qtm/AccountsDialog.cc \
     src/views/record/editentry.cpp \
-    src/libraries/qtm/Application.cc \
 #    src/views/browser/cookiejar.cpp \
+    src/libraries/qtm/accounts_dialog.cxx \
+    src/libraries/qtm/application.cxx \
+    src/libraries/qtm/dbus_adaptor.cxx \
+    src/libraries/qtm/editing_window.cxx \
+    src/libraries/qtm/editing_window_response_handlers.cxx \
+    src/libraries/qtm/highlighter.cxx \
+    src/libraries/qtm/location_line_edit.cc \
+    src/libraries/qtm/prefs_dialog.cxx \
+    src/libraries/qtm/qij_search_widget.cxx \
+    src/libraries/qtm/quickpost_template.cxx \
+    src/libraries/qtm/quickpost_template_dialog.cxx \
+    src/libraries/qtm/status_widget.cxx \
+    src/libraries/qtm/super_menu.cxx \
+    src/libraries/qtm/sys_tray_icon.cxx \
+    src/libraries/qtm/xml_rpc_handler.cxx \
+    src/libraries/mt_styled_item_delegate.cpp \
+    src/libraries/global_parameters.cpp \
+    src/libraries/flat_control.cpp \
+    src/libraries/qtm/side_tabwidget.cxx
 
 
 lessThan(QT_MAJOR_VERSION,5) {
@@ -512,7 +519,7 @@ win32 {
 mac {
     ICON    =   browser.icns
     QMAKE_INFO_PLIST    =   Info_mac.plist
-    TARGET  =   hapnote
+    TARGET  =   tute
 }
 
 ANDROID_PACKAGE_SOURCE_DIR  =   $$PWD/android
@@ -529,7 +536,6 @@ DISTFILES   +=          \
     README.md \
     doc/up_linker.png \
     doc/binder.png \
-    bin/browser.conf \
     src/libraries/qtm/Markdown/Markdown.pl \
     src/libraries/qtm/qtm-desktop-suse.sh \
     src/libraries/qtm/qtm-desktop.sh \
@@ -631,97 +637,6 @@ unix{
 EXAMPLE_FILES   =   Info_mac.plist browser.icns browser.ico browser.rc  \
                         cookiejar.h cookiejar.cpp  # FIXME: these are currently unused.
 
-
-
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Svg
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Svg
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Svg
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5WebEngineWidgets
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5WebEngineWidgets
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5WebEngineWidgets
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5PrintSupport
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5PrintSupport
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5PrintSupport
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Widgets
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Widgets
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Widgets
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5WebEngineCore
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5WebEngineCore
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5WebEngineCore
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Quick
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Quick
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Quick
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Gui
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Gui
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Gui
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Xml
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Xml
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Xml
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Qml
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Qml
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Qml
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Network
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Network
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Network
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5WebChannel
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5WebChannel
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5WebChannel
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Core
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Core
-#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Core
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-
-#unix|win32: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5WebEngine
-
-#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
-#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
 #SUBDIRS += \
 #    src/libraries/qtm/QTM.pro

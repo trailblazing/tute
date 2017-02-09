@@ -22,7 +22,7 @@
 #include "editor_show_text.h"
 
 
-
+extern const std::string editor_prefix;
 
 
 // Fix ugly Qt QSS bug
@@ -113,17 +113,21 @@ class FlatToolButton;
 class FlatComboBox;
 class FlatFontComboBox;
 class FlatToolButton;
+class FindScreen;
+class Editentry;
+class SuperMenu;
+class EditingWindow;
+class QStackedWidget;
 
-class Editor : public QWidget
-{
+class Editor : public QWidget {
 #if QT_VERSION == 0x050600
-    W_OBJECT(Editor)
+W_OBJECT(Editor)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
-    public:
-	Editor(QWidget *parent = nullptr);
+public:
+	Editor(QStackedWidget *main_stack);
 	~Editor(void);
 
 	EditorConfig        *_editor_config = nullptr;
@@ -137,7 +141,7 @@ class Editor : public QWidget
 	FlatToolButton		*_clear		= nullptr;
 
 	FlatToolButton		*_numeric_list	= nullptr;
-	FlatToolButton		*_dot_list	= nullptr;
+	FlatToolButton		*_dot_list		= nullptr;
 
 	FlatToolButton		*_indent_plus	= nullptr;
 	FlatToolButton		*_indent_minus	= nullptr;
@@ -146,15 +150,15 @@ class Editor : public QWidget
 	FlatToolButton		*_align_center	= nullptr;
 	FlatToolButton		*_align_right	= nullptr;
 	FlatToolButton		*_align_width	= nullptr;
-	FlatToolButton		*_settings	= nullptr;
+	FlatToolButton		*_settings		= nullptr;
 
 	// QFontComboBox
 	FlatFontComboBox	*_font_select	= nullptr;
-	FlatComboBox		*_font_size	= nullptr;
+	FlatComboBox		*_font_size		= nullptr;
 	FlatToolButton		*_font_color	= nullptr;
 
-	FlatToolButton		*_show_html		= nullptr;
-	FlatToolButton		*_find_text		= nullptr;
+	FlatToolButton		*_show_html			= nullptr;
+	FlatToolButton		*_find_text			= nullptr;
 	FlatToolButton		*_show_formatting	= nullptr;
 
 	FlatToolButton		*_create_table		= nullptr;
@@ -166,34 +170,34 @@ class Editor : public QWidget
 	FlatToolButton		*_table_split_cell	= nullptr;
 
 	FlatToolButton		*_insert_image_from_file	= nullptr;
-	FlatToolButton		*_expand_edit_area		= nullptr;
+	FlatToolButton		*_expand_edit_area			= nullptr;
 	FlatToolButton		*_expand_tools_lines		= nullptr;
-	FlatToolButton		*_save				= nullptr;
+	FlatToolButton		*_save						= nullptr;
 
-	FlatToolButton		*_back		= nullptr;
-	FlatToolButton		*_freeze	= nullptr;		// reserved for read only
+	FlatToolButton		*_back			= nullptr;
+	FlatToolButton		*_freeze		= nullptr;          // reserved for read only
 	FlatToolButton		*_find_in_base	= nullptr;
 
 	FlatToolButton		*_show_text = nullptr;
 
 	FlatToolButton		*_to_attach = nullptr;
-	QIcon _icon_attach_exists;		// Иконка, когда аттачи есть
-	QIcon _icon_attach_not_exists;		// Иконка, когда аттачей нет
+	QIcon _icon_attach_exists;          // Иконка, когда аттачи есть
+	QIcon _icon_attach_not_exists;          // Иконка, когда аттачей нет
 
 	IndentSlider		*_indent_slider = nullptr;
 
 	// Горизонтальная линейка, содержащая кнопки форматирования
 	QVBoxLayout		*_textformat_buttons_layout	= nullptr;
-	QToolBar		*_tools_line_0			= nullptr;
-	QToolBar		*_tools_line_1			= nullptr;
-	void insert_button_to_tools_line(QString toolName, QToolBar *line);
+	QToolBar		*_tools_line_0				= nullptr;
+	QToolBar		*_tools_line_1				= nullptr;
+
 
 	// Вертикальная группировалка линеек кнопок и области редактирования
-	QVBoxLayout         *_buttons_and_edit_layout = nullptr;
-
-	// Контекстное меню редактора
-	EditorContextMenu   *_editor_context_menu = nullptr;
-
+	QVBoxLayout         *full_layout = nullptr;
+//		Editentry *_editentry;
+//	// Контекстное меню редактора
+//	EditorContextMenu   *_editor_context_menu = nullptr;
+	void add_action_by_name(QString toolName, QToolBar *line);
 	const char *version(void);
 
 	void init_enable_assembly(bool flag);
@@ -205,7 +209,13 @@ class Editor : public QWidget
 	void textarea(QString text);
 	void textarea_editable(bool editable);
 	QString	textarea(void);
-	QTextDocument	*textarea_document(void);
+	QTextCursor textCursor() const;
+	void setTextCursor(const QTextCursor &cursor);
+	void insertPlainText(const QString &text);
+	void setPlainText(const QString &text);
+	QString toPlainText() const;
+	void ensureCursorVisible() const;
+	QTextDocument	*document(void);
 	void textarea_modified(bool modify);
 	bool textarea_modified(void);
 
@@ -258,65 +268,67 @@ class Editor : public QWidget
 	int scrollbar_position(void);
 	void scrollbar_position(int n);
 
+	QToolBar *tool_bar();
+//		SuperMenu *context_menu();
 
 	enum {
-	    SAVE_IMAGES_SIMPLE		= 0,
-	    SAVE_IMAGES_REMOVE_UNUSED	= 1
+		SAVE_IMAGES_SIMPLE			= 0,
+		SAVE_IMAGES_REMOVE_UNUSED	= 1
 	};
 
 	enum {
-	    DIRFILEEMPTY_REACTION_SHOW_ERROR,
-	    DIRFILEEMPTY_REACTION_SUPPRESS_ERROR
+		DIRFILEEMPTY_REACTION_SHOW_ERROR,
+		DIRFILEEMPTY_REACTION_SUPPRESS_ERROR
 	};
 
 	enum {
-	    WYEDIT_DESKTOP_MODE		= 0,
-	    WYEDIT_MOBILE_MODE		= 1
+		WYEDIT_DESKTOP_MODE		= 0,
+		WYEDIT_MOBILE_MODE		= 1
 	};
 
-    signals:
+signals:
 
 	// Сигналы установки отступов на линейке с движками
 	// согласно текущему форматированию
 	void send_set_textindent_pos(int i)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(send_set_textindent_pos, (int), i)	//
+	W_SIGNAL(send_set_textindent_pos, (int), i)     //
 #else
 	;
 #endif
 	void send_set_leftindent_pos(int i)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(send_set_leftindent_pos, (int), i)	//
+	W_SIGNAL(send_set_leftindent_pos, (int), i)     //
 #else
 	;
 #endif
 
 	void send_set_rightindent_pos(int i)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(send_set_rightindent_pos, (int), i)	//
+	W_SIGNAL(send_set_rightindent_pos, (int), i)        //
 #else
 	;
 #endif
 
 	void send_expand_edit_area(bool flag)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(send_expand_edit_area, (bool), flag)	//
+	W_SIGNAL(send_expand_edit_area, (bool), flag)       //
 #else
 	;
 #endif
 
 	void wyedit_find_in_base_clicked()
 #if QT_VERSION == 0x050600
-	W_SIGNAL(wyedit_find_in_base_clicked)	//
+	W_SIGNAL(wyedit_find_in_base_clicked)       //
 #else
 	;
 #endif
 
-    public slots:
+public slots:
 
 	void on_update_indentline_geometry_slot(void);
 
-    private slots:
+private slots:
 
 	// Действия в области редактирования
 	void on_bold_clicked(void);
@@ -366,13 +378,13 @@ class Editor : public QWidget
 	void on_show_text_clicked(void);
 	void on_to_attach_clicked(void);
 
-	void on_cursor_position_changed(void);		// Слот, контролирущий перемещение курсора
+	void on_cursor_position_changed(void);          // Слот, контролирущий перемещение курсора
 	void on_selection_changed(void);
 	void on_undo(void);
 	void on_redo(void);
-	void on_cut(void);
-	void on_copy(void);
-	void on_paste(void);
+	void cut(void);
+	void copy(void);
+	void paste(void);
 	void on_selectAll(void);
 
 	void on_findtext_signal_detect(const QString &text, QTextDocument::FindFlags flags);
@@ -384,19 +396,19 @@ class Editor : public QWidget
 	void on_indentline_mouse_release(void);
 
 	// Открытие контекстного меню
-	void on_customContextMenuRequested(const QPoint &pos);
+	void on_custom_contextmenu_requested(const QPoint &_position);
 
 	void on_context_menu_edit_image_properties(void);
 
 	// void onModificationChanged(bool flag);
 
-    protected:
+protected:
 
 	// Область редактирования текста
 	EditorTextArea *_text_area;
 
 
-    private:
+private:
 
 	bool _init_data_enable_assembly		= true;
 	QString _init_data_config_file_name	= "";
@@ -407,7 +419,7 @@ class Editor : public QWidget
 	QString _work_directory;
 	QString _work_file_name;
 
-	int _view_mode;	// Режим отображения редактора - WYEDIT_DESKTOP_MODE или WYEDIT_MOBILE_MODE
+	int _view_mode;     // Режим отображения редактора - WYEDIT_DESKTOP_MODE или WYEDIT_MOBILE_MODE
 
 	void setup_signals(void);
 	void setup_buttons(void);
@@ -417,7 +429,7 @@ class Editor : public QWidget
 	void hide_all_tools_elements(void);
 	void format_to_list(QTextListFormat::Style setFormat);
 	void align_text(Qt::AlignmentFlag mode);
-	void update_tools_lines(void);
+	void add_actions_by_name(void);
 
 	bool is_block_select(void);
 	bool is_cursor_on_empty_line(void);
@@ -450,8 +462,7 @@ class Editor : public QWidget
 
 	void setup_closebutton(void);
 	void assembly_closebutton(void);
-	void widget_hide(bool);
-
+//	void widget_hide(bool);
 
 	QString _current_font_family;
 	int _current_font_size;
@@ -461,15 +472,15 @@ class Editor : public QWidget
 	int _current_left_indent;
 	int _current_right_indent;
 
-	EditorFindDialog *_find_dialog;	// Виджет поиска
+	EditorFindDialog *_find_dialog;     // Виджет поиска
 
-	QColor _buttons_select_color;	// Цвет рамки выделенных кнопок
+	QColor _buttons_select_color;       // Цвет рамки выделенных кнопок
 
-	bool _expand_edit_area_flag;	// Распахнуто ли на максимум окно редактора
+	bool _expand_edit_area_flag;        // Распахнуто ли на максимум окно редактора
 
 	// Указатели на переопределенные функции записи и чтения редактируемого текста
-	std::function<void (QObject *editor, QString saveString)> save_callback_func;	// void (*save_callback_func)(QObject *editor, QString saveString);
-	std::function<void (QObject *editor, QString &String)> load_callback_func;	// void (*load_callback_func)(QObject *editor, QString &loadString);
+	std::function<void (QObject *editor, QString saveString)> save_callback_func;       // void (*save_callback_func)(QObject *editor, QString saveString);
+	std::function<void (QObject *editor, QString &String)> load_callback_func;      // void (*load_callback_func)(QObject *editor, QString &loadString);
 
 	// Указатель на функцию переключения на предыдущее окно (для мобильного интерфейса)
 	void (*back_callback_func)(void);
@@ -483,8 +494,8 @@ class Editor : public QWidget
 	QMap<QString, QString> _misc_fields;
 
 	int _dir_file_empty_reaction = DIRFILEEMPTY_REACTION_SHOW_ERROR;
-	QStringList _tools_list_in_line_0;
-	QStringList _tools_list_in_line_1;
+	QStringList _tools_name_list_in_line_0;
+	QStringList _tools_name_list_in_line_1;
 
 	// Список инструментов, которые ненужно подгружать
 	QStringList _disable_tool_list;
@@ -492,17 +503,23 @@ class Editor : public QWidget
 	QVBoxLayout	*_toolsarea_of_close_button;
 
 	enum {
-	    BT_BOLD,
-	    BT_ITALIC,
-	    BT_UNDERLINE,
-	    BT_ALIGN_LEFT,
-	    BT_ALIGN_CENTER,
-	    BT_ALIGN_RIGHT,
-	    BT_ALIGN_WIDTH
+		BT_BOLD,
+		BT_ITALIC,
+		BT_UNDERLINE,
+		BT_ALIGN_LEFT,
+		BT_ALIGN_CENTER,
+		BT_ALIGN_RIGHT,
+		BT_ALIGN_WIDTH
 	};
-//	QWidget *_hidetitlebar;
+//		QWidget *_hidetitlebar;
+//		SuperMenu *_context_menu;
+
 	friend class MetaEditor;
 	friend class Editentry;
+	friend class EditingWindow;
+	friend class SuperMenu;
+protected:
+//		virtual void resizeEvent(QResizeEvent *e);
 };
 
 #endif /* _EDITOR_H_ */

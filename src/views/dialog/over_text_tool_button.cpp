@@ -18,7 +18,7 @@
 W_OBJECT_IMPL(OverTextToolButton)
 #endif
 
-OverTextToolButton::OverTextToolButton(QWidget *parent) : FlatToolButton(parent){
+OverTextToolButton::OverTextToolButton(QWidget *parent) : FlatToolButton("", parent){
     overText = "";
 }
 

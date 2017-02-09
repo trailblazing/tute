@@ -160,7 +160,7 @@ void FindScreen::setup_navigate(void){
 
     _historyhome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
 
-    append_action_as_button<QToolButton>(_navigater, _historyhome);				// _navigater->addAction(_historyhome);
+    add_action<QToolButton>(_navigater, _historyhome);				// _navigater->addAction(_historyhome);
 
 	// _history_back = new FlatToolButton(this);
 
@@ -175,7 +175,7 @@ void FindScreen::setup_navigate(void){
 	// _historyback->setMenu(_historybackmenu);
 	// connect(_historybackmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowBackMenu()));
 	// connect(_historybackmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
-    append_action_as_button<QToolButton>(_navigater, _historyback);				// _navigater->addAction(_historyback);
+    add_action<QToolButton>(_navigater, _historyback);				// _navigater->addAction(_historyback);
 	// insertActionAsButton(_container, _historyback);
 
 	// _history_forward = new FlatToolButton(this);
@@ -189,7 +189,7 @@ void FindScreen::setup_navigate(void){
 	// connect(_historyforwardmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowForwardMenu()));
 	// connect(_historyforwardmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
 	// _historyforward->setMenu(_historyforwardmenu);
-    append_action_as_button<QToolButton>(_navigater, _historyforward);				// _navigater->addAction(_historyforward);
+    add_action<QToolButton>(_navigater, _historyforward);				// _navigater->addAction(_historyforward);
 
 
 	// _stop_reload = new FlatToolButton(this);
@@ -199,7 +199,7 @@ void FindScreen::setup_navigate(void){
 	// _reloadicon = style()->standardIcon(QStyle::SP_BrowserReload);
     _stopreload->setIcon(QIcon(":/resource/pic/mobile_reload.svg")				// style()->standardIcon(QStyle::SP_BrowserReload)
 	);
-    append_action_as_button<QToolButton>(_navigater, _stopreload);				// _navigater->addAction(_stopreload);
+    add_action<QToolButton>(_navigater, _stopreload);				// _navigater->addAction(_stopreload);
 }
 
 void FindScreen::assembly_navigate(void){
@@ -214,7 +214,7 @@ void FindScreen::setup_findtext_and_button(void){
 	// _findtext = new QLineEdit();
 
 	// Кнопка "Поиск"
-    _find_start_button = new FlatToolButton(this);				// QPushButton
+    _find_start_button = new FlatToolButton("", this);				// QPushButton
     _find_start_button->setText(tr("Find"));
 	// _findstartbutton->setDefault(true);
     _find_start_button->setEnabled(false);
@@ -223,7 +223,7 @@ void FindScreen::setup_findtext_and_button(void){
     _find_start_button->setAutoRaise(true);
 
 	// Кнопка разворачивания инструментов
-    _tools_expand = new FlatToolButton(this);
+    _tools_expand = new FlatToolButton("", this);
     _tools_expand->setIcon(QIcon(":/resource/pic/find_in_base_expand_tools.svg"));
     _tools_expand->setEnabled(true);
     _tools_expand->setAutoRaise(true);
@@ -311,7 +311,7 @@ void FindScreen::assembly_combooption(void){
 
 void FindScreen::setup_closebutton(void){
 	// Кнопка закрытия виджета
-    _close_button = new FlatToolButton(this);
+    _close_button = new FlatToolButton("", this);
     _close_button->setVisible(true);
     _close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton));			// SP_TitleBarCloseButton SP_DialogCloseButton
     _close_button->setAutoRaise(true);

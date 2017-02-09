@@ -91,7 +91,7 @@ void InfoFieldEnter::setup_ui(void){
 
 	// Кнопка раскрытия или закрытия полей author, url, tags...
 	// Она в два раза меньше обычного размера
-	expandInfo = new FlatToolButton(this);
+	expandInfo = new FlatToolButton("", this);
 	expandInfo->setObjectName("infoFieldEnterExpandInfo");
 	expandInfo->setVisible(true);
 	int w	= expandInfo->geometry().width();

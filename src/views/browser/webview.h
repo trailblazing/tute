@@ -80,7 +80,7 @@ class QNetworkReply;
 class QSslError;
 QT_END_NAMESPACE
 
-extern gl_para			globalparameters;
+extern gl_para				globalparameters;
 extern boost::intrusive_ptr<Record>	check_record(const QUrl &_url);
 
 class Record;

@@ -46,37 +46,37 @@
 
 #include "tree_screen.h"
 
-extern AppConfig				appconfig;
-extern gl_para				globalparameters;
-extern const char				*index_xml_file_name;
-extern const char				*clipboard_items_root;
+extern AppConfig								appconfig;
+extern gl_para									globalparameters;
+extern const char								*index_xml_file_name;
+extern const char								*clipboard_items_root;
 extern enum QItemSelectionModel::SelectionFlag	current_tree_selection_mode;
 extern enum QItemSelectionModel::SelectionFlag	current_tree_current_index_mode;
 
 
 const char	*action_hide_tree_screen = "action_hide_tree_screen";
 // const char	*action_set_as_session_root	= "set_as_session_root";
-const char	*action_find_in_base		= "find_in_base";
-const char	*action_cursor_follow_root	= "cursor_follow_root";
-const char	*action_cursor_follow_up	= "cursor_follow_up";
+const char	*action_find_in_base			= "find_in_base";
+const char	*action_cursor_follow_root		= "cursor_follow_root";
+const char	*action_cursor_follow_up		= "cursor_follow_up";
 const char	*action_expand_all_subbranch	= "expand_all_subbranch";
 const char	*action_collapse_all_subbranch	= "collapse_all_subbranch";
-const char	*action_move_up_branch		= "move_up_branch";
-const char	*action_move_dn_branch		= "move_dn_branch";
-const char	*action_insert_sub_branch	= "insert_sub_branch";
-const char	*action_insert_branch		= "insert_branch";
-const char	*action_edit_branch		= "edit_branch";
-const char	*action_delete_branch		= "delete_branch";
-const char	*action_cut_branch		= "cut_branch";
-const char	*action_copy_branch		= "copy_branch";
-const char	*action_paste_branch		= "paste_branch";
-const char	*action_paste_sub_branch	= "paste_sub_branch";
-const char	*action_encrypt_branch		= "encrypt_branch";
-const char	*action_decrypt_branch		= "decrypt_branch";
-const char	*action_freeze_browser_view	= "freeze_browser_view";
-const char	*action_edit_field		= "edit_field";
-const char	*action_editor_switch		= "editor_switch";
-const char	*action_main_menu		= "main_menu";
+const char	*action_move_up_branch			= "move_up_branch";
+const char	*action_move_dn_branch			= "move_dn_branch";
+const char	*action_insert_sub_branch		= "insert_sub_branch";
+const char	*action_insert_branch			= "insert_branch";
+const char	*action_edit_branch				= "edit_branch";
+const char	*action_delete_branch			= "delete_branch";
+const char	*action_cut_branch				= "cut_branch";
+const char	*action_copy_branch				= "copy_branch";
+const char	*action_paste_branch			= "paste_branch";
+const char	*action_paste_sub_branch		= "paste_sub_branch";
+const char	*action_encrypt_branch			= "encrypt_branch";
+const char	*action_decrypt_branch			= "decrypt_branch";
+const char	*action_freeze_browser_view		= "freeze_browser_view";
+const char	*action_edit_field				= "edit_field";
+const char	*action_editor_switch			= "editor_switch";
+const char	*action_main_menu				= "main_menu";
 
 const char *tree_screen_viewer_name = "TreeScreenViewer";
 
@@ -99,31 +99,31 @@ W_OBJECT_IMPL(ts_t)
 #endif
 
 ts_t::ts_t(QString object_name
-	  , const AppConfig   &_appconfig
-	  , QMenu             *_filemenu
-	  , QMenu             *_toolsmenu
-	  , wn_t        *_main_window)
-    : QWidget(_main_window)
-      , _main_window(_main_window)
-	// , know_root_holder(_appconfig, this)
-	// , ui(new Ui::MainWindow)
-	// , _menubar(new QMenuBar(this))
-	// , _tree_controller(new TreeController())
-      , _tools_line(new QToolBar(this))
-      , _extra_tools_line(new QToolBar(this))
+		  , const AppConfig   &_appconfig
+		  , QMenu             *_filemenu
+		  , QMenu             *_toolsmenu
+		  , wn_t        *_main_window)
+	: QWidget(_main_window)
+	  , _main_window(_main_window)
+		// , know_root_holder(_appconfig, this)
+		// , ui(new Ui::MainWindow)
+		// , _menubar(new QMenuBar(this))
+		// , _tree_controller(new TreeController())
+	  , _tools_line(new QToolBar(this))
+	  , _extra_tools_line(new QToolBar(this))
 // , _main_menu_bar(new QToolBar(this))
 // , _main_menu_button(new QPushButton("", _main_menu_bar))
 // , _main_menu_action(new QWidgetAction(_main_menu_button))
-      , _main_menu_in_button(new QMenu("buttonmenu"))
-      , _context_menu(new QMenu(this))
-      , _tree_view(new tv_t(knowtreeview_singleton_name, this))
-	// , _know_model_board(new KnowModel(_tree_view))
-      , _tools_layout(new QHBoxLayout())
-	// , _recordtree_search(new browser::ToolbarSearch(this))
-	// , _recordtree_searchlayout(new QHBoxLayout())
-      , _adjustingscrollarea(new AdjustingScrollArea(_tree_view, this))
-      , _treescreenlayout(new QVBoxLayout())
-      , _appconfig(_appconfig){
+	  , _main_menu_in_button(new QMenu("buttonmenu"))
+	  , _context_menu(new QMenu(this))
+	  , _tree_view(new tv_t(knowtreeview_singleton_name, this))
+		// , _know_model_board(new KnowModel(_tree_view))
+	  , _tools_layout(new QHBoxLayout())
+		// , _recordtree_search(new browser::ToolbarSearch(this))
+		// , _recordtree_searchlayout(new QHBoxLayout())
+	  , _adjustingscrollarea(new AdjustingScrollArea(_tree_view, this))
+	  , _treescreenlayout(new QVBoxLayout())
+	  , _appconfig(_appconfig){
 	// , _shadow_branch(new TreeModelKnow(this))
 	// _know_model_board->init_from_xml(_appconfig.tetra_dir() + "/" + index_xml_file_name);  // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
 	// int all_count = _know_model_board->count_records_all();
@@ -144,16 +144,16 @@ ts_t::ts_t(QString object_name
 	////    _recordtree_search->sizePolicy().setHorizontalStretch(10);
 
 
-    setObjectName(object_name);
-    setup_actions();
+	setObjectName(object_name);
+	setup_actions();
 // auto menubar_ =
-    setup_ui(_filemenu, _toolsmenu);
+	setup_ui(_filemenu, _toolsmenu);
 
 	// resetup_model(_know_model_board->root_item());
 
-    setup_signals();
-    assembly();	// menubar_
-    assembly_context_menu();
+	setup_signals();
+	assembly();	// menubar_
+	assembly_context_menu();
 }
 
 ts_t::~ts_t(){
@@ -162,16 +162,16 @@ ts_t::~ts_t(){
 	// QPushButton     *_menubutton;
 	// QWidgetAction   *_menuaction;
 	// QMenu           *_menus_in_button;
-    if(_main_menu_in_button){
-	// delete
-	_main_menu_in_button->deleteLater();
-	_main_menu_in_button = nullptr;
-    }
-    if(_context_menu){
-	// delete
-	_context_menu->deleteLater();
-	_context_menu = nullptr;
-    }
+	if(_main_menu_in_button){
+		// delete
+		_main_menu_in_button->deleteLater();
+		_main_menu_in_button = nullptr;
+	}
+	if(_context_menu){
+		// delete
+		_context_menu->deleteLater();
+		_context_menu = nullptr;
+	}
 	// if(_menuaction) {delete _menuaction; _menuaction = nullptr;}
 	// if(_menubutton) {delete _menubutton; _menubutton = nullptr;}
 // if(_main_menu_bar) {
@@ -180,22 +180,22 @@ ts_t::~ts_t(){
 // _main_menu_bar = nullptr;
 // }
 	// delete _recordtree_search;
-    if(_tools_line){
-	// delete
-	_tools_line->deleteLater();
-	_tools_line = nullptr;
-    }
-    if(_extra_tools_line){
-	_extra_tools_line->deleteLater();
-	_extra_tools_line = nullptr;
-    }
+	if(_tools_line){
+		// delete
+		_tools_line->deleteLater();
+		_tools_line = nullptr;
+	}
+	if(_extra_tools_line){
+		_extra_tools_line->deleteLater();
+		_extra_tools_line = nullptr;
+	}
 	// delete _treescreenlayout;
 	// delete _toolslayout;
-    if(_tree_view){
-	// delete
-	_tree_view->deleteLater();
-	_tree_view = nullptr;
-    }
+	if(_tree_view){
+		// delete
+		_tree_view->deleteLater();
+		_tree_view = nullptr;
+	}
 	////    delete _shadow_branch;
 	// if(_know_model_board) {
 	//// delete
@@ -205,15 +205,15 @@ ts_t::~ts_t(){
 }
 
 void ts_t::setup_actions(void){
-    QAction *ac;
+	QAction *ac;
 
 	// void(TreeScreen::*_set_session_id)(bool) = &TreeScreen::session_root_id;
 
 
-    QAction *_tree_hide = new QAction(tr("Hide tree screen"), this);
+	QAction *_tree_hide = new QAction(tr("Hide tree screen"), this);
 
-    _tree_hide->setStatusTip(tr("Hide tree screen"));
-    _tree_hide->setIcon(QIcon(":/resource/pic/butterfly-left.svg"));	// globalparameters.h_right_splitter()->sizes()[0] == 0 ? QIcon(":/resource/pic/butterfly-right.svg") : QIcon(":/resource/pic/butterfly-left.svg")
+	_tree_hide->setStatusTip(tr("Hide tree screen"));
+	_tree_hide->setIcon(QIcon(":/resource/pic/butterfly-left.svg"));	// globalparameters.h_right_splitter()->sizes()[0] == 0 ? QIcon(":/resource/pic/butterfly-right.svg") : QIcon(":/resource/pic/butterfly-left.svg")
 
 //    assert(_main_window->h_record_splitter());
 //    connect(_main_window->h_record_splitter(), &QSplitter::splitterMoved, [&, _tree_hide](int record_pos = 0, int index = 0) mutable {
@@ -254,17 +254,17 @@ void ts_t::setup_actions(void){
 //		//	    }
 //	});
 
-    connect(_tree_hide, &QAction::triggered, [&, _tree_hide]() mutable {
-	    auto h_tree_splitter = _main_window->h_tree_splitter();
+	connect(_tree_hide, &QAction::triggered, [&, _tree_hide]() mutable {
+			auto h_tree_splitter = _main_window->h_tree_splitter();
 //	    auto h_record_splitter = _main_window->h_record_splitter();
 //		// auto ll = h_left_splitter->geometry().left();   // 0 // width();  // 1366
 //		// auto lr = h_left_splitter->handle(1)->geometry().right();  // 143
 //		// auto rl = h_right_splitter->geometry().left();  // 142
 //	    auto vtab_tree = _main_window->vtab_tree();
-	    auto bar_width = 0;	// vtab_tree->minimumSizeHint().width();	// tabBar()->geometry().width();
+			auto bar_width = 0;	// vtab_tree->minimumSizeHint().width();	// tabBar()->geometry().width();
 
 //	    auto h_record_sizes = h_record_splitter->sizes();
-	    auto h_tree_sizes = h_tree_splitter->sizes();
+			auto h_tree_sizes = h_tree_splitter->sizes();
 ////	    QList<int> delta;
 //////	    QIcon icon;
 //////	    QString text = "";
@@ -298,8 +298,8 @@ void ts_t::setup_actions(void){
 ////		h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
 ////		h_record_sizes[0] = bar_width;
 
-	    h_tree_sizes[1] = h_tree_sizes[0] + h_tree_sizes[1] - bar_width;
-	    h_tree_sizes[0] = bar_width;	// 0;
+			h_tree_sizes[1] = h_tree_sizes[0] + h_tree_sizes[1] - bar_width;
+			h_tree_sizes[0] = bar_width;	// 0;
 ////		vtab_tree->resize(bar_width, vtab_tree->height());
 ////		vtab_tree->setMaximumWidth(bar_width);
 //	    vtab_tree->setMinimumWidth(bar_width);
@@ -308,19 +308,19 @@ void ts_t::setup_actions(void){
 ////		text = tr("Show record screen");
 //	    }
 ////	    delta << h_tree_splitter->sizes()[0] - h_tree_sizes[0];
-	    if(h_tree_sizes != h_tree_splitter->sizes()){
-		h_tree_splitter->setSizes(h_tree_sizes);	//
-		emit h_tree_splitter->splitterMoved(h_tree_sizes[0], 1);
-	    }
+			if(h_tree_sizes != h_tree_splitter->sizes()){
+				h_tree_splitter->setSizes(h_tree_sizes);	//
+				emit h_tree_splitter->splitterMoved(h_tree_sizes[0], 1);
+			}
 //	    h_record_sizes[0] = h_record_sizes[0] - delta[0];
 //	    h_record_sizes[1] = h_record_sizes[1] + delta[0];
 //	    if(h_record_sizes != h_record_splitter->sizes()){
 //		h_record_splitter->setSizes(h_record_sizes);
 //		emit h_record_splitter->splitterMoved(h_record_sizes[0], 1);
 //	    }
-	});
+		});
 
-    _actionlist[action_hide_tree_screen] = _tree_hide;
+	_actionlist[action_hide_tree_screen] = _tree_hide;
 
 
 //    ac = new QAction(tr("Set as session root manually"), this);
@@ -332,191 +332,191 @@ void ts_t::setup_actions(void){
 
 
 
-    ac = new QAction(tr("Return to absolute root"), this);
-    ac->setStatusTip(tr("Return to absolute root"));
-    ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
-    connect(ac, &QAction::triggered, [&] {_tree_view->cursor_focus(_tree_view->know_model_board()->root_item());});
-    _actionlist[action_cursor_follow_root] = ac;
+	ac = new QAction(tr("Return to absolute root"), this);
+	ac->setStatusTip(tr("Return to absolute root"));
+	ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
+	connect(ac, &QAction::triggered, [&] {_tree_view->cursor_focus(_tree_view->know_model_board()->root_item());});
+	_actionlist[action_cursor_follow_root] = ac;
 
 
-    ac = new QAction(tr("View follow up"), this);
-    ac->setStatusTip(tr("View follow up one level when current item reach the current root"));
+	ac = new QAction(tr("View follow up"), this);
+	ac->setStatusTip(tr("View follow up one level when current item reach the current root"));
 	// ac->setIcon(QIcon(":/resource/pic/move_up.svg"));
 
-    ac->setIcon(QIcon(":/resource/pic/mobile_up.svg"));	// ":/resource/pic/streamline_home.svg"
+	ac->setIcon(QIcon(":/resource/pic/mobile_up.svg"));	// ":/resource/pic/streamline_home.svg"
 	// style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
 
-    connect(ac, &QAction::triggered, [&]() mutable -> void {_tree_view->cursor_focus();});
-    _actionlist[action_cursor_follow_up] = ac;
+	connect(ac, &QAction::triggered, [&]() mutable -> void {_tree_view->cursor_focus();});
+	_actionlist[action_cursor_follow_up] = ac;
 
 
 	// азворачивание всех подветок
 	// a->setShortcut(tr("Ctrl+X"));
-    ac = new QAction(tr("Expand all sub items"), this);
-    ac->setStatusTip(tr("Expand all sub items"));
-    ac->setIcon(QIcon(":/resource/pic/expand_all_subbranch.svg"));
-    connect(ac, &QAction::triggered, std::bind(&tv_t::expand_selected, _tree_view, true));
-    _actionlist[action_expand_all_subbranch] = ac;
+	ac = new QAction(tr("Expand all sub items"), this);
+	ac->setStatusTip(tr("Expand all sub items"));
+	ac->setIcon(QIcon(":/resource/pic/expand_all_subbranch.svg"));
+	connect(ac, &QAction::triggered, std::bind(&tv_t::expand_selected, _tree_view, true));
+	_actionlist[action_expand_all_subbranch] = ac;
 
 	// Сворачивание всех подветок
-    ac = new QAction(tr("Collapse all sub items"), this);
-    ac->setStatusTip(tr("Collapse all sub items"));
-    ac->setIcon(QIcon(":/resource/pic/collapse_all_subbranch.svg"));
-    connect(ac, &QAction::triggered, std::bind(&tv_t::expand_selected, _tree_view, false));	// view_collapse_all_sub
-    _actionlist[action_collapse_all_subbranch] = ac;
+	ac = new QAction(tr("Collapse all sub items"), this);
+	ac->setStatusTip(tr("Collapse all sub items"));
+	ac->setIcon(QIcon(":/resource/pic/collapse_all_subbranch.svg"));
+	connect(ac, &QAction::triggered, std::bind(&tv_t::expand_selected, _tree_view, false));	// view_collapse_all_sub
+	_actionlist[action_collapse_all_subbranch] = ac;
 
 	// Перемещение ветки вверх
-    ac = new QAction(tr("Move item up"), this);
-    ac->setStatusTip(tr("Move item up"));
-    ac->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
-    connect(ac, &QAction::triggered, this, [&]() mutable -> void {item_move_up_dn_branch(&TreeItem::move_up);});	// &TreeScreen::item_move_up_branch
+	ac = new QAction(tr("Move item up"), this);
+	ac->setStatusTip(tr("Move item up"));
+	ac->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
+	connect(ac, &QAction::triggered, this, [&]() mutable -> void {item_move_up_dn_branch(&TreeItem::move_up);});	// &TreeScreen::item_move_up_branch
 
-    _actionlist[action_move_up_branch] = ac;
+	_actionlist[action_move_up_branch] = ac;
 
 	// Перемещение ветки вниз
-    ac = new QAction(tr("Move item down"), this);
-    ac->setStatusTip(tr("Move item down"));
-    ac->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
-    connect(ac, &QAction::triggered, this, [&]() mutable -> void {item_move_up_dn_branch(&TreeItem::move_dn);});	// &TreeScreen::item_move_dn_branch
+	ac = new QAction(tr("Move item down"), this);
+	ac->setStatusTip(tr("Move item down"));
+	ac->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
+	connect(ac, &QAction::triggered, this, [&]() mutable -> void {item_move_up_dn_branch(&TreeItem::move_dn);});	// &TreeScreen::item_move_dn_branch
 
-    _actionlist[action_move_dn_branch] = ac;
+	_actionlist[action_move_dn_branch] = ac;
 
 	// Вставка новой подветки
-    ac = new QAction(tr("Insert a new sub item"), this);
-    ac->setStatusTip(tr("Insert a new sub item into selected"));
-    ac->setIcon(QIcon(":/resource/pic/add_subbranch.svg"));
-    connect(ac, &QAction::triggered, [&]() mutable -> void {
-        _tree_view->new_item(TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item())
-				, std::bind(&tv_t::new_child, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-				, [&](boost::intrusive_ptr<TreeIndex> _tree_index, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {return _tree_index->current_model()()->new_child(_tree_index, _id, _name);});
-	});
-    _actionlist[action_insert_sub_branch] = ac;
+	ac = new QAction(tr("Insert a new sub item"), this);
+	ac->setStatusTip(tr("Insert a new sub item into selected"));
+	ac->setIcon(QIcon(":/resource/pic/add_subbranch.svg"));
+	connect(ac, &QAction::triggered, [&]() mutable -> void {
+			_tree_view->new_item(TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item())
+								, std::bind(&tv_t::new_child, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+								, [&](boost::intrusive_ptr<TreeIndex> _tree_index, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {return _tree_index->current_model()()->new_child(_tree_index, _id, _name);});
+		});
+	_actionlist[action_insert_sub_branch] = ac;
 
 	// Вставка новой ветки
-    ac = new QAction(tr("Insert a new sibling item"), this);
-    ac->setStatusTip(tr("Insert a new sibling item after selected"));
-    ac->setIcon(QIcon(":/resource/pic/add_branch.svg"));
-    connect(ac, &QAction::triggered, [&]() mutable {
-        _tree_view->new_item(TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item())	// tree_index
-				, std::bind(&tv_t::new_child, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-				, [&](boost::intrusive_ptr<TreeIndex> _tree_index, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {
-		auto _current_model = _tree_index->current_model();
+	ac = new QAction(tr("Insert a new sibling item"), this);
+	ac->setStatusTip(tr("Insert a new sibling item after selected"));
+	ac->setIcon(QIcon(":/resource/pic/add_branch.svg"));
+	connect(ac, &QAction::triggered, [&]() mutable {
+			_tree_view->new_item(TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item())	// tree_index
+								, std::bind(&tv_t::new_child, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+								, [&](boost::intrusive_ptr<TreeIndex> _tree_index, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {
+				auto _current_model = _tree_index->current_model();
 // auto _host_index = _modelindex->parent_index();
-		boost::intrusive_ptr<TreeItem> result;
-		auto host_parent = _tree_index->host()->parent();
-		assert(host_parent);
-		QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
-		if(host_parent){_alternative_items = host_parent->children_direct([&](boost::intrusive_ptr<const Linker> il){return il->host()->name() == _name && il->host()->id() == _id;});}
-		// auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
-		if(_alternative_items.size() > 0){	// && _item_has_no_child_first
-			// assert(_item_has_no_child_first->name() == _name);
-			// result = _item_has_no_child_first;
+				boost::intrusive_ptr<TreeItem> result;
+				auto host_parent = _tree_index->host()->parent();
+				assert(host_parent);
+				QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
+				if(host_parent){_alternative_items = host_parent->children_direct([&](boost::intrusive_ptr<const Linker> il){return il->host()->name() == _name && il->host()->id() == _id;});}
+				// auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
+				if(_alternative_items.size() > 0){	// && _item_has_no_child_first
+					// assert(_item_has_no_child_first->name() == _name);
+					// result = _item_has_no_child_first;
 
-		    QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
-		    result = it.next();
-            while(it.hasNext())result = TreeLevel::instance(TreeIndex::create_treeindex_from_item(_current_model, result), it.next())->merge();	// TreeIndex::instance(_current_model, result, result->parent()), it.next());
-			// children_transfer(_new_item, _current_model);
-		}else{
-			// Вставка новых данных в модель дерева записей
-            result = _current_model()->new_child(TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item()->parent())	// _tree_index
-							, _id, _name);
-		}
-		return result;
-	    });
-	});
-    _actionlist[action_insert_branch] = ac;
+					QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
+					result = it.next();
+					while(it.hasNext()) result = TreeLevel::instance(TreeIndex::create_treeindex_from_item(_current_model, result), it.next())->merge();// TreeIndex::instance(_current_model, result, result->parent()), it.next());
+					// children_transfer(_new_item, _current_model);
+				}else{
+					// Вставка новых данных в модель дерева записей
+					result = _current_model()->new_child(TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item()->parent())	// _tree_index
+														, _id, _name);
+				}
+				return result;
+			});
+		});
+	_actionlist[action_insert_branch] = ac;
 
 	// едактирование ветки
-    ac = new QAction(tr("Edit item name"), this);
-    ac->setStatusTip(tr("Edit name of selected item"));
-    ac->setIcon(QIcon(":/resource/pic/note_edit.svg"));
-    connect(ac, &QAction::triggered, _tree_view, &tv_t::modify);
-    _actionlist[action_edit_branch] = ac;
+	ac = new QAction(tr("Edit item name"), this);
+	ac->setStatusTip(tr("Edit name of selected item"));
+	ac->setIcon(QIcon(":/resource/pic/note_edit.svg"));
+	connect(ac, &QAction::triggered, _tree_view, &tv_t::modify);
+	_actionlist[action_edit_branch] = ac;
 
 	// Удаление ветки
-    ac = new QAction(tr("Delete item"), this);
-    ac->setStatusTip(tr("Delete selected item and all sub items"));
-    ac->setIcon(QIcon(":/resource/pic/note_delete.svg"));
-    connect(ac, &QAction::triggered, this
-	   , [&](bool checked = false) mutable -> void {
-	    Q_UNUSED(checked);
-		// QModelIndexList _origin_index_list = _tree_view->selectionModel()->selectedIndexes();
-	    QModelIndexList _selectitems = tv_t::LocalLizeInitializer(_tree_view)().indexes();	// ->is_index_localized(_origin_index_list) ? _origin_index_list : _tree_view->index_localize(_origin_index_list);    // _tree_view->selectionModel()->selectedIndexes(); //
-		// view_remove(_selectitems, "cut");
-	    _tree_view->delete_permanent([&] {return _tree_view->source_model();}
-					, [&] {QList<boost::intrusive_ptr<TreeItem> > r;for(auto ix : _selectitems)r << _tree_view->source_model()->child(ix);return r;} (), &tkm_t::delete_permanent, "cut", false);
-	});	// , &TreeScreen::del_branch
+	ac = new QAction(tr("Delete item"), this);
+	ac->setStatusTip(tr("Delete selected item and all sub items"));
+	ac->setIcon(QIcon(":/resource/pic/note_delete.svg"));
+	connect(ac, &QAction::triggered, this
+		   , [&](bool checked = false) mutable -> void {
+			Q_UNUSED(checked);
+			// QModelIndexList _origin_index_list = _tree_view->selectionModel()->selectedIndexes();
+			QModelIndexList _selectitems = tv_t::LocalLizeInitializer(_tree_view)().indexes();	// ->is_index_localized(_origin_index_list) ? _origin_index_list : _tree_view->index_localize(_origin_index_list);    // _tree_view->selectionModel()->selectedIndexes(); //
+			// view_remove(_selectitems, "cut");
+			_tree_view->delete_permanent([&] {return _tree_view->source_model();}
+										, [&] {QList<boost::intrusive_ptr<TreeItem> > r;for(auto ix : _selectitems) r << _tree_view->source_model()->child(ix);return r;} (), &tkm_t::delete_permanent, "cut", false);
+		});	// , &TreeScreen::del_branch
 
-    _actionlist[action_delete_branch] = ac;
+	_actionlist[action_delete_branch] = ac;
 
 	// void(TreeScreen::*_cut)(bool) = &TreeScreen::view_cut;
 	// Удаление ветки с сохранением копии в буфер обмена
-    ac = new QAction(tr("Cut item"), this);
-    ac->setStatusTip(tr("Cut item including sub items for paste"));
-    ac->setIcon(QIcon(":/resource/pic/branch_cut.svg"));
-    connect(ac, &QAction::triggered, _tree_view, &tv_t::cut);
-    _actionlist[action_cut_branch] = ac;
+	ac = new QAction(tr("Cut item"), this);
+	ac->setStatusTip(tr("Cut item including sub items for paste"));
+	ac->setIcon(QIcon(":/resource/pic/branch_cut.svg"));
+	connect(ac, &QAction::triggered, _tree_view, &tv_t::cut);
+	_actionlist[action_cut_branch] = ac;
 
 	// Копирование ветки в буфер обмена
-    ac = new QAction(tr("Copy / Move item"), this);
-    ac->setStatusTip(tr("Copy item including sub items for move"));
-    ac->setIcon(QIcon(":/resource/pic/branch_copy.svg"));
-    connect(ac, &QAction::triggered, _tree_view, &tv_t::copy);
-    _actionlist[action_copy_branch] = ac;
+	ac = new QAction(tr("Copy / Move item"), this);
+	ac->setStatusTip(tr("Copy item including sub items for move"));
+	ac->setIcon(QIcon(":/resource/pic/branch_copy.svg"));
+	connect(ac, &QAction::triggered, _tree_view, &tv_t::copy);
+	_actionlist[action_copy_branch] = ac;
 
 	// void(TreeScreen::*paste)() = &TreeScreen::branch_paste;
 	// Вставка ветки из буфера обмена
-    ac = new QAction(tr("Paste as sibling item"), this);
-    ac->setStatusTip(tr("Paste sibling item after selected"));
-    ac->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
-    connect(ac, &QAction::triggered
-	   , [&](bool checked) -> void {
-	    Q_UNUSED(checked);
-		// auto source_model = [&]() {return _tree_view->source_model();};
-		// auto _index_child = _tree_view->current_index();
-	    auto _current_item = _tree_view->current_item();
-	    auto _parent = _current_item->parent();
+	ac = new QAction(tr("Paste as sibling item"), this);
+	ac->setStatusTip(tr("Paste sibling item after selected"));
+	ac->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
+	connect(ac, &QAction::triggered
+		   , [&](bool checked) -> void {
+			Q_UNUSED(checked);
+			// auto source_model = [&]() {return _tree_view->source_model();};
+			// auto _index_child = _tree_view->current_index();
+			auto _current_item = _tree_view->current_item();
+			auto _parent = _current_item->parent();
 
 // int sibling_order = _parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
 // {
 // return il == _current_item->linker() && il->host() == _current_item && _current_item->parent() == il->host_parent();
 // });
 
-		// auto _parent_valid = _parent == source_model()->root_item() ?
-		// source_model()->root_item() == _know_model_board->root_item() ?
-		// _parent
-		// : _parent  // cursor_follow_up_one_level()->item_direct(_parent->up_linker())
-		// : _parent;
+			// auto _parent_valid = _parent == source_model()->root_item() ?
+			// source_model()->root_item() == _know_model_board->root_item() ?
+			// _parent
+			// : _parent  // cursor_follow_up_one_level()->item_direct(_parent->up_linker())
+			// : _parent;
 
-		// _index_parent = source_model()->index(_parent);
+			// _index_parent = source_model()->index(_parent);
 
-		// if(!_index_parent.isValid())
-		// {
-		// cursor_follow_up_one_level();
-		////            _tree_view->select_as_current(_tree_view->current_index().parent());
-		// _index_parent = _tree_view->current_index();
-		// }
+			// if(!_index_parent.isValid())
+			// {
+			// cursor_follow_up_one_level();
+			////            _tree_view->select_as_current(_tree_view->current_index().parent());
+			// _index_parent = _tree_view->current_index();
+			// }
 
-		// assert(_index_parent.isValid());
+			// assert(_index_parent.isValid());
 
 // boost::intrusive_ptr<TreeIndex> tree_index;
 // try{tree_index = new TreeIndex([&] () -> KnowModel* {return _tree_view->source_model();}, _parent, sibling_order);} catch(std::exception &e) {throw e; }
-        _tree_view->paste_clipboard(TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _tree_view->source_model();}, _parent));	// std::bind(&KnowModel::model_paste_sibling_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
-	});	// , paste
+			_tree_view->paste_clipboard(TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _tree_view->source_model();}, _parent));	// std::bind(&KnowModel::model_paste_sibling_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
+		});	// , paste
 
-    _actionlist[action_paste_branch] = ac;
+	_actionlist[action_paste_branch] = ac;
 
 
 	// QString(KnowModel::*_lock_child_paste)(const QModelIndex & _index, ClipboardBranch * subbranch) = &KnowModel::lock_child_paste;
 	// Вставка ветки из буфера обмена в виде подветки
-    ac = new QAction(tr("Paste as sub item"), this);
-    ac->setStatusTip(tr("Paste item as sub item for selected"));
-    ac->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
-    connect(ac, &QAction::triggered
-	   , [&](bool checked) mutable -> void {
-	    Q_UNUSED(checked);
-	    auto _current_item = _tree_view->current_item();
-	    auto _parent = _current_item->parent();
+	ac = new QAction(tr("Paste as sub item"), this);
+	ac->setStatusTip(tr("Paste item as sub item for selected"));
+	ac->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
+	connect(ac, &QAction::triggered
+		   , [&](bool checked) mutable -> void {
+			Q_UNUSED(checked);
+			auto _current_item = _tree_view->current_item();
+			auto _parent = _current_item->parent();
 
 // boost::intrusive_ptr<TreeIndex> tree_index;
 
@@ -525,47 +525,47 @@ void ts_t::setup_actions(void){
 // return _tree_view->source_model();
 // }, _current_item, 0);
 // } catch(std::exception &e) {throw e; }
-        _tree_view->paste_clipboard(TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _tree_view->source_model();}, _parent));	// std::bind(&KnowModel::model_paste_child_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
-	});	// branch_paste_sub
+			_tree_view->paste_clipboard(TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _tree_view->source_model();}, _parent));	// std::bind(&KnowModel::model_paste_child_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
+		});	// branch_paste_sub
 
-    _actionlist[action_paste_sub_branch] = ac;
+	_actionlist[action_paste_sub_branch] = ac;
 
 	// Шифрование ветки
-    ac = new QAction(tr("Encrypt item"), this);
-    ac->setStatusTip(tr("Encrypt item and all subitem"));
+	ac = new QAction(tr("Encrypt item"), this);
+	ac->setStatusTip(tr("Encrypt item and all subitem"));
 	// actionEncryptBranch->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
-    connect(ac, &QAction::triggered, _tree_view, &tv_t::encrypt);
-    _actionlist[action_encrypt_branch] = ac;
+	connect(ac, &QAction::triggered, _tree_view, &tv_t::encrypt);
+	_actionlist[action_encrypt_branch] = ac;
 
 	// асшифровка ветки (снятие пароля)
-    ac = new QAction(tr("Decrypt item"), this);
-    ac->setStatusTip(tr("Decrypt item and all subitem"));
+	ac = new QAction(tr("Decrypt item"), this);
+	ac->setStatusTip(tr("Decrypt item and all subitem"));
 	// actionDecryptBranch->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
-    connect(ac, &QAction::triggered, _tree_view, &tv_t::decrypt);
-    _actionlist[action_decrypt_branch] = ac;
+	connect(ac, &QAction::triggered, _tree_view, &tv_t::decrypt);
+	_actionlist[action_decrypt_branch] = ac;
 
-    ac = new QAction(tr("Pin / freeze browser view"), this);
-    ac->setStatusTip(tr("Pin / freeze browser view"));	// _pin->setStatusTip(tr("Pin a note"));
-    ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));	// _pin->setIcon(QIcon(":/resource/pic/pin.svg"));
-    connect(ac, &QAction::triggered
-	   , [&](bool checked = false) mutable -> void {
-	    Q_UNUSED(checked)
-		// Обновление инфополей в области редактирования записи
-	    auto * metaeditor = globalparameters.meta_editor();	// MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
-	    if(metaeditor)metaeditor->switch_pin();
-	});
-    _actionlist[action_freeze_browser_view] = ac;
+	ac = new QAction(tr("Pin / freeze browser view"), this);
+	ac->setStatusTip(tr("Pin / freeze browser view"));	// _pin->setStatusTip(tr("Pin a note"));
+	ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));	// _pin->setIcon(QIcon(":/resource/pic/pin.svg"));
+	connect(ac, &QAction::triggered
+		   , [&](bool checked = false) mutable -> void {
+			Q_UNUSED(checked)
+			// Обновление инфополей в области редактирования записи
+			auto *metaeditor = globalparameters.edit_entry();	// MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
+			if(metaeditor) metaeditor->switch_pin();
+		});
+	_actionlist[action_freeze_browser_view] = ac;
 
 
 
 
 
 	// Открытие поиска по базе (связывание клика происходит в MainWindows)
-    ac = new QAction(tr("Find in base"), this);
-    ac->setStatusTip(tr("Find in base"));
-    ac->setIcon(QIcon(":/resource/pic/find_in_base.svg"));
+	ac = new QAction(tr("Find in base"), this);
+	ac->setStatusTip(tr("Find in base"));
+	ac->setIcon(QIcon(":/resource/pic/find_in_base.svg"));
 	// connection in void MainWindow::setupSignals(void)
-    _actionlist[action_find_in_base] = ac;
+	_actionlist[action_find_in_base] = ac;
 
 
 	// QAction             *_addnew_to_end = (new QAction(tr("Add note"), this));
@@ -576,25 +576,25 @@ void ts_t::setup_actions(void){
 	// QAction             *_addnew_before = (new QAction(tr("Add note before"), this));
 	// QAction             *_addnew_after = (new QAction(tr("Add note after"), this));
 
-    QAction *_edit_field = (new QAction(tr("Edit properties (name, url, tags...)"), this));
-    _edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
-    _edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
-    connect(_edit_field, &QAction::triggered, this, [&](bool checked = false) mutable {
-	    Q_UNUSED(checked);edit_field_context(this->_tree_view->current_index());
-	});
-    _actionlist[action_edit_field] = _edit_field;
+	QAction *_edit_field = (new QAction(tr("Edit properties (name, url, tags...)"), this));
+	_edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
+	_edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
+	connect(_edit_field, &QAction::triggered, this, [&](bool checked = false) mutable {
+			Q_UNUSED(checked);edit_field_context(this->_tree_view->current_index());
+		});
+	_actionlist[action_edit_field] = _edit_field;
 
 
 
 
-    QAction *_editor_switch = (new QAction(tr("&Editor switch"), this));
-    _editor_switch->setStatusTip(tr("Open/Close editor"));
-    _editor_switch->setIcon(QIcon(":/resource/pic/expand_console.svg"));
-    connect(_editor_switch, &QAction::triggered, [](){
-	    globalparameters.main_window()->editor_switch();
-	});
+	QAction *_editor_switch = (new QAction(tr("&Editor switch"), this));
+	_editor_switch->setStatusTip(tr("Open/Close editor"));
+	_editor_switch->setIcon(QIcon(":/resource/pic/expand_console.svg"));
+	connect(_editor_switch, &QAction::triggered, [](){
+			globalparameters.edit_entry()->editor_switch();
+		});
 	// insert_action_as_button<QToolButton>(_toolsline, _settings);
-    _actionlist[action_editor_switch] = _editor_switch;
+	_actionlist[action_editor_switch] = _editor_switch;
 
 
 	// QAction             *_action_syncro = (new QAction(tr("Synchronization"), this));
@@ -612,12 +612,12 @@ void ts_t::setup_actions(void){
 	// , _action_move_dn(new QAction(tr("&Move Down"), this))
 	// , _find_in_base(new QAction(tr("Find in base"), this))
 
-    QAction *main_menu_action_ = new QAction(tr("Main menu"), this);
-    main_menu_action_->setStatusTip(tr("Pull down to get the main menu"));
-    main_menu_action_->setIcon(QIcon(":/resource/pic/tableware.svg"));
-    main_menu_action_->setToolTip(tr("Main Menu"));
-    main_menu_action_->setMenu(_main_menu_in_button);
-    _actionlist[action_main_menu] = main_menu_action_;
+	QAction *main_menu_action_ = new QAction(tr("Main menu"), this);
+	main_menu_action_->setStatusTip(tr("Pull down to get the main menu"));
+	main_menu_action_->setIcon(QIcon(":/resource/pic/tableware.svg"));
+	main_menu_action_->setToolTip(tr("Main Menu"));
+	main_menu_action_->setMenu(_main_menu_in_button);
+	_actionlist[action_main_menu] = main_menu_action_;
 }
 
 // Действия при нажатии кнопки редактирования записи
@@ -628,67 +628,67 @@ void ts_t::edit_field_context(QModelIndex index_current){
 	// int pos = sourceIndex.row(); // Номер строки в базе
 
 	// Создается окно ввода данных, после выхода из этой функции окно должно удалиться
-    InfoFieldsEditor edit_record_dialog;
+	InfoFieldsEditor edit_record_dialog;
 
 	// Выясняется ссылка на таблицу конечных данных
-    auto item = _tree_view->source_model()->child(index_current);
+	auto item = _tree_view->source_model()->child(index_current);
 
 	// Поля окна заполняются начальными значениями
-    edit_record_dialog.setField("pin", item->field<pin_type>());
-    edit_record_dialog.setField("name", item->field<name_type>());
-    edit_record_dialog.setField("author", item->field<author_type>());
-    edit_record_dialog.setField("home", item->field<home_type>());
-    edit_record_dialog.setField("url", item->field<url_type>());
-    edit_record_dialog.setField("tags", item->field<tags_type>());
+	edit_record_dialog.setField("pin", item->field<pin_type>());
+	edit_record_dialog.setField("name", item->field<name_type>());
+	edit_record_dialog.setField("author", item->field<author_type>());
+	edit_record_dialog.setField("home", item->field<home_type>());
+	edit_record_dialog.setField("url", item->field<url_type>());
+	edit_record_dialog.setField("tags", item->field<tags_type>());
 
 
-    int i = edit_record_dialog.exec();
-    if(i == QDialog::Rejected)return;	// Была нажата отмена, ничего ненужно делать
+	int i = edit_record_dialog.exec();
+	if(i == QDialog::Rejected) return;											// Была нажата отмена, ничего ненужно делать
 
 	// Измененные данные записываются
-    edit_field(edit_record_dialog.getField("pin")
-	      ,	edit_record_dialog.getField("name")
-	      ,	edit_record_dialog.getField("author")
-	      ,	edit_record_dialog.getField("home")
-	      ,	edit_record_dialog.getField("url")
-	      ,	edit_record_dialog.getField("tags"));
+	edit_field(edit_record_dialog.getField("pin")
+			  ,	edit_record_dialog.getField("name")
+			  ,	edit_record_dialog.getField("author")
+			  ,	edit_record_dialog.getField("home")
+			  ,	edit_record_dialog.getField("url")
+			  ,	edit_record_dialog.getField("tags"));
 }
 
 // Функция сохранения отредактированных полей записи в таблицу конечных записей
 void ts_t::edit_field(QString pin
-		     , QString name
-		     , QString author
-		     , QString home
-		     , QString url
-		     , QString tags){
-    qDebug() << "In edit_field()";
+					 , QString name
+					 , QString author
+					 , QString home
+					 , QString url
+					 , QString tags){
+	qDebug() << "In edit_field()";
 
 	// Выясняется ссылка на таблицу конечных данных
 	// auto pages = _source_model->browser_pages();
 
 	// Переданные отредактированные поля преобразуются в вид имя-значение
-    QMap<QString, QString> edit_data;
-    edit_data["pin"]	= pin;
-    edit_data["name"]	= name;
-    edit_data["author"] = author;
-    edit_data["home"]	= home;
-    edit_data["url"]	= url;
-    edit_data["tags"]	= tags;
+	QMap<QString, QString> edit_data;
+	edit_data["pin"]	= pin;
+	edit_data["name"]	= name;
+	edit_data["author"] = author;
+	edit_data["home"]	= home;
+	edit_data["url"]	= url;
+	edit_data["tags"]	= tags;
 
 	// Обновление новых данных в таблице конечных записей
-    auto item = _tree_view->current_item();
-    for(auto i = edit_data.begin(); i != edit_data.end(); i ++)item->_field_data[i.key()] = i.value();	// field(i.key(), i.value());
+	auto item = _tree_view->current_item();
+	for(auto i = edit_data.begin(); i != edit_data.end(); i ++) item->_field_data[i.key()] = i.value();																											// field(i.key(), i.value());
 	// Обновление инфополей в области редактирования записи
-    auto *meta_editor = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
-    meta_editor->pin(pin);
-    meta_editor->name(name);
-    meta_editor->author(author);
-    meta_editor->url(url);
-    meta_editor->tags(tags);
+	auto *meta_editor = globalparameters.edit_entry();	// find_object<MetaEditor>(meta_editor_singleton_name);
+	meta_editor->pin(pin);
+	meta_editor->name(name);
+	meta_editor->author(author);
+	meta_editor->url(url);
+	meta_editor->tags(tags);
 
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)
-    _tree_view->know_model_save();
+	_tree_view->know_model_save();
 }
 
 // void TreeScreen::restore_menubar(){
@@ -697,7 +697,7 @@ void ts_t::edit_field(QString pin
 
 
 QMenu *ts_t::menus_in_button(){
-    return _main_menu_in_button;
+	return _main_menu_in_button;
 }
 
 void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
@@ -708,41 +708,41 @@ void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 	// QSize tool_bar_icon_size(16, 16);
 	// toolsLine->setIconSize(tool_bar_icon_size);
 
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_hide_tree_screen]);
+	add_action<QToolButton>(_tools_line, _actionlist[action_hide_tree_screen]);
 
 //    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_set_as_session_root]);
 
 	// _recordtree_searchlayout = new QHBoxLayout();
 	// _recordtree_searchlayout->addWidget(_recordtree_search);
 
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_cursor_follow_root]);
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_cursor_follow_up]);
+	add_action<QToolButton>(_tools_line, _actionlist[action_cursor_follow_root]);
+	add_action<QToolButton>(_tools_line, _actionlist[action_cursor_follow_up]);
 
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_insert_branch]);
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_insert_sub_branch]);
-    if(appconfig.interface_mode() == "desktop"){
-	append_action_as_button<QToolButton>(_tools_line, _actionlist[action_edit_branch]);
-	append_action_as_button<QToolButton>(_tools_line, _actionlist[action_delete_branch]);
-    }
-    _tools_line->addSeparator();
-
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_expand_all_subbranch]);
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_collapse_all_subbranch]);
-
-    _tools_line->addSeparator();
-
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_move_up_branch]);
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_move_dn_branch]);
-    if(appconfig.interface_mode() == "mobile"){
+	add_action<QToolButton>(_tools_line, _actionlist[action_insert_branch]);
+	add_action<QToolButton>(_tools_line, _actionlist[action_insert_sub_branch]);
+	if(appconfig.interface_mode() == "desktop"){
+		add_action<QToolButton>(_tools_line, _actionlist[action_edit_branch]);
+		add_action<QToolButton>(_tools_line, _actionlist[action_delete_branch]);
+	}
 	_tools_line->addSeparator();
-	append_action_as_button<QToolButton>(_tools_line, _actionlist[action_freeze_browser_view]);
-	append_action_as_button<QToolButton>(_tools_line, _actionlist[action_find_in_base]);	// Клик по этой кнопке связывается с действием в MainWindow
-    }
+
+	add_action<QToolButton>(_tools_line, _actionlist[action_expand_all_subbranch]);
+	add_action<QToolButton>(_tools_line, _actionlist[action_collapse_all_subbranch]);
+
+	_tools_line->addSeparator();
+
+	add_action<QToolButton>(_tools_line, _actionlist[action_move_up_branch]);
+	add_action<QToolButton>(_tools_line, _actionlist[action_move_dn_branch]);
+	if(appconfig.interface_mode() == "mobile"){
+		_tools_line->addSeparator();
+		add_action<QToolButton>(_tools_line, _actionlist[action_freeze_browser_view]);
+		add_action<QToolButton>(_tools_line, _actionlist[action_find_in_base]);	// Клик по этой кнопке связывается с действием в MainWindow
+	}
 //    _tools_line->addSeparator();
 
-    append_action_as_button<QToolButton>(_extra_tools_line, _actionlist[action_main_menu]);
+	add_action<QToolButton>(_extra_tools_line, _actionlist[action_main_menu]);
 
-    assembly_menubar(_filemenu, _toolsmenu);
+	assembly_menubar(_filemenu, _toolsmenu);
 
 	// _knowtreeview = new KnowTreeView(this);
 
@@ -816,21 +816,21 @@ void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 
 
 void ts_t::enable_up_action(){	// bool enable
-    auto enable = _tree_view->source_model()->root_item()->id() != _tree_view->know_model_board()->root_item()->id();
-    if(enable){
-	// _actionlist[action_paste_branch]->setEnabled(true);
-	// _actionlist[action_paste_sub_branch]->setEnabled(true);
-	_actionlist[action_cursor_follow_up]->setEnabled(true);
-	_actionlist[action_cursor_follow_root]->setEnabled(true);
-    }else{
-	// if(
-	// static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id() == _know_branch->root_item()->id() // know_root()->root_item() == _know_branch->root_item()
-	// || !enable)
-	// _actionlist[action_paste_branch]->setEnabled(false);
-	// _actionlist[action_paste_sub_branch]->setEnabled(false);
-	_actionlist[action_cursor_follow_up]->setEnabled(false);
-	_actionlist[action_cursor_follow_root]->setEnabled(false);
-    }
+	auto enable = _tree_view->source_model()->root_item()->id() != _tree_view->know_model_board()->root_item()->id();
+	if(enable){
+		// _actionlist[action_paste_branch]->setEnabled(true);
+		// _actionlist[action_paste_sub_branch]->setEnabled(true);
+		_actionlist[action_cursor_follow_up]->setEnabled(true);
+		_actionlist[action_cursor_follow_root]->setEnabled(true);
+	}else{
+		// if(
+		// static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id() == _know_branch->root_item()->id() // know_root()->root_item() == _know_branch->root_item()
+		// || !enable)
+		// _actionlist[action_paste_branch]->setEnabled(false);
+		// _actionlist[action_paste_sub_branch]->setEnabled(false);
+		_actionlist[action_cursor_follow_up]->setEnabled(false);
+		_actionlist[action_cursor_follow_root]->setEnabled(false);
+	}
 }
 
 void ts_t::setup_signals(void){
@@ -838,10 +838,10 @@ void ts_t::setup_signals(void){
 	// connect(_recordtree_search, &browser::ToolbarSearch::returnPressed, globalparameters.getFindScreen(), &FindScreen::findClicked);
 
 	// Соединение сигнал-слот чтобы показать контекстное меню по правому клику на ветке
-    connect(_tree_view, &tv_t::customContextMenuRequested, this, &ts_t::on_custom_contextmenu_requested);
+	connect(_tree_view, &tv_t::customContextMenuRequested, this, &ts_t::on_custom_contextmenu_requested);
 
 	// Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
-    connect(_tree_view, &tv_t::tapandhold_gesture_finished, this, &ts_t::on_custom_contextmenu_requested);
+	connect(_tree_view, &tv_t::tapandhold_gesture_finished, this, &ts_t::on_custom_contextmenu_requested);
 
 	// void pressed(const QModelIndex & index);
 	// void clicked(const QModelIndex &index);
@@ -890,11 +890,11 @@ void ts_t::assembly_menubar(QMenu *_filemenu, QMenu *_toolsmenu){
 	// ac->setIcon(QIcon(":/resource/pic/note_delete.svg"));
 	// connect(ac, SIGNAL(triggered()), this, SLOT(del_branch()));
 
-    _main_menu_in_button->addMenu(_filemenu);	// globalparameters.mainwindow()->filemenu()
-    _filemenu->setContentsMargins(0, 0, 0, 0);
-    _main_menu_in_button->addMenu(_toolsmenu);	// globalparameters.mainwindow()->toolsmenu()
-    _toolsmenu->setContentsMargins(0, 0, 0, 0);
-    _main_menu_in_button->setContentsMargins(0, 0, 0, 0);
+	_main_menu_in_button->addMenu(_filemenu);	// globalparameters.mainwindow()->filemenu()
+	_filemenu->setContentsMargins(0, 0, 0, 0);
+	_main_menu_in_button->addMenu(_toolsmenu);	// globalparameters.mainwindow()->toolsmenu()
+	_toolsmenu->setContentsMargins(0, 0, 0, 0);
+	_main_menu_in_button->setContentsMargins(0, 0, 0, 0);
 	// _buttonmenu->addAction(_menuaction);
 
 
@@ -934,69 +934,69 @@ void ts_t::assembly_menubar(QMenu *_filemenu, QMenu *_toolsmenu){
 }
 
 void ts_t::assembly_context_menu(){
-    _context_menu->addAction(_actionlist[action_hide_tree_screen]);
+	_context_menu->addAction(_actionlist[action_hide_tree_screen]);
 //    _context_menu->addAction(_actionlist[action_set_as_session_root]);
 
-    _context_menu->addAction(_actionlist[action_freeze_browser_view]);
-    _context_menu->addAction(_actionlist[action_find_in_base]);
-    _context_menu->addAction(_actionlist[action_edit_field]);
-    _context_menu->addAction(_actionlist[action_editor_switch]);
+	_context_menu->addAction(_actionlist[action_freeze_browser_view]);
+	_context_menu->addAction(_actionlist[action_find_in_base]);
+	_context_menu->addAction(_actionlist[action_edit_field]);
+	_context_menu->addAction(_actionlist[action_editor_switch]);
 
 
-    _context_menu->addAction(_actionlist[action_cursor_follow_root]);
-    _context_menu->addAction(_actionlist[action_cursor_follow_up]);
+	_context_menu->addAction(_actionlist[action_cursor_follow_root]);
+	_context_menu->addAction(_actionlist[action_cursor_follow_up]);
 
-    _context_menu->addAction(_actionlist[action_insert_branch]);
-    _context_menu->addAction(_actionlist[action_insert_sub_branch]);
-    _context_menu->addAction(_actionlist[action_edit_branch]);
-    _context_menu->addAction(_actionlist[action_delete_branch]);
-    _context_menu->addSeparator();
-    _context_menu->addAction(_actionlist[action_expand_all_subbranch]);
-    _context_menu->addAction(_actionlist[action_collapse_all_subbranch]);
-    _context_menu->addSeparator();
-    _context_menu->addAction(_actionlist[action_move_up_branch]);
-    _context_menu->addAction(_actionlist[action_move_dn_branch]);
-    _context_menu->addSeparator();
-    _context_menu->addAction(_actionlist[action_cut_branch]);
-    _context_menu->addAction(_actionlist[action_copy_branch]);
-    _context_menu->addAction(_actionlist[action_paste_branch]);
-    _context_menu->addAction(_actionlist[action_paste_sub_branch]);
-    _context_menu->addSeparator();
-    _context_menu->addAction(_actionlist[action_encrypt_branch]);
-    _context_menu->addAction(_actionlist[action_decrypt_branch]);
-    _context_menu->addSeparator();
-    {
+	_context_menu->addAction(_actionlist[action_insert_branch]);
+	_context_menu->addAction(_actionlist[action_insert_sub_branch]);
+	_context_menu->addAction(_actionlist[action_edit_branch]);
+	_context_menu->addAction(_actionlist[action_delete_branch]);
+	_context_menu->addSeparator();
+	_context_menu->addAction(_actionlist[action_expand_all_subbranch]);
+	_context_menu->addAction(_actionlist[action_collapse_all_subbranch]);
+	_context_menu->addSeparator();
+	_context_menu->addAction(_actionlist[action_move_up_branch]);
+	_context_menu->addAction(_actionlist[action_move_dn_branch]);
+	_context_menu->addSeparator();
+	_context_menu->addAction(_actionlist[action_cut_branch]);
+	_context_menu->addAction(_actionlist[action_copy_branch]);
+	_context_menu->addAction(_actionlist[action_paste_branch]);
+	_context_menu->addAction(_actionlist[action_paste_sub_branch]);
+	_context_menu->addSeparator();
+	_context_menu->addAction(_actionlist[action_encrypt_branch]);
+	_context_menu->addAction(_actionlist[action_decrypt_branch]);
+	_context_menu->addSeparator();
+	{
 // auto main_menu_action = _context_menu->addSection("main menu");
 // main_menu_action->setMenu(_main_menu_in_button);            // _context_menu->addAction(_main_menu_action);
-	_context_menu->addAction(_actionlist[action_main_menu]);
-    }
+		_context_menu->addAction(_actionlist[action_main_menu]);
+	}
 }
 
 void ts_t::assembly(){
-    _tools_layout->addWidget(_tools_line);
-    _tools_line->setContentsMargins(0, 0, 0, 0);
-    _tools_layout->addStretch();
+	_tools_layout->addWidget(_tools_line);
+	_tools_line->setContentsMargins(0, 0, 0, 0);
+	_tools_layout->addStretch();
 
 // {
 // _tools_layout->addWidget(menubar_);
 // menubar_->setContentsMargins(0,0,0,0);
 // }
 
-    _tools_layout->setSpacing(0);
-    _tools_layout->setMargin(0);
-    _tools_layout->setContentsMargins(0, 1, 0, 1);
+	_tools_layout->setSpacing(0);
+	_tools_layout->setMargin(0);
+	_tools_layout->setContentsMargins(0, 1, 0, 1);
 
-    _tools_layout->addWidget(_extra_tools_line);
+	_tools_layout->addWidget(_extra_tools_line);
 
 	// _treescreenlayout = new QVBoxLayout();
-    _treescreenlayout->setObjectName("treescreen_QVBoxLayout");
+	_treescreenlayout->setObjectName("treescreen_QVBoxLayout");
 
 	// _treescreenlayout->addLayout(_recordtree_searchlayout);
-    _treescreenlayout->addLayout(_tools_layout);
+	_treescreenlayout->addLayout(_tools_layout);
 
-    _treescreenlayout->setSpacing(0);
-    _treescreenlayout->setMargin(0);
-    _treescreenlayout->setContentsMargins(0, 0, 0, 0);
+	_treescreenlayout->setSpacing(0);
+	_treescreenlayout->setMargin(0);
+	_treescreenlayout->setContentsMargins(0, 0, 0, 0);
 
 	////    _adjustingscrollarea = new AdjustingScrollArea(_tree_view, this);
 	////    //    _treescreenlayout->addWidget(_adjustingscrollarea = new AdjustingScrollArea);  // , 0, 1
@@ -1011,12 +1011,12 @@ void ts_t::assembly(){
 	////    _tree_view->viewport()->installEventFilter(_adjustingscrollarea);
 
 	// _treescreenlayout->setColumnStretch(1, 1);
-    QVBoxLayout *baseLayout = new QVBoxLayout();
-    baseLayout->setSpacing(0);
-    baseLayout->setMargin(0);
-    baseLayout->setContentsMargins(0, 0, 0, 0);
-    _adjustingscrollarea->setContentsMargins(0, 0, 0, 0);
-    baseLayout->addWidget(_adjustingscrollarea);
+	QVBoxLayout *baseLayout = new QVBoxLayout();
+	baseLayout->setSpacing(0);
+	baseLayout->setMargin(0);
+	baseLayout->setContentsMargins(0, 0, 0, 0);
+	_adjustingscrollarea->setContentsMargins(0, 0, 0, 0);
+	baseLayout->addWidget(_adjustingscrollarea);
 
 	// RecordView *record_view = _record_controller->view(); //    auto record_view = new QWidget(this);
 	// record_view->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -1027,16 +1027,16 @@ void ts_t::assembly(){
 
 	// _treeviewhelpwidget = new TreeViewHelpWidget(this);
 
-    _treescreenlayout->addLayout(baseLayout);	// addWidget(_adjustingscrollarea);   // _tree_view // _treeviewhelpwidget
+	_treescreenlayout->addLayout(baseLayout);	// addWidget(_adjustingscrollarea);   // _tree_view // _treeviewhelpwidget
 
-    setLayout(_treescreenlayout);
+	setLayout(_treescreenlayout);
 
 	// The boundaries are removed, as this facility will be used as a widget    // Границы убираются, так как данный объект будет использоваться как виджет
-    QLayout *lt;
-    lt = layout();
-    lt->setMargin(0);
-    lt->setContentsMargins(0, 0, 0, 0);	// setContentsMargins(0, 2, 0, 0);
-    lt->setSpacing(0);
+	QLayout *lt;
+	lt = layout();
+	lt->setMargin(0);
+	lt->setContentsMargins(0, 0, 0, 0);	// setContentsMargins(0, 2, 0, 0);
+	lt->setSpacing(0);
 }
 
 tv_t *ts_t::view(){return _tree_view;}
@@ -1093,30 +1093,30 @@ tv_t *ts_t::view(){return _tree_view;}
 
 void ts_t::item_move_up_dn_branch(int (TreeItem::*_move)()){	// int direction
 	// Если ветку нельзя перемещать
-    if(! move_checkenable())return;
+	if(! move_checkenable()) return;
 	// Получение индекса выделенной строки
-    QModelIndex _index = _tree_view->current_index();
-    if(_index.isValid()){
-	// Ветка перемещается
-	QModelIndex index_after_move;
+	QModelIndex _index = _tree_view->current_index();
+	if(_index.isValid()){
+		// Ветка перемещается
+		QModelIndex index_after_move;
 
-	// if(direction == 1)
-	// index_after_move = _tree_view->source_model()->branch_move_up(index);
-	// else
-	// index_after_move = _tree_view->source_model()->branch_move_dn(index);
+		// if(direction == 1)
+		// index_after_move = _tree_view->source_model()->branch_move_up(index);
+		// else
+		// index_after_move = _tree_view->source_model()->branch_move_dn(index);
 
-	index_after_move = _tree_view->source_model()->move_up_dn(_index, _move);
+		index_after_move = _tree_view->source_model()->move_up_dn(_index, _move);
 
-	_tree_view->know_model_board()->synchronized(false);
-	// Установка курсора на позицию, куда была перенесена ветка
-	if(index_after_move.isValid() && index_after_move != _index){
-	    auto it = _tree_view->source_model()->child(index_after_move);
-        _tree_view->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_view->source_model();}, it));
+		_tree_view->know_model_board()->synchronized(false);
+		// Установка курсора на позицию, куда была перенесена ветка
+		if(index_after_move.isValid() && index_after_move != _index){
+			auto it = _tree_view->source_model()->child(index_after_move);
+			_tree_view->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_view->source_model();}, it));
+		}
+		// Сохранение дерева веток
+		// find_object<TreeScreen>(tree_screen_singleton_name)
+		_tree_view->know_model_save();
 	}
-	// Сохранение дерева веток
-	// find_object<TreeScreen>(tree_screen_singleton_name)
-	_tree_view->know_model_save();
-    }
 }
 
 // limit to single selection, deprecated
@@ -1134,7 +1134,7 @@ bool ts_t::move_checkenable(void){
 	// return false;
 
 	// } else
-    return true;
+	return true;
 }
 
 // boost::intrusive_ptr<TreeItem> TreeScreen::branch_insert_sibling(void)
@@ -1977,7 +1977,7 @@ bool ts_t::move_checkenable(void){
 // if(mimeData == nullptr)
 // return;
 
-// if(!(mimeData->hasFormat("hapnote/branch")))
+// if(!(mimeData->hasFormat("tute/branch")))
 // return;
 
 //// Получение списка индексов QModelIndex выделенных элементов
@@ -2158,59 +2158,59 @@ bool ts_t::move_checkenable(void){
 
 // Открытие контекстного меню в дереве разделов
 void ts_t::on_custom_contextmenu_requested(const QPoint &_position){
-    qDebug() << "In TreeScreen::on_customContextMenuRequested";
+	qDebug() << "In TreeScreen::on_customContextMenuRequested";
 
 	//// Конструирование меню
 	// QMenu _context_menu(this);
 	// _context_menu->clear();
 
-    auto _current_model = [&](){return _tree_view->source_model();};
+	auto _current_model = [&](){return _tree_view->source_model();};
 	////select item at cursor position
 	////    QPersistentModelIndex
 	// QModelIndex index = _tree_view->indexAt(_position);
 	// _tree_view->select_and_current(index);
 
 	// Получение индекса выделенной ветки
-    QModelIndex index = _tree_view->current_index();
-    if(index.isValid()){
-	// Выясняется, зашифрована ли ветка или нет
-	QString cryptFlag	= _current_model()->item(index)->field<crypt_type>();
-	auto	current_item	= _current_model()->item(index);
-	assert(current_item);
-	auto _parent = _current_model()->item(index)->parent();
-	assert(_parent);
-	// Выясняется, зашифрована ли родительская ветка
-	QString parentCryptFlag = _parent ? _parent->field<crypt_type>() : "0";
-	// Если ветка не зашифрована
-	// Или ветка зашифрована, но пароль успешно введен
-	if(cryptFlag != "1" ||
-	    (cryptFlag == "1" && globalparameters.crypt_key().length() > 0)){
+	QModelIndex index = _tree_view->current_index();
+	if(index.isValid()){
+		// Выясняется, зашифрована ли ветка или нет
+		QString cryptFlag		= _current_model()->item(index)->field<crypt_type>();
+		auto	current_item	= _current_model()->item(index);
+		assert(current_item);
+		auto _parent = _current_model()->item(index)->parent();
+		assert(_parent);
+		// Выясняется, зашифрована ли родительская ветка
+		QString parentCryptFlag = _parent ? _parent->field<crypt_type>() : "0";
+		// Если ветка не зашифрована
+		// Или ветка зашифрована, но пароль успешно введен
+		if(cryptFlag != "1" ||
+			(cryptFlag == "1" && globalparameters.crypt_key().length() > 0)){
 //		// If there is a branch, by appropriate points become active in the buffer  // Если в буфере есть ветки, соответсвующие пункты становятся активными
 //	    bool		is_branch	= false;
 //	    const QMimeData	*mimeData	= QApplication::clipboard()->mimeData();
 //	    if(mimeData != nullptr)
-//			if(mimeData->hasFormat("hapnote/branch")) is_branch = true;
-	    enable_up_action();
-		// ----------------------------
-		// Подсветка пунктов шифрования
-		// ----------------------------
-		// Если ветка незашифрована
-	    if(cryptFlag != "1"){
-		// Шифровать можно
-		// Дешифровать нельзя
-		_actionlist[action_encrypt_branch]->setEnabled(true);
-		_actionlist[action_decrypt_branch]->setEnabled(false);
-	    }else{
-		// Ветка зашифрована
+//			if(mimeData->hasFormat("tute/branch")) is_branch = true;
+			enable_up_action();
+			// ----------------------------
+			// Подсветка пунктов шифрования
+			// ----------------------------
+			// Если ветка незашифрована
+			if(cryptFlag != "1"){
+				// Шифровать можно
+				// Дешифровать нельзя
+				_actionlist[action_encrypt_branch]->setEnabled(true);
+				_actionlist[action_decrypt_branch]->setEnabled(false);
+			}else{
+				// Ветка зашифрована
 
-		// Шифровать нельзя
-		_actionlist[action_encrypt_branch]->setEnabled(false);
-		// Дешифровать можно только если верхнележащая ветка незашифрована
-		if(parentCryptFlag != "1")_actionlist[action_decrypt_branch]->setEnabled(true);
-		else _actionlist[action_decrypt_branch]->setEnabled(false);
-	    }
+				// Шифровать нельзя
+				_actionlist[action_encrypt_branch]->setEnabled(false);
+				// Дешифровать можно только если верхнележащая ветка незашифрована
+				if(parentCryptFlag != "1") _actionlist[action_decrypt_branch]->setEnabled(true);
+				else _actionlist[action_decrypt_branch]->setEnabled(false);
+			}
+		}
 	}
-    }
 	////    _context_menu->addAction(_table_screen->_pin);
 	// _context_menu->addAction(_table_screen->_addnew_to_end);
 	// _context_menu->addAction(_table_screen->_edit_field);
@@ -2238,7 +2238,7 @@ void ts_t::on_custom_contextmenu_requested(const QPoint &_position){
 
 	// Включение отображения меню на экране
 	// menu.exec(event->globalPos());
-    _context_menu->exec(_tree_view->viewport()->mapToGlobal(_position));
+	_context_menu->exec(_tree_view->viewport()->mapToGlobal(_position));
 }
 
 // bool TreeScreen::is_index_localized(const QModelIndexList _origin_index_list)const
@@ -2463,9 +2463,9 @@ void ts_t::on_custom_contextmenu_requested(const QPoint &_position){
 
 void ts_t::resizeEvent(QResizeEvent *e){
 	// _tree_view->resizeEvent(e); //
-    _adjustingscrollarea->resizeEvent(e);
+	_adjustingscrollarea->resizeEvent(e);
 
-    QWidget::resizeEvent(e);
+	QWidget::resizeEvent(e);
 
 	// int rw = contentsRect().width();
 	// int vw = recordTableController->getView()->contentsRect().width();
@@ -2490,45 +2490,45 @@ tsv_t *ts_t::viewer() const {return _viewer;}
 void ts_t::viewer(tsv_t *v){_viewer = v;}
 
 void AdjustingScrollArea::resizeEvent(QResizeEvent *e){
-    (void) e;
-	// auto w = width();
-	// auto vw = viewport()->width() ;
-	// auto ww = widget()->width();
-	// Essential vvv
-    resize(_tree_view->_tree_screen->width(), height());
-    _tree_view->resize(_tree_view->_tree_screen->width(), height());
-	// _tree_view->resizeEvent(e);
-}
-
-bool AdjustingScrollArea::eventFilter(QObject *obj, QEvent *ev){
-	// This works because QScrollArea::setWidget installs an eventFilter on the widget
-    if(obj && obj == widget() && ev->type() == QEvent::Resize){
-	// deprecated:
-	// setMinimumWidth(widget()->minimumSizeHint().width() + verticalScrollBar()->width());
-
-	// widget()->setMaximumWidth(width() + verticalScrollBar()->width());
-	// widget()->repaint();
-
-	// static_cast<RecordView *>(o)
-	////        widget()
-	// ->resizeEvent(static_cast<QResizeEvent *>(e));
-
-	// auto w = width();
-	// auto vw = viewport()->width() ;
-	// auto ww = widget()->width();
-	resize(_tree_view->_tree_screen->width(), height());	// resize(width() - viewport()->width() + widget()->width(), height());
-	_tree_view->resize(_tree_view->_tree_screen->width(), height());
-	// _tree_view->resizeEvent(static_cast<QResizeEvent *>(ev));  // (*_interface)(static_cast<QResizeEvent *>(ev));
-    }
-    if(obj == widget() && ev->type() != QEvent::Resize){
+	(void) e;
 	// auto w = width();
 	// auto vw = viewport()->width() ;
 	// auto ww = widget()->width();
 	// Essential vvv
 	resize(_tree_view->_tree_screen->width(), height());
-	_tree_view->resize(_tree_view->_tree_screen->width(), height());// setMinimumWidth(width() - viewport()->width() + widget()->width()); // setMaximumWidth(width() - viewport()->width() + widget()->width());
-    }
-    return QScrollArea::eventFilter(obj, ev);
+	_tree_view->resize(_tree_view->_tree_screen->width(), height());
+	// _tree_view->resizeEvent(e);
+}
+
+bool AdjustingScrollArea::eventFilter(QObject *obj, QEvent *ev){
+	// This works because QScrollArea::setWidget installs an eventFilter on the widget
+	if(obj && obj == widget() && ev->type() == QEvent::Resize){
+		// deprecated:
+		// setMinimumWidth(widget()->minimumSizeHint().width() + verticalScrollBar()->width());
+
+		// widget()->setMaximumWidth(width() + verticalScrollBar()->width());
+		// widget()->repaint();
+
+		// static_cast<RecordView *>(o)
+		////        widget()
+		// ->resizeEvent(static_cast<QResizeEvent *>(e));
+
+		// auto w = width();
+		// auto vw = viewport()->width() ;
+		// auto ww = widget()->width();
+		resize(_tree_view->_tree_screen->width(), height());	// resize(width() - viewport()->width() + widget()->width(), height());
+		_tree_view->resize(_tree_view->_tree_screen->width(), height());
+		// _tree_view->resizeEvent(static_cast<QResizeEvent *>(ev));  // (*_interface)(static_cast<QResizeEvent *>(ev));
+	}
+	if(obj == widget() && ev->type() != QEvent::Resize){
+		// auto w = width();
+		// auto vw = viewport()->width() ;
+		// auto ww = widget()->width();
+		// Essential vvv
+		resize(_tree_view->_tree_screen->width(), height());
+		_tree_view->resize(_tree_view->_tree_screen->width(), height());// setMinimumWidth(width() - viewport()->width() + widget()->width()); // setMaximumWidth(width() - viewport()->width() + widget()->width());
+	}
+	return QScrollArea::eventFilter(obj, ev);
 }
 
 AdjustingScrollArea::AdjustingScrollArea(tv_t *_tree_view, QWidget *parent) : QScrollArea(parent), _tree_view(_tree_view){
@@ -2536,31 +2536,31 @@ AdjustingScrollArea::AdjustingScrollArea(tv_t *_tree_view, QWidget *parent) : QS
 
 	////    _treescreenlayout->addWidget(_adjustingscrollarea = new AdjustingScrollArea);  // , 0, 1
 	// _tree_view->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);	// QSizePolicy::MinimumExpanding
+	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);	// QSizePolicy::MinimumExpanding
 
 
-    setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
-    setMinimumSize(_tree_view->size());
-    setWidgetResizable(true);
-    setStyleSheet("QScrollArea { border: 0px solid blue }");
+	setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
+	setMinimumSize(_tree_view->size());
+	setWidgetResizable(true);
+	setStyleSheet("QScrollArea { border: 0px solid blue }");
 
 	// _adjustingscrollarea->setWidget(_tree_view);
 	// _tree_view->viewport()->installEventFilter(_adjustingscrollarea);
 
 
-    _tree_view->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	_tree_view->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 	// _adjustingscrollarea->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 	// area->setStyleSheet("QScrollArea { border: 1px solid blue }");
-    this->setWidget(_tree_view);
-    _tree_view->viewport()->installEventFilter(this);
+	this->setWidget(_tree_view);
+	_tree_view->viewport()->installEventFilter(this);
 }
 
 void AdjustingScrollArea::setWidget(tv_t *view){
-    QScrollArea::setWidget(view);
+	QScrollArea::setWidget(view);
 
 	// It so happens that QScrollArea already filters widget events,
 	// but that's an implementation detail that we shouldn't rely on.
-    view->viewport()->installEventFilter(this);
+	view->viewport()->installEventFilter(this);
 }
 
 // TreeViewHelpWidget::TreeViewHelpWidget(TreeScreen *_tree_screen)
@@ -2590,21 +2590,21 @@ void AdjustingScrollArea::setWidget(tv_t *view){
 tsv_t::~tsv_t(){_tree_screen->viewer(nullptr);}
 
 tsv_t::tsv_t(wn_t *main_window, ts_t *tree_screen, QWidget *widget_right)
-    : _main_window(main_window)
-      , _tree_screen(tree_screen)
-      , _widget_right(widget_right)
-      , _layout(new QStackedLayout(this)){
-    auto _vtab_record = _main_window->vtab_record();
-    if(widget_right->objectName() == record_screen_multi_instance_name)_vtab_record->addTab(widget_right, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(vtab_record->count())
-    else if(widget_right->objectName() == download_manager_singleton_name)_vtab_record->addTab(widget_right, QIcon(":/resource/pic/apple.svg"), QString("Download"));
+	: _main_window(main_window)
+	  , _tree_screen(tree_screen)
+	  , _widget_right(widget_right)
+	  , _layout(new QStackedLayout(this)){
+	auto _vtab_record = _main_window->vtab_record();
+	if(widget_right->objectName() == record_screen_multi_instance_name) _vtab_record->addTab(widget_right, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));// QString("Browser ") + QString::number(vtab_record->count())
+	else if(widget_right->objectName() == download_manager_singleton_name) _vtab_record->addTab(widget_right, QIcon(":/resource/pic/apple.svg"), QString("Download"));
 //    widget_right->setParent(vtab_record);
-    _tree_screen->viewer(this);
-    setObjectName(tree_screen_viewer_name);
-    _layout->addWidget(_tree_screen);
-    _layout->setMargin(0);
-    _layout->setContentsMargins(0, 0, 0, 0);
-    _layout->setSpacing(0);
-    setLayout(_layout);
+	_tree_screen->viewer(this);
+	setObjectName(tree_screen_viewer_name);
+	_layout->addWidget(_tree_screen);
+	_layout->setMargin(0);
+	_layout->setContentsMargins(0, 0, 0, 0);
+	_layout->setSpacing(0);
+	setLayout(_layout);
 
 // _tree_screen->setParent(this);
 // _tree_screen->show();
@@ -2615,10 +2615,10 @@ int tsv_t::tree_screen(ts_t *tree){return _layout->addWidget(tree);}
 ts_t *tsv_t::tree_screen() const {return dynamic_cast<ts_t *>(_layout->widget());}
 
 void tsv_t::widget_right(QWidget *rs){
-    _widget_right = rs;
-    auto _vtab_record = _main_window->vtab_record();
-    if(_widget_right->objectName() == record_screen_multi_instance_name)_vtab_record->addTab(_widget_right, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));		// QString("Browser ") + QString::number(vtab_record->count())
-    else if(_widget_right->objectName() == download_manager_singleton_name)_vtab_record->addTab(_widget_right, QIcon(":/resource/pic/apple.svg"), QString("Download"));
+	_widget_right = rs;
+	auto _vtab_record = _main_window->vtab_record();
+	if(_widget_right->objectName() == record_screen_multi_instance_name) _vtab_record->addTab(_widget_right, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));																																															// QString("Browser ") + QString::number(vtab_record->count())
+	else if(_widget_right->objectName() == download_manager_singleton_name) _vtab_record->addTab(_widget_right, QIcon(":/resource/pic/apple.svg"), QString("Download"));
 }
 
 QWidget *tsv_t::widget_right() const {return _widget_right;}

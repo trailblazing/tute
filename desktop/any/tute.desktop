@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=hapnote
+Name=tute
 Comment=Smart manager for information collecting
-Exec=hapnote
-Icon=hapnote
+Exec=tute
+Icon=tute
 Terminal=false
 Type=Application
 StartupNotify=true

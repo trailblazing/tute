@@ -127,7 +127,7 @@ void AttachTableController::add_smart(QString attach_type){
     globalparameters.tree_screen()->view()->know_model_save();
 	// Обновление иконки аттачей в редакторе
     if(attachTableData->size() > 0){
-	auto *editor_ = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
+	auto *editor_ = globalparameters.edit_entry();	// find_object<MetaEditor>(meta_editor_singleton_name);
 	editor_->to_attach()->setIcon(editor_->icon_attach_exists());
     }
 }
@@ -325,7 +325,7 @@ void AttachTableController::on_delete_attach(void){
     globalparameters.tree_screen()->view()->know_model_save();
 	// Обновление иконки аттачей в редакторе
     if(attachTableData->size() == 0){
-	auto *editor_ = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
+	auto *editor_ = globalparameters.edit_entry();	// find_object<MetaEditor>(meta_editor_singleton_name);
 	editor_->to_attach()->setIcon(editor_->icon_attach_not_exists());
     }
 }
@@ -388,7 +388,7 @@ void AttachTableController::on_show_attach_info(void){
     messageBox.exec();
 }
 void AttachTableController::on_switch_to_editor(void){
-    auto *editor_ = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
+    auto *editor_ = globalparameters.edit_entry();	// find_object<MetaEditor>(meta_editor_singleton_name);
     editor_->to_editor_layout();
 }
 // Получение списка идентификаторов аттачей, выделенных в представлении

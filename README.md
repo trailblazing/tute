@@ -1,5 +1,5 @@
 
-**Hapnote** <= **mytetra_webengine** <= **MyTetra**
+**Tute** <= **mytetra_webengine** <= **MyTetra**
 
 It's a note.
 
@@ -11,9 +11,9 @@ The next step, I aim to append some real-time collaborative editing functions.
 
 Should you need more functions, feel free to contact me: hughvonyoung[at]gmail.com
 
-Please note that Hapnote is distributed under the GPL v3.
+Please note that Tute is distributed under the GPL v3.
 
-##How to remote synchronize Hapnote
+##How to remote synchronize Tute
 _______________________________________________________________________
 
 Currently I choose Dropbox
@@ -24,7 +24,7 @@ Move files to Dropbox:
 
 After that, change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
 
-##How to build Hapnote
+##How to build Tute
 _______________________________________________________________________
 
 ###1 Build on Linux
@@ -36,7 +36,7 @@ Let's say the directory of your current project is named "working":
 	    |       |____src
 	    |
 	    |____knowledge management (name is whatever)
-		    |____hapnote (created by or synchronized with git)
+		    |____tute (created by or synchronized with git)
 ```
 ####1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
@@ -84,24 +84,24 @@ but it's not a must
 
 ####1.4 Clone the repo to your workbench
 ```
-	git clone https://github.com/beimprovised/hapnote.git
+	git clone https://github.com/beimprovised/tute.git
 ```
 ####1.5 Compile
 ```
-	/path-to-qt-installation/gcc_64/bin/qmake hapnote.pro
+	/path-to-qt-installation/gcc_64/bin/qmake tute.pro
 
 	make all
 
 	sudo make install
 ```
 * Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7):
-        Open "hapnote.pro" under hapnote in qtcreator
+        Open "tute.pro" under tute in qtcreator
         "Configure" the project in qtcreator (no additional requirements)
         Build it.
 
 _______________________________________________________________________
 
-##Hapnote is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
+##Tute is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
 _______________________________________________________________________
 
 ENG: Central source repository for MyTetra development.
@@ -152,12 +152,12 @@ For mytetra_webengine
 * origin       - the main branch with the latest stable release;
 * develop      - branch to develop.
 
-For Hapnote:
+For Tute:
 
 * master            - the main branch with the latest stable release;
 * develop           - branch to develop.
-* code beautifier   - https://github.com/beimprovised/hapnote/blob/hapnote/src/uncrustify.cfg
+* code beautifier   - https://github.com/beimprovised/tute/blob/tute/src/uncrustify.cfg
 
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.
 
-Deciding to connect to the development Hapnote, please use the develop branch for the current code.
+Deciding to connect to the development Tute, please use the develop branch for the current code.

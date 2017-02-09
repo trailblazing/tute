@@ -581,7 +581,7 @@ namespace browser {
     Entrance::Entrance(QString object_name
 		      , ts_t *_tree_screen
 		      , FindScreen *_find_screen// browser::ToolbarSearch *toolbarsearch
-		      , Editentry *_editentry
+//		      , Editentry *_editentry
 		      , wn_t *_main_window
 		      , AppConfig   &_appconfig
 		      , const QString &style_source
@@ -591,7 +591,7 @@ namespace browser {
 //	  , _browsers(std::set<Browser * >())	// , _shadow_branch(_record_controller->source_model()->_browser_pages)
 	  , _tree_screen(_tree_screen)
 	  , _find_screen(_find_screen)
-	  , _editentry(_editentry)	// , _record_controller(_record_controller)
+//	  , _editentry(_editentry)	// , _record_controller(_record_controller)
 	  , _main_window(_main_window)
 	  , _appconfig(_appconfig)
 	  , _style_source(style_source)
@@ -976,8 +976,7 @@ namespace browser {
 
 	// }
 
-    void Entrance::assembly(void)
-    {}
+    void Entrance::assembly(void){}
 
 	// void BrowserManager::setUrl(const QUrl &_url)
 	// {
@@ -1347,15 +1346,15 @@ namespace browser {
 //	return _browsers;	// list;
 //    }
 
-#if defined(Q_OS_OSX)
-    void BrowserView::lastWindowClosed(){
-	clean();
-	Browser *browser = new browser::Browser(this);
-	browser->slotHome();
-	_main_windows.prepend(browser);
-    }
+// #if defined(Q_OS_OSX)
+//    void BrowserView::lastWindowClosed(){
+//	clean();
+//	Browser *browser = new browser::Browser(this);
+//	browser->slotHome();
+//	_main_windows.prepend(browser);
+//    }
 
-#endif
+// #endif
 
 
 	// void Entrance::open_url(const QUrl &url)

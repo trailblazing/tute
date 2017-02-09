@@ -45,25 +45,26 @@ class TreeItem;
 class FindScreen;
 class RecordModel;
 class EditingWindow;
+class QStackedWidget;
 
 class ClickableLabel : public QLabel {
 #if QT_VERSION == 0x050600
-    W_OBJECT(ClickableLabel)
+W_OBJECT(ClickableLabel)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
-    public:
+public:
 	ClickableLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 //	W_CONSTRUCTOR(QWidget *, Qt::WindowFlags)
 	//
 	ClickableLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 //	W_CONSTRUCTOR(const QString &, QWidget *, Qt::WindowFlags)
 // Q_SIGNALS:
-    signals:
+signals:
 	void mousePressEvent(QMouseEvent *ev)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(mousePressEvent, (QMouseEvent *), ev)	//
+	W_SIGNAL(mousePressEvent, (QMouseEvent *), ev)      //
 #else
 	;
 #endif
@@ -75,29 +76,29 @@ class MetaEditor : public Editor
 //    : public QDockWidget
 {
 #if QT_VERSION == 0x050600
-    W_OBJECT(MetaEditor)
+W_OBJECT(MetaEditor)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
-    public slots:
+public slots:
 
 	void field(QString n, QString v);
 	void clear_all(void);
 	void on_click_to_tag(const QString &text);
 
 
-    signals:
+signals:
 	// Сигнал вырабатывается при клике на текстовой метке
 	void set_find_text_signal(QString text)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(set_find_text_signal, text)	//
+	W_SIGNAL(set_find_text_signal, text)        //
 #else
 	;
 #endif
 
-    public:
-	MetaEditor(QString object_name, EditingWindow *editingwindow_, FindScreen *_find_screen);
+public:
+	MetaEditor(FindScreen *find_screen, EditingWindow *editing_win, QStackedWidget *main_stack_ = nullptr, QString object_name = "");
 	~MetaEditor(void);
 
 	void tree_path(const QString &path);
@@ -113,9 +114,9 @@ class MetaEditor : public Editor
 
 	void to_editor_layout(void);
 	void to_attach_layout(void);
-	void bind(boost::intrusive_ptr<TreeItem> item_to_be_bound);		// {_record = r;}
+	void bind(boost::intrusive_ptr<TreeItem> item_to_be_bound);         // {_record = r;}
 
-	boost::intrusive_ptr<TreeItem>	item();		// {return _record;}
+	boost::intrusive_ptr<TreeItem>	item();         // {return _record;}
 
 // #ifdef USE_QTM
 //    public:
@@ -208,7 +209,9 @@ class MetaEditor : public Editor
 
 // #endif
 
-    private:
+protected:
+	void resizeEvent(QResizeEvent *e);
+private:
 	void setup_labels(void);
 	void setup_ui(void);
 	void assembly(void);
@@ -219,14 +222,14 @@ class MetaEditor : public Editor
 	FindScreen	*_find_screen;
 	QWidget		*_editor_main_screen;
 	QGridLayout	*_editor_main_layer;
-	QLabel		*_tree_path;		// Надпись Path (только для мобильного интерфейса)
+	QLabel		*_tree_path;            // Надпись Path (только для мобильного интерфейса)
 	QCheckBox	*_item_pin;
 
-	QLabel		*_item_name;		// Надпись Title
-	QLabel		*_item_author;		// Надпись Author(s)
+	QLabel		*_item_name;            // Надпись Title
+	QLabel		*_item_author;          // Надпись Author(s)
 
-	QLabel		*_label_home;		// Inscription    // Надпись "Url"
-	QLabel		*_label_url;		// Inscription    // Надпись "Url"
+	QLabel		*_label_home;           // Inscription    // Надпись "Url"
+	QLabel		*_label_url;            // Inscription    // Надпись "Url"
 
 	ClickableLabel	*_item_home;
 	ClickableLabel	*_item_url;
@@ -238,7 +241,7 @@ class MetaEditor : public Editor
 	QHBoxLayout	*_item_tags_scrollarea_layout;
 	QWidget		*_item_tags_container;
 	QHBoxLayout	*_item_tags_layout;
-	QLabel		*_label_tags;		// Надпись "Tags"
+	QLabel		*_label_tags;           // Надпись "Tags"
 
 	QString	_item_tags_text;
 	QStringList _item_tags_text_list;
@@ -254,11 +257,14 @@ class MetaEditor : public Editor
 
 	// Группировалка виджетов всех слоев (слоя редактирования и слоя прикрепляемых файлов)
 	QVBoxLayout			*_meta_editor_join_layer;
-	QMetaObject::Connection	_home_connection;	// for disconnect
-	QMetaObject::Connection	_url_connection;	// for disconnect
+	QMetaObject::Connection _home_connection;       // for disconnect
+	bool _home_connection_initialized = false;
+	QMetaObject::Connection _url_connection;        // for disconnect
+	bool _url_connection_initialized = false;
 	boost::intrusive_ptr<TreeItem>	_item;
 //	QWidget *_hidetitlebar;
-	EditingWindow *_editingwindow;
+	QStackedWidget *_main_stack;
+	EditingWindow *_editing_win;
 };
 
 #endif /* _METAEDITOR_H_ */

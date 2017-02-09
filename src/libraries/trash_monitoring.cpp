@@ -23,7 +23,7 @@ TrashMonitoring::~TrashMonitoring(void)
 std::shared_ptr<QFileInfo> TrashMonitoring::recover_from_trash(std::shared_ptr<QFileInfo> target_file, bool force_remove){
     std::shared_ptr<QFileInfo>	result(nullptr);//				= false;
     auto			need			= false;
-    auto			_file_name		= target_file->fileName();	// "hapnote.xml";
+    auto			_file_name		= target_file->fileName();	// "index.xml";
     auto			file_name_fullpath	= target_file->filePath();	// appconfig.tetra_dir() + "/" + _file_name;
 //    if(QFile::exists(appconfig.tetra_dir() + "/" + _file_name))remove_oldest_file(_file_name);
     if(QFile::exists(file_name_fullpath)){
@@ -50,11 +50,11 @@ std::shared_ptr<QFileInfo> TrashMonitoring::recover_from_trash(std::shared_ptr<Q
 //    QString	full_current_path = main_program_file_info.absolutePath();
 	if(_files_table.size() == 0){
 	    if(! QDir(globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName()).exists()) QDir(globalparameters.root_path()).mkdir(QDir(appconfig.trash_dir()).dirName());
-	    if(! QFile::copy(QString(":/resource/standarddata/") + _file_name, globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name)) throw std::runtime_error("Can not copy hapnote.xml");
+	    if(! QFile::copy(QString(":/resource/standarddata/") + _file_name, globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name)) throw std::runtime_error("Can not copy index.xml");
 	    else QFile::setPermissions(globalparameters.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + _file_name, QFile::ReadUser | QFile::WriteUser);
-//	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.hapnote_xml());
+//	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.index_xml());
 //	assert(succedded);
-	    add_file(_file_name);	// globalparameters.hapnote_xml().keys()[0]
+	    add_file(_file_name);	// globalparameters.index_xml().keys()[0]
 	    result = std::make_shared<QFileInfo>(file_name_fullpath);	// target_file;
 	}
 //    else{

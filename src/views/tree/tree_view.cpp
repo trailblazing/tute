@@ -74,9 +74,9 @@ extern const char	*action_editor_switch;
 
 
 #ifdef QT_DEBUG
-const char *index_xml_file_name = "hapnote.xml";	// "hapnote_debug.xml";
+const char *index_xml_file_name = "index.xml";	// "index_debug.xml";
 #else
-const char *index_xml_file_name = "hapnote.xml";
+const char *index_xml_file_name = "index.xml";
 #endif
 
 enum QItemSelectionModel::SelectionFlag current_tree_selection_mode	= QItemSelectionModel::SelectionFlag::Select;		// ClearAndSelect   Current       // ClearAndSelect //  | QItemSelectionModel::SelectionFlag::Rows
@@ -545,7 +545,7 @@ void tv_t::dragMoveEvent(QDragMoveEvent *event){
 // if(mimeData == nullptr)
 // return false;
 
-// if(!(mimeData->hasFormat("hapnote/records")))
+// if(!(mimeData->hasFormat("tute/records")))
 // return false;
 
 // QObject *sourceObject = qobject_cast<QObject *>(event->source());
@@ -632,7 +632,7 @@ void tv_t::dropEvent(QDropEvent *event){
 		// Если таблица конечных записей после удаления перемещенной записи стала пустой
 		if(_record_controller->row_count() == 0){
 			// find_object<MetaEditor>(meta_editor_singleton_name)
-		    globalparameters.meta_editor()->clear_all();																												// Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
+		    globalparameters.edit_entry()->clear_all();																												// Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
 		}
 		// find_object<RecordScreen>(table_screen_singleton_name)
 		_record_controller->record_screen()->tools_update();
@@ -2364,7 +2364,7 @@ void tv_t::paste_clipboard(boost::intrusive_ptr<TreeIndex> _sibling_tree_index){
 	// Проверяется, содержит ли буфер обмена данные нужного формата
     const QMimeData *mime_data = QApplication::clipboard()->mimeData();
     if(mime_data == nullptr) return;
-    if(! (mime_data->hasFormat("hapnote/branch"))) return;
+    if(! (mime_data->hasFormat("tute/branch"))) return;
 	////    // Получение списка индексов QModelIndex выделенных элементов
 	////    QModelIndexList selectitems = selectionModel()->selectedIndexes();
 	// QModelIndex _current_index;

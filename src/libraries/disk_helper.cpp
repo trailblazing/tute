@@ -97,7 +97,7 @@ std::shared_ptr<QFileInfo> DiskHelper::copy_file_to_data_folder(const QString &f
 //	//    QString file_name_to_short = file_name_from_short.remove(0, file_name_from_short.lastIndexOf('_') + 1);
 //    QString file_name_to = appconfig.tetra_dir()	//
 //	+ "/"
-//	+ index_xml_file_name	// "hapnote.xml"// + globalparameters.main_program_file() + ".xml"
+//	+ index_xml_file_name	// "index.xml"// + globalparameters.main_program_file() + ".xml"
 //    ;				// appconfig.datadir() + "/" + file_name_to_short;
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;

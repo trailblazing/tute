@@ -68,12 +68,12 @@
         <file>resource/pic/expand_console.svg</file>
         <file>resource/pic/walk_history_previous.svg</file>
         <file>resource/pic/walk_history_next.svg</file>
-        <file>resource/pic/hapnote_splash.png</file>
+        <file>resource/pic/icon_splash.png</file>
         <file>resource/pic/transparent_dot.svg</file>
         <file>resource/pic/transparent_dot.png</file>
         <file>resource/pic/mobile_back.svg</file>
         <file>resource/pic/sort.svg</file>
-        <file>resource/translations/hapnote_ru.qm</file>
+        <file>resource/translations/ru.qm</file>
         <file>resource/standardconfig/any/conf.ini</file>
         <file>resource/standardconfig/any/editorconf.ini</file>
         <file>resource/standardconfig/any/stylesheet.css</file>
@@ -84,7 +84,7 @@
         <file>resource/standardconfig/android/conf.ini</file>
         <file>resource/standardconfig/android/editorconf.ini</file>
         <file>resource/standardconfig/android/stylesheet.css</file>
-        <file>resource/standarddata/hapnote.xml</file>
+        <file>resource/standarddata/index.xml</file>
         <file>resource/standarddata/base/0000000001/text.html</file>
         <file>resource/pic/edit_show_text.svg</file>
         <file>resource/pic/attach.svg</file>

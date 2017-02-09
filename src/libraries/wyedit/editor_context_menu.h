@@ -15,62 +15,62 @@
 
 class EditorContextMenu : public QMenu {
 #if QT_VERSION == 0x050600
-    W_OBJECT(EditorContextMenu)
+W_OBJECT(EditorContextMenu)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
-    public:
+public:
 	EditorContextMenu(QWidget *parent = 0);
 	~EditorContextMenu(void);
 
 	void set_edit_image_properties(bool is_image_select);
 
-    signals:
+signals:
 	void undo(void)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(undo)	//
+	W_SIGNAL(undo)  //
 #else
 	;
 #endif
 	void redo(void)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(redo)	//
+	W_SIGNAL(redo)  //
 #else
 	;
 #endif
 	void cut(void)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(cut)	//
+	W_SIGNAL(cut)   //
 #else
 	;
 #endif
 	void copy(void)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(copy)	//
+	W_SIGNAL(copy)  //
 #else
 	;
 #endif
 	void paste(void)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(paste)	//
+	W_SIGNAL(paste) //
 #else
 	;
 #endif
 	void selectAll(void)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(selectAll)	//
+	W_SIGNAL(selectAll) //
 #else
 	;
 #endif
 	void contextMenuEditImageProperties(void)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(contextMenuEditImageProperties)	//
+	W_SIGNAL(contextMenuEditImageProperties)    //
 #else
 	;
 #endif
 
-    private:
+private:
 	QAction *actionUndo;
 	QAction *actionRedo;
 	QAction *actionCut;
@@ -79,9 +79,9 @@ class EditorContextMenu : public QMenu {
 	QAction *actionSelectAll;
 	QAction *actionEditImageProperties;
 
-	void	setup_actions(void);
-	void	setup_signals(void);
-	void	setup_menu(void);
+	void setup_actions(void);
+	void setup_signals(void);
+	void setup_menu(void);
 };
 
-#endif	// _EDITORCONTEXTMENU_H_
+#endif  // _EDITORCONTEXTMENU_H_

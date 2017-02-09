@@ -1,11 +1,8 @@
 #include "main.h"
 
-
 #if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
 #endif
-
-
 
 #include <QWebEngineView>	// #include <QWebView> //#include <QtWebKitWidgets/QWebView>
 
@@ -13,62 +10,63 @@
 #include <QWebEnginePage>	// #include <QWebPage>
 #include <QtWebEngineWidgets>
 
-
-
 // #include <QWebFrame>
-#include <QVBoxLayout>
-#include <QNetworkDiskCache>
-#include <QDesktopServices>
-#include <QNetworkReply>
-#include <QSslError>
-#include <QSslCertificate>
-#include <QSslConfiguration>
-#include <QMessageBox>
-#include <QMap>
-#include <QByteArray>
-#include <QDebug>
-#include <QFile>
 #include <QAction>
 #include <QApplication>
-#include <QSettings>
-#include <QFileInfo>
+#include <QByteArray>
 #include <QDebug>
+#include <QDebug>
+#include <QDesktopServices>
 #include <QDir>
-#include <QUrl>
-#include <cassert>
 #include <QDockWidget>
+#include <QFile>
+#include <QFileInfo>
+#include <QMap>
+#include <QMessageBox>
+#include <QNetworkDiskCache>
+#include <QNetworkReply>
+#include <QSettings>
+#include <QSslCertificate>
+#include <QSslConfiguration>
+#include <QSslError>
+#include <QUrl>
+#include <QVBoxLayout>
+#include <cassert>
 
 #ifdef Q_WS_QWS
 #include <QWSServer>
 #endif
 
-#include "tabwidget.h"
+#include "browser.h"
+#include "controllers/record_table/record_controller.h"
 #include "editentry.h"
 #include "entranceinfo.h"
-#include "toolbarsearch.h"
-#include "views/record_table/record_screen.h"
-#include "controllers/record_table/record_controller.h"
-#include "views/record_table/record_view.h"
+#include "libraries/global_parameters.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
+#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/super_menu.h"
+#include "libraries/window_switcher.h"
 #include "models/record_table/items_flat.h"
+#include "models/record_table/record.h"
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
-#include "libraries/window_switcher.h"
-#include "views/browser/webview.h"
-#include "libraries/qt_single_application5/qtsingleapplication.h"
-#include "views/find_in_base_screen/find_screen.h"
-#include <utility>
 #include "models/tree/binder.hxx"
-#include "models/tree/tree_know_model.h"
-#include "views/tree/tree_screen.h"
-#include "views/main_window/main_window.h"
-#include "models/record_table/record.h"
-#include "libraries/global_parameters.h"
-#include "browser.h"
-#include "webview.h"
-#include "views/record/meta_editor.h"
 #include "models/tree/tree_item.h"
-#include "libraries/qtm/EditingWindow.h"
+#include "models/tree/tree_know_model.h"
+#include "tabwidget.h"
+#include "toolbarsearch.h"
+#include "views/browser/webview.h"
+#include "views/find_in_base_screen/find_screen.h"
+#include "views/main_window/main_window.h"
+#include "views/record/meta_editor.h"
+#include "views/record_table/record_screen.h"
+#include "views/record_table/record_view.h"
+#include "views/tree/tree_screen.h"
+#include "webview.h"
+#include <utility>
 
+
+extern AppConfig appconfig;
 // namespace browser {
 // struct BrowserViewPrivate {
 ////Q_OBJECT
@@ -83,9 +81,11 @@
 ////deprecated
 // void BrowserManager::loadUrl(const int pos)
 // {
-// RecordTableController *recordTableController = globalParameters.getRecordTableScreen()->getRecordTableController();
+// RecordTableController *recordTableController =
+// globalParameters.getRecordTableScreen()->getRecordTableController();
 ////int pos = recordTableController->getFirstSelectionPos();
-// RecordTableModel *recordTableModel = recordTableController->getRecordTableModel();
+// RecordTableModel *recordTableModel =
+// recordTableController->getRecordTableModel();
 // RecordTableData *recordTableData = recordTableModel->getRecordTableData();
 // Record *record = recordTableData->getRecord(pos);
 
@@ -102,14 +102,16 @@
 // Record *BrowserView::findRecord()
 // {
 // Record *_record = nullptr;
-// RecordTableController *recordTableController = globalParameters.getRecordTableScreen()->getRecordTableController();
+// RecordTableController *recordTableController =
+// globalParameters.getRecordTableScreen()->getRecordTableController();
 // int pos = recordTableController->getFirstSelectionPos();
 
 // if(pos != -1) {
 ////RecordTableView *view = recordTableController->getView();
 ////view->loadUrl();
 
-// RecordTableModel *recordTableModel = recordTableController->getRecordTableModel();
+// RecordTableModel *recordTableModel =
+// recordTableController->getRecordTableModel();
 // RecordTableData *recordTableData = recordTableModel->getRecordTableData();
 
 // Record *record = recordTableData->getRecord(pos);
@@ -129,8 +131,8 @@
 
 ////    //this->current_record.setField("name", name);  //
 ////    this->current_record.setNaturalFieldSource("name", name);
-////    //this->current_record.setField(boost::mpl::c_str < crypt_type > ::value, "0");
-
+////    //this->current_record.setField(boost::mpl::c_str < crypt_type >
+/// ::value, "0");
 
 ////    QString author = "default";
 ////    QString tags = "default";
@@ -161,44 +163,49 @@ void Editentry::init_setting(void){
 	// if(record)
 	// _url = record->getField("url");
 
-    QUrl url;
+	QUrl url;
 	// initialize
 
-    QFileInfo settingsFile;
+	QFileInfo settingsFile;
 
 	// QString sb(QApplication::applicationDirPath());
 	// sb.append(QDir::separator());
 	// sb.append("browserview.ini");
 
-    QString configFileName = globalparameters.root_path() + "/" + globalparameters.target_os() + "/browserview.ini";
+	QString configFileName = globalparameters.root_path() + "/" +
+		globalparameters.target_os() + "/browserview.ini";
 	// check to see if we have a settings file where we started from
 	// if not fall back to system hard coded path
-    QFileInfo file(configFileName.toLatin1());		// file(sb.toLatin1());
-    if(file.exists()){
-	qDebug() << "using local settings file";
-	settingsFile.setFile(file.filePath());
-    }else{
-	qDebug() << "using system defined settings file";
-	settingsFile.setFile(SETTINGS_FILE);
-    }
-    QSettings settings(settingsFile.filePath(), QSettings::NativeFormat);
+	QFileInfo file(configFileName.toLatin1());	// file(sb.toLatin1());
+	if(file.exists()){
+		qDebug() << "using local settings file";
+		settingsFile.setFile(file.filePath());
+	}else{
+		qDebug() << "using system defined settings file";
+		settingsFile.setFile(SETTINGS_FILE);
+	}
+	QSettings settings(settingsFile.filePath(), QSettings::NativeFormat);
 
-    settings.beginGroup(SETTINGS_SECTION);
+	settings.beginGroup(SETTINGS_SECTION);
 
 	// if(_url.isEmpty()) {
-    url = (settings.value("browser_view").toString());		// QUrl url(settings.value("browser_view").toString());
+	url =
+		(settings.value("browser_view")
+		.toString());	// QUrl url(settings.value("browser_view").toString());
 
 	// } else {
 	// url = _url;
 	// }
 
 	// if(browser->currentTab()) {
-	// RecordTableController *recordtablecontroller = globalParameters.getRecordTableScreen()->getRecordTableController();
+	// RecordTableController *recordtablecontroller =
+	// globalParameters.getRecordTableScreen()->getRecordTableController();
 	////int pos = recordTableController->getFirstSelectionPos();
 	// Record *record = nullptr;
 
 	////if(pos != -1) {
-	// RecordTableModel *recordtablemodel = recordtablecontroller->getRecordTableModel();
+	// RecordTableModel *recordtablemodel =
+	// recordtablecontroller->getRecordTableModel();
 	////RecordTableView *recordtableview = recordtablecontroller->getView();
 	// RecordTableData *recordtabledata = recordtablemodel->getRecordTableData();
 	// record = recordtabledata->getRecordByUrl(url);
@@ -211,32 +218,35 @@ void Editentry::init_setting(void){
 	// }
 	// }
 
-    qDebug() << "loading url: " << settings.value("main_view").toString();
-    if(settings.value("full_screen", false).toBool()) this->showFullScreen();
-    if(settings.value("hide_cursor", false).toBool()){
-	this->setCursor(QCursor(Qt::BlankCursor));
+	qDebug() << "loading url: " << settings.value("main_view").toString();
+	if(settings.value("full_screen", false).toBool()) this->showFullScreen();
+	if(settings.value("hide_cursor", false).toBool()){
+		this->setCursor(QCursor(Qt::BlankCursor));
 #ifdef Q_WS_QWS
-	QWSServer::setCursorVisible(false);
+		QWSServer::setCursorVisible(false);
 #endif
-    }
-    this->set_scrollbars(settings.value("hide_scrollbars", false).toBool());
-    this->set_cache(settings.value("enable_cache", false).toBool(), settings.value("cache_size_megabytes", 5).toInt());
+	}
+	this->set_scrollbars(settings.value("hide_scrollbars", false).toBool());
+	this->set_cache(settings.value("enable_cache", false).toBool()
+				   , settings.value("cache_size_megabytes", 5).toInt());
 
-    settings.endGroup();
+	settings.endGroup();
 
 	// this->setMinimumSize(QSize(0, 0));
 	// setMinimumHeight(0);
 
-    this->show();
+	this->show();
 
-	// RecordTableController *recordTableController = globalParameters.getRecordTableScreen()->getRecordTableController();
+	// RecordTableController *recordTableController =
+	// globalParameters.getRecordTableScreen()->getRecordTableController();
 	// int pos = recordTableController->getFirstSelectionPos();
 
 	// if(pos != -1) {
 	////RecordTableView *view = recordTableController->getView();
 	////view->loadUrl();
 
-	// RecordTableModel *recordTableModel = recordTableController->getRecordTableModel();
+	// RecordTableModel *recordTableModel =
+	// recordTableController->getRecordTableModel();
 	// RecordTableData *recordTableData = recordTableModel->getRecordTableData();
 
 	// Record *record = recordTableData->getRecord(pos);
@@ -256,8 +266,8 @@ void Editentry::init_setting(void){
 
 	////    //this->current_record.setField("name", name);  //
 	////    this->current_record.setNaturalFieldSource("name", name);
-	////    //this->current_record.setField(boost::mpl::c_str < crypt_type > ::value, "0");
-
+	////    //this->current_record.setField(boost::mpl::c_str < crypt_type >
+	/// ::value, "0");
 
 	////    QString author = "default";
 	////    QString tags = "default";
@@ -301,24 +311,24 @@ void Editentry::init_setting(void){
 // }
 
 Editentry *Editentry::prepend(browser::Browser *browser){
-    browser->setParent(this);
-    setWidget(browser);
-    browser->show();
+	browser->setParent(this);
+	setWidget(browser);
+	browser->show();
 
-//	// adjustSize();
-//	// setAutoFillBackground(true);
-//	// setFeatures(QDockWidget::NoDockWidgetFeatures);
-//	// _browser = browser;
-//	bool found = false;
-//	for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
-//	    if(*i == browser){
-//		found = true;
-//		break;
-//	    }
-//	}
+	//    // adjustSize();
+	//    // setAutoFillBackground(true);
+	//    // setFeatures(QDockWidget::NoDockWidgetFeatures);
+	//    // _browser = browser;
+	//    bool found = false;
+	//    for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
+	//        if(*i == browser){
+	//        found = true;
+	//        break;
+	//        }
+	//    }
 
-//	if(! found)_browsers.insert(browser);
-    return this;
+	//    if(! found)_browsers.insert(browser);
+	return this;
 }
 
 // void Editentry::on_splitter_moved(int pos, int index)
@@ -336,41 +346,55 @@ Editentry *Editentry::prepend(browser::Browser *browser){
 // }
 
 void Editentry::on_activate_window(){
-    FindScreen *findscreen = globalparameters.find_screen();
+	FindScreen *findscreen = globalparameters.find_screen();
 
-    assert(findscreen);
-    assert(findscreen->historyhome());
+	assert(findscreen);
+	assert(findscreen->historyhome());
 
-    QObject::disconnect(_home_connection);
+	QObject::disconnect(_home_connection);
 
-    _home_connection = QObject::connect(findscreen->historyhome()
-				       , &QAction::triggered
-				       , this
-				       , [this](bool checked = true) -> void {
-		Q_UNUSED(checked)
-		assert(_main_window->vtab_record()->activated_browser());
-		auto view = _main_window->vtab_record()->activated_browser()->tabmanager()->currentWebView();
-		assert(view);
-		if(view){
-		    browser::WebPage *page = view->page();
-		    if(page){
-			boost::intrusive_ptr<TreeItem> _item = page->host();
-			assert(_item);
-			QString home = _item->field<home_type>();
-			QUrl homeurl = QUrl(home);
-			if(homeurl.isValid() && homeurl != page->url()){
-			    _item->field<url_type>(home);	// "url",
-				// boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
+	_home_connection = QObject::connect(
+		findscreen->historyhome(), &QAction::triggered, this
+									   , [this](bool checked = true) -> void {
+			Q_UNUSED(checked)
+			assert(_main_window->vtab_record()->activated_browser());
+			auto view = _main_window->vtab_record()
+			->activated_browser()
+			->tabmanager()
+			->currentWebView();
+			assert(view);
+			if(view){
+				browser::WebPage *page = view->page();
+				if(page){
+					boost::intrusive_ptr<TreeItem> _item = page->host();
+					assert(_item);
+					QString home = _item->field<home_type>();
+					QUrl homeurl = QUrl(home);
+					if(homeurl.isValid() && homeurl != page->url()){
+						_item->field<url_type>(home);	// "url",
+						// boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
 
-				// try {
-				// record_index = new RecordModel::ModelIndex([&] {return page->record_controller()->source_model();}, page->record_controller()->source_model()->sibling(_item), _item);
-				// } catch(std::exception &e) {throw e;}
-			    page->bind(_item)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));	// page->load(record, true);
+						// try {
+						// record_index = new RecordModel::ModelIndex([&] {return
+						// page->record_controller()->source_model();},
+						// page->record_controller()->source_model()->sibling(_item),
+						// _item);
+						// } catch(std::exception &e) {throw e;}
+						page->bind(_item)->activate(std::bind(
+							&HidableTabWidget::find
+															 , globalparameters.main_window()->vtab_record()
+															 , std::placeholders::_1));	// page->load(record, true);
+					}
+				}
 			}
-		    }
-		}
-	    }
-	    );
+		});
+}
+
+void Editentry::resizeEvent(QResizeEvent *e){
+	//    for(auto i : _editing_list)
+	//            if(i) i->resizeEvent(e);
+	if(this->widget()) static_cast<EditingWindow *>(this->widget())->resizeEvent(e);
+	QDockWidget::resizeEvent(e);
 }
 
 // Browser *Editentry::new_browser(const QByteArray &state)
@@ -391,7 +415,6 @@ void Editentry::on_activate_window(){
 ////        _dockwidget->setWidget(browser);
 ////        browser->setParent(_dockwidget);
 
-
 ////        //        _dockwidget->adjustSize();
 ////        //        _dockwidget->setAutoFillBackground(true);
 ////        _dockwidget->setFeatures(QDockWidget::NoDockWidgetFeatures);
@@ -403,22 +426,24 @@ void Editentry::on_activate_window(){
 // }
 
 //    Browser *Editentry::new_browser(){
-////	// DockedWindow *browser =
-////	return new Browser(_tree_screen
-////			  , _find_screen
-////			  , _editor_screen	// , _vtab_tree
-////			  , _main_window
-////			  , this
-////			  , _style_source
-////			  , _profile
-////			  , Qt::MaximizeUsingFullscreenGeometryHint
-////		   );	// , dock_widget
+////    // DockedWindow *browser =
+////    return new Browser(_tree_screen
+////              , _find_screen
+////              , _editor_screen  // , _vtab_tree
+////              , _main_window
+////              , this
+////              , _style_source
+////              , _profile
+////              , Qt::MaximizeUsingFullscreenGeometryHint
+////           );   // , dock_widget
 
-//	auto rs = new rs_t(_tree_screen, _find_screen, _editor_screen, this, _main_window, _style_source, _profile);
+//  auto rs = new rs_t(_tree_screen, _find_screen, _editor_screen, this,
+// _main_window, _style_source, _profile);
 
-//	return rs->browser();
+//  return rs->browser();
 
-//	// return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+//  // return find(url);   // std::make_pair(browser, find(url).second);
+//// BrowserView::QDockWidget::BrowserWindow*
 //    }
 
 // Browser *Editentry::new_browser(QUrl const &url)
@@ -436,10 +461,9 @@ void Editentry::on_activate_window(){
 // , Qt::MaximizeUsingFullscreenGeometryHint
 // ); //, dock_widget
 
-
-////        return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+////        return find(url);   // std::make_pair(browser, find(url).second);
+///// BrowserView::QDockWidget::BrowserWindow*
 // }
-
 
 // Browser *Editentry::new_browser(boost::intrusive_ptr<TreeItem> item)
 // {
@@ -456,8 +480,8 @@ void Editentry::on_activate_window(){
 // , Qt::MaximizeUsingFullscreenGeometryHint
 // ); //, dock_widget
 
-
-////        return find(item);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+////        return find(item);   // std::make_pair(browser, find(url).second);
+///// BrowserView::QDockWidget::BrowserWindow*
 // }
 
 // WebView *Editentry::new_view(QUrl const &_url)
@@ -467,7 +491,8 @@ void Editentry::on_activate_window(){
 
 ////if(browser_view) {
 ////        browser = browser_view->getBrowserWindow();     //
-////auto dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
+////auto dock_widget = new QDockWidget(this,
+/// Qt::MaximizeUsingFullscreenGeometryHint);
 ////dock_widget->setParent(this);
 
 ////        DockedWindow *browser =
@@ -486,18 +511,22 @@ void Editentry::on_activate_window(){
 ////        browser->setParent(_dockwidget);
 
 ////        //    QVBoxLayout *layout = new QVBoxLayout(this);
-////        //    //QDockWidget *dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
-////        //    //when change dock_widget to member variable, you need rebuild the project! else the behavior will be weird.
+////        //    //QDockWidget *dock_widget = new QDockWidget(this,
+/// Qt::MaximizeUsingFullscreenGeometryHint);
+////        //    //when change dock_widget to member variable, you need rebuild
+/// the project! else the behavior will be weird.
 ////        //    layout->setMargin(0);
 
 ////        //        _dockwidget->adjustSize();
 ////        //        _dockwidget->setAutoFillBackground(true);
-////        _dockwidget->setFeatures(QDockWidget::NoDockWidgetFeatures);   // AllDockWidgetFeatures
+////        _dockwidget->setFeatures(QDockWidget::NoDockWidgetFeatures);   //
+/// AllDockWidgetFeatures
 
 ////        //Qt::MaximizeUsingFullscreenGeometryHint
 
 ////        //        if(!browser) {
-////        //            browser = new BrowserWindow(browser_view);  //incomplete
+////        //            browser = new BrowserWindow(browser_view);
+/////incomplete
 ////        //        }
 ////        _mainWindows.prepend(browser);
 ////        //browser->show();
@@ -507,7 +536,9 @@ void Editentry::on_activate_window(){
 ////        assert(record->binded_only_page());
 ////        assert(record->binded_only_page()->view());
 
-// return find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _url.toString();});   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+// return find([&](boost::intrusive_ptr<const TreeItem> it) {return
+// it->field("url") == _url.toString();});   // std::make_pair(browser,
+// find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
 // }
 
 // WebView *Editentry::new_dockedwindow(Record *const record)
@@ -517,7 +548,8 @@ void Editentry::on_activate_window(){
 
 ////if(browser_view) {
 ////        browser = browser_view->getBrowserWindow();     //
-////auto dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
+////auto dock_widget = new QDockWidget(this,
+/// Qt::MaximizeUsingFullscreenGeometryHint);
 ////dock_widget->setParent(this);
 // DockedWindow *browser = new DockedWindow(record->getNaturalFieldSource("url")
 // , _record_ontroller
@@ -530,18 +562,22 @@ void Editentry::on_activate_window(){
 ////        browser->setParent(_dockwidget);
 
 ////        //    QVBoxLayout *layout = new QVBoxLayout(this);
-////        //    //QDockWidget *dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
-////        //    //when change dock_widget to member variable, you need rebuild the project! else the behavior will be weird.
+////        //    //QDockWidget *dock_widget = new QDockWidget(this,
+/// Qt::MaximizeUsingFullscreenGeometryHint);
+////        //    //when change dock_widget to member variable, you need rebuild
+/// the project! else the behavior will be weird.
 ////        //    layout->setMargin(0);
 
 ////        //        _dockwidget->adjustSize();
 ////        //        _dockwidget->setAutoFillBackground(true);
-////        _dockwidget->setFeatures(QDockWidget::NoDockWidgetFeatures);   // AllDockWidgetFeatures
+////        _dockwidget->setFeatures(QDockWidget::NoDockWidgetFeatures);   //
+/// AllDockWidgetFeatures
 
 ////        //Qt::MaximizeUsingFullscreenGeometryHint
 
 ////        //        if(!browser) {
-////        //            browser = new BrowserWindow(browser_view);  //incomplete
+////        //            browser = new BrowserWindow(browser_view);
+/////incomplete
 ////        //        }
 ////        _mainWindows.prepend(browser);
 ////        //browser->show();
@@ -550,19 +586,23 @@ void Editentry::on_activate_window(){
 ////        //this->exec();
 // assert(record->binded_only_page());
 // assert(record->binded_only_page()->view());
-// return record->binded_only_page()->view();  // std::make_pair(browser, record->binded_only_page()->view());     // BrowserView::QDockWidget::BrowserWindow*
+// return record->binded_only_page()->view();  // std::make_pair(browser,
+// record->binded_only_page()->view());     //
+// BrowserView::QDockWidget::BrowserWindow*
 // }
 
-
-// DockWidget::DockWidget(QWidget *parent, DockedWindow *browser, Qt::WindowFlags flags)
+// DockWidget::DockWidget(QWidget *parent, DockedWindow *browser,
+// Qt::WindowFlags flags)
 // : QDockWidget(parent, flags)
 // {
 // this->setWidget(browser);
 // browser->setParent(this);
 
 ////    QVBoxLayout *layout = new QVBoxLayout(this);
-////    //QDockWidget *dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
-////    //when change dock_widget to member variable, you need rebuild the project! else the behavior will be weird.
+////    //QDockWidget *dock_widget = new QDockWidget(this,
+/// Qt::MaximizeUsingFullscreenGeometryHint);
+////    //when change dock_widget to member variable, you need rebuild the
+/// project! else the behavior will be weird.
 ////    layout->setMargin(0);
 
 ////        adjustSize();
@@ -578,85 +618,91 @@ void Editentry::on_activate_window(){
 W_OBJECT_IMPL(Editentry)
 #endif
 
-Editentry::Editentry(QString object_name
-		    , ts_t *_tree_screen
-		    , FindScreen *_find_screen		// browser::ToolbarSearch *toolbarsearch
-//		    , MetaEditor *_editor_screen
-		    , wn_t *_main_window
-		    , AppConfig   &_appconfig
-		    , const QString &style_source
-		    , browser::Profile *_profile
-		    , Qt::WindowFlags flags)
-    : QDockWidget(_main_window, flags)		// , _application(application)
-//	  , _browsers(std::set<Browser * >())	// , _shadow_branch(_record_controller->source_model()->_browser_pages)
-      , _tree_screen(_tree_screen)
-      , _find_screen(_find_screen)
-//      , _editor_screen(_editor_screen)		// , _record_controller(_record_controller)
-      , _main_window(_main_window)
-      , _appconfig(_appconfig)
-      , _style_source(style_source)
-      , _profile(_profile)
-      , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint))
-      , _blog_editor(new EditingWindow())
-      , _editor(new MetaEditor(meta_editor_singleton_name, _blog_editor, _find_screen)){	// _find_screen -> for find_text
+Editentry::Editentry(QString object_name, ts_t *tree_screen, FindScreen *find_screen	// browser::ToolbarSearch *toolbarsearch
+					, browser::Entrance *entrance, wn_t *main_window, AppConfig &appconfig
+					, const QString &style_source
+					, browser::Profile *profile
+					, Qt::WindowFlags flags)
+	: QDockWidget(main_window, flags)	// , _application(application)
+		//      , _browsers(std::set<Browser * >())   // ,
+		// _shadow_branch(_record_controller->source_model()->_browser_pages)
+	  , _tree_screen(tree_screen), _find_screen(find_screen)
+		//      , _editor_screen(_editor_screen)      // ,
+		//      _record_controller(_record_controller)
+	  , _entrance(entrance), _main_window(main_window), _appconfig(appconfig)
+	  , _style_source(style_source), _profile(profile), _flags(flags)
+	  , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint))
+	  , _super_menu(new SuperMenu(find_screen, this)){
+//	  , _splitter(_splitter)
+//	  , _splitter_config(_splitter_config)
+//	  , _splitter_groupname(_splitter_groupname)
+//	  , _splitter_sizelist(_splitter_sizelist)
+	//      , _editor(_blog_editor->editor())
+	// _find_screen -> for find_text
 	// | Qt::SplashScreen
 	// , _dockwidget(new DockWidget(
 	// this
 	// , _mainWindows[0].data()
-	// ,  flags  //Qt::Widget   //Qt::WindowMaximizeButtonHint //Qt::MaximizeUsingFullscreenGeometryHint
+	// ,  flags  //Qt::Widget   //Qt::WindowMaximizeButtonHint
+	// //Qt::MaximizeUsingFullscreenGeometryHint
 	// )
 	// )
-	// , _browser(new DockedWindow(register_record(QUrl(DockedWindow::_defaulthome))
+	// , _browser(new
+	// DockedWindow(register_record(QUrl(DockedWindow::_defaulthome))
 	// , recordtablecontroller
-	// , this, style_source, flags    //Qt::Widget   //Qt::WindowMaximizeButtonHint  // Qt::MaximizeUsingFullscreenGeometryHint
+	// , this, style_source, flags    //Qt::Widget
+	// //Qt::WindowMaximizeButtonHint  // Qt::MaximizeUsingFullscreenGeometryHint
 	// ))
 
-    setObjectName(object_name);
+	setObjectName(object_name);
 	// invoke_ptr = &Editentry::active_url;
 
 	// _mainWindows.prepend(browser);
 
 	// d->view = new QWebEngineView(this);
 	// d->view->page()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
-	// d->view->page()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
+	// d->view->page()->setScrollBarPolicy(Qt::Horizontal,
+	// Qt::ScrollBarAlwaysOff);
 
 	// browser->setWebAttribute(QWebEngineSettings::JavascriptEnabled, true);
-	// browser->setWebAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+	// browser->setWebAttribute(QWebEngineSettings::JavascriptCanOpenWindows,
+	// true);
 
 	// browser->msgShown = false;
 
 	// QVBoxLayout *layout = new QVBoxLayout(this);
-	// QDockWidget *dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
-	// when change dock_widget to member variable, you need rebuild the project! else the behavior will be weird.
+	// QDockWidget *dock_widget = new QDockWidget(this,
+	// Qt::MaximizeUsingFullscreenGeometryHint);
+	// when change dock_widget to member variable, you need rebuild the project!
+	// else the behavior will be weird.
 	// layout->setMargin(0);
-
 
 	// _dockwidget->setWidget(_mainWindows[0].data());
 	////    //    layout->addWidget(browser);
 	////    //    browser->setLayout(layout);
 	// _mainWindows[0]->setParent(_dockwidget);
 
-    setWindowFlags(	// Qt::Window |
-	Qt::FramelessWindowHint
-	// |Qt::Popup
-	| Qt::CustomizeWindowHint
-	// | Qt::SplashScreen  // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
-	// | Qt::DockWidgetArea::NoDockWidgetArea
-	| Qt::MaximizeUsingFullscreenGeometryHint
-	);
+	setWindowFlags(		// Qt::Window |
+		Qt::FramelessWindowHint
+		// |Qt::Popup
+		| Qt::CustomizeWindowHint
+		// | Qt::SplashScreen  //
+		// http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
+		// | Qt::DockWidgetArea::NoDockWidgetArea
+		| Qt::MaximizeUsingFullscreenGeometryHint);
 
-    setAutoFillBackground(true);
-    adjustSize();
+	setAutoFillBackground(true);
+	adjustSize();
 
-    setFeatures(QDockWidget::NoDockWidgetFeatures
-	| QDockWidget::DockWidgetVerticalTitleBar
-	// | Qt::DockWidgetArea::NoDockWidgetArea
-	// | Qt::MaximizeUsingFullscreenGeometryHint
-	);	// AllDockWidgetFeatures
+	setFeatures(QDockWidget::NoDockWidgetFeatures |
+		QDockWidget::DockWidgetVerticalTitleBar
+		// | Qt::DockWidgetArea::NoDockWidgetArea
+		// | Qt::MaximizeUsingFullscreenGeometryHint
+		);		// AllDockWidgetFeatures
 
 	// this->titleBarWidget()->hide();
 
-    QWidget *titleBar = titleBarWidget();
+	QWidget *titleBar = titleBarWidget();
 
 	// QVBoxLayout *main = new QVBoxLayout;
 	////main -> addLayout(0);
@@ -678,70 +724,78 @@ Editentry::Editentry(QString object_name
 
 	// _hidetitlebar->setLayout(main);
 
-    setTitleBarWidget(_hidetitlebar);
-    _hidetitlebar->setGeometry(0, 0, 0, 0);
+	setTitleBarWidget(_hidetitlebar);
+	_hidetitlebar->setGeometry(0, 0, 0, 0);
 	// _hidetitlebar->hide();
-    _hidetitlebar->setVisible(false);
+	_hidetitlebar->setVisible(false);
 
 	// _hidetitlebar->setMaximumWidth(0);
-    _hidetitlebar->close();
+	_hidetitlebar->close();
 	// _hidetitlebar->setCollapsible(true);
 	// _hidetitlebar->setMaximumHeight();
 	// _hidetitlebar->setMaximumSize(0, 0);
 
-    delete titleBar;
+	delete titleBar;
 
+	//    _blog_editor = new EditingWindow();
+	blog_editor()->setSTI(0);		// No STI
+	blog_editor()->setWindowTitle(QObject::tr("QTM - new entry [*]"));
 
+	blog_editor()->setParent(this);
+	setWidget(blog_editor());
+	if(blog_editor()->handleArguments()) blog_editor()->show();
+	else blog_editor()->close();
+	blog_editor()->raise();
 
-//    _blog_editor = new EditingWindow();
-    _blog_editor->setSTI(0);		// No STI
-    _blog_editor->setWindowTitle(QObject::tr("QTM - new entry [*]"));
+	setup_actions();
 
+	setup_ui();
+	assembly();
 
-    _blog_editor->setParent(this);
-    setWidget(_blog_editor);
-    if(_blog_editor->handleArguments()) _blog_editor->show();
-    else _blog_editor->close();
-    _blog_editor->raise();
+	connect(this, &Editentry::editing_activated, blog_editor()->_super_menu
+		   , &SuperMenu::editing_win);
+	connect(this, &Editentry::editing_activated
+		   , [&](EditingWindow *){blog_editor()->adjustSize();});
 
-
-    setup_actions();
-
-    setup_ui();
-    assembly();
-
-    init_setting();
+	init_setting();
 
 	// setup_signals(_find_screen->toolbarsearch());
 
-	// new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));  // main_window() will never fail
+	// new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));  //
+	// main_window() will never fail
 
 	// d->nam = d->view->page()->networkAccessManager();
 
-	// connect(d->nam, SIGNAL(finished(QNetworkReply *)), this, SLOT(finished(QNetworkReply *)));
+	// connect(d->nam, SIGNAL(finished(QNetworkReply *)), this,
+	// SLOT(finished(QNetworkReply *)));
 
-	// connect(d->nam, SIGNAL(sslErrors(QNetworkReply *, const QList<QSslError> &)), this, SLOT(sslErrors(QNetworkReply *, const QList<QSslError> &)));
+	// connect(d->nam, SIGNAL(sslErrors(QNetworkReply *, const QList<QSslError>
+	// &)), this, SLOT(sslErrors(QNetworkReply *, const QList<QSslError> &)));
 
 	// browser->show();
 }
 
 Editentry::~Editentry(){
-//	if(_browsers.size() > 0){
-//	    for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
-//		if(*i && *i != widget()){
-//			// _browsers.erase(i);
-//		    (*i)->deleteLater();// delete *i;
-//			// *i = nullptr;
-//		}
-//	    }
-//	}
-//	// if(isselfcreated())delete current_record;   // no, do not apply memory by this class for record, from the original source
-//	// if(_actionFreeze)delete _actionFreeze;
-//	// if(_dockwidget)delete _dockwidget;
-//	// if(browser)delete browser;  // I can't destroy?
-//	// delete _shadow_branch;
-    if(_blog_editor) _blog_editor->deleteLater();
-    if(_hidetitlebar){delete _hidetitlebar;_hidetitlebar = nullptr;}
+	//    if(_browsers.size() > 0){
+	//        for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
+	//        if(*i && *i != widget()){
+	//            // _browsers.erase(i);
+	//            (*i)->deleteLater();// delete *i;
+	//            // *i = nullptr;
+	//        }
+	//        }
+	//    }
+	//    // if(isselfcreated())delete current_record;   // no, do not apply
+	// memory by this class for record, from the original source
+	//    // if(_actionFreeze)delete _actionFreeze;
+	//    // if(_dockwidget)delete _dockwidget;
+	//    // if(browser)delete browser;  // I can't destroy?
+	//    // delete _shadow_branch;
+	if(_blog_editor) _blog_editor->deleteLater();
+	if(_hidetitlebar){
+		delete _hidetitlebar;
+		_hidetitlebar = nullptr;
+	}
 }
 
 void Editentry::setup_actions(){
@@ -750,8 +804,7 @@ void Editentry::setup_actions(){
 	// _actionFreeze->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
 }
 
-void Editentry::setup_ui(void)
-{}
+void Editentry::setup_ui(void){}
 
 // void BrowserView::setupDynamicSignals(void)
 // {
@@ -759,18 +812,22 @@ void Editentry::setup_ui(void)
 ////    //Connect a signal to a pointer to qobject member function
 ////    template <typename Func1, typename Func2>
 ////    static inline QMetaObject::Connection connect(
-////        const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
-////        const typename QtPrivate::FunctionPointer<Func2>::Object *receiver, Func2 slot,
+////        const typename QtPrivate::FunctionPointer<Func1>::Object *sender,
+/// Func1 signal,
+////        const typename QtPrivate::FunctionPointer<Func2>::Object *receiver,
+/// Func2 slot,
 ////        Qt::ConnectionType type = Qt::AutoConnection);
 
 // static QMetaObject::Connection _connection_loadfinished;    // for disconnect
 // static QMetaObject::Connection _connection_openlinkinnewtab;
 
-// if(_connection_loadfinished.operator void *QMetaObject::Connection:: * () != nullptr) {
+// if(_connection_loadfinished.operator void *QMetaObject::Connection:: * () !=
+// nullptr) {
 // QObject::disconnect(_connection_loadfinished);
 // }
 
-// if(_connection_openlinkinnewtab.operator void *QMetaObject::Connection:: * () != nullptr) {
+// if(_connection_openlinkinnewtab.operator void *QMetaObject::Connection:: * ()
+// != nullptr) {
 // QObject::disconnect(_connection_openlinkinnewtab);
 // }
 
@@ -796,7 +853,8 @@ void Editentry::setup_ui(void)
 
 ////    _connection = connect(this
 ////                          , &BrowserView::loadChanged
-////                          , globalParameters.getRecordTableScreen()->getRecordTableController()
+////                          ,
+/// globalParameters.getRecordTableScreen()->getRecordTableController()
 ////                          , &RecordTableController::autoAddNewAfterContext);
 
 ////void (BrowserView::*lU)(const QUrl &) = &BrowserView::loadUrl;
@@ -860,7 +918,9 @@ void Editentry::setup_ui(void)
 // if(v == nullptr) {
 ////        if(activiated_browser()) {
 // Browser *browser = activated_browser();
-////            auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(browser->tabWidget());   // boost::make_shared<Editentry::ActiveRecordBinder>(this);
+////            auto ara =
+/// boost::make_shared<TabWidget::ActiveRecordBinder>(browser->tabWidget()); //
+/// boost::make_shared<Editentry::ActiveRecordBinder>(this);
 
 // auto r = browser->tabmanager()->item_request_from_tree(url);
 ////            r->self_bind();
@@ -874,44 +934,44 @@ void Editentry::setup_ui(void)
 // }
 // }
 
-
-//	// not sure to succeeded
+//  // not sure to succeeded
 //    Browser *Editentry::activated_browser(){
-//	// clean();
+//  // clean();
 
-//	// std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
-//	Browser *_browser = nullptr;
-//	// if(_mainWindows.isEmpty()) {
-//	// dp = new_dockedwindow(
-//	// QUrl(DockedWindow::_defaulthome)
-//	// );
-//	// } else { //
-//	// if(_browsers.size() > 0) {
-//	for(auto i : _main_window->vtab_record()->browsers()){
-//	    if(i->isVisible() || i->isActiveWindow()){
-//		// assert(i);
-//		// dp.first
-//		_browser = i;	// .data();
-//		// assert(_browser);
-//		// dp.second = i->tabWidget()->currentWebView();
-//		break;
-//	    }
-//	}
-//	if(! _browser){
-//		// _browser = _browsers[0];
-//		// }
-//		// } else {
-//	    _browser = new_browser();
-//		// assert(_browser);
-//		// return _browser;
-//		// dp.second = dp.first->tabWidget()->currentWebView();
-//	}
-//	// assert(dp.first);
-//	// assert(dp.second);
-//	assert(_browser);
+//  // std::pair<Browser *, WebView *> dp = std::make_pair(nullptr,
+// nullptr);
+//  Browser *_browser = nullptr;
+//  // if(_mainWindows.isEmpty()) {
+//  // dp = new_dockedwindow(
+//  // QUrl(DockedWindow::_defaulthome)
+//  // );
+//  // } else { //
+//  // if(_browsers.size() > 0) {
+//  for(auto i : _main_window->vtab_record()->browsers()){
+//      if(i->isVisible() || i->isActiveWindow()){
+//      // assert(i);
+//      // dp.first
+//      _browser = i;   // .data();
+//      // assert(_browser);
+//      // dp.second = i->tabWidget()->currentWebView();
+//      break;
+//      }
+//  }
+//  if(! _browser){
+//      // _browser = _browsers[0];
+//      // }
+//      // } else {
+//      _browser = new_browser();
+//      // assert(_browser);
+//      // return _browser;
+//      // dp.second = dp.first->tabWidget()->currentWebView();
+//  }
+//  // assert(dp.first);
+//  // assert(dp.second);
+//  assert(_browser);
 
-//	return _browser;// qobject_cast<DockedWindow *>(widget()); //
-//	// _mainWindows[0];
+//  return _browser;// qobject_cast<DockedWindow *>(widget()); //
+//  // _mainWindows[0];
 //    }
 
 // void Editentry::activate(const QUrl &_find_url
@@ -925,7 +985,8 @@ void Editentry::setup_ui(void)
 
 // if(_browsers.size() > 0) {
 // for(auto browser : _browsers) {
-// v = browser->tabmanager()->find([&](boost::intrusive_ptr<const TreeItem> it) { return _equal(it, _find_url);});
+// v = browser->tabmanager()->find([&](boost::intrusive_ptr<const TreeItem> it)
+// { return _equal(it, _find_url);});
 
 // if(v) {
 // _current_browser = browser;
@@ -944,7 +1005,6 @@ void Editentry::setup_ui(void)
 // r->activate();
 
 // }
-
 
 // auto vtab = globalparameters.vtab();
 
@@ -987,15 +1047,17 @@ void Editentry::setup_ui(void)
 
 // void Editentry::setup_signals(browser::ToolbarSearch *toolbarsearch)
 // {
-////        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
-// void(Editentry::*_activate)(const QUrl &, const TreeScreen::paste_strategy &, equal_url_t) = &Editentry::activate;  // <url_fragment>;
+////        auto _toolbarsearch =
+/// globalparameters.getFindScreen()->toolbarsearch();
+// void(Editentry::*_activate)(const QUrl &, const TreeScreen::paste_strategy &,
+// equal_url_t) = &Editentry::activate;  // <url_fragment>;
 // connect(toolbarsearch, &ToolbarSearch::search, this, _activate);
-////        connect(this->_actionFreeze, &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
+////        connect(this->_actionFreeze, &QAction::triggered,
+/// globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
 
 // }
 
-void Editentry::assembly(void)
-{}
+void Editentry::assembly(void){}
 
 // void BrowserManager::setUrl(const QUrl &_url)
 // {
@@ -1004,23 +1066,25 @@ void Editentry::assembly(void)
 // }
 
 void Editentry::set_scrollbars(bool hide){
-    if(! hide){
-	// d->view->page()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
-	// d->view->page()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAsNeeded);
-    }
+	if(! hide){
+		// d->view->page()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
+		// d->view->page()->setScrollBarPolicy(Qt::Horizontal,
+		// Qt::ScrollBarAsNeeded);
+	}
 }
 
 void Editentry::set_cache(bool cache, int cache_size){
-    if(cache){
-	QNetworkDiskCache	*diskCache	= new QNetworkDiskCache(this);
-	QString			location	= QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-	diskCache->setCacheDirectory(location);
-	diskCache->setMaximumCacheSize(cache_size * 1024 * 1024);	// in MB's
-	// d->nam->setCache(diskCache);
-	// browser->setCache(diskCache);
-	qDebug() << QString("Cache location: %1").arg(location);
-	qDebug() << QString("Cache maximum size: %1MB").arg(cache_size);
-    }
+	if(cache){
+		QNetworkDiskCache	*diskCache	= new QNetworkDiskCache(this);
+		QString				location	=
+			QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+		diskCache->setCacheDirectory(location);
+		diskCache->setMaximumCacheSize(cache_size * 1024 * 1024);	// in MB's
+		// d->nam->setCache(diskCache);
+		// browser->setCache(diskCache);
+		qDebug() << QString("Cache location: %1").arg(location);
+		qDebug() << QString("Cache maximum size: %1MB").arg(cache_size);
+	}
 }
 
 ////deprecated
@@ -1030,14 +1094,18 @@ void Editentry::set_cache(bool cache, int cache_size){
 
 ////        //QWebFrame *frame = d->view->page()->mainFrame();
 ////        //QWebElement dom_title(frame->findFirstElement("title"));
-////        QString title = mainWindow()->currentTab()->title();   //dom_title.evaluateJavaScript("this.text").toString();
+////        QString title = mainWindow()->currentTab()->title();
+/////dom_title.evaluateJavaScript("this.text").toString();
 
-////        RecordTableController *recordTableController = globalParameters.getRecordTableScreen()->getRecordTableController();
+////        RecordTableController *recordTableController =
+/// globalParameters.getRecordTableScreen()->getRecordTableController();
 
-////        //RecordTableData *recordTableData = recordTableController->getRecordTableModel()->getRecordTableData();
+////        //RecordTableData *recordTableData =
+/// recordTableController->getRecordTableModel()->getRecordTableData();
 
 ////        int pos = recordTableController->getFirstSelectionPos();
-////        Record *_record = recordTableController->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+////        Record *_record =
+/// recordTableController->getRecordTableModel()->getRecordTableData()->getRecord(pos);
 
 ////        if(_record)_record->setNaturalFieldSource("name", title);
 
@@ -1051,14 +1119,17 @@ void Editentry::set_cache(bool cache, int cache_size){
 ////QString url(QString(""));
 // QUrl _url = main_window()->currentTab()->url();
 
-// RecordTableController *recordTableController = globalParameters.getRecordTableScreen()->getRecordTableController();
+// RecordTableController *recordTableController =
+// globalParameters.getRecordTableScreen()->getRecordTableController();
 
-// RecordTableData *recordTableData = recordTableController->getRecordTableModel()->getRecordTableData();
+// RecordTableData *recordTableData =
+// recordTableController->getRecordTableModel()->getRecordTableData();
 
 // if(!recordTableData->isRecordExists(_url)) {
 
 // int pos = recordTableController->getFirstSelectionPos();
-// Record *previous_record = recordTableController->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+// Record *previous_record =
+// recordTableController->getRecordTableModel()->getRecordTableData()->getRecord(pos);
 
 // if(previous_record) {
 // Record record;
@@ -1066,31 +1137,37 @@ void Editentry::set_cache(bool cache, int cache_size){
 // if(record.isLite())record.switchToFat();
 
 ////QString title = d->view->title(); // not ready yet
-// record.setNaturalFieldSource("id",   previous_record->getNaturalFieldSource("id"));
-// record.setNaturalFieldSource("name",   previous_record->getNaturalFieldSource("name"));
-// record.setNaturalFieldSource("author", previous_record->getNaturalFieldSource("author"));
+// record.setNaturalFieldSource("id",
+// previous_record->getNaturalFieldSource("id"));
+// record.setNaturalFieldSource("name",
+// previous_record->getNaturalFieldSource("name"));
+// record.setNaturalFieldSource("author",
+// previous_record->getNaturalFieldSource("author"));
 // record.setNaturalFieldSource("url",    _url.toString());    // only changed
-// record.setNaturalFieldSource("tags",   previous_record->getNaturalFieldSource("tags"));
+// record.setNaturalFieldSource("tags",
+// previous_record->getNaturalFieldSource("tags"));
 
-// recordTableController->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
+// recordTableController->addNew(ADD_NEW_RECORD_AFTER, record);
+// //recordTableController->autoAddNewAfterContext();
 // }
 // }
 
-////    Record *previous_record = recordTableController->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+////    Record *previous_record =
+/// recordTableController->getRecordTableModel()->getRecordTableData()->getRecord(pos);
 ////    //if(current_record)
 ////    url = previous_record->getNaturalFieldSource("url");
 
 ////    std::string url_compare_stored = _url.toString().toStdString();
 ////    std::string url_compare_get = url.toStdString();
-////    std::string compare = getDifference(url_compare_stored, url_compare_get);
+////    std::string compare = getDifference(url_compare_stored,
+/// url_compare_get);
 ////    //QUrl qurl(url);
 
 ////    //if(qurl != _url) {
 ////    if(compare.size() != 0 && compare != "/") { // really changed!
 
-////        //if(this->current_record->getNaturalFieldSource("url") != _url.toString()) {
-
-
+////        //if(this->current_record->getNaturalFieldSource("url") !=
+/// _url.toString()) {
 
 ////        //this->current_record = new Record();    // should from framework
 
@@ -1098,33 +1175,41 @@ void Editentry::set_cache(bool cache, int cache_size){
 
 ////        if(record.isLite())record.switchToFat();
 
-////        record.setNaturalFieldSource("id",   previous_record->getNaturalFieldSource("id"));
-////        record.setNaturalFieldSource("name",   previous_record->getNaturalFieldSource("name"));
-////        record.setNaturalFieldSource("author", previous_record->getNaturalFieldSource("author"));
-////        record.setNaturalFieldSource("url",    _url.toString());    // only changed
-////        record.setNaturalFieldSource("tags",   previous_record->getNaturalFieldSource("tags"));
+////        record.setNaturalFieldSource("id",
+/// previous_record->getNaturalFieldSource("id"));
+////        record.setNaturalFieldSource("name",
+/// previous_record->getNaturalFieldSource("name"));
+////        record.setNaturalFieldSource("author",
+/// previous_record->getNaturalFieldSource("author"));
+////        record.setNaturalFieldSource("url",    _url.toString());    // only
+/// changed
+////        record.setNaturalFieldSource("tags",
+/// previous_record->getNaturalFieldSource("tags"));
 
 ////        //record.setText(browser_view->getText());
 ////        if(!recordTableData->isRecordExists(_url)) {
-////            //this->current_record->setNaturalFieldSource("url", _url.toString());
-////            recordTableController->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
+////            //this->current_record->setNaturalFieldSource("url",
+/// _url.toString());
+////            recordTableController->addNew(ADD_NEW_RECORD_AFTER, record);
+/////recordTableController->autoAddNewAfterContext();
 
 ////            //loadUrl(_url);
 
 ////            //this->current_record = findRecord();
-////            //assert(this->current_record->getNaturalFieldSource("url") == _url.toString());
+////            //assert(this->current_record->getNaturalFieldSource("url") ==
+/// _url.toString());
 ////        }
 
 ////    }
 // }
 
-
 void Editentry::finished(QNetworkReply *reply){
-    if(reply->error() != QNetworkReply::NoError) qDebug() << QString("Network Error: %1").arg(reply->errorString());
-    if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true){
-	QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
-	qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
-    }
+	if(reply->error() != QNetworkReply::NoError) qDebug() << QString("Network Error: %1").arg(reply->errorString());
+	if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() ==
+		true){
+		QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
+		qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
+	}
 	// QUrl url = reply->url();
 	// QString _url = current_record->getNaturalFieldSource("url");
 	// std::string url_compare_stored = _url.toStdString();
@@ -1135,13 +1220,15 @@ void Editentry::finished(QNetworkReply *reply){
 	// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
 	// compare = url_compare_stored;
 	// } else {
-	// url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
+	// url_compare_get.erase(url_compare_stored.begin(),
+	// url_compare_stored.end());
 	// compare = url_compare_get;
 	// }
 
 	// std::string::size_type pos;
 
-	// while((pos = compare.find_first_of(" ")) != compare.npos)compare.erase(pos, 1);
+	// while((pos = compare.find_first_of(" ")) != compare.npos)compare.erase(pos,
+	// 1);
 
 	// if(compare == "" || compare == "/") {
 	////if(this->current_record->getNaturalFieldSource("url") != url.toString()) {
@@ -1151,11 +1238,11 @@ void Editentry::finished(QNetworkReply *reply){
 }
 
 void Editentry::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors){
-    foreach(const QSslError &error, errors){
-	qDebug() << QString("SSL Error: %1").arg(error.errorString());
-    }
+	foreach(const QSslError &error, errors){
+		qDebug() << QString("SSL Error: %1").arg(error.errorString());
+	}
 
-    reply->ignoreSslErrors(errors);
+	reply->ignoreSslErrors(errors);
 }
 
 // void Editentry::clean()
@@ -1173,12 +1260,13 @@ void Editentry::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors)
 ////        }
 // }
 
-
-
-// WebView *Editentry::active_record_alternative(Record *const record) {return active_record(record).second;}
+// WebView *Editentry::active_record_alternative(Record *const record) {return
+// active_record(record).second;}
 
 //// prepare active chain but not load them
-// boost::intrusive_ptr<TreeItem> Editentry::item_bind(RecordModel::ModelIndex modelindex)   // boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> _it
+// boost::intrusive_ptr<TreeItem> Editentry::item_bind(RecordModel::ModelIndex
+// modelindex)   // boost::intrusive_ptr<TreeItem> tab_brother,
+// boost::intrusive_ptr<TreeItem> _it
 // {
 // boost::intrusive_ptr<TreeItem> tab_brother = modelindex.sibling();
 // boost::intrusive_ptr<TreeItem> _it = modelindex.target();
@@ -1188,19 +1276,25 @@ void Editentry::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors)
 // if(_it->is_lite())_it->to_fat();
 
 // boost::intrusive_ptr<TreeItem> result(nullptr);
-////        assert(_it->is_registered_to_browser() || (_it->field("url") == browser::Browser::_defaulthome));
+////        assert(_it->is_registered_to_browser() || (_it->field("url") ==
+/// browser::Browser::_defaulthome));
 ////        clean();
-
 
 // Browser *_browser = nullptr;    // DockedWindow *w = nullptr;
 // WebView *_view = nullptr;
 
 ////        auto tree_view = _tree_screen->tree_view();
-////        TreeIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
+////        TreeIndex modelindex([&] {return tree_view->source_model();},
+/// tree_view->current_item()->parent(),
+/// tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const
+/// Linker> il) {return il == tree_view->current_item()->linker() && il->host()
+/// == tree_view->current_item() && tree_view->current_item()->parent() ==
+/// il->host_parent();}));
 
 // if(_it) {   // && !_it->record_binder()
 
-////            if(QUrl(_it->field("url")).isValid())_it->field("url", Browser::_defaulthome);  // terrify!!! delete all URL
+////            if(QUrl(_it->field("url")).isValid())_it->field("url",
+/// Browser::_defaulthome);  // terrify!!! delete all URL
 // if(_it->field("url") == "")_it->field("url", browser::Browser::_defaulthome);
 
 // assert(QUrl(_it->field("url")).isValid());
@@ -1210,14 +1304,18 @@ void Editentry::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors)
 // if(_browsers.size() == 0) {
 
 // _browser = new_browser();
-// result = _browser->item_bind(modelindex);  // _tree_screen->item_register(_it, std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+// result = _browser->item_bind(modelindex);  //
+// _tree_screen->item_register(_it, std::bind(&TreeScreen::view_paste_as_child,
+// _tree_screen, std::placeholders::_1, std::placeholders::_2,
+// std::placeholders::_3));
 // _view = result->binder()->page()->view();
 
 // } else {
 
 // for(auto i : _browsers) {
 
-// _view = i->tabWidget()->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _it->field("url");});
+// _view = i->tabWidget()->find([&](boost::intrusive_ptr<const TreeItem> it)
+// {return it->field("url") == _it->field("url");});
 
 // if(_view != nullptr) {
 // _browser = i;
@@ -1235,8 +1333,11 @@ void Editentry::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors)
 ////                            // assert(_browser->tabmanager()->count() > 0);
 
 ////                            if(_browser->tabmanager()->count() > 0) {
-////                                // assert(_browser->tabmanager()->currentWebView()->page()->binder()->item() == tab_brother);
-// result = _browser->item_bind(modelindex);    // _browser->tabmanager()->currentWebView()->page()->binder()->item()
+////                                //
+/// assert(_browser->tabmanager()->currentWebView()->page()->binder()->item() ==
+/// tab_brother);
+// result = _browser->item_bind(modelindex);    //
+// _browser->tabmanager()->currentWebView()->page()->binder()->item()
 ////                            }
 ////                            else {
 ////                                result = _browser->item_bind(nullptr, _it);
@@ -1272,7 +1373,8 @@ void Editentry::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors)
 // return result; // _view;
 // }
 
-// std::pair<DockedWindow *, WebView *> Editentry::invoke_page(Record *const record)
+// std::pair<DockedWindow *, WebView *> Editentry::invoke_page(Record *const
+// record)
 // {
 // clean();
 
@@ -1305,13 +1407,13 @@ void Editentry::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors)
 // assert(dp.first);
 // }
 
-
 // const DockedWindow *w = dp.first;
 // TabWidget *const tab = w->tabWidget();
 
 // if(dp.second == nullptr && w != nullptr) {
 
-//// Record *blank_url = check_register_record(QUrl(DockedWindow::_defaulthome));
+//// Record *blank_url =
+/// check_register_record(QUrl(DockedWindow::_defaulthome));
 
 ////            if(blank.isLite())blank.switchToFat();
 ////            blank.setNaturalFieldSource("url", DockedWindow::_defaulthome);
@@ -1326,13 +1428,15 @@ void Editentry::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors)
 // dp.second = blankview;
 // blankview->page()->load(record);
 // } else if(dp.second != nullptr) {   // no_pin
-// if(dp.second->page()->url().toString() != record->getNaturalFieldSource("url"))dp.second->page()->load(record);
+// if(dp.second->page()->url().toString() !=
+// record->getNaturalFieldSource("url"))dp.second->page()->load(record);
 // } else {
 // dp.second = tab->newTab(record);  // , false
 //// auto load
 // }
 
-////            tab->setCurrentWidget(dp.second);   // tab->setCurrentIndex(tab->webViewIndex(dp.second));
+////            tab->setCurrentWidget(dp.second);   //
+/// tab->setCurrentIndex(tab->webViewIndex(dp.second));
 ////            dp.second->show();
 // }
 
@@ -1355,32 +1459,20 @@ void Editentry::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors)
 // }
 
 //    std::set<Browser *> &Editentry::browsers(){
-//	// clean();
+//  // clean();
 
-//	// QList<DockedWindow *> list;
+//  // QList<DockedWindow *> list;
 
-//	// for(int i = 0; i < _mainWindows.count(); ++i)
-//	// list.append(_mainWindows.at(i));
+//  // for(int i = 0; i < _mainWindows.count(); ++i)
+//  // list.append(_mainWindows.at(i));
 
-//	return _browsers;	// list;
+//  return _browsers;   // list;
 //    }
-
-#if defined(Q_OS_OSX)
-void BrowserView::lastWindowClosed(){
-    clean();
-    Browser *browser = new browser::Browser(this);
-    browser->slotHome();
-    _main_windows.prepend(browser);
-}
-
-#endif
-
 
 // void Editentry::open_url(const QUrl &url)
 // {
 // active_url(url); // active_record()->loadPage(url.toString());
 // }
-
 
 ////    std::pair<Browser *, WebView *>
 // WebView *Editentry::find(boost::intrusive_ptr<const TreeItem> item)const
@@ -1419,9 +1511,8 @@ void BrowserView::lastWindowClosed(){
 // return v;
 // }
 
-
-
-// BrowserView *BrowserManager::create_view(Record *record, BrowserWindow *window)
+// BrowserView *BrowserManager::create_view(Record *record, BrowserWindow
+// *window)
 // {
 // BrowserView *bv = nullptr;
 // bv = window->tabWidget()->newTabFull(record, _record_ontroller, true);
@@ -1429,23 +1520,27 @@ void BrowserView::lastWindowClosed(){
 // }
 
 //    bool Editentry::restore_state(const QByteArray &state){
-//	return _main_window->vtab_record()->activated_browser()->restore_state(state);
+//  return
+// _main_window->vtab_record()->activated_browser()->restore_state(state);
 //    }
 
-// std::pair<DockedWindow *, WebView *> Editentry::active_record(Record *const record)
+// std::pair<DockedWindow *, WebView *> Editentry::active_record(Record *const
+// record)
 // {
-
 
 // std::pair<DockedWindow *, WebView *> dp;
 ////        DockedWindow *w = nullptr;
 ////        PageView *bv = nullptr;
-// dp = active_record(record);   // assert(record->page() == nullptr);  // maybe come from other tree branches
+// dp = active_record(record);   // assert(record->page() == nullptr);  // maybe
+// come from other tree branches
 
 // assert(dp.first);
 // assert(dp.second);
 
 ////        if(dp.second == nullptr && dp.first) {
-////            //            dp = invoke_page(record); //->tabWidget()->find_view(record);    // create_view(record, main_window(record));
+////            //            dp = invoke_page(record);
+/////->tabWidget()->find_view(record);    // create_view(record,
+/// main_window(record));
 ////            dp.second = dp.first->invoke_page(record);
 ////        }
 
@@ -1458,17 +1553,16 @@ void BrowserView::lastWindowClosed(){
 ////            dp.first->activateWindow();
 ////        }
 
-////        // should this after loadfinished()? a global knoeledge based strategy needed?
+////        // should this after loadfinished()? a global knoeledge based
+/// strategy needed?
 ////        dp.first->tabWidget()->setCurrentWidget(dp.second);
 ////        dp.second->show();
-
 
 ////        bv->window()->raise();
 ////        dp.second->switch_show();
 
 // return dp;
 // }
-
 
 // void BrowserManager::runScriptOnOpenViews(const QString &source)
 // {
@@ -1484,124 +1578,209 @@ void BrowserView::lastWindowClosed(){
 // }
 // }
 
-void Editentry::resizeEvent(QResizeEvent *e){
-//    if(this->widget()) static_cast<browser::Browser *>(this->widget())->resizeEvent(e);
-    QDockWidget::resizeEvent(e);
-}
-
-//    WebView *Editentry::find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const {
-//	// clean();
-//	WebView *v = nullptr;
-//	// new_dockedwindow(record);
-//	for(auto i : _main_window->vtab_record()->browsers()){
-//	    if(i){
-//		v = i->tabWidget()->find(_equal);
-//		if(v != nullptr)break;
-//	    }
-//	}
-//	boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
-//	if(v){
-//	    if(v->page()){
-//		boost::intrusive_ptr<::Binder> binder = v->page()->binder();
-//		if(binder){
-//		    auto _this_item = v->page()->host();// globalparameters.Editentry()->find(_equal);
-//		    if(_this_item){
-//			if(binder->integrity_external(_this_item, v->page())){
+//    WebView *Editentry::find(const std::function<bool
+//    (boost::intrusive_ptr<const ::Binder>)> &_equal) const {
+//  // clean();
+//  WebView *v = nullptr;
+//  // new_dockedwindow(record);
+//  for(auto i : _main_window->vtab_record()->browsers()){
+//      if(i){
+//      v = i->tabWidget()->find(_equal);
+//      if(v != nullptr)break;
+//      }
+//  }
+//  boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
+//  if(v){
+//      if(v->page()){
+//      boost::intrusive_ptr<::Binder> binder = v->page()->binder();
+//      if(binder){
+//          auto _this_item = v->page()->host();//
+// globalparameters.Editentry()->find(_equal);
+//          if(_this_item){
+//          if(binder->integrity_external(_this_item, v->page())){
 //// assert(_this_item == v->page()->binder()->item());
 
-//// if(_this_item && v->load_finished()) {                                                                                                                                                   // && (v->tabmanager()->currentWebView() == v)
-//			    found_myself = _this_item;
+//// if(_this_item && v->load_finished()) {
+///// && (v->tabmanager()->currentWebView() == v)
+//              found_myself = _this_item;
 //// }
-//			}
-//		    }
-//		}
-//	    }
-//	}
+//          }
+//          }
+//      }
+//      }
+//  }
 //// }
-//	if(! found_myself)v = nullptr;
-//	return v;
+//  if(! found_myself)v = nullptr;
+//  return v;
 //    }
 
 void Editentry::style_source(const QString &style_source){
-    _style_source = style_source;
+	_style_source = style_source;
 }
 
 QString Editentry::style_source(){return _style_source;}
 
-void Editentry::name(const QString &nm){_editor->name(nm);}
+void Editentry::name(const QString &nm){blog_editor()->editor()->name(nm);}
 
-void Editentry::tree_path(const QString &path){_editor->tree_path(path);}
-void Editentry::pin(const QString &pin_){_editor->pin(pin_);}
-void Editentry::switch_pin(){_editor->switch_pin();}
-void Editentry::author(const QString &author_){_editor->author(author_);}
-void Editentry::home(const QString &home_){_editor->home(home_);}
-void Editentry::url(const QString &url_){_editor->url(url_);}
-void Editentry::tags(const QString &tags_){_editor->tags(tags_);}
+void Editentry::tree_path(const QString &path){
+	blog_editor()->editor()->tree_path(path);
+}
+void Editentry::pin(const QString &pin_){blog_editor()->editor()->pin(pin_);}
+void Editentry::switch_pin(){blog_editor()->editor()->switch_pin();}
+void Editentry::author(const QString &author_){
+	blog_editor()->editor()->author(author_);
+}
+void Editentry::home(const QString &home_){
+	blog_editor()->editor()->home(home_);
+}
+void Editentry::url(const QString &url_){blog_editor()->editor()->url(url_);}
+void Editentry::tags(const QString &tags_){
+	blog_editor()->editor()->tags(tags_);
+}
 
-boost::intrusive_ptr<TreeItem> Editentry::item(){return _editor->item();}
-void Editentry::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){_editor->bind(item_to_be_bound);}
+boost::intrusive_ptr<TreeItem> Editentry::item(){
+	return blog_editor()->editor()->item();
+}
+void Editentry::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
+	blog_editor()->editor()->bind(item_to_be_bound);
+}
 
-const std::function<void (QObject *editor, QString saveString)> Editentry::save_callback() const {return _editor->save_callback();}
-void Editentry::save_callback(const std::function<void (QObject *editor, QString saveString)> &func){_editor->save_callback(func);}
+const std::function<void (QObject *editor, QString saveString)>Editentry::save_callback() const {
+	return blog_editor()->editor()->save_callback();
+}
+void Editentry::save_callback(const std::function<void (QObject *editor, QString saveString)> &func){
+	blog_editor()->editor()->save_callback(func);
+}
 
-std::function<void (QObject *editor, QString &String)> Editentry::load_callback() const {return _editor->load_callback();}
-void Editentry::load_callback(const std::function<void (QObject *editor, QString &String)> &func){_editor->load_callback(func);}
+std::function<void (QObject *editor, QString &String)>Editentry::load_callback() const {
+	return blog_editor()->editor()->load_callback();
+}
+void Editentry::load_callback(const std::function<void (QObject *editor, QString &String)> &func){
+	blog_editor()->editor()->load_callback(func);
+}
 
-void Editentry::editor_load_callback(QObject *editor, QString &loadText){Editor::editor_load_callback(editor, loadText);}
-void Editentry::editor_save_callback(QObject *editor, const QString &saveText){Editor::editor_save_callback(editor, saveText);}
+void Editentry::editor_load_callback(QObject *editor, QString &loadText){
+	Editor::editor_load_callback(editor, loadText);
+}
+void Editentry::editor_save_callback(QObject *editor, const QString &saveText){
+	Editor::editor_save_callback(editor, saveText);
+}
 
-bool Editentry::work_directory(QString dir_name){return _editor->work_directory(dir_name);}
+bool Editentry::work_directory(QString dir_name){
+	return blog_editor()->editor()->work_directory(dir_name);
+}
 
-QString Editentry::work_directory(){return _editor->work_directory();}
+QString Editentry::work_directory(){
+	return blog_editor()->editor()->work_directory();
+}
 
-void Editentry::file_name(QString file_name_){_editor->file_name(file_name_);}
+void Editentry::file_name(QString file_name_){
+	blog_editor()->editor()->file_name(file_name_);
+}
 
-QString Editentry::file_name(){return _editor->file_name();}
+QString Editentry::file_name(){return blog_editor()->editor()->file_name();}
 
-void Editentry::save_textarea(){_editor->save_textarea();}
+void Editentry::save_textarea(){blog_editor()->editor()->save_textarea();}
 
-void Editentry::dir_file_empty_reaction(int mode){_editor->dir_file_empty_reaction(mode);}
+void Editentry::dir_file_empty_reaction(int mode){
+	blog_editor()->editor()->dir_file_empty_reaction(mode);
+}
 
-int Editentry::dir_file_empty_reaction(){return _editor->dir_file_empty_reaction();}
+int Editentry::dir_file_empty_reaction(){
+	return blog_editor()->editor()->dir_file_empty_reaction();
+}
 
-void Editentry::misc_field(QString name, QString value){_editor->misc_field(name, value);}
+void Editentry::misc_field(QString name, QString value){
+	blog_editor()->editor()->misc_field(name, value);
+}
 
-QString Editentry::misc_field(QString name){return _editor->misc_field(name);}
+QString Editentry::misc_field(QString name){
+	return blog_editor()->editor()->misc_field(name);
+}
 
-bool Editentry::load_textarea(){return _editor->load_textarea();}
+bool Editentry::load_textarea(){
+	return blog_editor()->editor()->load_textarea();
+}
 
-int Editentry::cursor_position(){return _editor->cursor_position();}
+int Editentry::cursor_position(){
+	return blog_editor()->editor()->cursor_position();
+}
 
-void Editentry::cursor_position(int n){_editor->cursor_position(n);}
+void Editentry::cursor_position(int n){
+	blog_editor()->editor()->cursor_position(n);
+}
 
-int Editentry::scrollbar_position(){return _editor->scrollbar_position();}
+int Editentry::scrollbar_position(){
+	return blog_editor()->editor()->scrollbar_position();
+}
 
-void Editentry::scrollbar_position(int n){_editor->scrollbar_position(n);}
+void Editentry::scrollbar_position(int n){
+	blog_editor()->editor()->scrollbar_position(n);
+}
 
-QTextDocument *Editentry::textarea_document(){return _editor->textarea_document();}
+QTextDocument *Editentry::textarea_document(){
+	return blog_editor()->editor()->document();
+}
 
-void Editentry::textarea_editable(bool editable){_editor->textarea_editable(editable);}
+void Editentry::textarea_editable(bool editable){
+	blog_editor()->editor()->textarea_editable(editable);
+}
 
-void Editentry::back_callback(void (*func)()){_editor->back_callback(func);}
+void Editentry::back_callback(void (*func)()){
+	blog_editor()->editor()->back_callback(func);
+}
 
-void Editentry::clear_all(){_editor->clear_all();}
+void Editentry::clear_all(){blog_editor()->editor()->clear_all();}
 
-FlatToolButton *Editentry::to_attach() const {return _editor->_to_attach;}
+FlatToolButton *Editentry::to_attach() const {
+	return blog_editor()->editor()->_to_attach;
+}
 
-QIcon Editentry::icon_attach_exists() const {return _editor->_icon_attach_exists;}
+QIcon Editentry::icon_attach_exists() const {
+	return blog_editor()->editor()->_icon_attach_exists;
+}
 
-QIcon Editentry::icon_attach_not_exists() const {return _editor->_icon_attach_not_exists;}
+QIcon Editentry::icon_attach_not_exists() const {
+	return blog_editor()->editor()->_icon_attach_not_exists;
+}
 
-QVBoxLayout *Editentry::textformat_buttons_layout() const {return _editor->_textformat_buttons_layout;}
+QVBoxLayout *Editentry::textformat_buttons_layout() const {
+	return blog_editor()->editor()->_textformat_buttons_layout;
+}
 
-EditorTextArea *Editentry::text_area() const {return _editor->_text_area;}
+EditorTextArea *Editentry::text_area() const {
+	return blog_editor()->editor()->_text_area;
+}
 
-void Editentry::to_editor_layout(){_editor->to_editor_layout();}
+void Editentry::to_editor_layout(){
+	blog_editor()->editor()->to_editor_layout();
+}
 
-void Editentry::to_attach_layout(){_editor->to_attach_layout();}
-MetaEditor *Editentry::editor(){return _editor;}
+void Editentry::to_attach_layout(){
+	blog_editor()->editor()->to_attach_layout();
+}
 
-// WebView *Editentry::find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const
+MetaEditor *Editentry::editor(){return blog_editor()->editor();}
+
+EditingWindow *Editentry::blog_editor() const {return _blog_editor;}
+
+EditingWindow *Editentry::blog_editor(){
+	if(! _blog_editor)
+			_blog_editor = add_blog_editor(
+				new EditingWindow(
+					_tree_screen
+								 , _entrance
+								 , _profile
+								 , _find_screen
+								 , this
+								 , _flags
+								 , _style_source
+					));
+	return _blog_editor;
+}
+
+// WebView *Editentry::find(const std::function<bool(boost::intrusive_ptr<const
+// TreeItem>)> &_equal) const
 // {
 
 // WebView * v = nullptr;
@@ -1621,16 +1800,17 @@ MetaEditor *Editentry::editor(){return _editor;}
 ////            }
 // }
 
-
 // boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
 // if(v) {
 // if(v->page()) {
 // if(v->page()->binder()) {
-// auto _this = v->page()->host(); // globalparameters.Editentry()->find(_equal);
+// auto _this = v->page()->host(); //
+// globalparameters.Editentry()->find(_equal);
 // if(_this) {
 // assert(_this == v->page()->binder()->item());
 
-// if(_this && v->load_finished()) {                                                                                                                                                       // && (v->tabmanager()->currentWebView() == v)
+// if(_this && v->load_finished()) {
+// // && (v->tabmanager()->currentWebView() == v)
 // found_myself = _this;
 // }
 // }
@@ -1642,8 +1822,9 @@ MetaEditor *Editentry::editor(){return _editor;}
 // return v;   // found_myself;
 // }
 
-
-// boost::intrusive_ptr<const TreeItem> Editentry::is_registered_to_browser(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const
+// boost::intrusive_ptr<const TreeItem>
+// Editentry::is_registered_to_browser(const
+// std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const
 // {
 // boost::intrusive_ptr<const TreeItem> found(nullptr);
 
@@ -1665,9 +1846,9 @@ MetaEditor *Editentry::editor(){return _editor;}
 
 // if(page) {
 // if(binder == _binder
-// && binder->item().get() == this                                                                                                                        // boost::intrusive_ptr<const TreeItem>(this)
+// && binder->item().get() == this // boost::intrusive_ptr<const TreeItem>(this)
 // ) {
-// found = this;                                                                                                                                                   // page_binder->bounded_item();
+// found = this; // page_binder->bounded_item();
 // }
 // }
 // }
@@ -1689,9 +1870,12 @@ MetaEditor *Editentry::editor(){return _editor;}
 ////                }
 ////            }
 
-////            //            if(_record_binder->bounded_page()->view()->record_controller()) {
-////            //                auto _record_controller = _record_binder->bounded_page()->view()->record_controller();
-////            //                found = _record_controller->source_model()->find_current_bound(boost::intrusive_ptr<TreeItem>(this));
+////            //
+/// if(_record_binder->bounded_page()->view()->record_controller()) {
+////            //                auto _record_controller =
+/// _record_binder->bounded_page()->view()->record_controller();
+////            //                found =
+/// _record_controller->source_model()->find_current_bound(boost::intrusive_ptr<TreeItem>(this));
 ////            //            }
 ////        }
 ////    }
@@ -1700,10 +1884,13 @@ MetaEditor *Editentry::editor(){return _editor;}
 ////    //        browser::Editentry *_Editentry = globalparameters.Editentry();
 
 ////    //        for(int w = 0; w < _Editentry->browsers().size(); w++) {
-////    //            auto tabmanager = _Editentry->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
+////    //            auto tabmanager =
+/// _Editentry->browsers().at(w)->record_screen()->tabmanager();  //
+/// record_controller()->source_model();  // ->record_table();
 
 ////    //            for(int i = 0; i < tabmanager->count(); i++) {
-////    //                auto item = tabmanager->webView(i)->page()->current_item();
+////    //                auto item =
+/// tabmanager->webView(i)->page()->current_item();
 
 ////    //                if(item->field("id") == id()) {
 ////    //                    found = item;
@@ -1716,12 +1903,37 @@ MetaEditor *Editentry::editor(){return _editor;}
 //// assert(found);
 
 ////    if(found && found != boost::intrusive_ptr<TreeItem>(this)) {
-////        found = globalparameters.tree_screen()->duplicated_remove(boost::intrusive_ptr<TreeItem>(this), found);
+////        found =
+/// globalparameters.tree_screen()->duplicated_remove(boost::intrusive_ptr<TreeItem>(this),
+/// found);
 ////    }
 
 // return found;
 // }
 // }
 
+EditingWindow *Editentry::add_blog_editor(EditingWindow *ew){
+	if(! _editing_list.contains(ew)) _editing_list << ew;
+	_blog_editor = ew;
+	return ew;
+}
 
+SuperMenu *Editentry::super_menu(){return _super_menu;}
 
+void Editentry::editor_switch(void){
+//    auto *_editenty = globalparameters.edit_entry();			// find_object<MetaEditor>(meta_editor_singleton_name);
+//	auto _app = qobject_cast<sapp_t *>(qApp);
+	if(! (this->isVisible())){
+		this->show();
+//		emit _app->editing_win_changed(_editenty->blog_editor());
+		emit this->editing_activated(blog_editor());
+//		_app->sendEvent(_editenty->blog_editor(), new QEvent(QEvent::WindowActivate));
+
+		appconfig.editor_show(true);
+	}else{
+		this->hide();
+//		_app->sendEvent(_editenty->blog_editor(), new QEvent(QEvent::WindowActivate));
+
+		appconfig.editor_show(false);
+	}
+}

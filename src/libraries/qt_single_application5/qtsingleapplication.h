@@ -307,32 +307,32 @@ Q_SIGNALS:
 	typedef struct _RF {
 	    QString	title;
 	    QString	filename;
-	}recentFile;
-	QList<recentFile> recentFiles();
-	recentFile getRecentFile(int);
+	}RecentFile;
+	QList<RecentFile> recentFiles();
+	RecentFile getRecentFile(int);
 	QStringList titles();
 	QStringList filenames();
-	EditingWindow *currentEditingWindow(){return _currentEditingWindow;}
+	EditingWindow *editing_win(){return _editing_win;}
 	void deleteSandbox();
 	bool isSandbox(){return _isSandbox;}
 
     public slots:
-	void setRecentFiles(const QStringList &, const QStringList &);
-	void addRecentFile(const QString &, const QString &);
+	void set_recent_files(const QStringList &, const QStringList &);
+	void add_recent_file(const QString &, const QString &);
 	void saveAll();
-	void setMainWindow(EditingWindow *sm);
+	void editing_win(EditingWindow *sm);
 
     signals:
-	void recentFilesUpdated(QStringList, QStringList);
-	void recentFilesUpdated(const QList<sapp_t::recentFile> &);
-	void mainWindowChanged(EditingWindow *);
+	void recent_files_updated(QStringList, QStringList);
+	void recent_files_updated(const QList<sapp_t::RecentFile> &);
+	void editing_win_changed(EditingWindow *);
 
     private:
-	QList<sapp_t::recentFile> _recentFiles;
+	QList<sapp_t::RecentFile> _recentFiles;
 	#ifdef Q_OS_MAC
 	SuperMenu *superMenu;
 	#endif
-	EditingWindow *_currentEditingWindow;
+	EditingWindow *_editing_win;
 	bool _isSandbox;
 
     private slots:

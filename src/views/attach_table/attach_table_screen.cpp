@@ -88,17 +88,17 @@ void AttachTableScreen::setupUI(void){
     toolsLine = new QToolBar(this);
 
 	// Создание кнопок на тулбаре
-    append_action_as_button<QToolButton>(toolsLine, actionAddAttach);
-    append_action_as_button<QToolButton>(toolsLine, actionAddLink);
-    append_action_as_button<QToolButton>(toolsLine, actionEditFileName);
-    append_action_as_button<QToolButton>(toolsLine, actionDeleteAttach);
-    append_action_as_button<QToolButton>(toolsLine, actionOpenAttach);
-    append_action_as_button<QToolButton>(toolsLine, actionSaveAsAttach);
-    append_action_as_button<QToolButton>(toolsLine, actionShowAttachInfo);
+    add_action<QToolButton>(toolsLine, actionAddAttach);
+    add_action<QToolButton>(toolsLine, actionAddLink);
+    add_action<QToolButton>(toolsLine, actionEditFileName);
+    add_action<QToolButton>(toolsLine, actionDeleteAttach);
+    add_action<QToolButton>(toolsLine, actionOpenAttach);
+    add_action<QToolButton>(toolsLine, actionSaveAsAttach);
+    add_action<QToolButton>(toolsLine, actionShowAttachInfo);
 
     toolsLine->addSeparator();
 
-    append_action_as_button<QToolButton>(toolsLine, actionSwitchToEditor);
+    add_action<QToolButton>(toolsLine, actionSwitchToEditor);
 }
 
 void AttachTableScreen::setupSignals(void){

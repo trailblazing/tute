@@ -66,12 +66,12 @@ class EditorConfig : public QWidget {
 	void set_finddialog_geometry(QString geometry);
 
 	// Настройка первой линии с кнопками инструментов
-	QString get_tools_line_1(void);
-	void set_tools_line_1(QString geometry);
+	QString tools_line_0(void);
+	void tools_line_0(QString geometry);
 
 	// Настройка второй линии с кнопками инструментов
-	QString get_tools_line_2(void);
-	void set_tools_line_2(QString geometry);
+	QString tools_line_1(void);
+	void tools_line_1(QString geometry);
 
 	// Раскрыты или сомкнуты панели инструментов
 	bool get_expand_tools_lines(void);

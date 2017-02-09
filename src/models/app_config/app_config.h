@@ -230,7 +230,7 @@ class AppConfig : public QObject {
 
     private:
 
-	std::shared_ptr<QSettings> _app_conf;
+	QSettings *_app_conf;
 	QString _config_file_full_name = "";		// было static
 	QString	get_parameter(QString name) const;
 

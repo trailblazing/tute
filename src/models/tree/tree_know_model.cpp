@@ -476,7 +476,7 @@ void tkm_t::save(){
 	// Если имя файла небыло проинициализировано
     if(_xml_file_path == "") critical_error(tr("In KnowTreeModel can't set file name for XML file"));
 	// Коструирование DOM документа для записи в файл
-    QDomDocument doc("hapnotedoc");
+    QDomDocument doc("tutedoc");
 
 	// Установка заголовка
     doc.appendChild(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""));

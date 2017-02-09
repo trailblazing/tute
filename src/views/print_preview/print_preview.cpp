@@ -26,6 +26,7 @@
 #include "view_preview.h"
 #include "print_preview.h"
 
+extern const char *program_title;
 
 static inline int inches_to_pixels(float inches, QPaintDevice *device){
     return qRound(inches * device->logicalDpiY());
@@ -42,7 +43,7 @@ W_OBJECT_IMPL(PrintPreview)
 
 PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
     : QDialog(parent), printer(QPrinter::HighResolution){
-    setWindowTitle(tr("hapnote - Print Preview"));
+    setWindowTitle(tr(std::string(std::string(program_title) + " - Print Preview").c_str()));
 
     printer.setFullPage(true);
     doc = document->clone();
@@ -66,28 +67,28 @@ PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
 
 
 	// Кнопки на панели инструментов
-    FlatToolButton *button_print = new FlatToolButton(this);
+    FlatToolButton *button_print = new FlatToolButton("", this);
     button_print->setText(tr("&Print..."));
     button_print->setShortcut(Qt::CTRL + Qt::Key_P);
     button_print->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_print, &FlatToolButton::clicked, this, &PrintPreview::print);
 
-    FlatToolButton *button_page_setup = new FlatToolButton(this);
+    FlatToolButton *button_page_setup = new FlatToolButton("", this);
     button_page_setup->setText(tr("Page Setup..."));
     button_page_setup->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_page_setup, &FlatToolButton::clicked, this, &PrintPreview::page_setup);
 
-    FlatToolButton *button_zoom_in = new FlatToolButton(this);
+    FlatToolButton *button_zoom_in = new FlatToolButton("", this);
     button_zoom_in->setText(tr("Zoom In"));
     button_zoom_in->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_zoom_in, &FlatToolButton::clicked, view, &PreviewView::zoom_in);
 
-    FlatToolButton *button_zoom_out = new FlatToolButton(this);
+    FlatToolButton *button_zoom_out = new FlatToolButton("", this);
     button_zoom_out->setText(tr("Zoom Out"));
     button_zoom_out->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_zoom_out, &FlatToolButton::clicked, view, &PreviewView::zoom_out);
 
-    FlatToolButton *button_close = new FlatToolButton(this);
+    FlatToolButton *button_close = new FlatToolButton("", this);
     button_close->setText(tr("&Close"));
     button_close->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_close, &FlatToolButton::clicked, this, &PrintPreview::close);
@@ -134,7 +135,7 @@ PrintPreview::~PrintPreview(){
 
 void PrintPreview::print(){
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
-    if(dlg->exec() == QDialog::Accepted)doc->print(&printer);
+    if(dlg->exec() == QDialog::Accepted) doc->print(&printer);
     delete dlg;
 }
 

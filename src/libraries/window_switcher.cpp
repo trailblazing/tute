@@ -63,7 +63,7 @@ void WindowSwitcher::tree_to_record_screen(void){
 
 	// Скрываются все прочие области
     globalparameters.tree_screen()->hide();
-    globalparameters.meta_editor()->hide();
+    globalparameters.edit_entry()->hide();
 	// globalParameters.getFindScreen()->hide();
 
     auto _index = globalparameters.tree_screen()->view()->current_index();
@@ -95,7 +95,7 @@ void WindowSwitcher::record_to_recordtable(void){
 		return;
 	// Скрываются все прочие области
     globalparameters.tree_screen()->hide();
-    globalparameters.meta_editor()->hide();
+    globalparameters.edit_entry()->hide();
 	// globalParameters.getFindScreen()->hide();
     auto _index = globalparameters.tree_screen()->view()->current_index();
     if(_index.isValid()){
@@ -123,7 +123,7 @@ void WindowSwitcher::recordtable_ro_record_editor(void){
     for(auto &i : globalparameters.record_screens())i->hide();
 	// globalParameters.getFindScreen()->hide();
 
-    QWidget *object = static_cast<QWidget *>(globalparameters.meta_editor());
+    QWidget *object = static_cast<QWidget *>(globalparameters.edit_entry());
     object->show();
     appconfig.focus_widget(object->objectName());
 }
@@ -133,7 +133,7 @@ void WindowSwitcher::recordtable_to_find_in_base(void){if(! enableSwitcher)retur
 void WindowSwitcher::recordtable_to_tree(void){
     if(! enableSwitcher)return;
 	// Скрываются все прочие области
-    globalparameters.meta_editor()->hide();
+    globalparameters.edit_entry()->hide();
     for(auto &i : globalparameters.record_screens())i->hide();
 	// globalParameters.getFindScreen()->hide();
 
@@ -171,7 +171,7 @@ void WindowSwitcher::restore_focus_widget(){
 	// Скрываются все прочие области
     globalparameters.tree_screen()->hide();
     for(auto &i : globalparameters.record_screens())i->hide();
-    globalparameters.meta_editor()->hide();
+    globalparameters.edit_entry()->hide();
 	// globalParameters.getFindScreen()->hide();
 
     QString widgetName = appconfig.focus_widget();
@@ -207,8 +207,8 @@ void WindowSwitcher::restore_focus_widget(){
 	return;
     }
     if(widgetName == meta_editor_singleton_name){
-	globalparameters.meta_editor()->show();
-	globalparameters.meta_editor()->setFocus();
+	globalparameters.edit_entry()->show();
+	globalparameters.edit_entry()->setFocus();
 
 	return;
     }

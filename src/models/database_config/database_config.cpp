@@ -22,7 +22,7 @@ extern gl_para globalparameters;
 // Объект для работы с конфигурацией (с настройками) базы данных
 // Конфигурация базы данных хранится в файле database.ini
 
-// Под базой данных понимается совокупность файлов - корневой hapnote.xml
+// Под базой данных понимается совокупность файлов - корневой index.xml
 // и все директории и файлы с записями
 
 
@@ -48,7 +48,7 @@ DataBaseConfig::~DataBaseConfig(){
 
 void DataBaseConfig::init(void){
 	// Создается имя файла конфигурации
-	// QString configFileName=globalParameters.getWorkDirectory()+"/"+hapnoteConfig.datadir()+"/database.ini";
+	// QString configFileName=globalParameters.getWorkDirectory()+"/"+appconfig.datadir()+"/database.ini";
     QString configFileName = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + "/database.ini";
 
 	// Проверяется, есть ли файл конфигурации

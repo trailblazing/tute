@@ -8,6 +8,10 @@
 #include <QStyledItemDelegate>
 #include <QToolButton>
 #include <QFontComboBox>
+#include <QCheckBox>
+#include <QLineEdit>
+
+
 
 #if QT_VERSION == 0x050600
 #include <wobjectdefs.h>
@@ -56,8 +60,8 @@ class FlatComboBox : public QComboBox {
 	void setArrowAlignment(Qt::Alignment a);
 
     protected:
-	virtual void	paintEvent(QPaintEvent *e);
-	virtual void	mousePressEvent(QMouseEvent *e);
+	virtual void paintEvent(QPaintEvent *e);
+	virtual void mousePressEvent(QMouseEvent *e);
 
     signals:
 	void aboutToPullDown()
@@ -69,8 +73,8 @@ class FlatComboBox : public QComboBox {
 
     private:
 	QStyledItemDelegate	*itemDelegate;
-	Qt::Alignment		arrowAlignment_;
-	bool			flat_;
+	Qt::Alignment arrowAlignment_;
+	bool flat_;
 };
 
 class FlatFontComboBox : public QFontComboBox {
@@ -95,8 +99,8 @@ class FlatFontComboBox : public QFontComboBox {
 	void setArrowAlignment(Qt::Alignment a);
 
     protected:
-	virtual void	paintEvent(QPaintEvent *e);
-	virtual void	mousePressEvent(QMouseEvent *e);
+	virtual void paintEvent(QPaintEvent *e);
+	virtual void mousePressEvent(QMouseEvent *e);
 
     signals:
 	void aboutToPullDown()
@@ -108,8 +112,8 @@ class FlatFontComboBox : public QFontComboBox {
 
     private:
 	QStyledItemDelegate	*itemDelegate;
-	Qt::Alignment		arrowAlignment_;
-	bool			flat_;
+	Qt::Alignment arrowAlignment_;
+	bool flat_;
 };
 
 class FlatToolButton : public QToolButton {
@@ -124,7 +128,8 @@ class FlatToolButton : public QToolButton {
     private:
 
     public:
-	FlatToolButton(QWidget *parent = nullptr);
+	FlatToolButton(const QString &name = "", QWidget *parent = nullptr, const QIcon &icon = QIcon());
+	FlatToolButton(QWidget *parent = nullptr, const QString &name = "");
 	// bool flat() const { return flat_; }
 	// void setFlat(bool flat);
 	// void setAutoRaise(bool yes) {QToolButton::setAutoRaise(yes);}
@@ -135,6 +140,17 @@ class FlatToolButton : public QToolButton {
 	// bool flat_;
 };
 
+class FlatCheckBox : public QCheckBox {
+    typedef QCheckBox Super;
+    public:
+	FlatCheckBox(const QString &name);
+};
+
+
+class FlatLineEdit : public QLineEdit {
+    typedef QLineEdit Super;
+    FlatLineEdit();
+};
 
 #endif /* __MTCOMBOBOX_H__ */
 

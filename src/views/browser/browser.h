@@ -136,7 +136,6 @@ namespace browser {
 		   , Editentry		*_editentry
 		   , rs_t		*_record_screen
 		   , Entrance		*_entrance
-		   , wn_t		*_main_window
 		   , const QString	&style_source
 		   , browser::Profile	*_profile
 		   , Qt::WindowFlags flags);

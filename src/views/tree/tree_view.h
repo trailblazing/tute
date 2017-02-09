@@ -227,7 +227,7 @@ class tv_t : public QTreeView {
 		// Проверяется, содержит ли объект переноса данные нужного формата
 	    const QMimeData *mime_data = event->mimeData();
 	    if(mime_data == nullptr)return false;
-	    if(! (mime_data->hasFormat("hapnote/records")))return false;
+	    if(! (mime_data->hasFormat("tute/records")))return false;
 	    QObject *source_object = qobject_cast<QObject *>(event->source());
 	    if(source_object->objectName() == record_view_multi_instance_name)	// "recordTableView"
 			return true;
