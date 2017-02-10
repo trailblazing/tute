@@ -18,7 +18,7 @@
 #include "main.h"
 #include "record_controller.h"
 #include "controllers/attach_table/attach_table_controller.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "views/record/add_new_record.h"
 #include "views/record_table/record_view.h"
 #include "views/record_table/record_screen.h"

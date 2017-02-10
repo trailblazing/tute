@@ -65,7 +65,7 @@
 #include "libraries/global_parameters.h"
 #include "browser.h"
 #include "webview.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "models/tree/tree_item.h"
 
 

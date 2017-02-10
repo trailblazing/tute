@@ -22,7 +22,7 @@
 #include "views/app_config/app_config_dialog.h"
 #include "libraries/trash_monitoring.h"
 #include "views/tree/tree_screen.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "views/record_table/record_screen.h"
 #include "models/tree/tree_item.h"
 #include "views/find_in_base_screen/find_screen.h"
@@ -453,7 +453,7 @@ void wn_t::setup_ui(void){
 
 void wn_t::setup_signals(void){
 //    connect(_editor_screen, &MetaEditor::send_expand_edit_area, this, &wn_t::on_expand_edit_area);
-	connect(_editentry->editor(), &MetaEditor::send_expand_edit_area, this, &wn_t::on_expand_edit_area);
+	connect(_editentry->editor(), &EditorWrap::send_expand_edit_area, this, &wn_t::on_expand_edit_area);
 	// Сигнал, генерирующийся при выходе из оконных систем X11 и Windows
 	connect(sapp_t::instance(), &QApplication::commitDataRequest, this, &wn_t::commit_data);
 
@@ -467,7 +467,7 @@ void wn_t::setup_signals(void){
 	// if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
 //    connect(_editor_screen, &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
-	connect(_editentry->editor(), &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
+	connect(_editentry->editor(), &EditorWrap::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
 	// auto hide_others = [this](int index) {
 	// if(-1 != index) {
 	// auto count = _vtabwidget->count();

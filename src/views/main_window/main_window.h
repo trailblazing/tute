@@ -74,7 +74,7 @@ namespace browser {
 }
 
 class ts_t;
-class MetaEditor;
+class EditorWrap;
 class rs_t;
 class FindScreen;
 class WindowSwitcher;

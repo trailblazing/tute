@@ -32,13 +32,13 @@ class rctrl_t;
 class HidableTabWidget;
 class ts_t;
 class FindScreen;
-class MetaEditor;
+class EditorWrap;
 class wn_t;
 class AppConfig;
 class Record;
 class TreeItem;
 class gl_para;
-class MetaEditor;
+class EditorWrap;
 class EditorTextArea;
 class FlatToolButton;
 class QVBoxLayout;
@@ -115,8 +115,8 @@ class Editentry : public QDockWidget {
 		std::function<void (QObject *editor, QString &String)> load_callback() const;
 		void load_callback(const std::function<void (QObject *editor, QString &String)> &func);
 
-		static void editor_load_callback(QObject *editor, QString &loadText);
-		static void editor_save_callback(QObject *editor, const QString &saveText);
+//		static void editor_load_callback(QObject *editor, QString &load_text);
+//		static void editor_save_callback(QObject *editor, const QString &save_text);
 
 		// Абсолютный или относительный путь (т.е. директория),
 		// куда будет сохраняться текст. Без завершающего слеша
@@ -204,7 +204,7 @@ class Editentry : public QDockWidget {
 
 		void to_editor_layout(void);
 		void to_attach_layout(void);
-		MetaEditor *editor();
+		EditorWrap *editor();
 
 		// #endif
 
@@ -270,7 +270,7 @@ class Editentry : public QDockWidget {
 		QMetaObject::Connection _home_connection;	// for disconnect
 
 		friend class sapp_t;
-		friend class MetaEditor;
+		friend class EditorWrap;
 		friend class Editor;
 		friend class EditingWindow;
 		friend class SideTabWidget;

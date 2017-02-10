@@ -33,7 +33,7 @@
 #include "models/tree/tree_know_model.h"
 #include "tree_view.h"
 #include "libraries/clipboard_branch.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "libraries/global_parameters.h"
 #include "libraries/crypt/password.h"
 #include "libraries/window_switcher.h"

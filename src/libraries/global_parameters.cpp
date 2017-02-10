@@ -20,7 +20,7 @@
 #include "global_parameters.h"
 
 #include "views/tree/tree_screen.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "views/record_table/record_screen.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "libraries/window_switcher.h"

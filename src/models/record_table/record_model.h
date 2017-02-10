@@ -46,7 +46,7 @@ class rctrl_t;
 class wn_t;
 class ts_t;
 class FindScreen;
-class MetaEditor;
+class EditorWrap;
 class AppConfig;
 class rs_t;
 

@@ -305,7 +305,6 @@ HEADERS     =   \
     src/views/print_preview/view_preview.h \
     src/views/record/add_new_record.h \
     src/views/record/info_field_enter.h \
-    src/views/record/meta_editor.h \
     src/views/record/record_info_fields_editor.h \
     src/views/record_table/record_print.h \
     src/views/record_table/record_screen.h \
@@ -333,7 +332,8 @@ HEADERS     =   \
     src/libraries/qtm/sys_tray_icon.h \
     src/libraries/qtm/xml_rpc_handler.h \
     src/utility/add_action.h \
-    src/libraries/qtm/side_tabwidget.h
+    src/libraries/qtm/side_tabwidget.h \
+    src/views/record/editor_wrap.h
 
 
 
@@ -449,7 +449,6 @@ SOURCES     =   src/main.cpp \
     src/views/print_preview/print_preview.cpp \
     src/views/record/add_new_record.cpp \
     src/views/record/info_field_enter.cpp \
-    src/views/record/meta_editor.cpp \
     src/views/record/record_info_fields_editor.cpp \
     src/views/record_table/record_print.cpp \
     src/views/record_table/record_screen.cpp \
@@ -478,7 +477,8 @@ SOURCES     =   src/main.cpp \
     src/libraries/mt_styled_item_delegate.cpp \
     src/libraries/global_parameters.cpp \
     src/libraries/flat_control.cpp \
-    src/libraries/qtm/side_tabwidget.cxx
+    src/libraries/qtm/side_tabwidget.cxx \
+    src/views/record/editor_wrap.cpp
 
 
 lessThan(QT_MAJOR_VERSION,5) {

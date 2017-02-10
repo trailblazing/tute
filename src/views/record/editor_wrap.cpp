@@ -16,7 +16,7 @@
 
 
 #include "main.h"
-#include "meta_editor.h"
+#include "editor_wrap.h"
 
 #include "libraries/wyedit/editor.h"
 #include "libraries/wyedit/editor_text_area.h"
@@ -65,8 +65,8 @@ W_OBJECT_IMPL(MetaEditor)
 #endif
 
 
-MetaEditor::MetaEditor(FindScreen *find_screen, EditingWindow *editing_win, QStackedWidget *main_stack_, QString object_name)
-	: Editor(main_stack_)
+EditorWrap::EditorWrap(FindScreen *find_screen, EditingWindow *editing_win, QStackedWidget *main_stack_, QString object_name)
+	: Editor(main_stack_, editing_win)
 //    : QDockWidget(_find_screen)
 	  , _editor_main_screen(new QWidget(this))  // Сборка виджета редактирования текста (основной виджет)
 	  , _editor_main_layer(new QGridLayout(_editor_main_screen))
@@ -156,25 +156,25 @@ MetaEditor::MetaEditor(FindScreen *find_screen, EditingWindow *editing_win, QSta
 	setup_labels();
 	setup_ui();
 	assembly();
-	clear_all();
+	initialize_data();
 	adjustSize();
 	setup_signals(_find_screen);
 
 	// В редакторе устанавливается функция обратного вызова на кнопку Attach
-	attach_callback(&MetaEditor::to_attach_callback);
+	attach_callback(&EditorWrap::to_attach_callback);
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	Editor::update_indentline_geometry();
 	connect(_item_pin, &QCheckBox::clicked, [&](bool checked){pin(checked ? _string_from_check_state[Qt::CheckState::Checked] : _string_from_check_state[Qt::CheckState::Unchecked]);});
 }
 
-MetaEditor::~MetaEditor(void){_url_connection_initialized = false;}
+EditorWrap::~EditorWrap(void){_url_connection_initialized = false;}
 
 
-void MetaEditor::setup_signals(FindScreen *_find_screen){
-	connect(this, &MetaEditor::set_find_text_signal, _find_screen, &FindScreen::find_text);
+void EditorWrap::setup_signals(FindScreen *_find_screen){
+	connect(this, &EditorWrap::set_find_text_signal, _find_screen, &FindScreen::find_text);
 }
 
-void MetaEditor::setup_labels(void){
+void EditorWrap::setup_labels(void){
 	_label_pin->setText(tr("<B>Pin status:</B> "));
 	_label_pin->setVisible(true);
 //	// Путь в дереве до данной записи в виде названий веток (только для мобильного интерфейса)
@@ -235,7 +235,7 @@ void MetaEditor::setup_labels(void){
 	_label_tags->setVisible(false);
 }
 
-void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
+void EditorWrap::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
 	// boost::intrusive_ptr<TreeItem> item_to_be_bound = record_index->target();
 	_item = item_to_be_bound;
 	assert(_item);
@@ -287,9 +287,9 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
 	_home_connection_initialized = true;
 }
 
-boost::intrusive_ptr<TreeItem> MetaEditor::item(){return _item;}
+boost::intrusive_ptr<TreeItem> EditorWrap::item(){return _item;}
 
-void MetaEditor::setup_ui(void){
+void EditorWrap::setup_ui(void){
 	// Область текстовых меток, которые выглядят на экране как [метка1] [метка2] [метка3] ...
 	// _item_tags_layout = new QHBoxLayout();
 	_item_tags_layout->setAlignment(Qt::AlignLeft);
@@ -312,16 +312,21 @@ void MetaEditor::setup_ui(void){
 	_item_tags_scrollarea->setFrameShape(QFrame::NoFrame);  // Убирается тонкая линия вокруг QScrollArea
 
 	_item_tags_scrollarea->setLayout(_item_tags_scrollarea_layout); // _item_tags_scrollarea->setWidget(_item_tags_container);
-
+	_item_tags_scrollarea->setToolTip("Tags scroll area");
 	// _attachtable_screen = new AttachTableScreen(this);
 }
 
-void MetaEditor::assembly(void){
+void EditorWrap::assembly(void){
+//	layout()->invalidate();
+
 	//// Сборка виджета редактирования текста (основной виджет)
 	// _editor_main_screen    = new QWidget(this);
 	// _editor_main_layer     = new QGridLayout(_editor_main_screen);
+	QHBoxLayout *tool_bar_layout = new QHBoxLayout();
+	tool_bar_layout->addLayout(_textformat_buttons_layout);
 
-	_editor_main_layer->addLayout(_textformat_buttons_layout, 0, 0, 1, 2);
+//	_editor_main_layer->addLayout(_textformat_buttons_layout, 0, 0, 1, 2);
+	_editor_main_layer->addLayout(tool_bar_layout, 0, 0, 1, 2);
 	_editor_main_layer->addWidget(_label_pin, 1, 0, 1, 1);
 	_editor_main_layer->addWidget(_item_pin, 1, 1, 1, 1);
 //	_editor_main_layer->addWidget(_tree_path_content, 1, 1, 1, 1);
@@ -339,7 +344,7 @@ void MetaEditor::assembly(void){
 
 	_editor_main_layer->addWidget(_label_tags, 7, 0, 1, 1);
 	_editor_main_layer->addWidget(_item_tags_scrollarea, 7, 1, 1, 1);   //    _editor_main_layer->addLayout(_item_tags_scrollarea_layout, 7, 1, 1, 1);	// Было addLayout(recordTagsLayout ...)    //
-
+	_editor_main_layer->setColumnStretch(0, 0);
 	_editor_main_layer->setColumnStretch(1, 1);
 	_editor_main_layer->setRowStretch(4, 2);    // for textArea auto fullfill
 
@@ -359,34 +364,33 @@ void MetaEditor::assembly(void){
 
 
 	// Границы убираются, так как данный объект будет использоваться как виджет
-	QLayout *lt;
-	lt = layout();
-	lt->setContentsMargins(0, 0, 0, 0); // setContentsMargins(0, 2, 0, 0);
+	// The boundaries are removed, as this facility will be used as a widget
+	layout()->setContentsMargins(0, 0, 0, 0); // setContentsMargins(0, 2, 0, 0);
 
 	// По-умолчанию отображается слой редатирования
 	to_editor_layout();
 }
 
-void MetaEditor::to_editor_layout(void){
+void EditorWrap::to_editor_layout(void){
 	_attachtable_screen->setVisible(false);
 	_attachtable_screen->hide();// Что бы небыло мерцания, вначале нужно делать сокрытие текущего виджета
 	_editor_main_screen->show();
 }
 
-void MetaEditor::to_attach_layout(void){
+void EditorWrap::to_attach_layout(void){
 	_editor_main_screen->hide();
 	_attachtable_screen->setVisible(true);
 	_attachtable_screen->show();
 }
 
 // Статическая функция, обрабатывает клик в редакторе по кнопке переключения на список прикрепляемых файлов
-void MetaEditor::to_attach_callback(void){
+void EditorWrap::to_attach_callback(void){
 	auto *editentry_ = globalparameters.edit_entry();   // find_object<MetaEditor>(meta_editor_singleton_name);
 	editentry_->to_attach_layout();
 }
 
 // Слот для установки значений инфополей на экране
-void MetaEditor::field(QString n, QString v){
+void EditorWrap::field(QString n, QString v){
 	if(n == "pin") pin(v);
 	else if(n == "name") name(v);
 	else if(n == "author") author(v);
@@ -396,27 +400,28 @@ void MetaEditor::field(QString n, QString v){
 	else critical_error("metaeditor.set_field Undestand field " + n + " with value " + v);
 }
 
-void MetaEditor::clear_all(void){
+void EditorWrap::initialize_data(void){
 	qDebug() << "MetaEditor::clear_all()";
+	if(! _item){
+		// Очистка для слоя редактора
+		pin("");
+		name("");
+		author("");
+		url("");
+		tags("");
+		textarea("");
 
-	// Очистка для слоя редактора
-	pin("");
-	name("");
-	author("");
-	url("");
-	tags("");
-	textarea("");
+		work_directory("");
+		file_name("");
 
-	work_directory("");
-	file_name("");
+		clear_all_misc_field();
 
-	clear_all_misc_field();
+		// Иконка аттачей должна показывать что аттачей нет
+		_to_attach->setIcon(_icon_attach_not_exists);
 
-	// Иконка аттачей должна показывать что аттачей нет
-	_to_attach->setIcon(_icon_attach_not_exists);
-
-	// Очистка для слоя приаттаченных файлов
-	_attachtable_screen->clear();
+		// Очистка для слоя приаттаченных файлов
+		_attachtable_screen->clear();
+	}
 }
 
 // void MetaEditor::tree_path(const QString &path){
@@ -426,7 +431,7 @@ void MetaEditor::clear_all(void){
 
 
 
-void MetaEditor::pin(const QString &pin_){
+void EditorWrap::pin(const QString &pin_){
 	auto set_pin = [&](bool checked){
 			//	if(checked != ("" != _string_from_check_state[_item_pin->checkState()])){
 			// if(globalparameters.entrance()->activiated_browser()) {
@@ -504,12 +509,12 @@ void MetaEditor::pin(const QString &pin_){
 	if(_item && (_state_check_from_string[_item->field < pin_type > ()] != _item_pin->checkState())) set_pin(pin_ != "");
 }
 
-void MetaEditor::name(const QString &name_){
+void EditorWrap::name(const QString &name_){
 	_item_name->setVisible(true);
 	_item_name->setText("<b>" + name_ + "</b>");
 }
 
-void MetaEditor::author(const QString &author_){
+void EditorWrap::author(const QString &author_){
 	if(author_.length() == 0){
 		_item_author->setVisible(false);
 		_item_author->setText("");
@@ -519,7 +524,7 @@ void MetaEditor::author(const QString &author_){
 	}
 }
 
-void MetaEditor::home(const QString &url_){
+void EditorWrap::home(const QString &url_){
 	if(url_.length() == 0){
 		_label_home->setVisible(false);
 		_item_home->setVisible(false);
@@ -533,7 +538,7 @@ void MetaEditor::home(const QString &url_){
 	}
 }
 
-void MetaEditor::url(const QString &url_){
+void EditorWrap::url(const QString &url_){
 	if(url_.length() == 0){
 		_label_url->setVisible(false);
 		_item_url->setVisible(false);
@@ -547,7 +552,7 @@ void MetaEditor::url(const QString &url_){
 	}
 }
 
-void MetaEditor::tags(const QString &tags_){
+void EditorWrap::tags(const QString &tags_){
 	_item_tags_text_list.clear();
 
 	// Строка с метками запоминается в явном виде
@@ -563,11 +568,11 @@ void MetaEditor::tags(const QString &tags_){
 	// auto size = _item_tags_text_list.size();
 	// auto count = _item_tags_layout->count();
 	while(_item_tags_layout->count() > 0){  // (child_item = _item_tags_layout->takeAt(0)) != 0
-		auto child_item = _item_tags_layout->takeAt(0);
+		auto	child_item	= _item_tags_layout->takeAt(0);
+		auto	widget		= child_item->widget();
 		_item_tags_layout->removeItem(child_item);
-		auto widget = child_item->widget();
 		if(widget){ // if(child_item->widget() != nullptr && child_item->widget() != 0)
-			disconnect(static_cast<QLabel *>(widget), &QLabel::linkActivated, this, &MetaEditor::on_click_to_tag);
+			disconnect(static_cast<QLabel *>(widget), &QLabel::linkActivated, this, &EditorWrap::on_click_to_tag);
 			delete (widget);
 		}
 		delete child_item;
@@ -600,7 +605,7 @@ void MetaEditor::tags(const QString &tags_){
 			// то есть в данном случае строку с номером метки
 			// Clicking on a label will cause the signal slot will accept Url tag
 			// Ie in this case the line with the number of tags
-			connect(_label, &QLabel::linkActivated, this, &MetaEditor::on_click_to_tag);
+			connect(_label, &QLabel::linkActivated, this, &EditorWrap::on_click_to_tag);
 
 			// Метка запоминается в список меток
 			_item_tags_labels << _label;
@@ -611,23 +616,26 @@ void MetaEditor::tags(const QString &tags_){
 		// End of widgets added to the list spacer  // В конец списка виджетов добавляется распорка
 		_item_tags_layout->addStretch();
 	}
-	// Если нечего выводить на экран
-	if(tags_.length() == 0 || _item_tags_text_list.size() == 0){
-		_label_tags->setVisible(false);
-		for(auto &label : _item_tags_labels) label->setVisible(false);
+//	// Если нечего выводить на экран
+//	if(tags_.length() == 0 || _item_tags_text_list.size() == 0){
+//		_label_tags->setVisible(false);
+//		_label_tags->hide();
+//		for(auto &label : _item_tags_labels) label->setVisible(false);
 //		_item_tags_container->setVisible(false);
 //		_item_tags_container->hide();
 //		_item_tags_container->setHidden(true);
-		_item_tags_scrollarea->setVisible(false);   // without this, editor screen is always filled by pane
-		_item_tags_scrollarea->hide();
-		_item_tags_scrollarea->setHidden(true);
-	}else{
+//		_item_tags_scrollarea->setVisible(false);   // without this, editor screen is always filled by pane
+//		_item_tags_scrollarea->hide();
+//		_item_tags_scrollarea->setHidden(true);
+//		_item_tags_scrollarea->adjustSize();
+//		this->adjustSize();
+//	}else{
 		_label_tags->setVisible(true);
 		for(auto &label : _item_tags_labels) label->setVisible(true);
 		_label_tags->adjustSize();
-//		_item_tags_container->setVisible(true);
-//		_item_tags_container->show();
-//		_item_tags_container->activateWindow();
+		_item_tags_container->setVisible(true);
+		_item_tags_container->show();
+		_item_tags_container->activateWindow();
 
 
 		_item_tags_container->adjustSize(); // setMaximumHeight(_item_tags_layout->sizeHint().height());   //
@@ -640,14 +648,15 @@ void MetaEditor::tags(const QString &tags_){
 		_item_tags_scrollarea->setVisible(true);
 		_item_tags_scrollarea->show();
 		_item_tags_scrollarea->activateWindow();
-	}
+		this->adjustSize();
+//	}
 }
 
 // Слот принимает Url метки. Url состоит из порядкового номера метки,
 // по нему восстанавливается текст метки
 // Slot accepts Url tags . Url consists of a serial number label ,
 // On it recovers the label text
-void MetaEditor::on_click_to_tag(const QString &link_text){
+void EditorWrap::on_click_to_tag(const QString &link_text){
 	qDebug() << "Click to tag " << link_text;
 
 	// Текст метки
@@ -667,7 +676,7 @@ ClickableLabel::ClickableLabel(QWidget *parent, Qt::WindowFlags f) : QLabel(pare
 
 ClickableLabel::ClickableLabel(const QString &text, QWidget *parent, Qt::WindowFlags f) : QLabel(text, parent, f){}
 
-void MetaEditor::resizeEvent(QResizeEvent *e){
+void EditorWrap::resizeEvent(QResizeEvent *e){
 	(void) e;
 //	_editing_win->writeSettings();
 }

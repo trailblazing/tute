@@ -28,7 +28,7 @@
 #include "models/record_table/record_model.h"
 #include "views/main_window/main_window.h"
 #include "views/record_table/record_screen.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "controllers/record_table/record_controller.h"
 #include "views/browser/webview.h"
 #include "views/browser/tabwidget.h"

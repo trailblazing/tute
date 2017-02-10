@@ -127,7 +127,7 @@ Q_OBJECT
 #endif
 
 public:
-	Editor(QStackedWidget *main_stack);
+	Editor(QStackedWidget *main_stack, EditingWindow *blog_editor);
 	~Editor(void);
 
 	EditorConfig        *_editor_config = nullptr;
@@ -150,7 +150,20 @@ public:
 	FlatToolButton		*_align_center	= nullptr;
 	FlatToolButton		*_align_right	= nullptr;
 	FlatToolButton		*_align_width	= nullptr;
-	FlatToolButton		*_settings		= nullptr;
+
+	FlatToolButton *_action_open	= nullptr;
+	FlatToolButton *_action_save	= nullptr;
+//	, *action_Bold
+//	, *action_Italic
+//	, *action_Underline
+//	, *action_Blockquote
+	FlatToolButton *_action_link		= nullptr;
+	FlatToolButton *_action_image		= nullptr;
+	FlatToolButton *_action_more		= nullptr;
+	FlatToolButton *_action_preview		= nullptr;
+	FlatToolButton *_action_blog_this	= nullptr;
+
+	FlatToolButton		*_settings = nullptr;
 
 	// QFontComboBox
 	FlatFontComboBox	*_font_select	= nullptr;
@@ -174,15 +187,15 @@ public:
 	FlatToolButton		*_expand_tools_lines		= nullptr;
 	FlatToolButton		*_save						= nullptr;
 
-	FlatToolButton		*_back			= nullptr;
+	FlatToolButton		*_back = nullptr;
 //	FlatToolButton		*_freeze		= nullptr;          // reserved for read only
-	FlatToolButton		*_find_in_base	= nullptr;
+	FlatToolButton		*_find_in_base = nullptr;
 
 	FlatToolButton		*_show_text = nullptr;
 
 	FlatToolButton		*_to_attach = nullptr;
-	QIcon _icon_attach_exists;          // Иконка, когда аттачи есть
-	QIcon _icon_attach_not_exists;          // Иконка, когда аттачей нет
+	QIcon _icon_attach_exists		= QIcon(":/resource/pic/attach_exists.svg");   // Иконка, когда аттачи есть
+	QIcon _icon_attach_not_exists	= QIcon(":/resource/pic/attach.svg");           // Иконка, когда аттачей нет
 
 	IndentSlider		*_indent_slider = nullptr;
 
@@ -197,7 +210,10 @@ public:
 //		Editentry *_editentry;
 //	// Контекстное меню редактора
 //	EditorContextMenu   *_editor_context_menu = nullptr;
+
+#ifdef ADD_ACTIONS_BY_NAME
 	void add_action_by_name(QString toolName, QToolBar *line);
+#endif
 	const char *version(void);
 
 	void init_enable_assembly(bool flag);
@@ -229,8 +245,8 @@ public:
 	void file_name(QString _file_name);
 	QString file_name(void);
 
-	static void editor_load_callback(QObject *editor, QString &loadText);
-	static void editor_save_callback(QObject *editor, const QString &saveText);
+	static void editor_load_callback(QObject *editor, QString &load_text);
+	static void editor_save_callback(QObject *editor, const QString &save_text);
 	void save_textarea();
 	bool save_textarea_text();
 	bool save_textarea_images(int mode);
@@ -352,7 +368,7 @@ private slots:
 	void on_fontsize_changed(int i);
 	void on_fontcolor_clicked();
 
-	void set_fontselect_on_display(QString fontName);
+	void set_fontselect_on_display(QString font_name);
 	void set_fontsize_on_display(int n);
 
 	void on_showhtml_clicked(void);
@@ -420,7 +436,8 @@ private:
 	QString _work_file_name;
 
 	int _view_mode;     // Режим отображения редактора - WYEDIT_DESKTOP_MODE или WYEDIT_MOBILE_MODE
-
+	EditingWindow *_blog_editor;
+private:
 	void setup_signals(void);
 	void setup_buttons(void);
 	void setup_editor_area(void);
@@ -429,8 +446,9 @@ private:
 	void hide_all_tools_elements(void);
 	void format_to_list(QTextListFormat::Style setFormat);
 	void align_text(Qt::AlignmentFlag mode);
+#ifdef ADD_ACTIONS_BY_NAME
 	void add_actions_by_name(void);
-
+#endif
 	bool is_block_select(void);
 	bool is_cursor_on_empty_line(void);
 	bool is_cursor_on_space_line(void);

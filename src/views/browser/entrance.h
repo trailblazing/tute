@@ -35,7 +35,7 @@ class rctrl_t;
 class HidableTabWidget;
 class ts_t;
 class FindScreen;
-class MetaEditor;
+class EditorWrap;
 class wn_t;
 class AppConfig;
 class Record;

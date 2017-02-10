@@ -1202,7 +1202,7 @@ void sapp_t::postLaunch(){
 	QWebEngineSettings::setOfflineStoragePath(directory);
 #endif
 
-	setWindowIcon(QIcon(QLatin1String(":browser.svg")));
+	setWindowIcon(QIcon(QLatin1String(":/resource/pic/logo.svg")));// ":browser.svg"
 
 	loadSettings();
 	// newMainWindow() needs to be called in main() for this to happen
@@ -1568,7 +1568,7 @@ QIcon sapp_t::icon(const QUrl &url) const {
 }
 
 QIcon sapp_t::defaultIcon() const {
-	if(_default_icon.isNull()) _default_icon = QIcon(QLatin1String(":defaulticon.png"));
+	if(_default_icon.isNull()) _default_icon = QIcon(QLatin1String(":/resource/pic/trace.svg"));// ":defaulticon.png"
 	return _default_icon;
 }
 

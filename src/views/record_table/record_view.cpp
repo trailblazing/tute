@@ -20,7 +20,7 @@
 #include "main.h"
 #include "views/main_window/main_window.h"
 #include "views/tree/tree_screen.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "libraries/clipboard_records.h"
 #include "record_view.h"
 #include "views/record_table/record_screen.h"

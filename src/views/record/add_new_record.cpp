@@ -59,7 +59,7 @@ void AddNewRecord::setupUI(void){
 	infoField = new InfoFieldEnter();
 
 	// Редактор текста записи
-	recordTextEditor = new Editor(nullptr);
+	recordTextEditor = new Editor(globalparameters.edit_entry()->blog_editor()->main_stack(), globalparameters.edit_entry()->blog_editor());
 	recordTextEditor->disable_tool_list(appconfig.hide_editor_tools() + (QStringList() << "save" << "show_text" << "attach"));
 	recordTextEditor->init_enable_assembly(true);
 	recordTextEditor->init_config_file_name(globalparameters.root_path() + "/" + globalparameters.target_os() + "/editorconf.ini");
@@ -72,8 +72,8 @@ void AddNewRecord::setupUI(void){
 	buttonBox->setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::NoButton | QDialogButtonBox::Cancel);
 
 	// На кнопку OK назначается комбинация клавиш Ctrl+Enter
-	QPushButton *OkButton = buttonBox->button(QDialogButtonBox::Ok);	// Выясняется указатель на кнопку OK
-	OkButton->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return));	// Устанавливается шорткат
+	QPushButton *OkButton = buttonBox->button(QDialogButtonBox::Ok);    // Выясняется указатель на кнопку OK
+	OkButton->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return)); // Устанавливается шорткат
 	OkButton->setToolTip(tr("Ctrl+Enter"));
 }
 
@@ -169,11 +169,11 @@ QString AddNewRecord::getImagesDirectory(void){
 // Получение полей, заполненных в окне добавления записи
 QString AddNewRecord::getField(QString name){
 	if(name == "pin" ||
-		name == "name" ||
-		name == "author" ||
-		name == "home" ||
-		name == "url" ||
-		name == "tags") return infoField->getField(name);
+	    name == "name" ||
+	    name == "author" ||
+	    name == "home" ||
+	    name == "url" ||
+	    name == "tags") return infoField->getField(name);
 	if(name == "text") return recordTextEditor->textarea();
 	// Если запрашиваемого поля нет, возвращается пустая строка
 	return QString();

@@ -16,7 +16,7 @@
 #include "record_screen.h"
 #include "views/record_table/vertical_scrollarea.h"
 #include "views/main_window/main_window.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "models/app_config/app_config.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "libraries/window_switcher.h"

@@ -19,7 +19,7 @@
 #include "controllers/record_table/record_controller.h"
 #include "models/tree/tree_know_model.h"
 #include "views/tree/tree_screen.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/browser.h"
 #include "models/record_table/record_model_proxy.h"

@@ -20,7 +20,7 @@
 #include "libraries/global_parameters.h"
 #include "libraries/crypt/crypt_service.h"
 #include "libraries/disk_helper.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "views/tree/tree_screen.h"
 #include "views/dialog/reduce_message_box.h"
 #include "libraries/flat_control.h"

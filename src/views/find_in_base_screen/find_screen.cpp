@@ -35,7 +35,7 @@
 #include "models/tree/tree_know_model.h"
 #include "models/app_config/app_config.h"
 #include "models/tree/tree_item.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "libraries/global_parameters.h"
 #include "views/tree/tree_screen.h"
 #include "libraries/flat_control.h"

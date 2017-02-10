@@ -141,5 +141,11 @@
         <file>resource/pic/butterfly-left.svg</file>
         <file>resource/standardconfig/any/browser.conf</file>
         <file>resource/standardconfig/any/mode.ini</file>
+        <file>resource/pic/fileopen.svg</file>
+        <file>resource/pic/save.svg</file>
+        <file>resource/pic/link.svg</file>
+        <file>resource/pic/flip.svg</file>
+        <file>resource/pic/more.svg</file>
+        <file>resource/pic/preview.svg</file>
     </qresource>
 </RCC>

@@ -1,0 +1,4878 @@
+/*******************************************************************************
+
+  QTM - Qt-based blog manager
+  Copyright (C) 2006-2011 Matthew J Smith
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License (version 2), as
+  published by the Free Software Foundation.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+ *******************************************************************************/
+
+// EditingWindow.cc - Main window class for QTM applicaiton
+
+// #define QTM_DEBUG
+
+#include <limits>
+// #include <QApplication>
+// #include <QCoreApplication>
+#include <QDesktopWidget>
+#include <QRect>
+#include <QCursor>
+#include <QSettings>
+#include <QList>
+#include <QMainWindow>
+#include <QStatusBar>
+#include <QComboBox>
+#include <QResizeEvent>
+#include <QCloseEvent>
+#include <QSize>
+#include <QPoint>
+#include <QColor>
+#include <QPalette>
+#include <QTextCharFormat>
+#include <QLabel>
+#include <QStackedWidget>
+#include <QTextBrowser>
+#include <QPushButton>
+#include <QToolBar>
+#include <QToolButton>
+#include <QVBoxLayout>
+#include <QAction>
+#include <QIcon>
+#include <QPixmap>
+#include <QWidget>
+#include <QCheckBox>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QTextDocumentFragment>
+#include <QClipboard>
+#include <QDir>
+#include <QTemporaryFile>
+#include <QTextStream>
+#include <QTextCodec>
+#include <QDataStream>
+#include <QChar>
+#include <QRegExp>
+#include <QRegExpValidator>
+#include <QDateTime>
+#include <QKeySequence>
+#include <QFileDialog>
+#include <QIODevice>
+#include <QMap>
+#include <QHash>
+#include <QHashIterator>
+#include <QWhatsThis>
+#include <QHBoxLayout>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QFont>
+#include <QFontDialog>
+#include <QHostInfo>
+#include <QProgressDialog>
+#include <QTextEdit>
+#include <QProcess>
+#include <QProgressBar>
+#include <QTimer>
+#include <QSplitter>
+
+
+
+#if ! defined DONT_USE_PTE
+#   include <QPlainTextEdit>
+#else
+
+#endif
+#   ifdef USE_WYEDIT
+#   include "views/record/editor_wrap.h"
+#   include "libraries/global_parameters.h"
+extern gl_para		globalparameters;
+extern const char	*program_title;
+#   endif
+
+#include "xml_rpc_handler.h"
+// #include "libraries/flat_control.h"
+#include "views/record/editentry.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
+#include "views/main_window/hidable_tabwidget.h"
+#include "editing_window.h"
+#include "views/main_window/main_window.h"
+
+extern const std::string editor_prefix;
+
+
+#ifdef USE_SYSTRAYICON
+#include "sys_tray_icon.h"
+#endif
+#include "super_menu.h"
+#include "side_tabwidget.h"
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+
+#if QT_VERSION >= 0x050000
+#ifdef Q_OS_UNIX
+#if ! defined Q_OS_MAC && ! defined Q_OS_CYGWIN
+#define Q_WS_X11
+#endif  // !defined etc
+#endif  // Q_OS_UNIX
+#ifdef Q_OS_WIN
+#ifndef WIN_QTV
+#define WIN_QTV
+#endif  // WIN_QTV
+#include <QWinTaskbarButton>
+#include <QWinTaskbarProgress>
+#include <QWindow>
+#endif  // #Q_OS_WIN
+#endif
+
+
+
+// #ifdef Q_OS_MAC
+// #include <CoreFoundation/CoreFoundation.h>
+// #include <CoreFoundation/CFBundle.h>
+// #endif
+
+#include "qtm_version.h.in"
+#if defined Q_WS_X11 || defined Q_OS_WIN32
+#include "markdown_header.h.in"
+#endif
+
+#include <QtAlgorithms>
+#include <QtNetwork>
+#include <QtXml>
+#include <cmath>
+
+// #include "addimg.xpm"
+// #include "addlink.xpm"
+// #include "blog-this.xpm"
+// #include "fileopen.xpm"
+#include "filesave.xpm"
+// #include "more.xpm"
+// #include "paragraph.xpm"
+// #include "preview.xpm"
+// #include "textbold.xpm"
+// #include "textital.xpm"
+// #include "textul.xpm"
+// #include "bquote.xpm"
+#include "addtag.xpm"
+#include "addctag.xpm"
+#include "remtag.xpm"
+
+#include "main.h"
+
+#ifdef Q_OS_MAC
+// #include "macFunctions.h"
+#endif
+
+extern AppConfig appconfig;
+
+
+
+#define editor_object _editor
+
+EditingWindow::EditingWindow(ts_t *tree_screen
+			    , browser::Entrance *entrance
+//							, wn_t *main_window
+			    , browser::Profile *profile
+			    , FindScreen *find_screen
+			    , Editentry *editentry
+			    , Qt::WindowFlags flags
+			    , QString style_source
+//							, QSplitter *splitter
+			    , QString newPost // , QWidget *parent
+			    ) : QMainWindow(nullptr, flags)
+				    , _config_file_name(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + gl_para::_editor_conf_filename)
+				    , _super_menu(editentry->super_menu())
+				    , _central_widget(new QWidget(this))
+				    , _splitter(new QSplitter(Qt::Horizontal, _central_widget))
+				    , _control_tab(new SideTabWidget(tree_screen, find_screen, editentry, entrance, this, profile, style_source, _splitter, _central_widget))
+				    , _main_stack(new QStackedWidget(_central_widget))
+				    , _current_reply(nullptr)
+				    , _tree_screen(tree_screen)
+				    , _entrance(entrance)
+//		, _main_window(main_window)
+				    , _profile(profile)
+				    , _flags(flags)
+				    , _style_source(style_source)
+				    , _editentry(editentry)
+				    , _find_screen(find_screen)
+				    , _console(new TEXTEDIT_FOR_READ(_main_stack))
+// Set up editor widget
+#ifdef USE_WYEDIT
+				    , _editor(new TEXTEDIT(_find_screen, this, _main_stack, ""))
+#else
+				    , _editor(new TEXTEDIT(mainStack))
+#endif
+{
+	//
+
+
+	QDomElement detailElem, attribElem, nameElem, serverElem, locElem, loginElem, pwdElem;
+	QSettings	qtm_settings(_config_file_name, QSettings::IniFormat);
+
+
+
+	_splitter->setHandleWidth(0);
+	_splitter->addWidget(_control_tab);
+	_splitter->addWidget(_main_stack);
+	_splitter->setCollapsible(0, false);
+	_splitter->setCollapsible(1, false);
+
+	QStringList line_list;
+	QList<int>	list;
+	qtm_settings.beginGroup("geometry");
+	line_list = (qtm_settings.value("splitter_sizelist", "100,100")).toString().split(",");
+	for(int i = 0; i < line_list.size(); ++ i) list.append(line_list.at(i).toInt());
+	auto collapsed = qtm_settings.value("collapsed", 0).toBool();
+//	HidableTabWidget::_editentry->_blog_editor->_splitter->setSizes(list);
+	qtm_settings.endGroup();
+//	if(_control_panel->tabBar()->sizeHint().width() >= list[0]){
+//		_control_panel->collapse_when_true(true);
+//		// emit _hide_action->toggle(false);
+//	}else{
+//		_control_panel->resize(list[0], _control_panel->parentWidget()->geometry().height());		// parentWidget()->geometry().width() * 38 / 100	// 284
+//		// 428
+//	}
+//	_splitter->setSizes(list);
+//	emit _splitter->splitterMoved(list[0], 0);
+	//
+	setAttribute(Qt::WA_DeleteOnClose);
+
+	_app = qobject_cast<sapp_t *>(qApp);
+
+#ifdef Q_OS_MAC
+	SuperMenu *thisSM;
+	Q_FOREACH(QWidget *w, qtm->topLevelWidgets()){
+		if(w->objectName() == "MacGlobalMenu"){
+			thisSM = qobject_cast<SuperMenu *>(w);
+			if(thisSM) superMenu = thisSM;
+			break;
+		}
+	}
+#endif
+
+	doUiSetup();
+
+	xmlEntities["quot"] = '"';
+	xmlEntities["amp"]	= '&';
+	xmlEntities["gt"]	= '>';
+	xmlEntities["lt"]	= '<';
+	xmlEntities["apos"] = '\'';
+
+	readSettings();
+	setEditorColors();
+	setTextFonts();
+
+	_control_tab->chAllowComments->setEnabled(true);
+	_control_tab->chAllowComments->setCheckState(allowComments ? Qt::Checked : Qt::Unchecked);
+	_control_tab->chAllowTB->setCheckState(allowTB ? Qt::Checked : Qt::Unchecked);
+	_control_tab->show();
+
+	handleEnableCategories();
+
+	QFile accountsXmlFile(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_local_storage_directory)));
+	if(accountsDom.setContent(&accountsXmlFile)){
+		accountsXmlFile.close();
+		setInitialAccount();
+	}else{
+		accountsXmlFile.close();
+		accountsXmlFile.setFileName(PROPERSEPS(QString("%1/qtmaccounts.xml").arg(_local_storage_directory)));
+		accountsXmlFile.open(QIODevice::ReadOnly | QIODevice::Text);
+		if(accountsDom.setContent(&accountsXmlFile)){
+			accountsXmlFile.close();
+			setInitialAccount();
+		}else{
+#ifndef NO_DEBUG_OUTPUT
+			// qDebug() << "Can't read the XML";
+#endif
+			accountsXmlFile.close();
+			accountsElement = accountsDom.createElement(program_title_qstring + "Accounts");
+
+			readServerSettings();
+			if(! server.isEmpty()){
+				// qDebug() << "copying details to new default element";
+				currentAccountElement = accountsDom.createElement("account");
+				currentAccountElement.setAttribute("id", "default");
+				detailElem	= accountsDom.createElement("details");
+				nameElem	= accountsDom.createElement("title");
+				nameElem.appendChild(accountsDom.createTextNode(tr("Default account")));
+				serverElem = accountsDom.createElement("server");
+				serverElem.appendChild(accountsDom.createTextNode(server));
+				locElem = accountsDom.createElement("location");
+				locElem.appendChild(accountsDom.createTextNode(location));
+				loginElem = accountsDom.createElement("login");
+				loginElem.appendChild(accountsDom.createTextNode(login));
+				pwdElem = accountsDom.createElement("password");
+				pwdElem.appendChild(accountsDom.createTextNode(password));
+				detailElem.appendChild(nameElem);
+				detailElem.appendChild(serverElem);
+				detailElem.appendChild(locElem);
+				detailElem.appendChild(loginElem);
+				detailElem.appendChild(pwdElem);
+				currentAccountElement.appendChild(detailElem);
+
+				// Delete the old account from the settings
+				qtm_settings.beginGroup("account");
+				qtm_settings.remove("server");
+				qtm_settings.remove("location");
+				qtm_settings.remove("login");
+				qtm_settings.remove("password");
+				qtm_settings.endGroup();
+
+				// Now transfer the attributes to the default accounts
+				QStringList attribs(accountAttributes.keys());
+				Q_FOREACH(QString s, attribs){
+					if(*(accountAttributes[s])){
+						attribElem = accountsDom.createElement("attribute");
+						attribElem.setAttribute("name", s);
+						detailElem.appendChild(attribElem);
+					}
+				}
+			}
+			extractAccountDetails();
+
+			accountsElement.appendChild(currentAccountElement);
+			accountsDom.appendChild(accountsElement);
+			accountsDom.insertBefore(accountsDom.createProcessingInstruction("xml", "version=\"1.0\""), accountsDom.firstChild());
+			QHostInfo::lookupHost(server, this, SLOT(handleInitialLookup(QHostInfo)));
+		}
+	}
+	checkForEmptySettings();
+
+#ifdef USE_WYEDIT
+	editor_object->textarea(newPost);
+#else
+	editor_object->setPlainText(newPost);
+#endif
+	_main_stack->setCurrentIndex(_editor_id);
+
+	// setPostClean();
+	setDirtySignals(true);
+	dirtyIndicator->hide();
+
+
+	_editentry->setWidget(this);
+	setParent(_editentry);
+	emit _editentry->editing_activated(this);
+	_editentry->add_blog_editor(this);
+////	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+///
+	{
+////	QSettings	qtm_settings(_config_file_name, QSettings::IniFormat);
+//	auto	barwidth_geometry	= _control_panel->tabBar()->geometry().width();
+//	auto	whole_width			= _control_panel->width();
+//	auto	bar_width			= _control_panel->tabBar()->width();
+
+		auto bar_width = _control_tab->tabBar()->sizeHint().width();
+		if(list[0] <= bar_width || collapsed){
+			_control_tab->collapse_when_true(true);
+//		auto list = _splitter->sizes();
+
+			list[1]	= width() - bar_width;
+			list[0]	= bar_width;
+//		_splitter->setSizes(list);
+//		emit _splitter->splitterMoved(list[0], 0);
+		}else{
+			_control_tab->collapse_when_true(false);
+// 284
+			// 428
+		}
+		_control_tab->resize(list[0], _control_tab->parentWidget()->geometry().height());
+		_splitter->setSizes(list);
+		_main_stack->setMaximumWidth(std::numeric_limits<int>::max());
+		_editor->setMaximumWidth(std::numeric_limits<int>::max());
+		_main_stack->resize(list[1], _central_widget->geometry().height());
+		_editor->resize(list[1], _central_widget->geometry().height());
+		assert(list[1] == _editor->width());
+		emit _splitter->splitterMoved(list[0], 0);
+	}
+//	_main_stack->hide();// for debug
+//	_console->hide();status
+}
+
+EditingWindow::~EditingWindow(){
+	if(_editentry->_editing_list.contains(this)) _editentry->_editing_list.removeOne(this);
+	deleteLater();
+}
+
+#ifdef USE_SYSTRAYICON
+void EditingWindow::setSTI(SysTrayIcon *_sti){
+	sti = _sti;
+}
+#endif
+//
+void EditingWindow::doUiSetup(){
+	qApp->setWindowIcon(QIcon(QLatin1String(":/resource/pic/logo.svg")));// QPixmap(":/images/qtm-logo1.png")
+
+#ifdef USE_SYSTRAYICON
+	sti = 0;
+#endif
+
+#ifdef Q_OS_MAC
+	setStatusBar(0);
+	setMenuBar(0);
+#else
+//	_super_menu = _editor->context_menu();	// new SuperMenu(_find_screen, _editentry, this);
+//    setMenuBar(superMenu);
+//    superMenu->setMainWindow(this);
+
+#endif
+
+
+	loadedEntryBlog			= 999;
+	noAutoSave				= false;
+	noAlphaCats				= false;
+	networkActionsEnabled	= false;
+	setAttribute(Qt::WA_QuitOnClose);
+
+	QString version = QString::number(APPLICATION_RELEASE_VERSION) + "." + QString::number(APPLICATION_RELEASE_SUBVERSION) + "." + QString::number(APPLICATION_RELEASE_MICROVERSION);
+	userAgentString	= QString(program_title_qstring + "/%1").arg(version);// QTM_VERSION
+	userAgentArray	= (program_title_string + "/").c_str();
+
+	userAgentArray.append(version);// QTM_VERSION
+
+//	QCoreApplication::setOrganizationName("Catkin Project");
+//	QCoreApplication::setOrganizationDomain("catkin.blogistan.co.uk");
+//	QCoreApplication::setApplicationName("QTM");
+//	QCoreApplication::setApplicationVersion(QTM_VERSION);
+
+	qtmaccounts_xml << "qtmaccounts2.xml" << "qtmaccounts.xml";
+
+	// ui.setupUi( this );
+	_current_http_business	= None;
+	_doing_new_post			= false;
+	entryBlogged			= false;
+	_net_acess_manager		= std::make_unique<QNetworkAccessManager>();
+
+	// Setup main signals and slots
+
+	/*ui.actionPrint->setEnabled( false );    // implemented
+	ui.actionClose_and_Delete->setEnabled( false ); */
+
+#ifndef USE_SYSTRAYICON
+	if(superMenu) superMenu->qptAction->setVisible(false);
+#endif
+
+
+//    QHBoxLayout *toolsLine1Layout = new QHBoxLayout();
+//    toolsLine1Layout->addWidget(toolBar);
+//    toolsLine1Layout->addStretch();
+
+//    toolsLine1Layout->addWidget(_close_button);
+
+	// Actions related to Technorati tags
+	auto di = qobject_cast<sapp_t *>(qApp)->defaultIcon();
+	addTechTagAction		= add_action<QListWidget, QAction, SideTabWidget>(_control_tab->lwTags, _control_tab, tr("Add Technorati tag"), tr("Add technorati tag"), tr(""), QIcon(QPixmap(addtag_xpm)), [&](bool){addTechTag();});
+	addClipTechTagAction	= add_action<QListWidget, QAction, SideTabWidget>(_control_tab->lwTags, _control_tab, tr("Add Technorati tag from clipboard"), tr("Add Technorati tag from clipboard"), tr(""), QIcon(QPixmap(addctag_xpm)), [&](bool){addClipTag();});
+	removeTechTagAction		= add_action<QListWidget, QAction, SideTabWidget>(_control_tab->lwTags, _control_tab, tr("Remove Technorati tag"), tr("Remove Technorati tag"), tr(""), QIcon(QPixmap(remtag_xpm)), [&](bool){removeTechTag();});
+//	addTechTagAction->setIcon(QIcon(QPixmap(addtag_xpm)));
+//	addClipTechTagAction->setIcon(QIcon(QPixmap(addctag_xpm)));
+//	removeTechTagAction->setIcon(QIcon(QPixmap(remtag_xpm)));
+
+	// Actions related to Trackback pings
+
+	addTBPingAction		= add_action<QListWidget, QAction, SideTabWidget>(_control_tab->lwTBPings, _control_tab, tr("Add trackback ping"), tr("Add trackback ping"), tr(""), di, [&](bool){addTBPing();});
+	addClipPingAction	= add_action<QListWidget, QAction, SideTabWidget>(_control_tab->lwTBPings, _control_tab, tr("Add ping from clipboard"), tr("Add ping from clipboard"), tr(""), di, [&](bool){addClipTBPing();});
+	removeTBPingAction	= add_action<QListWidget, QAction, SideTabWidget>(_control_tab->lwTBPings, _control_tab, tr("Remove trackback ping"), tr("Remove trackback ping"), tr(""), di, [&](bool){removeTBPing();});
+
+	// Set up the main layout
+
+//    cWidget = new QWidget(this);
+
+
+//    leftWidget		= new QWidget(cWidget);
+	_main_layout = new QHBoxLayout;
+//    mainWindowLayout->setMargin(0);
+//    mainWindowLayout->setMargin(5);
+//    cw->setupUi(leftWidget);
+
+	connect(_control_tab->lwOtherCats, &QListWidget::itemSelectionChanged, this, &EditingWindow::changeOtherCatsHeading);
+	_control_tab->cbBlogSelector->setMaxVisibleItems(10);
+	_control_tab->cbMainCat->setMaxVisibleItems(10);
+//    _control_panel->lwTags->addAction(addTechTagAction);
+//    _control_panel->lwTags->addAction(addClipTechTagAction);
+//    _control_panel->lwTags->addAction(removeTechTagAction);
+//    _control_panel->lwTBPings->addAction(addTBPingAction);
+//    _control_panel->lwTBPings->addAction(addClipPingAction);
+//    _control_panel->lwTBPings->addAction(removeTBPingAction);
+
+	addKeywordTag_forList		= add_action<QListWidget, QAction, QWidget>(_control_tab->lwAvailKeywordTags, nullptr, tr("Add this tag"), tr("Add this tag"), tr(""), di, [&](bool){addKeywordTagFromAvailTags();});
+	removeKeywordTag_forList	= add_action<QListWidget, QAction, QWidget>(_control_tab->lwKeywordTags, nullptr, tr("Remove this tag"), tr("Remove this tag"), tr(""), di, [&](bool){removeKeywordTag();});
+	_refreshKeywordTags			= add_action<QListWidget, QAction, QWidget>(_control_tab->lwAvailKeywordTags, nullptr, tr("Refresh"), tr("Refresh"), tr(""), di, [&](bool){refreshKeywordTags();});
+//    connect(addKeywordTag_forList, SIGNAL(triggered(bool)), this, SLOT(addKeywordTagFromAvailTags()));
+//    connect(removeKeywordTag_forList, SIGNAL(triggered(bool)), this, SLOT(removeKeywordTag()));
+//    connect(_refreshKeywordTags, SIGNAL(triggered(bool)), this, SLOT(refreshKeywordTags()));
+//    _control_panel->lwKeywordTags->addAction(removeKeywordTag_forList);
+//    _control_panel->lwAvailKeywordTags->addAction(addKeywordTag_forList);
+//    _control_panel->lwAvailKeywordTags->addAction(_refreshKeywordTags);
+
+	connect(_control_tab->lwAvailKeywordTags, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(addKeywordTagFromAvailTags()));
+	connect(_control_tab->leAddKeywordTag, SIGNAL(returnPressed()), this, SLOT(addKeywordTagFromLineEdit()));
+	connect(_control_tab->tbAddKeywordTag, SIGNAL(clicked(bool)), this, SLOT(addKeywordTagFromLineEdit()));
+	_control_tab->tbSelectKeywordTag->setIcon(QIcon(":/images/next.png"));
+	_control_tab->tbRemoveKeywordTag->setIcon(QIcon(":/images/previous.png"));
+
+	_child_category_here_action = add_action<QListWidget, QAction, QListWidget>(_control_tab->lwOtherCats, _control_tab->lwOtherCats, tr("Add child category"), tr("Add child category"), tr(""), di, [&](bool){newChildCategory();});
+//    connect(childCategoryHereAction, SIGNAL(triggered(bool)), this, SLOT(newChildCategory()));
+//    _control_panel->lwOtherCats->addAction(childCategoryHereAction);
+
+#ifdef Q_OS_MAC
+	cw->lwOtherCats->setWhatsThis(tr("Secondary categories, if your blog system supports "
+					 "them.  To highlight more than one category, press "
+					 "Command and click the mouse, or the left mouse button."));
+#endif
+
+	tagValidator = new QRegExpValidator(QRegExp("([a-zA-Z0-9\\.%]+[\\+ ])*[a-zA-Z0-9\\.%]+"), this);
+	_control_tab->leAddTag->setValidator(tagValidator);
+	_control_tab->cbDoTB->hide();
+////	add a toolbar at the top of left panel
+//	QVBoxLayout *left_layout = new QVBoxLayout();
+////	left_layout->addWidget(toolBar);
+//	left_layout->addWidget(_control_panel);	//
+	// Set up main stack widget
+
+//    mainStack		= new QStackedWidget(cWidget);
+	_preview_window	= new QTextBrowser(_main_stack);
+	_preview_id		= _main_stack->addWidget(_preview_window);
+	_preview_window->setOpenExternalLinks(true);
+	_preview_window->installEventFilter(this);
+
+	// Set up console
+//    _console = new TEXTEDIT_FOR_READ(_main_stack);
+
+	_console_id = _main_stack->addWidget(_console);
+
+
+	_console->setReadOnly(true);
+
+
+	_console->installEventFilter(this);
+	_console->setToolTip("Readonly editor");
+	// Set up editor widget
+// #ifdef USE_WYEDIT
+//    _editor = new TEXTEDIT("", _main_stack, _find_screen, _editentry);
+// #else
+//    _editor = new TEXTEDIT(mainStack);
+// #endif
+
+#if defined DONT_USE_PTE
+	#ifdef USE_WYEDIT
+#   else
+	editor_object->setAcceptRichText(false);
+#   endif
+#endif
+	//
+	_editor_id = _main_stack->addWidget(_editor);
+	//
+#ifdef USE_WYEDIT
+#else
+	editor_object->setReadOnly(false);
+#endif
+	_previous_raised_ls_widget = _editor_id;
+	_main_layout->addWidget(_splitter);
+
+//    mainWindowLayout->addWidget(_control_panel, 3);	// mainWindowLayout->addLayout(left_layout, 3);//
+//    mainWindowLayout->addWidget(_main_stack, 6);
+//    mainWindowLayout->setSpacing(1);
+	_main_layout->setMargin(0);
+	_main_layout->setContentsMargins(0, 0, 0, 0);
+	_main_layout->setSpacing(0);
+
+	// Set up editor widget's actions
+	editor_object->setContextMenuPolicy(Qt::ActionsContextMenu);
+	QList<QAction *>	editorActions;
+	QAction				*sep1 = new QAction(editor_object);
+	sep1->setSeparator(true);
+	QAction *sep2 = new QAction(editor_object);
+	sep2->setSeparator(true);
+	QAction *actionSelectAll = new QAction(tr("Select all"), editor_object);
+	connect(actionSelectAll, SIGNAL(triggered(bool)), editor_object, SLOT(selectAll()));
+	actionSelectAll->setShortcut(QKeySequence::fromString("Ctrl+A"));
+	editorActions << _super_menu->getUndoAction() << _super_menu->getRedoAction() << sep1;
+	editorActions	<< _super_menu->getCutAction() << _super_menu->getCopyAction()
+			<< _super_menu->getPasteAction() << sep2;
+	editorActions << actionSelectAll;
+	editor_object->addActions(editorActions);
+	editor_object->installEventFilter(this);
+
+	// Set up search widget
+	_main_layout_with_search	= new QVBoxLayout(_central_widget);
+	_search_widget				= new QijSearchWidget(editor_object, this);
+	_search_widget->hide();
+//    mainWindowLayoutWithSearch->setSpacing(1);
+//    mainWindowLayoutWithSearch->setContentsMargins(5, 5, 5, 5);
+//    mainWindowLayoutWithSearch->addLayout(toolsLine1Layout);
+	_main_layout_with_search->setMargin(0);
+	_main_layout_with_search->setContentsMargins(0, 0, 0, 0);
+	_main_layout_with_search->setSpacing(0);
+
+	_main_layout_with_search->addLayout(_main_layout);
+	_main_layout_with_search->addWidget(_search_widget);
+	_central_widget->setLayout(_main_layout_with_search);
+	setCentralWidget(_central_widget);
+
+	// Connect side widget signals
+	connect(_control_tab->pbRefresh, SIGNAL(clicked(bool)), this, SLOT(refreshCategories()));
+	connect(_control_tab->pbRefresh, SIGNAL(clicked(bool)), _control_tab->cbMainCat, SLOT(clear()));
+	connect(_control_tab->pbAddCategory, SIGNAL(clicked(bool)), this, SLOT(newCategory()));
+	connect(_control_tab->pbRefresh, SIGNAL(clicked(bool)), _control_tab->lwOtherCats, SLOT(clear()));
+	connect(_control_tab->leTitle, SIGNAL(editingFinished()), this, SLOT(changeCaptionAfterTitleChanged()));
+	connect(_control_tab->leAddTag, SIGNAL(returnPressed()), this, SLOT(addTechTagFromAddButton()));
+	connect(_control_tab->tbAddTag, SIGNAL(clicked()), this, SLOT(addTechTagFromLineEdit()));
+	connect(_control_tab->leTBPingURL, SIGNAL(returnPressed()), this, SLOT(addTBPingFromLineEdit()));
+	connect(_control_tab->tbTBAdd, SIGNAL(clicked()), this, SLOT(addTBPingFromLineEdit()));
+	connect(_control_tab, SIGNAL(currentChanged(int)), this, SLOT(handleSideWidgetPageSwitch(int)));
+	connect(_control_tab->tbSelectKeywordTag, SIGNAL(clicked(bool)), this, SLOT(addKeywordTagFromAvailTags()));
+	connect(_control_tab->tbRemoveKeywordTag, SIGNAL(clicked(bool)), this, SLOT(removeKeywordTag()));
+	connect(_control_tab->pbRefreshKeywordTags, SIGNAL(clicked(bool)), this, SLOT(refreshKeywordTags()));
+	connect(_control_tab->chShowPassword, SIGNAL(toggled(bool)), this, SLOT(showPassword(bool)));
+
+//    cw->cbPageSelector->setCurrentIndex(0);
+	_control_tab->setCurrentIndex(0);
+
+	_status_widget = statusBar();
+
+	connect(_control_tab->pbCopyURL, SIGNAL(clicked()), this, SLOT(copyURL()));
+	_control_tab->copyURLWidget->hide();
+
+	dirtyIndicator = new QLabel(this);
+	dirtyIndicator->setPixmap(QPixmap(filesave));
+	statusBar()->addPermanentWidget(dirtyIndicator);
+
+	_control_tab->progressWidget->setVisible(false);
+	connect(_control_tab->progressBar, SIGNAL(valueChanged(int)), this, SLOT(hideProgressBarIfMaximum(int)));
+#ifdef WIN_QTV
+	taskbarButton = new QWinTaskbarButton(this);
+	taskbarButton->setWindow(QWindow::fromWinId(effectiveWinId()));
+	taskbarProgress = taskbarButton->progress();
+	taskbarProgress->setVisible(false);
+#endif
+
+	_highlighter = new Highlighter(0, this);
+
+	// Set up hash of entry attributes
+	accountAttributes["useHTTPS"]			= &useHTTPS;
+	accountAttributes["categoriesEnabled"]	= &categoriesEnabled;
+	accountAttributes["postDateTime"]		= &postDateTime;
+	accountAttributes["allowComments"]		= &allowComments;
+	accountAttributes["allowTB"]			= &allowTB;
+	accountAttributes["useWordpressAPI"]	= &useWordpressAPI;
+
+	accountStrings["server"]	= &server;
+	accountStrings["location"]	= &location;
+	accountStrings["port"]		= &port;
+	accountStrings["login"]		= &login;
+	accountStrings["password"]	= &password;
+
+	setWindowModified(false);
+	entryEverSaved	= false;
+	cleanSave		= false;
+	loadAutoLinkDictionary();
+	connect(this->_editor->_close_button, &FlatToolButton::clicked, this, &EditingWindow::widget_hide);
+
+// moved to HidableTabWidget
+//	connect(_splitter, &QSplitter::splitterMoved, [&](int pos, int index){	// save sizes
+//			(void) pos;
+//			(void) index;
+//			auto result = _control_panel->inner_rebuild_on_splitter_moved(pos, index);
+
+//			auto sizes = std::get<1>(result);
+////			auto sizes_ = _splitter->sizes();// 50, 50
+////			assert(sizes == sizes_);
+//			//
+//			if(sizes[0] <= 0) sizes[0] = _control_panel->tabBar()->sizeHint().width();
+//			if((sizes[1] > width() - sizes[0]) || (sizes[1] <= 0)) sizes[1] = width() - sizes[0];
+//			assert(sizes[1] >= 0);
+//			auto msw = _main_stack->width();// 50
+//			if(msw < sizes[1]) _main_stack->resize(sizes[1], height());
+////			assert(msw == sizes[1]);
+//			auto ew = _editor->width();	// 0
+////			assert(ew == sizes[1]);
+//			if(ew < sizes[1]) _editor->resize(sizes[1], height());
+//			//
+
+//			QSettings qtm_settings(_config_file_name, QSettings::IniFormat);
+//			QStringList line_list_;
+//			QList<int>	list_;
+//			qtm_settings.beginGroup("geometry");
+//			line_list_ = (qtm_settings.value("splitter_sizelist", "100,100")).toString().split(",");
+//			for(int i = 0; i < line_list_.size(); ++ i) list_.append(line_list_.at(i).toInt());
+//			if(sizes != list_){
+//				QStringList line_list;
+//				for(int i = 0; i < sizes.size(); ++ i) line_list.append(QString::number(sizes.at(i)));
+//				qtm_settings.setValue("splitter_sizelist", line_list.join(","));
+//			}
+//			qtm_settings.endGroup();
+//		});
+}
+
+//// QAction *
+// FlatToolButton *EditingWindow::new_action(QWidget *parent, QString title, QString toolTip, QString whatsThis, QObject *receiver, const char *slot){
+////    QAction *
+//    FlatToolButton *return_value = new FlatToolButton(title, parent);	// new QAction(title, parent);	// parent = this by default
+//    return_value->setToolTip(toolTip);
+//    return_value->setWhatsThis(whatsThis);
+//    if(receiver) connect(return_value, SIGNAL(triggered(bool)), receiver, slot);
+//    return return_value;
+// }
+
+bool EditingWindow::handleArguments(){
+	bool			rv = true;
+	int				i;
+	EditingWindow	*c	= 0;
+	EditingWindow	*d	= 0;
+	QStringList		failedFiles;
+	QStringList		args = QApplication::arguments();
+	if(args.size() > 1){
+		for(i = 1; i < args.size(); i ++){
+			if(c)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // if there is a current new window
+				d = c;
+			c = new EditingWindow(_tree_screen, _entrance, _profile, _find_screen, _editentry, Qt::Widget, _style_source);
+#ifdef Q_OS_MAC
+			// setNoStatusBar( c );
+#endif
+			if(c->load(args.at(i))){
+#ifdef USE_SYSTRAYICON
+				c->setSTI(sti);
+#endif
+				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       // if there's an old window
+					positionWidget(c, d);
+				c->show();
+				rv = false;
+			}else failedFiles.append(args.at(i));
+			if(failedFiles.size()){
+				if(failedFiles.size() < args.size() - 1){
+					QMessageBox::information(this, tr("Error")
+								, tr("Could not load the following:\n\n%1")
+					    .arg(failedFiles.join("\n"))
+								, QMessageBox::Ok);
+					rv = false;
+				}else{
+					if(QMessageBox::question(0, tr("Error")
+								, tr("Could not load the following:\n\n%1")
+					    .arg(failedFiles.join("\n"))
+								, tr("&Open blank window"), tr("E&xit"), 0)) QApplication::exit();
+					else rv = false;
+				}
+			}
+		}
+	}
+	return rv;
+}
+
+void EditingWindow::positionWidget(QWidget *w, QWidget *refWidget){
+	QDesktopWidget	*dw	= QApplication::desktop();
+	QRect			r	= dw->availableGeometry();
+	if(qobject_cast<QWidget *>(refWidget)){
+		QRect g = refWidget->geometry();// of the reference widget
+		if((g.right() + 30) >= (r.right() + 30) &&
+		    (g.bottom() + 30) >= (r.bottom() + 30)) w->move(r.left(), r.top());
+		else w->move(refWidget->x() + 30, refWidget->y() + 30);
+	}
+}
+
+EditorWrap *EditingWindow::editor(){return _editor;}
+
+void EditingWindow::changeCaptionAfterTitleChanged(){
+	if(_control_tab->leTitle->text().isEmpty()) setWindowTitle(tr((program_title_string + " - new entry [*]").c_str()));
+	else setWindowTitle(QString(("%1 - " + program_title_string + " [*]").c_str()).arg(_control_tab->leTitle->text().trimmed()));
+}
+
+void EditingWindow::closeEvent(QCloseEvent *event){
+	QSettings qtm_settings(_config_file_name, QSettings::IniFormat);
+
+#ifndef NO_DEBUG_OUTPUT
+	// qDebug( "close event" );
+#endif
+	if(isWindowModified()){
+		if(! saveCheck()){
+			event->ignore();
+			qApp->setQuitOnLastWindowClosed(false);
+		}else{
+			qtm_settings.setValue("account/lastAccountId", currentAccountId);
+			event->accept();
+		}
+	}else{
+		writeSettings();
+		qtm_settings.setValue("account/lastAccountId", currentAccountId);
+		event->accept();
+	}
+}
+
+void EditingWindow::showEvent(QShowEvent *event){
+	// If the document is empty, the window unedited and the entry never saved,
+	// chances are it's new
+	if(editor_object->document()->isEmpty() &&
+	    ! dirtyIndicator->isVisible() &&
+	    ! event->spontaneous() &&
+	    ! entryEverSaved) _control_tab->leTitle->setFocus(Qt::ActiveWindowFocusReason);
+	QMainWindow::showEvent(event);
+}
+
+void EditingWindow::resizeEvent(QResizeEvent *event){
+	writeSettings();
+
+	QMainWindow::resizeEvent(event);
+}
+
+void EditingWindow::doQuit(){
+#ifndef NO_DEBUG_OUTPUT
+	int i = QApplication::topLevelWidgets().size();
+	qDebug() << i << " top level widgets";
+#endif
+
+	qApp->setQuitOnLastWindowClosed(true);
+	qApp->closeAllWindows();
+}
+
+void EditingWindow::checkForEmptySettings(){
+	// Check if this is a brand new user
+	if(_local_storage_directory.isEmpty() || server.isEmpty()){
+		if(QMessageBox::question(0, tr("Welcome to QTM")
+					, tr("You do not have any preferences set, and QTM "
+					     "needs to know where to find your blog, and where "
+					     "to store your data.\n\n"
+					     "Set these preferences now?")
+					, QMessageBox::Yes | QMessageBox::Default
+					, QMessageBox::No) == QMessageBox::Yes){
+			getPreferences(tr("Stage 1 of 2: Preferences"));
+			getAccounts(tr("Stage 2 of 2: Accounts"));
+		}
+	}
+}
+
+void EditingWindow::setEditorColors(){
+	QPalette		widgetPalette;
+	QTextCharFormat	tagFormat, entityFormat, commentFormat, linkFormat;
+
+	// Set colours
+	widgetPalette = editor_object->palette();
+	widgetPalette.setColor(QPalette::Base, editorBgColor);
+	widgetPalette.setColor(QPalette::Text, editorFgColor);
+	editor_object->setPalette(widgetPalette);
+
+	widgetPalette = _preview_window->palette();
+	widgetPalette.setColor(QPalette::Base, previewBgColor);
+	widgetPalette.setColor(QPalette::Text, previewFgColor);
+	_preview_window->setPalette(widgetPalette);
+
+	widgetPalette = _console->palette();
+	widgetPalette.setColor(QPalette::Base, consoleBgColor);
+	widgetPalette.setColor(QPalette::Text, consoleFgColor);
+	_console->setPalette(widgetPalette);
+
+	// setDirtySignals( false );
+	// Set HTML tag colours
+	tagFormat.setForeground(QColor(tagFgColor));
+	tagFormat.setBackground(QColor(tagBgColor));
+	tagFormat.setFontWeight(tagBold ? QFont::Bold : QFont::Normal);
+	tagFormat.setFontItalic(tagItalic);
+	_highlighter->setFormatFor(Highlighter::Tag, tagFormat);
+
+	// Set entity colours
+	entityFormat.setForeground(QColor(entityFgColor));
+	entityFormat.setBackground(QColor(entityBgColor));
+	entityFormat.setFontWeight(entityBold ? QFont::Bold : QFont::Normal);
+	entityFormat.setFontItalic(entityItalic);
+	_highlighter->setFormatFor(Highlighter::Entity, entityFormat);
+
+	// Set comment colours
+	commentFormat.setForeground(QColor(commentFgColor));
+	commentFormat.setBackground(QColor(commentBgColor));
+	commentFormat.setFontWeight(commentBold ? QFont::Bold : QFont::Normal);
+	commentFormat.setFontItalic(commentItalic);
+	_highlighter->setFormatFor(Highlighter::Comment, commentFormat);
+
+	// setDirtySignals( true );
+}
+
+void EditingWindow::setTextFonts(){
+	QFont f, g, h;
+	if(editorFontString != ""){
+		f.fromString(editorFontString);
+		editor_object->setFont(f);
+	}else{
+		f					= editor_object->font();
+		editorFontString	= f.toString();
+	}
+	if(previewFontString != ""){
+		g.fromString(previewFontString);
+		_preview_window->setFont(g);
+	}else{
+		g					= _preview_window->font();
+		previewFontString	= g.toString();
+	}
+	if(consoleFontString != ""){
+		h.fromString(consoleFontString);
+		_console->setFont(h);
+	}else{
+		h					= _console->font();
+		consoleFontString	= h.toString();
+	}
+	// Enable syntax highlighting, if applicable
+	if(enableHighlighting){
+		// setDirtySignals( false );
+		if(_super_menu) _super_menu->setHighlightingChecked(true);
+		_highlighter->setDocument(editor_object->document());
+		// setDirtySignals( true );
+	}else if(_super_menu) _super_menu->setHighlightingChecked(false);
+}
+
+void EditingWindow::setInitialAccount(){
+	int i;
+
+	// qDebug() << "server is empty";
+	QSettings qtm_settings(_config_file_name, QSettings::IniFormat);
+	lastAccountID = qtm_settings.value("account/lastAccountID", "").toString();
+	QDomNodeList accountsList = accountsDom.documentElement()
+	    .elementsByTagName("account");
+	QDomElement thisTitleElem;
+	_control_tab->cbAccountSelector->clear();
+	if(accountsList.count() == 1 &&
+	    accountsList.at(0).firstChildElement("details").isNull()){
+		// This is if there is just one legacy account
+		readServerSettings();
+		QDomElement detailElem, titleElem, serverElem, portElem, locElem
+		, loginElem, pwdElem;
+		detailElem	= accountsDom.createElement("details");
+		titleElem	= accountsDom.createElement("title");
+		titleElem.appendChild(accountsDom.createTextNode(tr("Default account")));
+		serverElem = accountsDom.createElement("server");
+		serverElem.appendChild(accountsDom.createTextNode(server));
+		locElem = accountsDom.createElement("location");
+		locElem.appendChild(accountsDom.createTextNode(location));
+		if(! port.isEmpty()){
+			portElem = accountsDom.createElement("port");
+			portElem.appendChild(accountsDom.createTextNode(port));
+		}
+		loginElem = accountsDom.createElement("login");
+		loginElem.appendChild(accountsDom.createTextNode(login));
+		pwdElem = accountsDom.createElement("password");
+		pwdElem.appendChild(accountsDom.createTextNode(password));
+		detailElem.appendChild(titleElem);
+		detailElem.appendChild(serverElem);
+		if(! portElem.isNull()) detailElem.appendChild(portElem);
+		detailElem.appendChild(locElem);
+		detailElem.appendChild(loginElem);
+		detailElem.appendChild(pwdElem);
+		accountsList.at(0).insertBefore(detailElem, QDomNode());// i.e. insert it at the start
+		accountsList.at(0).toElement().setAttribute("id", "default");
+	}
+	for(i = 0; i < accountsList.count(); i ++){
+		thisTitleElem = accountsList.at(i).toElement().firstChildElement("details")
+		    .firstChildElement("title");
+		if(! thisTitleElem.isNull()) _control_tab->cbAccountSelector->addItem(decodeXmlEntities(thisTitleElem.text())
+											 , accountsList.at(i).toElement().attribute("id"));
+		else
+			_control_tab->cbAccountSelector->addItem(tr("Unnamed account")
+								, accountsList.at(i).toElement().attribute("id").isEmpty()
+			    ? QString("noid_%1").arg(i)
+				: accountsList.at(i).toElement().attribute("id"));
+	}
+	// Check if the last account is in the accounts list, and if so, make it current
+	for(i = 0; i < accountsList.count(); i ++){
+		if(accountsList.at(i).toElement().attribute("id") == lastAccountID){
+			// qDebug() << "found it";
+			currentAccountElement	= accountsList.at(i).toElement();
+			currentAccountId		= currentAccountElement.attribute("id");
+			_control_tab->cbAccountSelector->setCurrentIndex(i);
+			extractAccountDetails();
+			populateBlogList();
+			setNetworkActionsEnabled(true);
+
+			disconnect(_control_tab->cbAccountSelector, SIGNAL(activated(int))
+				  , this, SLOT(changeAccount(int)));
+			connect(_control_tab->cbAccountSelector, SIGNAL(activated(int))
+			       , this, SLOT(changeAccount(int)));
+			break;
+		}
+		// If it reaches the end of the loop with no joy
+		if(i == accountsList.count() - 1){
+			// qDebug() << "using first account";
+			currentAccountElement = accountsDom.documentElement()
+			    .firstChildElement("account");
+			extractAccountDetails();
+			populateBlogList();
+			setNetworkActionsEnabled(true);
+			disconnect(_control_tab->cbAccountSelector, SIGNAL(activated(int))
+				  , this, SLOT(changeAccount(int)));
+			connect(_control_tab->cbAccountSelector, SIGNAL(activated(int))
+			       , this, SLOT(changeAccount(int)));
+		}
+	}
+}
+
+void EditingWindow::readSettings(){
+	QString				crf;
+	sapp_t::RecentFile	current_recent_file;
+	QString				defaultMarkdownPath, defaultPerlLocation;
+	bool				defaultUseMarkdown;
+
+#ifdef Q_OS_MAC
+	QString	mdPathString = QString("%1/../Resources").arg(qApp->applicationDirPath());
+	QDir	mdPath(mdPathString);
+	defaultMarkdownPath = QString("%1/Markdown.pl").arg(mdPath.canonicalPath());
+
+	defaultUseMarkdown	= true;
+	defaultPerlLocation = "/usr/bin/perl";
+#else
+#ifdef Q_OS_WIN32
+	defaultMarkdownPath = QString("%1/Markdown.pl")
+	    .arg(QString(MARKDOWN_LOCATION).replace("%APPDIRPATH%", qApp->applicationDirPath()));
+	defaultUseMarkdown	= false;
+	defaultMarkdownPath = PROPERSEPS(defaultMarkdownPath);
+	defaultPerlLocation = "C:\\Perl\\bin\\perl.exe";
+#else
+	// Presumably we're in X11
+	defaultMarkdownPath = MARKDOWN_LOCATION;
+	defaultUseMarkdown	= true;
+	defaultPerlLocation = "/usr/bin/perl";
+#endif
+#endif
+
+#ifdef Q_OS_WIN32
+	QString defaultLocalStorageDir = QString(qtm->isSandbox() ? "%1\\QTMSandbox" : "%1\\QTM blog").arg(QDir::homePath());
+#else
+	QString default_local_storage_dir = QString(_app->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog").arg(QDir::homePath());
+#endif
+
+	QSettings qtm_settings(_config_file_name, QSettings::IniFormat);
+	applicationVersion = qtm_settings.value("application/version", "").toString();
+
+	qtm_settings.beginGroup("geometry");
+	resize(qtm_settings.value("size", QSize(640, 450)).toSize());
+// #endif
+	move(qtm_settings.value("position", QPoint(20, 20)).toPoint());
+	{
+		QStringList line_list;
+		QList<int>	list;
+
+		line_list = (qtm_settings.value("splitter_sizelist", "100,100")).toString().split(",");
+		for(int i = 0; i < line_list.size(); ++ i) list.append(line_list.at(i).toInt());
+		_splitter->setSizes(list);
+	}
+	qDebug() << "Done resize";
+
+	qtm_settings.endGroup();
+
+	qtm_settings.beginGroup("account");
+	_local_storage_directory = _app->isSandbox() ? QString("%1/sandbox").arg(qtm_settings.value("localStorageDirectory", default_local_storage_dir).toString()) : qtm_settings.value("localStorageDirectory", default_local_storage_dir).toString();
+	if(_local_storage_directory.contains("~/")){
+		_local_storage_directory.replace("~", QDir::homePath());
+		qtm_settings.setValue("localStorageDirectory", _local_storage_directory);
+	}
+	_local_storage_fFile_extn	= qtm_settings.value("localStorageFileExtn", "cqt").toString();
+	useMarkdown					= qtm_settings.value("useMarkdown", defaultUseMarkdown).toBool();
+	perlPath					= qtm_settings.value("perlPath", defaultPerlLocation).toString();
+	markdownPath				= qtm_settings.value("markdownPath", defaultMarkdownPath).toString();
+	doMarkdownWhenPosting		= qtm_settings.value("doMarkdownWhenPosting", useMarkdown).toBool();
+	stripParaTags				= qtm_settings.value("stripParaTags", false).toBool();
+	useHTTPS					= qtm_settings.value("useHTTPS", true).toBool();
+	categoriesEnabled			= qtm_settings.value("categoriesEnabled", true).toBool();
+	useNewWindows				= qtm_settings.value("useNewWindows", true).toBool();
+	savePassword				= qtm_settings.value("savePassword", false).toBool();
+	postAsSave					= qtm_settings.value("postAsSave", true).toBool();
+	allowComments				= qtm_settings.value("allowComments", true).toBool();
+	allowTB						= qtm_settings.value("allowTB", true).toBool();
+	enableHighlighting			= qtm_settings.value("enableHighlighting", true).toBool();
+	suppressReadMore			= qtm_settings.value("suppressReadMore", true).toBool();
+	useUtf8						= qtm_settings.value("useUtf8", false).toBool();
+#ifdef USE_SYSTRAYICON
+	copyTitle = qtm_settings.value("copyTitle", true).toBool();
+#endif
+	allowRegexSearch = qtm_settings.value("allowRegexSearch", false).toBool();
+	qtm_settings.endGroup();
+	qtm_settings.beginGroup("fonts");
+	editorFontString	= qtm_settings.value("editorFontString", "").toString();
+	previewFontString	= qtm_settings.value("previewFontString", "").toString();
+	consoleFontString	= qtm_settings.value("consoleFontString", "").toString();
+	editorBgColor		= QColor(qtm_settings.value("editorBgColor", "#FFFFFF").toString());
+	editorFgColor		= QColor(qtm_settings.value("editorFgColor", "#000000").toString());
+	previewBgColor		= QColor(qtm_settings.value("previewBgColor", "#FFFFFF").toString());
+	previewFgColor		= QColor(qtm_settings.value("previewFgColor", "#000000").toString());
+	consoleBgColor		= QColor(qtm_settings.value("consoleBgColor", "#FFFFFF").toString());
+	consoleFgColor		= QColor(qtm_settings.value("consoleFgColor", "#000000").toString());
+	qtm_settings.endGroup();
+
+	qtm_settings.beginGroup("highlighting");
+	tagBgColor		= QColor(qtm_settings.value("tagBgColor", "#FFFFFF").toString());
+	tagFgColor		= QColor(qtm_settings.value("tagFgColor", "#008000").toString());
+	entityBgColor	= QColor(qtm_settings.value("entityBgColor", "#FFFFFF").toString());
+	entityFgColor	= QColor(qtm_settings.value("entityFgColor", "#000080").toString());
+	commentBgColor	= QColor(qtm_settings.value("commentBgColor", "#FFFFFF").toString());
+	commentFgColor	= QColor(qtm_settings.value("commentFgColor", "#008080").toString());
+	linkBgColor		= QColor(qtm_settings.value("linkBgColor", "#ffffff").toString());
+	linkFgColor		= QColor(qtm_settings.value("linkFgColor", "#0000ff").toString());
+	tagBold			= qtm_settings.value("tagBold", false).toBool();
+	tagItalic		= qtm_settings.value("tagItalic", false).toBool();
+	entityBold		= qtm_settings.value("entityBold", false).toBool();
+	entityItalic	= qtm_settings.value("entityItalic", false).toBool();
+	commentBold		= qtm_settings.value("commentBold", false).toBool();
+	commentItalic	= qtm_settings.value("commentItalic", false).toBool();
+	linkBold		= qtm_settings.value("linkBold", false).toBool();
+	linkItalic		= qtm_settings.value("linkItalic", false).toBool();
+	linkUnderline	= qtm_settings.value("linkUnderline", true).toBool();
+	qtm_settings.endGroup();
+
+#ifdef USE_SYSTRAYICON
+	qtm_settings.beginGroup("sysTrayIcon");
+	STI2ClickFunction = qtm_settings.value("doubleClickFunction", 0).toInt();
+	qtm_settings.endGroup();
+#endif
+	if(server.isEmpty() || location.isEmpty() || login.isEmpty()){
+		// Adequate network details absent, therefore disable all widgets and actions
+		// leading to network use.
+		setNetworkActionsEnabled(false);
+	}
+	_control_tab->_categories->setEnabled(true);
+	_control_tab->chAllowComments->setEnabled(true);
+	_control_tab->chAllowTB->setEnabled(true);
+	_search_widget->setExpertEnabled(allowRegexSearch);
+}
+
+void EditingWindow::readServerSettings(){
+	// qDebug() << "getting server settings";
+	QSettings qtm_settings(_config_file_name, QSettings::IniFormat);
+	qtm_settings.beginGroup("account");
+	server		= qtm_settings.value("server", "").toString();
+	location	= qtm_settings.value("location", "").toString();
+	login		= qtm_settings.value("login", "").toString();
+	password	= qtm_settings.value("password", "").toString();
+}
+
+void EditingWindow::handleEnableCategories(){
+	_control_tab->gbCategory->setEnabled(categoriesEnabled);
+	if(_super_menu) _super_menu->setCategoriesEnabled(categoriesEnabled);
+}
+
+void EditingWindow::openRecentFile(){
+	QAction *action = qobject_cast<QAction *>(sender());
+	if(action) choose(action->data().toString());
+}
+
+void EditingWindow::writeSettings(){
+	QSettings qtm_settings(_config_file_name, QSettings::IniFormat);
+
+	qtm_settings.beginGroup("geometry");
+	qtm_settings.setValue("size", size());
+	qtm_settings.setValue("position", pos());
+
+
+	qtm_settings.endGroup();
+}
+
+void EditingWindow::callRefreshCategories(){
+	qDebug() << "Starting refresh";
+	if(! _current_http_business){
+		_control_tab->cbMainCat->clear();
+		_control_tab->lwOtherCats->clear();
+		refreshCategories();
+	}else{
+#ifdef QTM_DEBUG
+		if(currentHttpBusiness != _mt_getCategoryList){
+			statusWidget->showMessage(tr("changeBlog: All HTTP requests are blocked")
+						 , 2000);
+			addToConsole(QString("changeBlog %1 failed - HTTP job of type %2 ongoing")
+			    .arg(b)
+			    .arg((int) currentHttpBusiness));
+		}
+#else
+		if(_current_http_business != _mt_getCategoryList) _status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
+#endif
+	}
+#ifndef NO_DEBUG_OUTPUT
+	// qDebug() << "Finishing changeblog";
+#endif
+}
+
+void EditingWindow::refreshCategories(){
+	QDomElement param, value, integer, string;
+
+	disconnect(SIGNAL(httpBusinessFinished()));
+	if(! _current_http_business){
+		_control_tab->cbMainCat->clear();
+		_control_tab->lwOtherCats->clear();
+		qDebug() << "Cleared category lists";
+		qDebug() << "Cleared category lists";
+
+		QDomDocument	doc;
+		QDomElement		methodCall = doc.createElement("methodCall");
+		methodCall.appendChild(XmlMethodName(doc, "mt.getCategoryList"));
+
+		QDomElement params = doc.createElement("params");
+		params.appendChild(XmlValue(doc, "string", currentBlogid));
+		params.appendChild(XmlValue(doc, "string", currentAccountElement.firstChildElement("details")
+		    .firstChildElement("login").text()));
+		params.appendChild(XmlValue(doc, "string", currentAccountElement.firstChildElement("details")
+		    .firstChildElement("password").text()));
+
+		methodCall.appendChild(params);
+		doc.appendChild(methodCall);
+		doc.insertBefore(doc.createProcessingInstruction("xml"
+								, "version=\"1.0\" encoding=\"UTF-8\"")
+				, doc.firstChild());
+		QByteArray requestArray(doc.toByteArray(2));
+		responseData = "";
+
+		placeNetworkRequest(_mt_getCategoryList, requestArray);
+	}else{
+#ifdef QTM_DEBUG
+		statusWidget->showMessage(tr("refreshCategories: All HTTP requests are blocked")
+					 , 2000);
+#else
+		_status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
+#endif
+	}
+}
+
+QString EditingWindow::processWithMarkdown(const QString &text){
+	QString			conversionString = text;
+	QString			nullString, conversionStringB, tempFileName, mdPath;
+	QTemporaryFile	tf;
+	if(tf.open()){
+		tempFileName = tf.fileName();
+		QTextStream tstream(&tf);
+		tstream.setCodec("UTF-8");
+		tstream << conversionString;
+		tf.close();
+	}else return QString();
+	QStringList markdownPaths;
+	markdownPaths	<< markdownPath
+			<< QString("%1/Markdown/Markdown.pl").arg(QCoreApplication::applicationDirPath())
+			<< QString("%1/../Markdown/Markdown.pl").arg(QCoreApplication::applicationDirPath())
+			<< "nofile";
+	Q_FOREACH(QString mdp, markdownPaths){
+		if(mdp == "nofile") return QString();
+		else if(QFile::exists(mdp)){
+			mdPath = mdp;
+			break;
+		}
+	}
+	QProcess proc;
+	proc.start(perlPath, QStringList() << mdPath << tempFileName);
+	if(! proc.waitForStarted()){
+		_status_widget->showMessage(tr("Failed to start conversion"), 2000);
+		return QString();
+	}
+	// Now wait until the process finishes; use a loop and process events every 10th of a second
+	for(int i = 0; i <= 300; ++ i){
+		if(i == 300){   // if 30 seconds has elapsed without a finish signal
+			_status_widget->showMessage(tr("Failed to convert"), 2000);
+			return QString();
+		}
+		if(proc.waitForFinished(100)) break;
+		else qApp->processEvents();
+	}
+	conversionStringB = QString::fromUtf8(proc.readAllStandardOutput());
+	if(conversionStringB.length() < conversionString.length() ||
+	    proc.exitStatus() != QProcess::NormalExit){
+		_status_widget->showMessage(tr("Conversion failed"), 2000);
+		if(proc.exitStatus() != QProcess::NormalExit) qDebug() << "Bad exit";
+		// qDebug() << "Length:" << conversionStringB.length();
+		return QString();
+	}
+	return conversionStringB;
+}
+void EditingWindow::getAccounts(){
+	getAccounts(QString());
+}
+
+void EditingWindow::getAccounts(const QString &title){
+	QList<AccountsDialog::Account>	acctsList, returnedAccountsList;
+	AccountsDialog::Account			acct;
+	QDomNodeList					accountsList, thisAccountsAttribs;
+	QDomDocument					newAccountsDom;
+	QDomElement						newQTMAccounts, newAccount, detailElement, nameElement, serverElement, locationElement
+	, portElement, loginElement, pwdElement, blogsElement, boolElement, attribsElement, hbtElement;
+	QString		oldCurrentAccountId, oldBlogid, currentTitle, currentPort;
+	QStringList thisAccountsAttribStrings;
+	QUrl		thisUrl;
+	int			i, j;
+	bool		ok;
+
+	purgeBlankAccounts();
+
+	// Extract accounts list from account tree
+	accountsList = accountsDom.elementsByTagName("account");
+	for(i = 0; i < accountsList.count(); i ++){
+		thisAccountsAttribs = accountsList.at(i).toElement().firstChildElement("details")
+		    .firstChildElement("attributes").elementsByTagName("attribute");
+		thisAccountsAttribStrings = QStringList();
+		for(j = 0; j < thisAccountsAttribs.count(); j ++) thisAccountsAttribStrings << thisAccountsAttribs.at(j).toElement().attribute("name");
+		acct			= AccountsDialog::Account();
+		acct.id			= accountsList.at(i).toElement().attribute("id");
+		detailElement	= accountsList.at(i).firstChildElement("details");
+		currentPort		= detailElement.firstChildElement("port").text();
+
+		acct.name		= detailElement.firstChildElement("title").text();
+		acct.endpoint	= QString("%1://%2%3/%4")
+		    .arg(thisAccountsAttribStrings.contains("useHTTPS") ? "https" : "http")
+		    .arg(detailElement.firstChildElement("server").text())
+		    .arg(currentPort.isEmpty() ? "" : QString(":%1").arg(currentPort))
+		    .arg(detailElement.firstChildElement("location").text().remove(QRegExp("^/")));
+		acct.login		= detailElement.firstChildElement("login").text();
+		acct.password	= detailElement.firstChildElement("password").text();
+
+		acct.hostedBlogType = 0;
+		int hbt = detailElement.firstChildElement("hostedBlogType").text().toInt(&ok);
+		if(ok) acct.hostedBlogType = hbt;
+		acct.categoriesEnabled	= false;
+		acct.postDateTime		= false;
+		acct.allowComments		= false;
+		acct.allowTB			= false;
+		acct.useWordpressAPI	= false;
+		if(thisAccountsAttribStrings.contains("categoriesEnabled")) acct.categoriesEnabled = true;
+		if(thisAccountsAttribStrings.contains("postDateTime")) acct.postDateTime = true;
+		if(thisAccountsAttribStrings.contains("allowComments") ||
+		    thisAccountsAttribStrings.contains("comments")) acct.allowComments = true;
+		if(thisAccountsAttribStrings.contains("allowTB") ||
+		    thisAccountsAttribStrings.contains("trackback")) acct.allowTB = true;
+		if(thisAccountsAttribStrings.contains("useWordpressAPI")) acct.useWordpressAPI = true;
+		acctsList.append(acct);
+	}
+	oldCurrentAccountId = _control_tab->cbAccountSelector->itemData(_control_tab->cbAccountSelector->currentIndex())
+	    .toString();
+	oldBlogid = _control_tab->cbBlogSelector->itemData(_control_tab->cbBlogSelector->currentIndex()).toString();
+	int oldCurrentBlog = _control_tab->cbAccountSelector->currentIndex();
+	// accountsList = accountsDom.documentElement().elementsByTagName( "account" );
+
+	AccountsDialog acctsDialog(acctsList, oldCurrentBlog, this);
+	if(! title.isEmpty()) acctsDialog.setWindowTitle(title);
+	if(acctsDialog.exec()){
+		returnedAccountsList	= acctsDialog.accounts();
+		newQTMAccounts			= newAccountsDom.createElement(program_title_qstring + "Accounts");
+		for(i = 0; i < returnedAccountsList.count(); i ++){
+			newAccount = newAccountsDom.createElement("account");
+			newAccount.setAttribute("id", returnedAccountsList.at(i).id);
+			detailElement	= newAccountsDom.createElement("details");
+			nameElement		= newAccountsDom.createElement("title");
+			nameElement.appendChild(newAccountsDom.createTextNode(returnedAccountsList.at(i).name));
+			hbtElement = newAccountsDom.createElement("hostedBlogType");
+			hbtElement.appendChild(newAccountsDom.createTextNode(QString::number(returnedAccountsList.at(i).hostedBlogType)));
+
+			thisUrl.setUrl(returnedAccountsList.at(i).endpoint);
+			serverElement = newAccountsDom.createElement("server");
+			serverElement.appendChild(newAccountsDom.createTextNode(thisUrl.host()));
+			locationElement = newAccountsDom.createElement("location");
+			locationElement.appendChild(newAccountsDom.createTextNode(thisUrl.path()));
+			portElement = newAccountsDom.createElement("port");
+			portElement.appendChild(newAccountsDom.createTextNode(thisUrl.port() == - 1 ? ""
+				: QString::number(thisUrl.port())));
+			loginElement = newAccountsDom.createElement("login");
+			loginElement.appendChild(newAccountsDom.createTextNode(returnedAccountsList.at(i).login));
+			pwdElement = newAccountsDom.createElement("password");
+			pwdElement.appendChild(newAccountsDom.createTextNode(returnedAccountsList.at(i).password));
+
+			detailElement.appendChild(nameElement);
+			detailElement.appendChild(hbtElement);
+			detailElement.appendChild(serverElement);
+			detailElement.appendChild(locationElement);
+			detailElement.appendChild(portElement);
+			detailElement.appendChild(loginElement);
+			detailElement.appendChild(pwdElement);
+			if(  returnedAccountsList.at(i).categoriesEnabled
+			  || returnedAccountsList.at(i).postDateTime
+			  || returnedAccountsList.at(i).allowComments
+			  || returnedAccountsList.at(i).allowTB) attribsElement = newAccountsDom.createElement("attributes");
+			if(thisUrl.scheme() == "https"){
+				boolElement = newAccountsDom.createElement("attribute");
+				boolElement.setAttribute("name", "useHTTPS");
+				attribsElement.appendChild(boolElement);
+			}
+			if(returnedAccountsList.at(i).categoriesEnabled){
+				boolElement = newAccountsDom.createElement("attribute");
+				boolElement.setAttribute("name", "categoriesEnabled");
+				attribsElement.appendChild(boolElement);
+			}
+			if(returnedAccountsList.at(i).postDateTime){
+				boolElement = newAccountsDom.createElement("attribute");
+				boolElement.setAttribute("name", "postDateTime");
+				attribsElement.appendChild(boolElement);
+			}
+			if(returnedAccountsList.at(i).allowComments){
+				// qDebug() << "comments attribute set";
+				boolElement = newAccountsDom.createElement("attribute");
+				boolElement.setAttribute("name", "allowComments");
+				attribsElement.appendChild(boolElement);
+			}
+			if(returnedAccountsList.at(i).allowTB){
+				// qDebug() << "TB attribute set";
+				boolElement = newAccountsDom.createElement("attribute");
+				boolElement.setAttribute("name", "allowTB");
+				attribsElement.appendChild(boolElement);
+			}
+			if(returnedAccountsList.at(i).useWordpressAPI){
+				boolElement = newAccountsDom.createElement("attribute");
+				boolElement.setAttribute("name", "useWordpressAPI");
+				attribsElement.appendChild(boolElement);
+			}
+			if(! attribsElement.isNull()) detailElement.appendChild(attribsElement);
+			newAccount.appendChild(detailElement);
+			// Check if each account is matched from the old list; if it is, copy the blogs list
+			for(j = 0; j < accountsList.count(); j ++){
+				if(accountsList.at(j).toElement().attribute("id") == returnedAccountsList.at(i).id){
+					blogsElement = accountsList.at(j).toElement().firstChildElement("blogs");
+					if(! blogsElement.isNull()) newAccount.appendChild(newAccountsDom.importNode(blogsElement, true));
+					break;
+				}
+			}
+			newQTMAccounts.appendChild(newAccount);
+		}
+		// Now add processing instruction and the whole QTMAccounts element, and replace the old main
+		// accounts tree with this one
+		newAccountsDom.appendChild(newAccountsDom.createProcessingInstruction("xml"
+										     , "version='1.0'"));
+		newAccountsDom.appendChild(newQTMAccounts);
+		accountsDom = newAccountsDom.cloneNode(true).toDocument();
+
+		_control_tab->cbAccountSelector->clear();
+		accountsList = accountsDom.documentElement().elementsByTagName("account");
+		for(i = 0; i < accountsList.count(); ++ i){
+			currentTitle = decodeXmlEntities(accountsList.at(i).firstChildElement("details")
+				.firstChildElement("title").text());
+			if(currentTitle.isEmpty()) currentTitle = tr("(Unnamed account)");
+			_control_tab->cbAccountSelector->addItem(currentTitle, accountsList.at(i).toElement().
+			    attribute("id"));
+		}
+		// Check if the old current account is in this list; if so, make it current again
+		for(i = 0; i < accountsList.count(); ++ i){
+			if(accountsList.at(i).toElement().attribute("id") == oldCurrentAccountId){
+				_control_tab->cbAccountSelector->setCurrentIndex(i);
+				currentAccountElement = accountsList.at(i).toElement();
+				extractAccountDetails();
+
+				QStringList accountStringNames(accountStrings.keys());
+				Q_FOREACH(QString s, accountStringNames){
+					*(accountStrings[s]) = currentAccountElement.firstChildElement("details")
+					    .firstChildElement(s).text();
+				}
+				// Now check if the current account has any blogs
+				if(! currentAccountElement.firstChildElement("blogs").isNull()){
+					// qDebug() << "blogs found";
+					populateBlogList();
+				}else{
+					// qDebug() << "no blogs found";
+					refreshBlogList();
+				}
+				break;
+			}
+			if(i == accountsList.count() - 1){
+				// qDebug() << "reached end of account list";
+				_control_tab->cbAccountSelector->setCurrentIndex(0);
+				currentAccountElement	= accountsList.at(0).toElement();
+				currentAccountId		= currentAccountElement.attribute("id");
+				extractAccountDetails();
+				refreshBlogList();
+				setNetworkActionsEnabled(true);
+			}
+		}
+		disconnect(_control_tab->cbAccountSelector, SIGNAL(activated(int))
+			  , this, SLOT(changeAccount(int)));
+		connect(_control_tab->cbAccountSelector, SIGNAL(activated(int))
+		       , this, SLOT(changeAccount(int)));
+		saveAccountsDom();
+	}
+}
+
+void EditingWindow::getPreferences(){
+	getPreferences(QString());
+}
+
+void EditingWindow::getPreferences(const QString &title){
+	QSettings	qtm_settings(_config_file_name, QSettings::IniFormat);
+	QPalette	palette, widgetPalette;
+
+	PrefsDialog prefsDialog(this);
+	if(_local_storage_directory.isEmpty()){
+#ifdef Q_OS_WIN32
+		QString lsd = QString(qtm->isSandbox() ? "%1\\QTMsandbox" : "%1\\QTM blog").arg(QDir::homePath())
+		    .replace("/", "\\");
+#else
+		QString lsd = QString(_app->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog").arg(QDir::homePath());
+#endif
+		prefsDialog.leLocalDir->setText(lsd);
+	}else prefsDialog.leLocalDir->setText(_local_storage_directory);
+	prefsDialog.leFileExtn->setText(_local_storage_fFile_extn);
+	prefsDialog.chUseNewWindows->setCheckState(useNewWindows ? Qt::Checked
+		: Qt::Unchecked);
+	prefsDialog.chPostAsSave->setCheckState(postAsSave ? Qt::Checked
+		: Qt::Unchecked);
+	prefsDialog.chAllowComments->setCheckState(allowComments ? Qt::Checked
+		: Qt::Unchecked);
+	prefsDialog.chAllowTB->setCheckState(allowTB ? Qt::Checked
+		: Qt::Unchecked);
+#if defined USE_SYSTRAYICON
+	prefsDialog.chCopyTitle->setCheckState(copyTitle ? Qt::Checked : Qt::Unchecked);
+#else
+	prefsDialog.chCopyTitle->setVisible(false);
+#endif
+	prefsDialog.chUseMarkdown->setCheckState(useMarkdown ? Qt::Checked : Qt::Unchecked);
+	prefsDialog.lePerlPath->setText(PROPERSEPS(perlPath));
+	prefsDialog.leMarkdownPath->setText(PROPERSEPS(markdownPath));
+	prefsDialog.chDoMarkdownWhenPosting->setCheckState(doMarkdownWhenPosting ? Qt::Checked
+		: Qt::Unchecked);
+	prefsDialog.chStripParaTags->setCheckState(stripParaTags ? Qt::Checked : Qt::Unchecked);
+	prefsDialog.chStripParaTags->setEnabled(doMarkdownWhenPosting);
+	if(! useMarkdown){
+		prefsDialog.lineBelowFonts->setVisible(false);
+		prefsDialog.gbMarkdown->setVisible(false);
+	}
+	prefsDialog.chSuppressReadMore->setCheckState(suppressReadMore ? Qt::Checked : Qt::Unchecked);
+	prefsDialog.chUseUtf8->setCheckState(useUtf8 ? Qt::Checked : Qt::Unchecked);
+
+	prefsDialog.chAllowRegexSearch->setCheckState(allowRegexSearch ? Qt::Checked : Qt::Unchecked);
+
+#ifdef Q_OS_MAC
+	prefsDialog.setWindowFlags(Qt::Sheet);
+#endif
+
+	prefsDialog.tabWidget->setTabText(0, tr("General"));
+	prefsDialog.tabWidget->setTabText(1, tr("Fonts && Markdown"));
+	prefsDialog.tabWidget->setTabText(2, tr("Syntax highlighting"));
+	prefsDialog.tabWidget->setCurrentIndex(0);
+
+	QFont	editorFont	= editor_object->font();
+	QFont	previewFont	= _preview_window->font();
+	QFont	consoleFont	= _console->font();
+	prefsDialog.fcbComposer->setCurrentFont(editorFont);
+	prefsDialog.sbComposer->setValue(editorFont.pointSize());
+	prefsDialog.fcbPreview->setCurrentFont(previewFont);
+	prefsDialog.sbPreview->setValue(previewFont.pointSize());
+	prefsDialog.fcbConsole->setCurrentFont(consoleFont);
+	prefsDialog.sbConsole->setValue(consoleFont.pointSize());
+
+	// Set editor colours
+	palette = prefsDialog.lEditorExampleText->palette();
+	palette.setColor(QPalette::Window, editorBgColor);
+	palette.setColor(QPalette::WindowText, editorFgColor);
+	prefsDialog.lEditorExampleText->setPalette(palette);
+
+	// Set preview colours
+	palette = prefsDialog.lPreviewExampleText->palette();
+	palette.setColor(QPalette::Window, previewBgColor);
+	palette.setColor(QPalette::WindowText, previewFgColor);
+	prefsDialog.lPreviewExampleText->setPalette(palette);
+
+	// Set console colours
+	palette = prefsDialog.lConsoleExampleText->palette();
+	palette.setColor(QPalette::Window, consoleBgColor);
+	palette.setColor(QPalette::WindowText, consoleFgColor);
+	prefsDialog.lConsoleExampleText->setPalette(palette);
+
+	// Set colours for HTML tags
+	palette = prefsDialog.lTagColorDemo->palette();
+	palette.setColor(QPalette::Window, tagBgColor);
+	palette.setColor(QPalette::WindowText, tagFgColor);
+	prefsDialog.lTagColorDemo->setPalette(palette);
+	prefsDialog.setLabelText(prefsDialog.lTagColorDemo, tagBold, tagItalic);
+	prefsDialog.chTagBold->setChecked(tagBold);
+	prefsDialog.chTagItalic->setChecked(tagItalic);
+
+	// Set colours for HTML entities
+	palette = prefsDialog.lEntityColorDemo->palette();
+	palette.setColor(QPalette::Window, entityBgColor);
+	palette.setColor(QPalette::WindowText, entityFgColor);
+	prefsDialog.lEntityColorDemo->setPalette(palette);
+	prefsDialog.setLabelText(prefsDialog.lEntityColorDemo, entityBold, entityItalic);
+	prefsDialog.chEntityBold->setChecked(entityBold);
+	prefsDialog.chEntityItalic->setChecked(entityItalic);
+
+	// Set colours for comments
+	palette = prefsDialog.lCommentColorDemo->palette();
+	palette.setColor(QPalette::Window, commentBgColor);
+	palette.setColor(QPalette::WindowText, commentFgColor);
+	prefsDialog.lCommentColorDemo->setPalette(palette);
+	prefsDialog.setLabelText(prefsDialog.lCommentColorDemo, commentBold, commentItalic);
+	prefsDialog.chCommentBold->setChecked(commentBold);
+	prefsDialog.chCommentItalic->setChecked(commentItalic);
+
+#ifdef USE_SYSTRAYICON
+	prefsDialog.cbSTI2ClickFunction->setCurrentIndex(STI2ClickFunction);
+#else
+	prefsDialog.cbSTI2ClickFunction->hide();
+	prefsDialog.label_10->hide();
+#endif
+
+	prefsDialog.resize(QSize(prefsDialog.width()
+				, prefsDialog.minimumHeight()));
+	if(! title.isEmpty()) prefsDialog.setWindowTitle(title);
+	// Disable cbStripParaTags as this feature is not properly implemented
+	prefsDialog.chStripParaTags->setVisible(false);
+	if(prefsDialog.exec()){
+#ifndef NO_DEBUG_OUTPUT
+		// qDebug( "Setting account variables" );
+#endif
+		_local_storage_directory	= PROPERSEPS(prefsDialog.leLocalDir->text());
+		_local_storage_fFile_extn	= prefsDialog.leFileExtn->text();
+		useNewWindows				= prefsDialog.chUseNewWindows->isChecked();
+		postAsSave					= prefsDialog.chPostAsSave->isChecked();
+		allowComments				= prefsDialog.chAllowComments->isChecked();
+		allowTB						= prefsDialog.chAllowTB->isChecked();
+		copyTitle					= prefsDialog.chCopyTitle->isChecked();
+		useMarkdown					= prefsDialog.chUseMarkdown->isChecked();
+		perlPath					= PROPERSEPS(prefsDialog.lePerlPath->text());
+		markdownPath				= PROPERSEPS(prefsDialog.leMarkdownPath->text());
+		doMarkdownWhenPosting		= prefsDialog.chDoMarkdownWhenPosting->isChecked();
+		stripParaTags				= prefsDialog.chStripParaTags->isChecked();
+		allowRegexSearch			= prefsDialog.chAllowRegexSearch->isChecked();
+		suppressReadMore			= prefsDialog.chSuppressReadMore->isChecked();
+		useUtf8						= prefsDialog.chUseUtf8->isChecked();
+
+#ifndef NO_DEBUG_OUTPUT
+		// qDebug( "setting fonts" );
+#endif
+		QFont ef = prefsDialog.fcbComposer->currentFont();
+		ef.setPointSize(prefsDialog.sbComposer->value());
+		editorFontString = ef.toString();
+		editor_object->setFont(ef);
+		QFont pf = prefsDialog.fcbPreview->currentFont();
+		pf.setPointSize(prefsDialog.sbPreview->value());
+		previewFontString = pf.toString();
+		_preview_window->setFont(pf);
+		QFont cf = prefsDialog.fcbConsole->currentFont();
+		cf.setPointSize(prefsDialog.sbConsole->value());
+		consoleFontString = cf.toString();
+		_console->setFont(cf);
+
+		// Set colours
+		palette			= prefsDialog.lEditorExampleText->palette();
+		editorBgColor	= palette.color(QPalette::Window);
+		editorFgColor	= palette.color(QPalette::WindowText);
+
+		palette			= prefsDialog.lPreviewExampleText->palette();
+		previewBgColor	= palette.color(QPalette::Window);
+		previewFgColor	= palette.color(QPalette::WindowText);
+
+		palette			= prefsDialog.lConsoleExampleText->palette();
+		consoleBgColor	= palette.color(QPalette::Window);
+		consoleFgColor	= palette.color(QPalette::WindowText);
+
+		setDirtySignals(false);
+		palette		= prefsDialog.lTagColorDemo->palette();
+		tagBgColor	= palette.color(QPalette::Window);
+		tagFgColor	= palette.color(QPalette::WindowText);
+
+		palette			= prefsDialog.lEntityColorDemo->palette();
+		entityBgColor	= palette.color(QPalette::Window);
+		entityFgColor	= palette.color(QPalette::WindowText);
+
+		palette			= prefsDialog.lCommentColorDemo->palette();
+		commentBgColor	= palette.color(QPalette::Window);
+		commentFgColor	= palette.color(QPalette::WindowText);
+
+		tagBold			= prefsDialog.chTagBold->isChecked();
+		tagItalic		= prefsDialog.chTagItalic->isChecked();
+		entityBold		= prefsDialog.chEntityBold->isChecked();
+		entityItalic	= prefsDialog.chEntityItalic->isChecked();
+		commentBold		= prefsDialog.chCommentBold->isChecked();
+		commentItalic	= prefsDialog.chCommentItalic->isChecked();
+
+		setEditorColors();
+		setDirtySignals(true);
+
+#if defined USE_SYSTRAYICON
+		STI2ClickFunction = prefsDialog.cbSTI2ClickFunction->currentIndex();
+		if(sti){
+#ifndef NO_DEBUG_OUTPUT
+			// qDebug( "setting double click function" );
+#endif
+			sti->setDoubleClickFunction(STI2ClickFunction);
+			sti->setCopyTitle(copyTitle);
+		}
+#endif
+		// Handle local directory settings; a default is used if none is specified
+		if(_local_storage_directory.isEmpty()){
+#ifdef Q_OS_WIN32
+			localStorageDirectory = QString(qtm->isSandbox() ? "%1\\QTMsandbox" : "%1\\QTM blog").arg(QDir::homePath());
+#else
+			_local_storage_directory = QString(_app->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog").arg(QDir::homePath());
+#endif
+		}
+		QDir qd(_local_storage_directory);
+		if(! qd.exists()){
+			addToConsole(tr("Making directory %1").arg(_local_storage_directory));
+			if(! qd.mkpath(_local_storage_directory)) _status_widget->showMessage(tr("Could not create QTM directory."), 2000);
+			if(! noAutoSave) saveAccountsDom();
+		}
+		/*setDirtySignals( false );
+		setDirtySignals( true ); */
+		// Now check to see if this is an old-style Blogger account, which does not
+		// support categories.
+		if(server.contains("blogger.com")){
+			// Blogger no longer supports this API, so all these features are redundant.
+			_status_widget->showMessage(tr("Blogger no longer supports QTM or similar clients."), 2000);
+			server		= "";
+			location	= "";
+		}else _control_tab->_categories->setEnabled(true);
+		handleEnableCategories();
+
+		_search_widget->setExpertEnabled(allowRegexSearch);
+
+		qtm_settings.setValue("application/version", QTM_VERSION);
+		qtm_settings.beginGroup("account");
+		qtm_settings.setValue("localStorageDirectory"
+				     , _local_storage_directory.replace("~", QDir::homePath()));
+		qtm_settings.setValue("localStorageFileExtn", _local_storage_fFile_extn);
+		qtm_settings.setValue("useNewWindows", useNewWindows);
+		qtm_settings.setValue("postAsSave", postAsSave);
+		qtm_settings.setValue("allowComments", allowComments);
+		qtm_settings.setValue("allowTB", allowTB);
+#if defined USE_SYSTRAYICON
+		qtm_settings.setValue("copyTitle", copyTitle);
+#endif
+		qtm_settings.setValue("useMarkdown", useMarkdown);
+		qtm_settings.setValue("perlPath", perlPath);
+		qtm_settings.setValue("markdownPath", markdownPath);
+		qtm_settings.setValue("doMarkdownWhenPosting", doMarkdownWhenPosting);
+		qtm_settings.setValue("stripParaTags", stripParaTags);
+		qtm_settings.setValue("allowRegexSearch", allowRegexSearch);
+		qtm_settings.setValue("enableHighlighting", enableHighlighting);
+		qtm_settings.setValue("suppressReadMore", suppressReadMore);
+		qtm_settings.setValue("useUtf8", useUtf8);
+		qtm_settings.endGroup();
+
+		qtm_settings.beginGroup("fonts");
+		qtm_settings.setValue("editorFontString", editorFontString);
+		qtm_settings.setValue("previewFontString", previewFontString);
+		qtm_settings.setValue("consoleFontString", consoleFontString);
+		qtm_settings.setValue("editorBgColor", editorBgColor.name());
+		qtm_settings.setValue("editorFgColor", editorFgColor.name());
+		qtm_settings.setValue("previewBgColor", previewBgColor.name());
+		qtm_settings.setValue("previewFgColor", previewFgColor.name());
+		qtm_settings.setValue("consoleBgColor", consoleBgColor.name());
+		qtm_settings.setValue("consoleFgColor", consoleFgColor.name());
+		qtm_settings.endGroup();
+
+		qtm_settings.beginGroup("highlighting");
+		qtm_settings.setValue("tagBgColor", tagBgColor.name());
+		qtm_settings.setValue("tagFgColor", tagFgColor.name());
+		qtm_settings.setValue("entityBgColor", entityBgColor.name());
+		qtm_settings.setValue("entityFgColor", entityFgColor.name());
+		qtm_settings.setValue("commentBgColor", commentBgColor.name());
+		qtm_settings.setValue("commentFgColor", commentFgColor.name());
+		qtm_settings.setValue("linkBgColor", linkBgColor.name());
+		qtm_settings.setValue("linkFgColor", linkFgColor.name());
+		qtm_settings.setValue("tagBold", tagBold);
+		qtm_settings.setValue("tagItalic", tagItalic);
+		qtm_settings.setValue("entityBold", entityBold);
+		qtm_settings.setValue("entityItalic", entityItalic);
+		qtm_settings.setValue("commentBold", commentBold);
+		qtm_settings.setValue("commentItalic", commentItalic);
+		qtm_settings.setValue("linkBold", linkBold);
+		qtm_settings.setValue("linkItalic", linkItalic);
+		qtm_settings.setValue("linkUnderline", linkUnderline);
+		qtm_settings.endGroup();
+
+#ifdef USE_SYSTRAYICON
+		qtm_settings.beginGroup("sysTrayIcon");
+		qtm_settings.setValue("doubleClickFunction", STI2ClickFunction);
+		qtm_settings.endGroup();
+#endif
+	}
+}
+void EditingWindow::setHighlighting(bool hl){
+	QSettings qtm_settings(_config_file_name, QSettings::IniFormat);
+
+	enableHighlighting = hl;
+	disconnect(editor_object->document(), 0, this, SLOT(dirtify()));
+	if(enableHighlighting){
+		if(_highlighter->document() == 0) _highlighter->setDocument(editor_object->document());
+	}else _highlighter->setDocument(0);
+	qtm_settings.setValue("account/enableHighlighting", enableHighlighting);
+	QTimer::singleShot(250, this, SLOT(reenableDirty()));
+	// connect( editor_object->document(), SIGNAL( contentsChanged() ), this, SLOT( dirtify() ) );
+}
+
+void EditingWindow::reenableDirty(){
+	connect(editor_object->document(), SIGNAL(contentsChanged()), this, SLOT(dirtify()));
+}
+
+void EditingWindow::saveAccountsDom(){
+	purgeBlankAccounts();
+
+	QFile domOut(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_local_storage_directory)));
+	if(domOut.open(QIODevice::WriteOnly)){
+		QTextStream domFileStream(&domOut);
+		accountsDom.save(domFileStream, 2);
+		domOut.close();
+	}else{
+		QDir dir(_local_storage_directory);
+		if(! dir.exists()){
+			if(QMessageBox::question(0, tr("Cannot find storage directory")
+						, tr((program_title_string + " cannot find the directory you specified to "
+									     "store your account data and files.\n\n"
+									     "Create it?").c_str())
+						, QMessageBox::Yes | QMessageBox::Default
+						, QMessageBox::No) == QMessageBox::Yes){
+				if(dir.mkpath(_local_storage_directory)){
+					domOut.setFileName(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_local_storage_directory)));
+					if(domOut.open(QIODevice::WriteOnly)){
+						QTextStream dfs(&domOut);
+						accountsDom.save(dfs, 2);
+						domOut.close();
+					}else _status_widget->showMessage(tr("Could not write to accounts file."), 2000);
+				}else _status_widget->showMessage(tr("Could not create the directory."), 2000);
+			}
+		}
+	}
+}
+
+void EditingWindow::purgeBlankAccounts(){
+	int i, j;
+
+	// First, remove blank account elements
+	QDomNode		thisNode, parentNode;
+	QDomNodeList	accountNodes = accountsDom.elementsByTagName("account");
+	i = accountNodes.count();
+	for(j = 0; j < i; j ++){
+		thisNode = accountNodes.at(j);
+		if(! thisNode.hasChildNodes()){
+			parentNode = thisNode.parentNode();
+			parentNode.removeChild(thisNode);
+		}
+	}
+}
+
+void EditingWindow::populateAccountList(){  // slot
+	int			i;
+	QDomElement ct, detail;
+	QString		cid, cname;
+
+	QDomNodeList	accountNodeList = accountsDom.documentElement().elementsByTagName("account");
+	int				a				= accountNodeList.count();
+	if(a){
+		// qDebug () << "populating:" << a << "accounts";
+		_control_tab->cbAccountSelector->clear();
+		for(i = 0; i < a; i ++){
+			cid = accountNodeList.at(i).toElement().attribute("id");
+			if(cid.isEmpty()) cid = QString("nameless_%1").arg(i + 1);
+			detail = accountNodeList.at(i).firstChildElement("details");
+			if(! detail.isNull()){
+				cname = detail.firstChildElement("title").text();
+				if(cname.isEmpty()) cname = tr("Unnamed account %1").arg(i + 1);
+				_control_tab->cbAccountSelector->addItem(decodeXmlEntities(cname), cid);
+			}
+		}
+	}
+}
+
+void EditingWindow::populateBlogList(){ // slot
+	addToConsole(accountsDom.toString(2));
+
+	QDomNodeList blogNodeList = currentAccountElement.firstChildElement("blogs")
+	    .elementsByTagName("blog");
+	QDomNodeList	catNodeList, tagNodeList;
+	QDomElement		catsElement, tagsElement;
+	QDomElement		ct;
+	QString			thisTagString;
+	int				a				= blogNodeList.count();
+	int				uncategorized	= 0;
+#ifndef NO_DEBUG_OUTPUT
+	// qDebug() << "Blogs: " << a;
+#endif
+	int		b, i, j;
+	QString	catName, catId;
+	if(a){
+		_control_tab->cbBlogSelector->clear();
+		for(i = 0; i < a; i ++){
+			ct = blogNodeList.at(i).firstChildElement("blogName");
+			_control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogNodeList.at(i).firstChildElement("blogName").text())
+							     , QVariant(blogNodeList.at(i).firstChildElement("blogid").text()));
+			currentBlog			= i;
+			currentBlogElement	= currentAccountElement.firstChildElement("blogs")
+			    .elementsByTagName("blog").at(currentBlog).toElement();
+			currentBlogid = currentBlogElement.firstChildElement("blogid").text();
+		}
+		currentBlog = _control_tab->cbBlogSelector->currentIndex();
+
+		catsElement = blogNodeList.at(currentBlog).firstChildElement("categories");
+		if(! catsElement.isNull()){
+			catNodeList = catsElement.elementsByTagName("category");
+			b			= catNodeList.count();
+			if(b){
+				_control_tab->cbMainCat->clear();
+				_control_tab->lwOtherCats->clear();
+				for(j = 0; j < b; j ++){
+					catName	= decodeXmlEntities(catNodeList.at(j).firstChildElement("categoryName").text());
+					catId	= catNodeList.at(j).firstChildElement("categoryId").text();
+					_control_tab->cbMainCat->addItem(catName, QVariant(catNodeList.at(j).firstChildElement("categoryId").text()));
+					_control_tab->lwOtherCats->addItem(catName);
+					if(catId == "1") uncategorized = j;
+				}
+				if(uncategorized) _control_tab->cbMainCat->setCurrentIndex(uncategorized);
+			}else{
+				_control_tab->chNoCats->setEnabled(false);
+				_control_tab->cbMainCat->setEnabled(false);
+				_control_tab->lwOtherCats->setEnabled(false);
+			}
+		}
+		_control_tab->lwAvailKeywordTags->clear();
+		_control_tab->lwKeywordTags->clear();
+		populateTagList();
+		disconnect(_control_tab->cbBlogSelector, SIGNAL(activated(int))
+			  , this, SLOT(changeBlog(int)));
+		connect(_control_tab->cbBlogSelector, SIGNAL(activated(int))
+		       , this, SLOT(changeBlog(int)));
+	}else{
+		_control_tab->cbBlogSelector->setEnabled(false);
+		_control_tab->chNoCats->setEnabled(false);
+		_control_tab->cbMainCat->setEnabled(false);
+		_control_tab->lwOtherCats->setEnabled(false);
+	}
+}
+
+void EditingWindow::populateTagList(){  // slot
+	if(useWordpressAPI){
+		_control_tab->lwAvailKeywordTags->setVisible(true);
+		_control_tab->tbSelectKeywordTag->setVisible(true);
+		_control_tab->tbRemoveKeywordTag->setVisible(true);
+		_control_tab->pbRefreshKeywordTags->setVisible(true);
+		QDomElement tagsElement = currentBlogElement.firstChildElement("wpTags");
+		if(! tagsElement.isNull()){
+			QStringList		tagList;
+			QString			thisTagString;
+			QDomNodeList	tagNodeList = tagsElement.elementsByTagName("tag");
+			// qDebug() << "Tag nodes:" << tagNodeList.count();
+			for(int j = 0; j < tagNodeList.count(); j ++){
+				thisTagString = tagNodeList.at(j).toElement().text();
+				if(! tagList.contains(thisTagString) && ! thisTagString.isEmpty()) tagList += thisTagString;
+			}
+			// qDebug() << "Tags:" << tagList.count();
+			_control_tab->lwAvailKeywordTags->addItems(tagList);
+		}
+	}else{
+		_control_tab->lwAvailKeywordTags->setVisible(false);
+		_control_tab->tbSelectKeywordTag->setVisible(false);
+		_control_tab->tbRemoveKeywordTag->setVisible(false);
+		_control_tab->pbRefreshKeywordTags->setVisible(false);
+	}
+}
+
+void EditingWindow::refreshBlogList(){  // slot
+	QDomDocument	doc;
+	QDomElement		methodCall = doc.createElement("methodCall");
+	methodCall.appendChild(XmlMethodName(doc, "blogger.getUsersBlogs"));
+
+	QDomElement params = doc.createElement("params");
+	params.appendChild(XmlValue(doc, "string", "xxx"));
+	params.appendChild(XmlValue(doc, "string", login));
+	params.appendChild(XmlValue(doc, "string", password));
+	methodCall.appendChild(params);
+
+	doc.appendChild(methodCall);
+	doc.insertBefore(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""), doc.firstChild());
+
+	responseData = "";
+	QByteArray requestArray(doc.toByteArray(2));
+	placeNetworkRequest(_blogger_getUsersBlogs, requestArray);
+}
+
+void EditingWindow::placeNetworkRequest(HttpBusinessType hbtype, QByteArray &array){
+	bool ok;
+
+	int p = port.toInt(&ok);
+	(void) p;
+#ifdef DONT_USE_SSL
+	if(! ok) p = ":80";
+#else
+	if(! ok) p = 0;
+#endif
+	QUrl url(QString("%1://%2%3%4")
+	    .arg(useHTTPS ? "https" : "http")
+	    .arg(server)
+	    .arg(ok ? QString(":%1").arg(port) : "")
+	    .arg(location));
+
+	QNetworkRequest request(url);
+	request.setRawHeader("User-Agent", userAgentArray);
+	request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
+	_current_reply = _net_acess_manager->post(request, array);
+
+	addToConsole(request.url().toString());
+	addToConsole(QString(array));
+	if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+	_current_http_business = hbtype;
+	connect(_net_acess_manager.get(), SIGNAL(finished(QNetworkReply *)), this, SLOT(handleDone(QNetworkReply *)));
+#ifndef DONT_USE_SSL
+	connect(_current_reply, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(handleSslErrors(const QList<QSslError> &)));
+#endif
+}
+
+/*void EditingWindow::setHost( QHttp *h, QString &serv, QString &pt, bool cm )
+{
+  int p;
+  bool ok;
+
+  p = pt.toInt( &ok );
+#ifdef DONT_USE_SSL
+  if( !ok )
+    p = 80;
+  h->setHost( serv, QHttp::ConnectionModeHttp, p );
+#else
+  if( !ok )
+    p = 0;
+  h->setHost( serv, useHTTPS ? QHttp::ConnectionModeHttps : QHttp::ConnectionModeHttp, p );
+#endif
+} */
+
+/*void EditingWindow::handleResponseHeader( const QHttpResponseHeader &header ) // slot
+{
+  if( header.statusCode() == 404 ) {
+    QMessageBox::warning( this, tr( "Error 404" ),
+                          tr( "There is no web service at the location you\n"
+                              "specified.  Please change it in the Preferences\n"
+                              "window." ) );
+    http->disconnect();
+    http->abort();
+    setNetworkActionsEnabled( false );
+  }
+  else
+    responseData.append( http->readAll() );
+} */
+
+void EditingWindow::stopThisJob(){
+#ifndef NO_DEBUG_OUTPUT
+	// qDebug() << "Aborting.";
+#endif
+
+	_net_acess_manager->disconnect();
+	if(_current_reply){
+		_current_reply->abort();
+
+		_current_http_business = None;
+		disconnect(this, SIGNAL(httpBusinessFinished()), 0, 0);
+		if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+		_current_reply->deleteLater();
+		_current_reply = nullptr;
+	}
+	_status_widget->showMessage(tr("Operation cancelled"), 2000);
+}
+
+void EditingWindow::handleDone(QNetworkReply *reply){
+	if(reply->error() != QNetworkReply::NoError){
+		if(reply->error() == QNetworkReply::OperationCanceledError) _status_widget->showMessage(tr("Operation cancelled."), 2000);
+		else _status_widget->showMessage(tr("The request failed"), 2000);
+		if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+	}else{
+		responseData = reply->readAll();
+		_status_widget->showMessage(QString(tr("The request succeeded; %1 bytes received"))
+		    .arg(responseData.size()), 2000);
+		switch(_current_http_business){
+			case _blogger_getUsersBlogs:      blogger_getUsersBlogs(responseData);break;
+			case _metaWeblog_newMediaObject:  metaWeblog_newMediaObject(responseData);break;
+			case _metaWeblog_newPost:         metaWeblog_newPost(responseData);break;
+			case _metaWeblog_editPost:        metaWeblog_editPost(responseData);break;
+			case _mt_getCategoryList:         mt_getCategoryList(responseData);break;
+			case _mt_publishPost:             mt_publishPost(responseData);break;
+			case _mt_setPostCategories:       mt_setPostCategories(responseData);break;
+			case _wp_getTags:                 wp_getTags(responseData);break;
+			case _wp_newCategory:             wp_newCategory(responseData);break;
+			case _wp_newPost:                 wp_newPost(responseData);break;
+			case _wp_editPost:                wp_editPost(responseData);break;
+			case None: break;
+		}
+	}
+	_net_acess_manager->disconnect();
+	reply->disconnect();
+	reply->deleteLater();
+	_current_reply = nullptr;
+	_control_tab->progressBar->setValue(_control_tab->progressBar->value() + 1);
+#ifdef WIN_QTV
+	taskbarProgress->setValue(taskbarProgress->value() + 1);
+#endif
+	_current_http_business	= None;
+	_doing_new_post			= false;
+	emit httpBusinessFinished();
+}
+
+#ifndef DONT_USE_SSL
+void EditingWindow::handleSslErrors(const QList<QSslError> &errorList){
+	int i = errorList.count();
+	if(i) _status_widget->showMessage(tr("%1 SSL errors").arg(i), 2000);
+}
+#endif
+
+void EditingWindow::changeCurrentBlog(int b){   // slot
+	currentBlog = b;
+}
+
+void EditingWindow::changeAccount(int a){// slot
+	QString currentBlogText;
+	if(currentAccount != a){
+		qDebug() << "clearing categories etc";
+		currentAccount = a;
+		_control_tab->cbBlogSelector->clear();
+		_control_tab->cbMainCat->clear();
+		_control_tab->lwOtherCats->clear();
+		_control_tab->lwAvailKeywordTags->clear();
+		_control_tab->lwKeywordTags->clear();
+
+		currentAccountElement = accountsDom.documentElement()
+		    .elementsByTagName("account").at(a).toElement();
+		currentAccountId = currentAccountElement.toElement().attribute("id");
+		extractAccountDetails();
+		/*qDebug() << "Current account: " << currentAccountElement.firstChildElement( "details" )
+		  .firstChildElement( "title" ).text();
+		*/
+		QStringList accountStringNames(accountStrings.keys());
+		Q_FOREACH(QString s, accountStringNames) *(accountStrings[s]) = currentAccountElement.firstChildElement("details")
+			    .firstChildElement(s).text();
+		extractAccountAttributes();
+
+		QDomElement blogsElement = currentAccountElement.firstChildElement("blogs");
+		if(! blogsElement.isNull()){
+			QDomNodeList	blogsList	= blogsElement.elementsByTagName("blog");
+			int				b			= blogsList.count();
+			if(b){
+				// qDebug() << "Blogs: " << b;
+				_control_tab->cbBlogSelector->clear();
+				for(int i = 0; i < b; i ++) _control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogsList.at(i).firstChildElement("blogName").text())
+												     , blogsList.at(i).firstChildElement("blogid").text());
+				_control_tab->cbBlogSelector->setEnabled(true);
+				changeBlog(0, true);
+				currentBlogid = _control_tab->cbBlogSelector->itemData(0).toString();
+				_control_tab->cbBlogSelector->disconnect(this, SLOT(changeBlog(int)));  // eliminate duplicate connections
+				connect(_control_tab->cbBlogSelector, SIGNAL(activated(int))
+				       , this, SLOT(changeBlog(int)));
+				emit blogRefreshFinished();
+				if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+			}else refreshBlogList();
+		}else refreshBlogList();
+	}
+}
+
+void EditingWindow::extractAccountDetails(){    // slot
+	QDomElement caDetails = currentAccountElement.firstChildElement("details").toElement();
+	server				= caDetails.firstChildElement("server").text();
+	location			= caDetails.firstChildElement("location").text();
+	port				= caDetails.firstChildElement("port").text();
+	login				= caDetails.firstChildElement("login").text();
+	password			= caDetails.firstChildElement("password").text();
+	currentAccountId	= currentAccountElement.attribute("id");
+
+	extractAccountAttributes();
+}
+
+void EditingWindow::extractAccountAttributes(){
+	QStringList		accountAttribNames(accountAttributes.keys());
+	QString			attribName;
+	QDomNodeList	attribNodes = currentAccountElement.firstChildElement("details")
+	    .elementsByTagName("attribute");
+
+	QList<QWidget *> wordpressOnlyWidgets;
+	wordpressOnlyWidgets	<< _control_tab->lPassword << _control_tab->lePassword << _control_tab->wBlankWidget
+				<< _control_tab->chShowPassword;
+	Q_FOREACH(QString t, accountAttribNames){
+		*(accountAttributes[t]) = false;
+		for(int i = 0; i < attribNodes.count(); i ++){
+			attribName = attribNodes.at(i).toElement().attribute("name");
+			if(attribName == "comments") attribName = "allowComments";
+			if(attribName == "trackback") attribName = "allowTB";
+			if(attribName == t) *(accountAttributes[t]) = true;
+		}
+	}
+	_control_tab->chAllowComments->setCheckState(allowComments ? Qt::Checked : Qt::Unchecked);
+	_control_tab->chAllowTB->setCheckState(allowTB ? Qt::Checked : Qt::Unchecked);
+	_control_tab->pbAddCategory->setEnabled(useWordpressAPI);
+	// cw->chSticky->setEnabled( useWordpressAPI );
+	_control_tab->chSticky->setVisible(false /*useWordpressAPI */);
+	Q_FOREACH(QWidget *w, wordpressOnlyWidgets) w->setVisible(useWordpressAPI);
+	if(_super_menu) _super_menu->addCatAction->setEnabled(useWordpressAPI);
+}
+
+
+void EditingWindow::changeBlog(int b, bool fromChangeAccount){  // slot
+	QString			currentCategoryText, currentCatId;
+	QDomElement		tagsElement;
+	QDomNodeList	tagsList;
+	int				i;
+	int				uncategorized = 0;
+	// qDebug() << "Starting changeblog" << b;
+	if(currentBlog != b || fromChangeAccount){
+		// qDebug() << "changing the blog anyway";
+		currentBlog = b;
+		_control_tab->cbMainCat->clear();
+		_control_tab->lwOtherCats->clear();
+		_control_tab->lwAvailKeywordTags->clear();
+		_control_tab->lwKeywordTags->clear();
+
+		currentBlogElement	= currentAccountElement.elementsByTagName("blog").at(currentBlog).toElement();
+		currentBlogid		= currentBlogElement.firstChildElement("blogid").text();
+		// qDebug() << currentBlogid;
+
+
+		_control_tab->lwAvailKeywordTags->clear();
+		_control_tab->lwKeywordTags->clear();
+		populateTagList();
+
+		QDomElement catsElement = currentBlogElement.firstChildElement("categories");
+		if(! catsElement.isNull()){
+			QDomNodeList	catsList	= catsElement.elementsByTagName("category");
+			int				c			= catsList.count();
+			qDebug() << c << "categories";
+			if(c){
+// #ifndef NO_DEBUG_OUTPUT
+				// qDebug() << "Categories: " << c;
+// #endif
+				_control_tab->cbMainCat->clear();
+				_control_tab->lwOtherCats->clear();
+				for(i = 0; i < c; i ++){
+					currentCategoryText = decodeXmlEntities(catsList.at(i).firstChildElement("categoryName").text());
+					currentCatId		= catsList.at(i).firstChildElement("categoryId").text();
+					_control_tab->cbMainCat->addItem(currentCategoryText
+									, QVariant(currentCatId));
+					_control_tab->lwOtherCats->addItem(currentCategoryText);
+					if(currentCatId == "1") uncategorized = i;
+					_control_tab->chNoCats->setEnabled(true);
+					_control_tab->cbMainCat->setEnabled(true);
+					_control_tab->lwOtherCats->setEnabled(true);
+					_status_widget->clearMessage();   // as otherwise, "there are no categories" would still show
+				}
+				if(uncategorized) _control_tab->cbMainCat->setCurrentIndex(uncategorized);
+				emit categoryRefreshFinished();
+				if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+			}else callRefreshCategories();
+		}else callRefreshCategories();
+	}
+}
+
+bool EditingWindow::caseInsensitiveLessThan(const QString &s1, const QString &s2){
+	return s1.toLower() < s2.toLower();
+}
+
+void EditingWindow::handleConsole(bool isChecked){
+	QAction *menuConsoleAction, *menuPreviewAction;
+	if(_super_menu){
+		menuConsoleAction	= qobject_cast<QAction *>(_super_menu->getConsoleAction());
+		menuPreviewAction	= qobject_cast<QAction *>(_super_menu->getPreviewAction());
+		if(menuConsoleAction) menuConsoleAction->setChecked(isChecked);
+	}
+	if(! isChecked){
+		_main_stack->setCurrentIndex(_editor_id);
+		_search_widget->setTextEdit(editor_object);
+		if(menuConsoleAction) menuConsoleAction->setText(tr("&Console"));
+		if(menuPreviewAction) menuPreviewAction->setEnabled(true);
+	}else{
+		_previous_raised_ls_widget = _main_stack->currentIndex();
+		_main_stack->setCurrentIndex(_console_id);
+		_search_widget->setTextEdit(_console);
+		if(menuConsoleAction) menuConsoleAction->setText(tr("Exit &console"));
+		if(menuPreviewAction) menuPreviewAction->setEnabled(false);
+		_console->setFocus(Qt::OtherFocusReason);
+	}
+}
+
+void EditingWindow::clearConsole(){
+	_console->clear();
+}
+
+void EditingWindow::setToolBarVisible(bool vis){
+	_editor->tool_bar()->setVisible(vis);
+}
+
+void EditingWindow::makeBold(){
+	editor_object->insertPlainText(QString("<strong>%1</strong>").arg(editor_object->textCursor().selectedText()));
+}
+
+void EditingWindow::makeItalic(){
+	editor_object->insertPlainText(QString("<em>%1</em>").arg(editor_object->textCursor().selectedText()));
+}
+
+void EditingWindow::makeUnderline(){
+	editor_object->insertPlainText(QString("<u>%1</u>").arg(editor_object->textCursor().selectedText()));
+}
+
+void EditingWindow::insertMore(){
+	if(! editor_object->toPlainText().contains("<!--more-->")) editor_object->insertPlainText("<!--more-->");
+	else _status_widget->showMessage(tr("A 'more' tag already exists."), 2000);
+}
+
+void EditingWindow::makeBlockquote(){
+	editor_object->insertPlainText(QString("<blockquote>%1</blockquote>").arg(editor_object->textCursor().selectedText()));
+}
+
+void EditingWindow::makePara(){
+	editor_object->insertPlainText(QString("<p>%1</p>").arg(editor_object->textCursor().selectedText()));
+}
+
+void EditingWindow::insertLink(bool isAutoLink){
+	QString			linkString, titleString;
+	QString			insertionString = "";
+	QString			selectedString	= editor_object->textCursor().selectedText();
+	QString			selectedStringLC;
+	QDialog			linkEntry(this);
+	Ui::LinkEntry	leui;
+#ifdef Q_OS_MAC
+	linkEntry.setWindowFlags(Qt::Sheet);
+#endif
+	leui.setupUi(&linkEntry);
+	if(isAutoLink) leui.cbMakeAutoLink->setChecked(Qt::Checked);
+	if(! selectedString.isEmpty()) leui.leLinkText->setText(selectedString);
+	if(linkEntry.exec()){
+		linkString		= leui.leLinkURL->text();
+		insertionString += QString("<a href=\"%1\"").arg(linkString);
+		if(leui.leLinkTitle->text().size()){
+			titleString		= leui.leLinkTitle->text();
+			insertionString	+= QString(" title=\"%1\"").arg(titleString.replace("\"", "&quot;"));
+		}
+		if(leui.chLinkTarget->isChecked()){
+			switch(leui.cbLinkTarget->currentIndex()){
+				case 0: insertionString += QString(" target=\"_top\"");break;
+				case 1: insertionString += QString(" target=\"_blank\"");break;
+				case 2: insertionString += QString(" target=\"view_window\"");break;
+			}
+		}
+		insertionString += ">";
+		editor_object->insertPlainText(QString("%1%2</a>")
+		    .arg(insertionString)
+		    .arg(leui.leLinkText->text()));
+	}
+	if(leui.cbMakeAutoLink->isChecked()){
+		selectedStringLC = selectedString.toLower().trimmed();
+		autoLinkDictionary.insert(selectedStringLC, linkString);
+		autoLinkTitleDictionary.insert(selectedStringLC, titleString);
+		if(leui.chLinkTarget->isChecked()) autoLinkTargetDictionary.insert(selectedStringLC, leui.cbLinkTarget->currentIndex());
+		else autoLinkTargetDictionary.remove(selectedStringLC);
+		saveAutoLinkDictionary();
+	}
+}
+
+void EditingWindow::insertLinkFromClipboard(){
+	QString linkString(QApplication::clipboard()->text());
+	editor_object->insertPlainText(QString("<a href=\"%1\">%2</a>")
+	    .arg(linkString)
+	    .arg(editor_object->textCursor().selectedText()));
+}
+
+void EditingWindow::insertSelfLink(){
+	QString linkString(editor_object->textCursor().selectedText());
+	if(QUrl(linkString, QUrl::StrictMode).isValid()) editor_object->insertPlainText(QString("<a href=\"%1\">%1</a>").arg(linkString));
+	else _status_widget->showMessage(tr("The selection is not a valid URL."), 2000);
+}
+
+void EditingWindow::insertAutoLink(){
+	QString			selectedText = editor_object->textCursor().selectedText();
+	QString			selectedTextLC = selectedText.toLower().trimmed();
+	QString			titleString, targetString;
+	QList<QString>	targets;
+	targets << "_top" << "_blank" << "view_window";
+	if(autoLinkDictionary.contains(selectedTextLC)){
+		titleString = QString(" title=\"%1\"")
+		    .arg(autoLinkTitleDictionary.value(selectedTextLC));
+		if(autoLinkTargetDictionary.contains(selectedTextLC)) targetString = QString(" target=\"%1\"")
+			    .arg(targets.value(autoLinkTargetDictionary.value(selectedTextLC)));
+		editor_object->insertPlainText(QString("<a href=\"%1\"%2%3>%4</a>")
+		    .arg(autoLinkDictionary.value(selectedTextLC))
+		    .arg(titleString)
+		    .arg(targetString)
+		    .arg(selectedText));
+	}else insertLink(true);
+}
+
+void EditingWindow::insertImage(){
+	QString		insertionString, styleString;
+	QStringList borderStyles;
+	borderStyles << "dotted" << "dashed" << "solid" << "double";
+
+	QDialog			image_entry(this);
+	Ui::ImageEntry	ieui;
+#ifdef Q_OS_MAC
+	image_entry.setWindowFlags(Qt::Sheet);
+#endif
+	ieui.setupUi(&image_entry);
+	ieui.gbMargins->setVisible(false);
+	if(image_entry.exec()){
+		insertionString = QString("<img src=\"%1\"")
+		    .arg(ieui.leImageURL->text());
+		if(ieui.leTitle->text().size()) insertionString += QString(" title=\"%1\"")
+			    .arg(ieui.leTitle->text().replace("\"", "&quot;"));
+		if(ieui.leAltText->text().size()) insertionString += QString(" alt=\"%1\"")
+			    .arg(ieui.leAltText->text().replace("\"", "&quot;"));
+		// Alignment
+		if(ieui.cbAlign->currentIndex()){
+			if(ieui.cbAlign->currentIndex() == 1) styleString += "float: left; ";
+			else // index is 2
+				styleString += "float: right; ";
+		}
+		// Border
+		if(ieui.cbBorderStyle->currentIndex() != 0 && ieui.sbBorderWidth->value() != 0){
+			styleString += QString("border: %1px %2; ")
+			    .arg(ieui.sbBorderWidth->value())
+			    .arg(borderStyles[ieui.cbBorderStyle->currentIndex() - 1]);
+		}
+		// Margins
+		if(ieui.sbMarginLeft->value() != 0) styleString += QString("margin-left: %1px; ").arg(ieui.sbMarginLeft->value());
+		if(ieui.sbMarginRight->value() != 0) styleString += QString("margin-right: %1px; ").arg(ieui.sbMarginRight->value());
+		if(ieui.sbMarginTop->value() != 0) styleString += QString("margin-top: %1px; ").arg(ieui.sbMarginTop->value());
+		if(ieui.sbMarginBottom->value() != 0) styleString += QString("margin-bottom: %1px").arg(ieui.sbMarginBottom->value());
+		// Insert style string into main insertion string
+		if(! styleString.isEmpty()){
+			insertionString += QString(" style=\"%1\"")
+			    .arg(styleString.trimmed());
+		}
+		insertionString += " />";
+		editor_object->insertPlainText(insertionString);
+	}
+}
+
+void EditingWindow::insertImageFromClipboard(){
+	QString linkString(QApplication::clipboard()->text());
+	editor_object->insertPlainText(QString("<img src=\"%1\">%2</img>")
+	    .arg(linkString)
+	    .arg(editor_object->textCursor().selectedText()));
+}
+
+void EditingWindow::cut(){
+	editor_object->cut();
+}
+
+void EditingWindow::copy(){
+	if(_main_stack->currentIndex() == _preview_id) _preview_window->copy();
+	else editor_object->copy();
+}
+
+QString EditingWindow::removeReadMore(QString &source){
+	// List of regexes to match "read more" strings. Will keep the list
+	// in case other variants are found. (Previously had list of specific
+	// websites.)
+	QList<QRegExp> regExpList;
+	regExpList << QRegExp("\\n\\nRead more:? http://(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\\-]*[A-Za-z0-9]).*$");
+	if(suppressReadMore){
+		// qDebug() << "suppressing read more";
+		QString text = source;
+		Q_FOREACH(QRegExp rx, regExpList){
+			if(text.contains(rx)){
+				text.remove(rx);
+				return text;
+			}
+		}
+	}
+	return source;
+}
+
+void EditingWindow::paste(){
+	QString pastedText = QApplication::clipboard()->text();
+	editor_object->insertPlainText(removeReadMore(pastedText));
+	editor_object->ensureCursorVisible();
+}
+
+void EditingWindow::tidyPaste(){
+	QString pastedText = QApplication::clipboard()->text();
+	pastedText = removeReadMore(pastedText);
+	pastedText.replace(QRegExp(" {2,}"), " ");
+	pastedText.replace(QRegExp(" *\n{1} *"), " ");
+	editor_object->insertPlainText(pastedText);
+	editor_object->ensureCursorVisible();
+}
+
+void EditingWindow::undo(){
+	editor_object->document()->undo();
+}
+
+void EditingWindow::redo(){
+	editor_object->document()->redo();
+}
+
+void EditingWindow::makeUnorderedList(){
+	QString listString = editor_object->textCursor().selection().toPlainText();
+	if(! listString.isEmpty()) editor_object->insertPlainText(getHTMLList(QString("ul"), listString));
+}
+
+void EditingWindow::makeOrderedList(){
+	QString listString = editor_object->textCursor().selection().toPlainText();
+	if(! listString.isEmpty()) editor_object->insertPlainText(getHTMLList(QString("ol"), listString));
+}
+
+QString &EditingWindow::getHTMLList(QString tag, QString &text){
+	QString		return_value, workstring;
+	QStringList worklist;
+
+	worklist = text.split("\n");
+	for(int a = 0; a < worklist.count(); a ++){
+		worklist[a].prepend("<li>");
+		worklist[a].append("</li>");
+	}
+	text = worklist.join("\n");
+	text.prepend(QString("<%1>").arg(tag));
+	text.append(QString("</%1>").arg(tag));
+
+	return text;
+}
+
+void EditingWindow::pasteAsMarkedParagraphs(){
+	QString insertion = QApplication::clipboard()->text().trimmed();
+	insertion = removeReadMore(insertion);
+	if(! insertion.isEmpty()){
+		insertion.replace(QRegExp("\n+"), "</p>\n<p>");
+		insertion.prepend("<p>");
+		insertion.append("</p>");
+		editor_object->insertPlainText(insertion);
+		editor_object->ensureCursorVisible();
+	}
+}
+
+void EditingWindow::pasteAsBlockquote(){
+	QString insertion = QApplication::clipboard()->text().trimmed();
+	insertion = removeReadMore(insertion);
+	if(! insertion.isEmpty()){
+		insertion.replace(QRegExp("\n{1,2}"), "\n\n");
+		editor_object->insertPlainText(QString("<blockquote>%1</blockquote>")
+		    .arg(insertion));
+		editor_object->ensureCursorVisible();
+	}
+}
+
+void EditingWindow::pasteAsMarkdownBlockquote(){
+	QString insertion = QApplication::clipboard()->text().trimmed();
+	insertion = removeReadMore(insertion);
+	QString separator = "\n>\n";
+	if(! insertion.isEmpty()){
+		insertion.prepend(">");
+		insertion.replace(QRegExp("\n{1,2}"), "\n>\n>");
+		editor_object->insertPlainText(insertion);
+		editor_object->ensureCursorVisible();
+	}
+}
+
+void EditingWindow::pasteAsUnorderedList(){
+	QString insertion = QApplication::clipboard()->text().trimmed();
+	insertion = removeReadMore(insertion);
+	insertion.replace(QRegExp("\n{2,}"), "\n");
+	if(! insertion.isEmpty()){
+		editor_object->insertPlainText(getHTMLList(QString("ul"), insertion));
+		editor_object->ensureCursorVisible();
+	}
+}
+
+void EditingWindow::pasteAsOrderedList(){
+	QString insertion = QApplication::clipboard()->text().trimmed();
+	insertion = removeReadMore(insertion);
+	insertion.replace(QRegExp("\n{2,}"), "\n");
+	if(! insertion.isEmpty()){
+		editor_object->insertPlainText(getHTMLList(QString("ol"), insertion));
+		editor_object->ensureCursorVisible();
+	}
+}
+
+void EditingWindow::doPreview(bool isChecked, bool markdownFailed){
+	qDebug() << "preview starting";
+	QString			line, techTagString;
+	QString			conversionString = "", conversionStringB = "";
+	QTextDocument	cDoc;
+	// bool finished = false;
+	bool isPre = false;
+
+	QAction *menuPreviewAction;
+	if(_super_menu){
+		menuPreviewAction = qobject_cast<QAction *>(_super_menu->getPreviewAction());
+		if(menuPreviewAction) menuPreviewAction->setChecked(isChecked);
+		_editor->_action_preview->setChecked(isChecked);
+	}
+	if(isChecked){
+		if(useMarkdown && ! markdownFailed){
+			conversionStringB = processWithMarkdown(editor_object->toPlainText());
+			if(conversionStringB.isNull()){
+				qDebug() << "Markdown conversion failed";
+				doPreview(isChecked, true);
+				return;
+			}
+			// Now that the process has done its job, we can add the title and display
+			// the preview
+
+			conversionStringB.prepend(QString("<strong>%1</strong>\n\n")
+			    .arg(_control_tab->leTitle->text().size()
+			    ? _control_tab->leTitle->text() : "<em>Untitled</em>"));
+			_preview_window->setHtml(conversionStringB);
+		}else{              // i.e. if not Markdown or Markdown failed
+			conversionString += QString("<b>%1</b>\n\n")
+			    .arg(_control_tab->leTitle->text().size()
+				? _control_tab->leTitle->text() : "<i>Untitled</i>");
+			conversionString += editor_object->toPlainText();
+			QTextStream a(&conversionString);
+			QRegExp		re("^(<table|thead|tfoot|caption|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|select|form|blockquote|address|math|p|h[1-6])>");
+			do {
+				line = a.readLine();
+				if(! line.isEmpty()){
+					if(re.exactMatch(line)) conversionStringB += line;
+					else{
+						if(line.startsWith("<pre>")){
+							isPre				= true;
+							conversionStringB	+= line;
+						}else{
+							conversionStringB += QString(isPre ? "%1\n" : "<p>%1</p>").arg(line);
+							if(line.contains("</pre>")) isPre = false;
+						}
+					}
+				}
+			} while(! a.atEnd());
+			_preview_window->setHtml(conversionStringB);
+		}
+		_previous_raised_ls_widget = _main_stack->currentIndex();
+		connect(_preview_window, SIGNAL(highlighted(const QString&)), this, SLOT(showHighlightedURL(const QString&)));
+		_main_stack->setCurrentIndex(_preview_id);
+		_search_widget->setTextEdit(_preview_window);
+		_editor->_action_preview->setText(tr("Exit p&review"));
+//	action_Preview->setIconText(tr("Exit preview"));
+		_editor->_action_preview->setToolTip(tr("Exit preview"));
+#ifdef Q_OS_MAC
+		if(menuPreviewAction) menuPreviewAction->setText(tr("Exit p&review"));
+		if(superMenu) superMenu->setConsoleEnabled(false);
+#endif
+		_preview_window->setFocus(Qt::OtherFocusReason);
+		_control_tab->setEnabled(false);    // leftWidget->setEnabled(false);
+		setEditActionsEnabled(false);
+		_search_widget->close();
+	}else{              // i.e. if the preview button is being released
+		// mainStack->setCurrentIndex( previousRaisedLSWidget );
+		_main_stack->setCurrentIndex(_editor_id);
+		_preview_window->disconnect(SIGNAL(highlighted(const QString&)));
+		_search_widget->setTextEdit(editor_object);
+		_editor->_action_preview->setText(tr("Entry in p&review"));
+//	action_Preview->setIconText(tr("Entry in preview"));
+		_editor->_action_preview->setToolTip(tr("Entry in preview"));
+#ifdef Q_OS_MAC
+		if(menuPreviewAction) menuPreviewAction->setText(tr("Entry in p&review"));
+		if(superMenu) superMenu->setConsoleEnabled(true);
+#endif
+		_control_tab->setEnabled(true); // leftWidget->setEnabled(true);
+		setEditActionsEnabled(true);
+		_search_widget->close();
+	}
+}
+
+void EditingWindow::setEditActionsEnabled(bool state){
+	if(_super_menu) _super_menu->setEditActionsEnabled(state);
+	QList<FlatToolButton *> edit_actions;
+
+	edit_actions	<< _editor->_bold << _editor->_italic << _editor->_underline
+			<< _editor->_code << _editor->_action_link << _editor->_action_image << _editor->_action_more;
+	Q_FOREACH(FlatToolButton *a, edit_actions) a->setEnabled(state);
+#ifndef Q_OS_MAC
+	if(_super_menu){
+		_super_menu->insMenu->setEnabled(state);
+		_super_menu->pasteAsMenu->setEnabled(state);
+		_super_menu->categoryMenu->setEnabled(state);
+	}
+#endif
+}
+
+void EditingWindow::showHighlightedURL(const QString &highlightedURL){
+	_status_widget->showMessage(highlightedURL, 2000);
+}
+
+void EditingWindow::blogThis(){
+	if(useWordpressAPI){
+		if(entryBlogged) submitWPEdit();
+		else newWPPost();
+	}else newMTPost();
+}
+
+void EditingWindow::newMTPost(){
+	QDomDocument	doc;
+	QDomElement		methodCall, params, param, member, value, integer
+	, string, rpcstruct, rpcarray, actualValue;
+	QString	description, extEntry, techTagString, convertedString, keywordTagList;
+	bool	takeComms	= _control_tab->chAllowComments->isChecked();
+	bool	takeTB		= _control_tab->chAllowTB->isChecked();
+	// bool blogidIsInt;
+	int				count, tags;
+	QList<QString>	tblist;
+	if(! _current_http_business){
+		if(! entryBlogged){
+			if(editor_object->toPlainText().contains("<!--more-->")){
+				description = QString(editor_object->toPlainText())
+				    .section("<!--more-->", 0, 0);
+				extEntry = QString(editor_object->toPlainText())
+				    .section("<!--more-->", - 1, - 1);
+			}else{
+				description	= QString(editor_object->toPlainText());
+				extEntry	= "";
+			}
+			if(doMarkdownWhenPosting){
+				convertedString = processWithMarkdown(description);
+				if(! convertedString.isNull())
+					/* description = stripParaTags ?
+					   convertedString.remove( "<p>" ).remove( "</p>" ) : convertedString; */
+					description = convertedString;
+				else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
+				if(! extEntry.isEmpty()){
+					convertedString = processWithMarkdown(extEntry);
+					if(! convertedString.isNull())
+						/*extEntry = stripParaTags ?
+						  convertedString.remove( "<p>" ).remove( "</p>" ) : convertedString; */
+						extEntry = convertedString;
+					else _status_widget->showMessage(tr("Markdown conversion failed; posting extension as is."), 2000);
+				}
+			}
+			dateTime = QDateTime::currentDateTime().toString(Qt::ISODate);
+			dateTime.remove(QChar('-'));
+			if(_control_tab->lwTags->count()){
+				tags			= _control_tab->lwTags->count();
+				techTagString	= "<p style=\"text-align:right;font-size:10px;\">Technorati Tags: ";
+				for(count = 0; count < tags; count ++){
+					techTagString.append(QString("<a href=\"http://technorati.com/tag/%1\""
+								     " rel=\"tag\">%2</a>%3")
+					    .arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'))
+					    .arg(_control_tab->lwTags->item(count)->text()
+					    .replace("+", " "))
+					    .arg((count == tags - 1) ? "</p>\n\n" : ", "));
+				}
+				if(_control_tab->rbStartOfMainEntry->isChecked()) description.insert(0, techTagString);
+				else description.append(techTagString);
+			}
+			QString blogid = _control_tab->cbBlogSelector->itemData(_control_tab->cbBlogSelector->currentIndex()).toString();
+/*      QRegExp blogidRegExp( "^[0-9]+$" );
+      blogidIsInt = blogidRegExp.exactMatch( blogid ); */
+
+			methodCall = doc.createElement("methodCall");
+			methodCall.appendChild(XmlMethodName(doc, "metaWeblog.newPost"));
+
+			params = doc.createElement("params");
+			params.appendChild(XmlValue(doc, "string", blogid));
+			params.appendChild(XmlValue(doc, "string", login));
+			params.appendChild(XmlValue(doc, "string", password));
+
+			param		= doc.createElement("param");
+			value		= doc.createElement("value");
+			rpcstruct	= doc.createElement("struct");
+			rpcstruct.appendChild(XmlMember(doc, "title", "string"
+						       , _control_tab->leTitle->text()));
+			rpcstruct.appendChild(XmlMember(doc, "description", "string", description));
+			if(postDateTime) rpcstruct.appendChild(XmlMember(doc, "dateCreated", "dateTime.iso8601", dateTime));
+			rpcstruct.appendChild(XmlMember(doc, "mt_allow_comments", "boolean"
+						       , takeComms ? "1" : "0"));
+			rpcstruct.appendChild(XmlMember(doc, "mt_allow_pings", "boolean"
+						       , takeTB ? "1" : "0"));
+			rpcstruct.appendChild(XmlMember(doc, "mt_text_more", "string", extEntry));
+			if(_control_tab->teExcerpt->toPlainText().length()) rpcstruct.appendChild(XmlMember(doc, "mt_excerpt", "string"
+													       , _control_tab->teExcerpt->toPlainText().replace(QChar('&'), "&amp;")));
+			else rpcstruct.appendChild(XmlMember(doc, "mt_excerpt", "string", ""));
+			if(! _control_tab->lwKeywordTags->count()) rpcstruct.appendChild(XmlMember(doc, "mt_keywords", "string", ""));
+			else{
+				for(count = 0; count < _control_tab->lwKeywordTags->count(); count ++){
+					keywordTagList.append(_control_tab->lwKeywordTags->item(count)->text());
+					if(count != _control_tab->lwKeywordTags->count() - 1) keywordTagList.append(", ");
+				}
+				rpcstruct.appendChild(XmlMember(doc, "mt_keywords", "string", keywordTagList));
+			}
+			if(_control_tab->lwTBPings->count()){
+				for(count = 0; count < _control_tab->lwTBPings->count(); count ++) tblist.append(_control_tab->lwTBPings->item(count)->text());
+				rpcstruct.appendChild(XmlRpcArray(doc, "mt_tb_ping_urls", tblist));
+			}
+			value.appendChild(rpcstruct);
+			param.appendChild(value);
+			params.appendChild(param);
+			if(! useWordpressAPI) params.appendChild(XmlValue(doc, "boolean"
+									     , _control_tab->cbStatus->currentIndex() ? "1" : "0"));
+			methodCall.appendChild(params);
+			doc.appendChild(methodCall);
+			doc.insertBefore(doc.createProcessingInstruction("xml"
+									, "version=\"1.0\" encoding=\"UTF-8\"")
+					, doc.firstChild());
+
+			QByteArray requestArray(doc.toByteArray());
+			responseData	= "";
+			_doing_new_post	= true;
+			placeNetworkRequest(_metaWeblog_newPost, requestArray);
+			if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+			if(postAsSave && ! entryEverSaved){
+				cleanSave = true;
+				setDirtySignals(true);
+			}
+			if(location.contains("mt-xmlrpc.cgi") && _control_tab->cbStatus->currentIndex() == 1) _control_tab->progressBar->setMaximum((categoriesEnabled && ! _control_tab->chNoCats->isChecked()) ? 6 : 4);
+			else _control_tab->progressBar->setMaximum((categoriesEnabled && ! _control_tab->chNoCats->isChecked()) ? 4 : 2);
+			_control_tab->progressBar->setValue(1);
+			_control_tab->progressWidget->setVisible(true);
+
+#ifdef WIN_QTV
+			addToConsole("Showing taskbar button");
+			qDebug() << "Showing taskbar button";
+			if((useWordpressAPI || location.contains("mt-xmlrpc.cgi")) && cw->cbStatus->currentIndex() == 1) taskbarProgress->setMaximum(6);
+			else taskbarProgress->setMaximum(4);
+			taskbarProgress->setValue(1);
+			taskbarProgress->show();
+#endif
+
+//	    cw->cbPageSelector->setCurrentIndex(0);
+			_control_tab->setCurrentIndex(0);
+/*#ifndef Q_OS_MAC
+      progressBarAction->setVisible( true );
+#endif */
+		}else submitMTEdit();
+	}else{
+#ifdef QTM_DEBUG
+		statusWidget->showMessage(tr("newPost: All HTTP requests are blocked")
+					 , 2000);
+#else
+		_status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
+#endif
+	}
+}
+
+void EditingWindow::newWPPost(){
+	QDomDocument	doc;
+	QDomElement		methodCall, params, param, member, value, integer
+	, string, rpcstruct, rpcarray, actualValue, primCatElem
+	, taxStruct, taxValue, taxMember, taxMemberName;
+	QString	primCat, blogid, entryText, techTagString, convertedString, keywordTagList, tblist;
+	bool	takeComms	= _control_tab->chAllowComments->isChecked();
+	bool	takeTB		= _control_tab->chAllowTB->isChecked();
+	// bool blogidIsInt;
+	int				count, tags;
+	QList<QString>	catList, tagList;
+	if(! _current_http_business){
+		entryText = editor_object->toPlainText();
+		// Do Markdown, if enabled
+		if(doMarkdownWhenPosting){
+			convertedString = processWithMarkdown(entryText);
+			if(! convertedString.isNull())
+				/* description = stripParaTags ?
+				   convertedString.remove( "<p>" ).remove( "</p>" ) : convertedString; */
+				entryText = convertedString;
+			else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
+		}
+		dateTime = QDateTime::currentDateTime().toString(Qt::ISODate);
+		dateTime.remove(QChar('-'));
+		// Make a string of the Technorati tags
+		if(_control_tab->lwTags->count()){
+			tags			= _control_tab->lwTags->count();
+			techTagString	= "<p style=\"text-align:right;font-size:10px;\">Technorati Tags: ";
+			for(count = 0; count < tags; count ++){
+				techTagString.append(QString("<a href=\"http://technorati.com/tag/%1\""
+							     " rel=\"tag\">%2</a>%3")
+				    .arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'))
+				    .arg(_control_tab->lwTags->item(count)->text()
+				    .replace("+", " "))
+				    .arg((count == tags - 1) ? "</p>\n\n" : ", "));
+			}
+			// Whether to put the Technorati tags at beginning or end
+			if(_control_tab->rbStartOfMainEntry->isChecked()) entryText.insert(0, techTagString);
+			else entryText.append(techTagString);
+		}
+		// Make a list of the selected categories (WP API has no "primary category")
+		if(_control_tab->chAllowComments->isChecked()){
+			/*primCatElem = currentBlogElement.firstChildElement( "categories" )
+			  .childNodes().at( cw->cbMainCat->currentIndex() ).toElement(); */
+			catList << _control_tab->cbMainCat->itemData(_control_tab->cbMainCat->currentIndex()).toString();
+			for(int a = 0; a < _control_tab->lwOtherCats->count(); a ++){
+				if(_control_tab->lwOtherCats->isItemSelected(_control_tab->lwOtherCats->item(a))){
+					// cat = currentBlogElement.firstChildElement( "categories" ).childNodes().at( a ).toElement();
+					catList << _control_tab->cbMainCat->itemData(a).toString();
+				}
+			}
+		}
+		// Make a list of selected WP tags
+		if(_control_tab->lwKeywordTags->count())
+			for(count = 0; count < _control_tab->lwKeywordTags->count(); count ++) tagList << _control_tab->lwKeywordTags->item(count)->text();
+		// Make a list of trackback pings to be sent
+		if(_control_tab->lwTBPings->count()){
+			for(count = 0; count < _control_tab->lwTBPings->count(); count ++){
+				if(count) tblist.append(' ');
+				tblist.append(_control_tab->lwTBPings->item(count)->text());
+			}
+		}
+		blogid = _control_tab->cbBlogSelector->itemData(_control_tab->cbBlogSelector->currentIndex()).toString();
+
+		methodCall = doc.createElement("methodCall");
+		methodCall.appendChild(XmlMethodName(doc, "wp.newPost"));
+
+		params = doc.createElement("params");
+		params.appendChild(XmlValue(doc, "string", blogid));
+		params.appendChild(XmlValue(doc, "string", login));
+		params.appendChild(XmlValue(doc, "string", password));
+
+		param		= doc.createElement("param");
+		value		= doc.createElement("value");
+		rpcstruct	= doc.createElement("struct");
+		rpcstruct.appendChild(XmlMember(doc, "post_type", "string", "post"));
+		rpcstruct.appendChild(XmlMember(doc, "post_status", "string"
+					       , _control_tab->cbStatus->currentIndex() ? "publish" : "draft"));
+		rpcstruct.appendChild(XmlMember(doc, "post_title", "string"
+					       , _control_tab->leTitle->text()));
+		rpcstruct.appendChild(XmlMember(doc, "post_content", "string", entryText));
+		if(postDateTime) rpcstruct.appendChild(XmlMember(doc, "post_date", "dateTime.iso8601", dateTime));
+		rpcstruct.appendChild(XmlMember(doc, "comment_status", "string"
+					       , takeComms ? "open" : "closed"));
+		rpcstruct.appendChild(XmlMember(doc, "ping_status", "string"
+					       , takeTB ? "open" : "closed"));
+		if(! _control_tab->lePassword->text().isEmpty()) rpcstruct.appendChild(XmlMember(doc, "post_password", "string"
+												    , _control_tab->lePassword->text()));
+		/* if( cw->chSticky->isChecked() )
+		  rpcstruct.appendChild( XmlMember( doc, "sticky", "bool", "true" ) ); */
+		if(catList.count()){
+			taxMember		= doc.createElement("member");
+			taxMemberName	= doc.createElement("name");
+			taxMemberName.appendChild(QDomText(doc.createTextNode("terms")));
+			taxMember.appendChild(taxMemberName);
+			taxValue	= doc.createElement("value");
+			taxStruct	= doc.createElement("struct");
+			taxStruct.appendChild(XmlRpcArray(doc, "category", "string", catList));
+			taxValue.appendChild(taxStruct);
+			taxMember.appendChild(taxValue);
+			rpcstruct.appendChild(taxMember);
+		}
+		if(tagList.count()) rpcstruct.appendChild(XmlRpcArray(doc, "tags_input", "string", tagList));
+		if(tblist.length()) rpcstruct.appendChild(XmlMember(doc, "to_ping", "string", tblist));
+		value.appendChild(rpcstruct);
+		param.appendChild(value);
+		params.appendChild(param);
+		methodCall.appendChild(params);
+		doc.appendChild(methodCall);
+		doc.insertBefore(doc.createProcessingInstruction("xml"
+								, "version=\"1.0\" encoding=\"UTF-8\"")
+				, doc.firstChild());
+
+		QByteArray requestArray(doc.toByteArray());
+		responseData = "";
+		placeNetworkRequest(_wp_newPost, requestArray);
+		if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+		if(postAsSave && ! entryEverSaved){
+			cleanSave = true;
+			setDirtySignals(true);
+		}
+		_control_tab->progressBar->setMaximum(2);
+		_control_tab->progressBar->setValue(1);
+		_control_tab->progressWidget->setVisible(true);
+//	cw->cbPageSelector->setCurrentIndex(0);
+		_control_tab->setCurrentIndex(0);
+	}else{
+#ifdef QTM_DEBUG
+		statusWidget->showMessage(tr("refreshCategories: All HTTP requests are blocked")
+					 , 2000);
+#else
+		_status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
+#endif
+	}
+}
+
+void EditingWindow::submitMTEdit(){
+	QDomDocument	doc;
+	QDomElement		methodCall, params, param, value, rpcstruct, rpcarray;
+	QString			description, extEntry, techTagString, convertedString, keywordTagList;
+	int				count, tags;
+	bool			takeComms	= _control_tab->chAllowComments->isChecked();
+	bool			takeTB		= _control_tab->chAllowTB->isChecked();
+	QList<QString>	tblist;
+	if((! useWordpressAPI) && editor_object->toPlainText().contains("<!--more-->")){
+		description = QString(editor_object->toPlainText())
+		    .section("<!--more-->", 0, 0);
+		extEntry = QString(editor_object->toPlainText())
+		    .section("<!--more-->", - 1, - 1);
+	}else{
+		description	= QString(editor_object->toPlainText());
+		extEntry	= "";
+	}
+	if(doMarkdownWhenPosting){
+		convertedString = processWithMarkdown(description);
+		if(! convertedString.isNull())
+			/* description = stripParaTags ?
+			  convertedString.remove( "<p>" ).remove( "</p>" ) : convertedString; */
+			description = convertedString;
+		else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
+		if(! extEntry.isEmpty()){
+			convertedString = processWithMarkdown(extEntry);
+			if(! convertedString.isNull())
+				/* extEntry = stripParaTags ?
+				  convertedString.remove( "<p>" ).remove( "</p>" ) : convertedString; */
+				extEntry = convertedString;
+			else _status_widget->showMessage(tr("Markdown conversion failed; posting extension as is."), 2000);
+		}
+	}
+	if(_control_tab->lwTags->count()){
+		tags			= _control_tab->lwTags->count();
+		techTagString	= "<p style=\"text-align:right;font-size:10px;\">Technorati Tags: ";
+		for(count = 0; count < tags; count ++){
+			techTagString.append(QString("<a href=\"http://technorati.com/tag/%1\""
+						     " rel=\"tag\">%2</a>%3")
+			    .arg(_control_tab->lwTags->item(count)->text())
+			    .arg(_control_tab->lwTags->item(count)->text()
+			    .replace("+", " "))
+			    .arg((count == tags - 1) ? "</p>" : ", "));
+		}
+		if(_control_tab->rbStartOfMainEntry->isChecked()) description.insert(0, techTagString);
+		else description.append(techTagString);
+	}
+	methodCall = doc.createElement("methodCall");
+	methodCall.appendChild(XmlMethodName(doc, "metaWeblog.editPost"));
+
+	params = doc.createElement("params");
+	params.appendChild(XmlValue(doc, "string", entryNumber));
+	params.appendChild(XmlValue(doc, "string", login));
+	params.appendChild(XmlValue(doc, "string", password));
+
+	param		= doc.createElement("param");
+	value		= doc.createElement("value");
+	rpcstruct	= doc.createElement("struct");
+	rpcstruct.appendChild(XmlMember(doc, "title", "string"
+				       , _control_tab->leTitle->text()));
+	rpcstruct.appendChild(XmlMember(doc, "description", "string", description));
+	if(postDateTime) rpcstruct.appendChild(XmlMember(doc, "dateCreated", "dateTime.iso8601", dateTime));
+	rpcstruct.appendChild(XmlMember(doc, "mt_allow_comments", "boolean"
+				       , takeComms ? "1" : "0"));
+	rpcstruct.appendChild(XmlMember(doc, "mt_allow_pings", "boolean"
+				       , takeTB ? "1" : "0"));
+	rpcstruct.appendChild(XmlMember(doc, "mt_text_more", "string", extEntry));
+	if(_control_tab->teExcerpt->toPlainText().length()) rpcstruct.appendChild(XmlMember(doc, "mt_excerpt", "string"
+											       , _control_tab->teExcerpt->toPlainText().replace(QChar('&'), "&amp;")));
+	else rpcstruct.appendChild(XmlMember(doc, "mt_excerpt", "string", ""));
+	if(! _control_tab->lwKeywordTags->count()) rpcstruct.appendChild(XmlMember(doc, "mt_keywords", "string", ""));
+	else{
+		for(count = 0; count < _control_tab->lwKeywordTags->count(); count ++){
+			keywordTagList.append(_control_tab->lwKeywordTags->item(count)->text());
+			if(count != _control_tab->lwKeywordTags->count() - 1) keywordTagList.append(", ");
+		}
+		rpcstruct.appendChild(XmlMember(doc, "mt_keywords", "string", keywordTagList));
+	}
+	if(_control_tab->lwTBPings->count()){
+		for(count = 0; count < _control_tab->lwTBPings->count(); count ++) tblist.append(_control_tab->lwTBPings->item(count)->text());
+		rpcstruct.appendChild(XmlRpcArray(doc, "mt_tb_ping_urls", tblist));
+	}
+	value.appendChild(rpcstruct);
+	param.appendChild(value);
+	params.appendChild(param);
+	params.appendChild(XmlValue(doc, "boolean"
+				   , _control_tab->cbStatus->currentIndex() ? "1" : "0"));
+	methodCall.appendChild(params);
+	doc.appendChild(methodCall);
+	doc.insertBefore(doc.createProcessingInstruction("xml"
+							, "version=\"1.0\" encoding=\"UTF-8\"")
+			, doc.firstChild());
+
+	QByteArray requestArray(doc.toByteArray());
+	responseData = "";
+	placeNetworkRequest(_metaWeblog_editPost, requestArray);
+	if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+	if(postAsSave && ! entryEverSaved){
+		cleanSave = true;
+		setDirtySignals(true);
+	}
+	if(location.contains("mt-xmlrpc.cgi") && _control_tab->cbStatus->currentIndex() == 1) _control_tab->progressBar->setMaximum((categoriesEnabled && _control_tab->chNoCats->isChecked()) ? 6 : 4);
+	else _control_tab->progressBar->setMaximum((categoriesEnabled && _control_tab->chNoCats->isChecked()) ? 4 : 2);
+	_control_tab->progressBar->setValue(1);
+	_control_tab->progressWidget->setVisible(true);
+
+#ifdef WIN_QTV
+	if(location.contains("mt-xmlrpc.cgi") && cw->cbStatus->currentIndex() == 1) taskbarProgress->setMaximum(6);
+	else taskbarProgress->setMaximum(4);
+	taskbarProgress->setValue(1);
+	taskbarProgress->setVisible(true);
+#endif
+
+//    cw->cbPageSelector->setCurrentIndex(0);
+	_control_tab->setCurrentIndex(0);
+}
+
+void EditingWindow::submitWPEdit(){
+	QDomDocument	doc;
+	QDomElement		methodCall, params, param, member, value, integer
+	, string, rpcstruct, rpcarray, actualValue, primCatElem
+	, taxStruct, taxValue, taxMember, taxMemberName;
+	QString	primCat, blogid, entryText, techTagString, convertedString, keywordTagList, tblist;
+	bool	takeComms	= _control_tab->chAllowComments->isChecked();
+	bool	takeTB		= _control_tab->chAllowTB->isChecked();
+	// bool blogidIsInt;
+	int				count, tags;
+	QList<QString>	catList, tagList;
+	if(! _current_http_business){
+		entryText = editor_object->toPlainText();
+		// Do Markdown, if enabled
+		if(doMarkdownWhenPosting){
+			convertedString = processWithMarkdown(entryText);
+			if(! convertedString.isNull())
+				/* description = stripParaTags ?
+				   convertedString.remove( "<p>" ).remove( "</p>" ) : convertedString; */
+				entryText = convertedString;
+			else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
+		}
+		dateTime = QDateTime::currentDateTime().toString(Qt::ISODate);
+		dateTime.remove(QChar('-'));
+		// Make a string of the Technorati tags
+		if(_control_tab->lwTags->count()){
+			tags			= _control_tab->lwTags->count();
+			techTagString	= "<p style=\"text-align:right;font-size:10px;\">Technorati Tags: ";
+			for(count = 0; count < tags; count ++){
+				techTagString.append(QString("<a href=\"http://technorati.com/tag/%1\""
+							     " rel=\"tag\">%2</a>%3")
+				    .arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'))
+				    .arg(_control_tab->lwTags->item(count)->text()
+				    .replace("+", " "))
+				    .arg((count == tags - 1) ? "</p>\n\n" : ", "));
+			}
+			// Whether to put the Technorati tags at beginning or end
+			if(_control_tab->rbStartOfMainEntry->isChecked()) entryText.insert(0, techTagString);
+			else entryText.append(techTagString);
+		}
+		// Make a list of the selected categories (WP API has no "primary category")
+		if(_control_tab->chAllowComments->isChecked()){
+			/*primCatElem = currentBlogElement.firstChildElement( "categories" )
+			  .childNodes().at( cw->cbMainCat->currentIndex() ).toElement(); */
+			catList << _control_tab->cbMainCat->itemData(_control_tab->cbMainCat->currentIndex()).toString();
+			for(int a = 0; a < _control_tab->lwOtherCats->count(); a ++){
+				if(_control_tab->lwOtherCats->isItemSelected(_control_tab->lwOtherCats->item(a))){
+					// cat = currentBlogElement.firstChildElement( "categories" ).childNodes().at( a ).toElement();
+					catList << _control_tab->cbMainCat->itemData(a).toString();
+				}
+			}
+		}
+		// Make a list of selected WP tags
+		if(_control_tab->lwKeywordTags->count())
+			for(count = 0; count < _control_tab->lwKeywordTags->count(); count ++) tagList << _control_tab->lwKeywordTags->item(count)->text();
+		// Make a list of trackback pings to be sent
+		if(_control_tab->lwTBPings->count()){
+			for(count = 0; count < _control_tab->lwTBPings->count(); count ++){
+				if(count) tblist.append(' ');
+				tblist.append(_control_tab->lwTBPings->item(count)->text());
+			}
+		}
+		blogid = _control_tab->cbBlogSelector->itemData(_control_tab->cbBlogSelector->currentIndex()).toString();
+
+		methodCall = doc.createElement("methodCall");
+		methodCall.appendChild(XmlMethodName(doc, "wp.editPost"));
+
+		params = doc.createElement("params");
+		params.appendChild(XmlValue(doc, "int", blogid));
+		params.appendChild(XmlValue(doc, "string", login));
+		params.appendChild(XmlValue(doc, "string", password));
+		params.appendChild(XmlValue(doc, "int", entryNumber));
+
+		param		= doc.createElement("param");
+		value		= doc.createElement("value");
+		rpcstruct	= doc.createElement("struct");
+		rpcstruct.appendChild(XmlMember(doc, "post_status", "string"
+					       , _control_tab->cbStatus->currentIndex() ? "publish" : "draft"));
+		rpcstruct.appendChild(XmlMember(doc, "post_title", "string"
+					       , _control_tab->leTitle->text()));
+		rpcstruct.appendChild(XmlMember(doc, "post_content", "string", entryText));
+		if(postDateTime) rpcstruct.appendChild(XmlMember(doc, "post_date", "dateTime.iso8601", dateTime));
+		rpcstruct.appendChild(XmlMember(doc, "comment_status", "string"
+					       , takeComms ? "open" : "closed"));
+		rpcstruct.appendChild(XmlMember(doc, "ping_status", "string"
+					       , takeTB ? "open" : "closed"));
+		rpcstruct.appendChild(XmlMember(doc, "post_password", "string"
+					       , _control_tab->lePassword->text()));
+		/*rpcstruct.appendChild( XmlMember( doc, "sticky", "bool",
+		      cw->chSticky->isChecked() ? "true" : "false" ) ); */
+		if(catList.count()){
+			taxMember		= doc.createElement("member");
+			taxMemberName	= doc.createElement("name");
+			taxMemberName.appendChild(QDomText(doc.createTextNode("terms")));
+			taxMember.appendChild(taxMemberName);
+			taxValue	= doc.createElement("value");
+			taxStruct	= doc.createElement("struct");
+			taxStruct.appendChild(XmlRpcArray(doc, "category", "string", catList));
+			taxValue.appendChild(taxStruct);
+			taxMember.appendChild(taxValue);
+			rpcstruct.appendChild(taxMember);
+		}
+		if(tagList.count()) rpcstruct.appendChild(XmlRpcArray(doc, "tags_input", "string", tagList));
+		if(tblist.length()) rpcstruct.appendChild(XmlMember(doc, "to_ping", "string", tblist));
+		value.appendChild(rpcstruct);
+		param.appendChild(value);
+		params.appendChild(param);
+		methodCall.appendChild(params);
+		doc.appendChild(methodCall);
+		doc.insertBefore(doc.createProcessingInstruction("xml"
+								, "version=\"1.0\" encoding=\"UTF-8\"")
+				, doc.firstChild());
+
+		QByteArray requestArray(doc.toByteArray());
+		responseData = "";
+		placeNetworkRequest(_wp_editPost, requestArray);
+		if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+		if(postAsSave && ! entryEverSaved){
+			cleanSave = true;
+			setDirtySignals(true);
+		}
+		_control_tab->progressBar->setMaximum(2);
+		_control_tab->progressBar->setValue(1);
+		_control_tab->progressWidget->setVisible(true);
+//	cw->cbPageSelector->setCurrentIndex(0);
+		_control_tab->setCurrentIndex(0);
+	}else{
+#ifdef QTM_DEBUG
+		statusWidget->showMessage(tr("refreshCategories: All HTTP requests are blocked")
+					 , 2000);
+#else
+		_status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
+#endif
+	}
+}
+
+void EditingWindow::updatePostCategories(){
+	if(! entryNumber.isEmpty()) setPostCategories();
+	else _status_widget->showMessage(tr("This entry has not been posted yet."), 2000);
+}
+
+void EditingWindow::setPostCategories(){
+	QDomDocument	doc;
+	QString			secCatId, secCatName;
+	QDomElement		cat, methodCall, params, param, value, array, _data, arrayValue, arrayStruct;
+// #ifndef NO_DEBUG_OUTPUT
+//  qDebug() << "starting to post categories";
+// #endif
+	if(categoriesEnabled){
+		// qDebug() << "categories enabled";
+		if(! _current_http_business){
+			// qDebug() << "no biz";
+			methodCall = doc.createElement("methodCall");
+			methodCall.appendChild(XmlMethodName(doc, "mt.setPostCategories"));
+			params = doc.createElement("params");
+			params.appendChild(XmlValue(doc, "string", entryNumber));
+			params.appendChild(XmlValue(doc, "string", login));
+			params.appendChild(XmlValue(doc, "string", password));
+
+			param		= doc.createElement("param");
+			value		= doc.createElement("value");
+			array		= doc.createElement("array");
+			_data		= doc.createElement("data");
+			arrayValue	= doc.createElement("value");
+			arrayStruct = doc.createElement("struct");
+			if(! _control_tab->chNoCats->isChecked()){
+#ifndef NO_DEBUG_OUTPUT
+				// qDebug() << "posting prim cat";
+#endif
+				cat = currentBlogElement.firstChildElement("categories")
+				    .childNodes().at(_control_tab->cbMainCat->currentIndex()).toElement();
+				QString primCat = _control_tab->cbMainCat->itemData(_control_tab->cbMainCat->currentIndex()).toString();
+#ifndef NO_DEBUG_OUTPUT
+				// qDebug() << "posted prim cat";
+#endif
+				arrayStruct.appendChild(XmlMember(doc, "categoryId", "string", primCat.trimmed()));
+				arrayStruct.appendChild(XmlMember(doc, "isPrimary", "boolean", "1"));
+				arrayValue.appendChild(arrayStruct);
+				_data.appendChild(arrayValue);
+				for(int a = 0; a < _control_tab->lwOtherCats->count(); a ++){
+					if(_control_tab->lwOtherCats->isItemSelected(_control_tab->lwOtherCats->item(a))){
+						cat			= currentBlogElement.firstChildElement("categories").childNodes().at(a).toElement();
+						secCatId	= _control_tab->cbMainCat->itemData(a).toString();
+						secCatName	= _control_tab->cbMainCat->itemText(a);
+						arrayValue	= doc.createElement("value");
+						arrayStruct	= doc.createElement("struct");
+						arrayStruct.appendChild(XmlMember(doc, "categoryId", "int", secCatId));
+						arrayStruct.appendChild(XmlMember(doc, "categoryName", "string"
+										 , secCatName));
+						arrayStruct.appendChild(XmlMember(doc, "isPrimary", "boolean", "0"));
+						arrayValue.appendChild(arrayStruct);
+						_data.appendChild(arrayValue);
+					}
+				}
+			}
+			array.appendChild(_data);
+			value.appendChild(array);
+			param.appendChild(value);
+			params.appendChild(param);
+			methodCall.appendChild(params);
+			doc.appendChild(methodCall);
+			doc.insertBefore(doc.createProcessingInstruction("xml"
+									, "version=\"1.0\" encoding=\"UTF-8\"")
+					, doc.firstChild());
+			QByteArray requestArray(doc.toByteArray(2));
+
+			responseData = "";
+			placeNetworkRequest(_mt_setPostCategories, requestArray);
+			// if( progressBarAction->isVisible() )
+			if(_control_tab->progressBar->isVisible()) _control_tab->progressBar->setValue(_control_tab->progressBar->value() + 1);
+#ifdef WIN_QTV
+			if(taskbarProgress->isVisible()) taskbarProgress->setValue(taskbarProgress->value() + 1);
+#endif
+			if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+		}else{
+#ifdef QTM_DEBUG
+			statusWidget->showMessage(tr("setPostCategories: All HTTP requests are blocked")
+						 , 2000);
+#else
+			_status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
+#endif
+			QApplication::restoreOverrideCursor();
+		}
+	}else{
+		// An override cursor might have been set when posting an entry in a
+		// non-category-enabled blog
+		qDebug() << "categories not enabled";
+		if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+	}
+}
+
+void EditingWindow::publishPost(){  // slot
+	QDomDocument doc;
+	if(! _current_http_business){
+		QDomElement methodCall = doc.createElement("methodCall");
+		methodCall.appendChild(XmlMethodName(doc, "mt.publishPost"));
+		QDomElement params = doc.createElement("params");
+
+		params.appendChild(XmlValue(doc, "string", entryNumber));
+		params.appendChild(XmlValue(doc, "string", login));
+		params.appendChild(XmlValue(doc, "string", password));
+		methodCall.appendChild(params);
+		doc.appendChild(methodCall);
+		doc.insertBefore(doc.createProcessingInstruction("xml"
+								, "version=\"1.0\" encoding=\"UTF-8\"")
+				, doc.firstChild());
+
+		QByteArray requestArray(doc.toByteArray());
+
+		responseData = "";
+		placeNetworkRequest(_mt_publishPost, requestArray);
+		// if( progressBarAction->isVisible() )
+		if(_control_tab->progressBar->isVisible()) _control_tab->progressBar->setValue(_control_tab->progressBar->value() + 1);
+#ifdef WIN_QTV
+		if(taskbarProgress->isVisible()) taskbarProgress->setValue(taskbarProgress->value() + 1);
+#endif
+	}else _status_widget->showMessage(tr("Cannot publish; HTTP is blocked"), 2000);
+}
+
+void EditingWindow::exportEntry(){
+	saveAs(true);
+}
+
+void EditingWindow::saveAll(){
+	_app->saveAll();
+}
+
+void EditingWindow::saveAs(bool exp){
+	QString suggestedFilename;
+	if(_control_tab->leTitle->text().isEmpty()) suggestedFilename = _local_storage_directory;
+	else{
+		suggestedFilename = QString("%1/%2")
+		    .arg(_local_storage_directory)
+		    .arg(_control_tab->leTitle->text().remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")));
+	}
+	QString extn = QString("%1 (*.%2)").arg(tr("Blog entries"))
+	    .arg(_local_storage_fFile_extn);
+	QString fn = QFileDialog::getSaveFileName(this, tr("Choose a filename")
+						 , suggestedFilename, extn);
+	if(! fn.isEmpty()){
+		if(! _local_storage_fFile_extn.isEmpty())
+			if(! fn.endsWith(QString(".%1").arg(_local_storage_fFile_extn))) fn.append(QString(".%1").arg(_local_storage_fFile_extn));
+		filename = fn;
+		/*
+		   This section has been commented out as unnecessary; the getSaveFileName function
+		   already checks for the existence of a file.  Keeping in code until tested on other platforms.
+
+		   if( QFile::exists( fn ) ) {
+		   if( !QMessageBox::warning( 0, tr( "File exists" ),
+		   tr( "A file by this name already exists. Continue?" ),
+		   QMessageBox::Yes, QMessageBox::No | QMessageBox::Default ) ) {
+		   QFile::remove( fn );
+		   save( fn );
+		   }
+		   }
+		   else */
+		save(fn, exp);
+
+		_app->add_recent_file(_control_tab->leTitle->text(), fn);
+	}else _status_widget->showMessage(tr("Saving aborted"), 2000);
+}
+
+
+void EditingWindow::save(){
+	if(filename.isEmpty()){
+		saveAs();
+		return;
+	}
+	save(filename);
+}
+
+void EditingWindow::save(const QString &fname, bool exp){
+	int		count, tags;
+	QString	text = editor_object->document()->toPlainText();
+	// Rename the old file to a back-up file
+	if(QFile::exists(fname)) QFile::rename(fname, QString("%1~").arg(fname));
+	QFile f(fname);
+	if(! f.open(QIODevice::WriteOnly)){
+		_status_widget->showMessage(tr("Could not write to %1").arg(fname)
+					   , 2000);
+		return;
+	}
+	QTextStream out(&f);
+	if(useUtf8) out.setCodec(QTextCodec::codecForName("UTF-8"));
+	out << (exp ? (program_title_string + " saved blog entry v2.0\n").c_str() : (program_title_string + " saved blog entry v3.0\n").c_str());
+	out << QString("Title:%1\n").arg(_control_tab->leTitle->text());
+	out << QString("Publish:%1\n").arg(QString::number(_control_tab->cbStatus->currentIndex()));
+	if(entryBlogged) out << QString("EntryNumber:%1\n").arg(entryNumber);
+	out << QString("Comments:%1\n").arg(_control_tab->chAllowComments->isChecked() ? "1" : "0");
+	out << QString("TB:%1\n").arg(_control_tab->chAllowTB->isChecked() ? "1" : "0");
+	// out << QString( "Sticky:%1\n" ).arg( cw->chSticky->isChecked() ? "1" : "0" );
+	if(_control_tab->lePassword->text().length()) out << QString("PWD:%1\n").arg(_control_tab->lePassword->text());
+	if(exp){
+		out << QString("Server:%1\n").arg(server);
+		out << QString("Location:%1\n").arg(location);
+		out << QString("Login:%1\n").arg(login);
+		out << QString("Password:%1\n").arg(password);
+		out << QString("Blog:%1\n").arg(_control_tab->cbBlogSelector->currentIndex());
+	}else{
+		out << QString("AcctBlog:%1@%2 (%3)\n") // Include the blog name so it can be relayed to the user later
+		    .arg(currentBlogid)
+		    .arg(currentAccountId)
+		    .arg(_control_tab->cbBlogSelector->itemText(_control_tab->cbBlogSelector->currentIndex()));
+	}
+	tags = _control_tab->lwTags->count();
+	if(tags){
+		out << "Tags:";
+		for(count = 0; count < tags; count ++){
+			out << QString(count ? ";%1" : "%1")
+			    .arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'));
+		}
+		out << "\n";
+	}
+	tags = _control_tab->lwKeywordTags->count();
+	if(tags){
+		out << "Keywords:";
+		for(count = 0; count < tags; count ++){
+			out << QString(count ? ",%1" : "%1")
+			    .arg(_control_tab->lwKeywordTags->item(count)->text());
+		}
+		out << "\n";
+	}
+	if(! _control_tab->chNoCats->isChecked()){
+		QDomNodeList catNodeList = currentBlogElement.firstChildElement("categories").elementsByTagName("category");
+		out << QString("PrimaryID:%1\n").arg(_control_tab->cbMainCat->itemData(_control_tab->cbMainCat->currentIndex()).toString());
+		QString catsList;
+		int		cats = 0;
+		for(int a = 0; a < _control_tab->lwOtherCats->count(); a ++){
+			if(_control_tab->lwOtherCats->isItemSelected(_control_tab->lwOtherCats->item(a))){
+				if(cats) catsList.append(QString(";%1").arg(_control_tab->cbMainCat->itemData(a).toString()));
+				else catsList.append(_control_tab->cbMainCat->itemData(a).toString());
+				cats ++;
+			}
+		}
+		out << QString("CatIDs:%1\n").arg(catsList);
+	}else out << "PrimaryID:none\n";
+	if(_control_tab->teExcerpt->toPlainText().length() > 0) out << QString("Excerpt:%1\n")
+		    .arg(_control_tab->teExcerpt->toPlainText().replace(QChar('\n'), "\\n"));
+	out << QString("Text:\n%1").arg(text);
+	f.close();
+
+	dirtyIndicator->hide();
+	setWindowModified(false);
+	setDirtySignals(true);
+
+	entryEverSaved = true;
+}
+
+void EditingWindow::choose(QString fname){
+	QString	fn;
+	QString	extn(QString("%1 (*.%2)").arg(tr("Blog entries"))
+	    .arg(_local_storage_fFile_extn));
+	if(fname.isEmpty()) fn = QFileDialog::getOpenFileName(this, tr("Choose a file to open")
+								 , _local_storage_directory, extn);
+	else fn = fname;
+	if(! fn.isEmpty()){
+		if(! useNewWindows){
+			if(saveCheck(true)){
+				if(! load(fn)) _status_widget->showMessage(tr("File could not be loaded."), 2000);
+				else{
+					_app->add_recent_file(_control_tab->leTitle->text(), fn);
+
+					dirtyIndicator->hide();
+					setWindowModified(false);
+					setDirtySignals(true);
+				}
+			}
+		}else{
+			EditingWindow *e = new EditingWindow(_tree_screen, _entrance, _profile, _find_screen, _editentry, Qt::Widget, _style_source);
+			if(e->load(fn, true)){
+#ifdef USE_SYSTRAYICON
+				e->setSTI(sti);
+#endif
+
+				positionWidget(e, this);
+				_app->add_recent_file(e->postTitle(), fn);
+
+				e->show();
+			}else{
+				_status_widget->showMessage("Loading of new window failed", 2000);
+				e->deleteLater();
+			}
+		}
+	}else _status_widget->showMessage(tr("Loading aborted"), 2000);
+}
+
+bool EditingWindow::load(const QString &fname, QDomDocument &dd){
+	accountsDom = dd;
+
+	return load(fname);
+}
+
+
+bool EditingWindow::load(const QString &fname, bool fromSTI){
+	Ui::dPassword pui;
+	addToConsole("Starting load");
+	QMap<QString, QString>	emap;
+	QString					currentLine, key, value, fetchedText, tags, keywords;
+	QString					catName;
+	QStringList				otherCatStringList;
+	QDomNodeList			accts;
+	// bool getDetailsAgain = false;
+	bool	isOK;
+	int		b, c, d, g, h, hh;
+	noAutoSave = true;
+	QFile						f(fname);
+	QDomElement					details;
+	QDomProcessingInstruction	testPI;
+	QDomElement					testAccountsElement;
+	if(_super_menu){
+		_super_menu->setEnabled(true);
+#ifndef Q_OS_MAC
+		_super_menu->setVisible(true);
+#endif
+	}
+	if(fromSTI){
+		testPI				= accountsDom.firstChild().toProcessingInstruction();
+		testAccountsElement	= accountsDom.firstChildElement(program_title_qstring + "Accounts");
+		if(testAccountsElement.isNull()) accountsElement = accountsDom.createElement(program_title_qstring + "Accounts");
+		else accountsElement = accountsDom.firstChildElement(program_title_qstring + "Accounts");
+		currentAccountElement = accountsDom.createElement("account");
+		accountsElement.appendChild(currentAccountElement);
+		if(testAccountsElement.isNull()) accountsDom.appendChild(accountsElement);
+		if(testPI.isNull()) accountsDom.insertBefore(accountsDom.createProcessingInstruction("xml", "version=\"1.0\"")
+								, accountsDom.firstChild());
+	}
+	if(! f.open(QIODevice::ReadOnly)){
+		addToConsole("Cannot open file");
+		_status_widget->showMessage(tr("Cannot open file."), 2000);
+		return false;
+	}
+	QTextStream t(&f);
+	if(useUtf8) t.setCodec(QTextCodec::codecForName("UTF-8"));
+	if(! t.readLine().startsWith(program_title_qstring + " saved blog entry")){
+		addToConsole("Not a " + program_title_qstring + " blog entry");
+		_status_widget->showMessage(tr(("This is not a " + program_title_string + " blog entry.").c_str()), 2000);
+		return false;
+	}
+	do {
+		currentLine = t.readLine();
+		if(currentLine.startsWith("Text:")) break;
+		key			= currentLine.section(QChar(':'), 0, 0);
+		value		= currentLine.section(QChar(':'), 1);
+		emap[key]	= value;
+		addToConsole(currentLine);
+	} while(! t.atEnd());
+	if(emap.contains("Title")){
+		_control_tab->leTitle->setText(emap.value("Title"));
+		setWindowTitle(QString("%1 - QTM [*]").arg(emap.value("Title")));
+	}
+	if(emap.contains("Publish")) _control_tab->cbStatus->setCurrentIndex(emap.value("Publish") == "1" ? 1 : 0);
+	if(emap.contains("EntryNumber")){
+		entryNumber		= emap.value("EntryNumber");
+		entryBlogged	= true;
+	}
+	if(emap.contains("Comments")) _control_tab->chAllowComments->setChecked(emap.value("Comments") == "1" ? true : false);
+	if(emap.contains("TB")) _control_tab->chAllowTB->setChecked(emap.value("TB") == "1" ? true : false);
+	/* if( emap.contains( "Sticky" ) )
+	  cw->chSticky->setChecked( emap.value( "Sticky" ) == "1" ? true : false ); */
+	if(emap.contains("PWD")) _control_tab->lePassword->setText(emap.value("PWD"));
+	else _control_tab->lePassword->clear();
+	if(emap.contains("Server")){
+		if(emap.value("Server") != server){
+			server = emap.value("Server");
+			// getDetailsAgain = true;
+		}
+	}
+	if(emap.contains("Location")){
+		if(emap.value("Location") != location){
+			location = emap.value("Location");
+			// getDetailsAgain = true;
+		}
+	}
+	if(emap.contains("Login")){
+		if(emap.value("Login") != login){
+			login = emap.value("Login");
+			// getDetailsAgain = true;
+		}
+	}
+	if(emap.contains("Password")){
+		if(emap.value("Password") != password){
+			password = emap.value("Password");
+			// getDetailsAgain = true;
+		}
+		noPassword = false;
+	}else{
+		password	= "";
+		noPassword	= true;
+	}
+	if(emap.contains("Tags")){
+		tags	= emap.value("Tags");
+		d		= tags.count(QChar(';'));
+		if(d)
+			for(c = 0; c <= d; c ++) _control_tab->lwTags->addItem(tags.section(QChar(';'), c, c));
+		else _control_tab->lwTags->addItem(tags);
+	}
+	_control_tab->lwKeywordTags->clear();
+	if(emap.contains("Keywords")){
+		keywords	= emap.value("Keywords");
+		d			= keywords.count(QChar(','));
+		if(d)
+			for(c = 0; c <= d; c ++) _control_tab->lwKeywordTags->addItem(keywords.section(QChar(','), c, c));
+		else _control_tab->lwKeywordTags->addItem(keywords);
+	}
+	if(emap.contains("Blog")){
+		b = emap.value("Blog").toInt(&isOK);
+		if(isOK){
+			currentBlog		= b;
+			loadedEntryBlog	= b;
+		}
+	}
+	if(emap.contains("AcctBlog")){
+		currentBlogid	= emap.value("AcctBlog").section("@", 0, 0);
+		loadedAccountId = emap.value("AcctBlog").section("@", 1, 1).section(" (", 0, 0);
+		b				= emap.value("AcctBlog").section("@", 0, 0).toInt(&isOK);
+		if(isOK){
+			currentBlog		= b;
+			loadedEntryBlog	= b;
+		}
+	}
+	// Get old-style index categories
+	if(emap.contains("Primary")){
+		b = emap.value("Primary").toInt(&isOK);
+		if(isOK){
+			primaryCat	= b;
+			noAlphaCats = true;
+			// getDetailsAgain = true;
+		}else{
+			primaryCat = 0;
+			addToConsole(tr("Assignation of primary category failed"));
+		}
+	}
+	if(emap.contains("Cats")){
+		otherCatsList		= emap.value("Cats");
+		otherCatStringList	= otherCatsList.split(';');
+		noAlphaCats			= true;
+		// getDetailsAgain = true;
+	}
+	// Get new-style ID categories
+	if(emap.contains("PrimaryID")){
+		b = emap.value("PrimaryID").toInt(&isOK);
+		if(isOK) primaryCat = b;
+		else{
+			primaryCat = 0;
+			addToConsole(tr("Assignation of primary category failed"));
+		}
+	}
+	if(emap.contains("CatIDs")){
+		otherCatsList		= emap.value("CatIDs");
+		otherCatStringList	= otherCatsList.split(';');
+	}
+	if(emap.contains("Excerpt")) _control_tab->teExcerpt->setPlainText(QString(emap.value("Excerpt")).replace("\\n", "\n"));
+	while(! t.atEnd()) fetchedText += QString("%1\n").arg(t.readLine());
+	editor_object->setPlainText(fetchedText);
+	f.close();
+	setDirtySignals(true);
+	dirtyIndicator->hide();
+	setWindowModified(false);
+	// First of all, deal with entries saved to accounts
+	if(! loadedAccountId.isNull()){
+		accts = accountsDom.elementsByTagName("account");
+		qDebug() << accts.count() << "accounts found";
+		for(g = 0; g <= accts.count(); g ++){
+			if(g == accts.count()){
+				// qDebug() << accts.count() << "accounts";
+				// i.e. if it gets to the end of the accounts tree without finding the account
+				QMessageBox::information(0, tr((program_title_string + " - No such account").c_str())
+							, tr((program_title_string + " could not find this account (perhaps it was deleted).\n\n"
+										     "Will set up a blank default account; you will need to fill in the access "
+										     "details by choosing Accounts from the File menu.").c_str())
+							, QMessageBox::Ok);
+				QDomElement newDefaultAccount = accountsDom.createElement("account");
+				newDefaultAccount.setAttribute("id", QString("newAccount_%1").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+				QDomElement	newDetailElement	= accountsDom.createElement("details");
+				QDomElement	newNameElement		= accountsDom.createElement("title");
+				newNameElement.appendChild(QDomText(accountsDom.createTextNode(tr("New blank element"))));
+				newDetailElement.appendChild(newNameElement);
+				newDefaultAccount.appendChild(newDetailElement);
+				accountsDom.firstChildElement("accounts").appendChild(newDefaultAccount);
+				currentAccountElement = newDefaultAccount;
+				_control_tab->cbAccountSelector->addItem(tr("New blank element")
+									, newDefaultAccount.attribute("id"));
+				_control_tab->cbAccountSelector->setCurrentIndex(_control_tab->cbAccountSelector->count() - 1);
+				_control_tab->cbBlogSelector->clear();
+				_control_tab->cbBlogSelector->setEnabled(false);
+				_control_tab->chNoCats->setEnabled(false);
+				_control_tab->cbMainCat->clear();
+				_control_tab->cbMainCat->setEnabled(false);
+				_control_tab->lwOtherCats->clear();
+				_control_tab->lwOtherCats->setEnabled(false);
+				setPostClean();
+				return true;
+			}
+			if(accts.at(g).toElement().attribute("id") == loadedAccountId){
+				// qDebug() << "found the account:" << loadedAccountId;
+				populateAccountList();
+				currentAccountElement = accts.at(g).toElement();
+				extractAccountDetails();
+
+				QString st;
+				for(h = 0; h < _control_tab->cbAccountSelector->count(); h ++){
+					st = _control_tab->cbAccountSelector->itemData(h).toString();
+					if(st == loadedAccountId) _control_tab->cbAccountSelector->setCurrentIndex(h);
+				}
+				// Now populate the blog list
+				QDomNodeList blogNodeList = currentAccountElement.elementsByTagName("blog");
+				_control_tab->cbBlogSelector->clear();
+				for(hh = 0; hh < blogNodeList.count(); hh ++){
+					_control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogNodeList.at(hh).toElement()
+					    .firstChildElement("blogName").text())
+									     , blogNodeList.at(hh).toElement()
+					    .firstChildElement("blogid").text());
+					if(blogNodeList.at(hh).firstChildElement("blogid").text() == currentBlogid) currentBlogElement = blogNodeList.at(hh).toElement();
+				}
+				_control_tab->cbBlogSelector->disconnect(SIGNAL(activated(int)), this, 0);
+				// qDebug() << "connecting changeBlog";
+				connect(_control_tab->cbBlogSelector, SIGNAL(activated(int))
+				       , this, SLOT(changeBlog(int)));
+				if(! isOK){
+					QMessageBox::information(0, tr((program_title_string + " - Invalid blog").c_str())
+								, tr("Could not get a valid blog number.  Please set it again.")
+								, QMessageBox::Ok);
+					return true;
+				}
+				for(hh = 0; hh < _control_tab->cbBlogSelector->count(); hh ++){
+					if(_control_tab->cbBlogSelector->itemData(hh) == currentBlogid){
+						_control_tab->cbBlogSelector->setCurrentIndex(hh);
+						break;
+					}
+				}
+				_control_tab->lwAvailKeywordTags->clear();
+				populateTagList();
+
+				// Now populate and set the categories
+				QDomElement catsElement = currentBlogElement.firstChildElement("categories");
+				if(! catsElement.isNull()){
+					_control_tab->cbMainCat->clear();
+					_control_tab->lwOtherCats->clear();
+
+					QDomNodeList	catNodeList	= catsElement.elementsByTagName("category");
+					int				b			= catNodeList.count();
+					if(b){
+						// qDebug() << "categories:" << b;
+						_control_tab->cbMainCat->clear();
+						_control_tab->lwOtherCats->clear();
+						for(int j = 0; j < b; j ++){
+							catName = decodeXmlEntities(catNodeList.at(j).firstChildElement("categoryName").text());
+							_control_tab->cbMainCat->addItem(catName, QVariant(catNodeList.at(j).firstChildElement("categoryId").text()));
+							_control_tab->lwOtherCats->addItem(catName);
+						}
+						// qDebug() << "primaryCat is" << QString::number( primaryCat );
+						for(int i = 0; i < catNodeList.size(); i ++){
+							QString cc = catNodeList.at(i).firstChildElement("categoryId").text();
+							// qDebug() << "cc is" << cc;
+							if(cc == QString::number(primaryCat)){
+								// qDebug() << "found the primary category";
+								_control_tab->cbMainCat->setCurrentIndex(i);
+							}else if(otherCatStringList.contains(cc)) _control_tab->lwOtherCats->setItemSelected(_control_tab->lwOtherCats->item(i), true);
+						}
+					}else{
+						_control_tab->chNoCats->setEnabled(false);
+						_control_tab->cbMainCat->setEnabled(false);
+						_control_tab->lwOtherCats->setEnabled(false);
+					}
+				}
+				filename = fname;
+				setPostClean();
+				return true;
+			}
+		}
+		filename = fname;
+		setPostClean();
+		return true;
+	}
+	// Now we know this isn't an account entry, check whether the saved details actually
+	// belong to an account; if it does, there is no need to check for the password
+
+	// qDebug() << "this is an old-style account";
+	QDomNodeList blogs;
+
+	accts = accountsDom.documentElement().elementsByTagName("account");
+	for(int e = 0; e <= accts.count(); e ++){
+		if(e == accts.count()) break;
+		details = accts.at(e).toElement().firstChildElement("details");
+		// qDebug() << "matching against" << details.firstChildElement( "title" ).text();
+		if(details.firstChildElement("server").text() == server &&
+		    details.firstChildElement("location").text() == location &&
+		    details.firstChildElement("login").text() == login){
+			// qDebug() << "match found";
+			currentAccountElement = accts.at(e).toElement();
+			_control_tab->cbAccountSelector->setCurrentIndex(e);
+			extractAccountDetails();
+			// First check whether the blog still exists
+			blogs = currentAccountElement.elementsByTagName("blog");
+			if(currentBlog > blogs.count()){
+				connect(this, SIGNAL(categoryRefreshFinished())
+				       , this, SLOT(setLoadedPostCategories()));
+				refreshBlogList();
+				setPostClean();
+				return true;
+			}else{
+				// qDebug() << "now setting categories";
+				if(blogs.at(currentBlog).toElement().elementsByTagName("category").count()){
+					_control_tab->cbBlogSelector->clear();
+					for(hh = 0; hh < blogs.count(); hh ++){
+						_control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogs.at(hh).firstChildElement("blogName").text())
+										     , QVariant(blogs.at(hh).firstChildElement("blogid").text()));
+					}
+					setLoadedPostCategories();
+					setPostClean();
+					return true;
+				}else{
+					connect(this, SIGNAL(categoryRefreshFinished())
+					       , this, SLOT(setLoadedPostCategories()));
+					changeBlog(currentBlog);
+					setPostClean();
+					return true;
+				}
+			}
+		}
+	}
+	if(noPassword){
+		QDialog pwd;
+		pui.setupUi(&pwd);
+		if(pwd.exec()) password = pui.lePassword->text();
+		else
+			QMessageBox::warning(0, tr("No password")
+					    , tr("This entry was saved without a password.\n"
+						 "You will need to set one, using the\n"
+						 "Preferences window.")
+					    , QMessageBox::Ok, QMessageBox::NoButton);
+	}
+	// This is an old-style account which isn't in the database
+	// qDebug() << "old-style, not found";
+
+	QDomElement newAcct, newDetails, newTitle, newServer, newLocation, newLogin, newPwd;
+	newAcct				= accountsDom.createElement("account");
+	currentAccountId	= tr("newAccount_%1").arg(QDateTime::currentDateTime().toString(Qt::ISODate));
+	newAcct.setAttribute("id", currentAccountId);
+	newDetails	= accountsDom.createElement("details");
+	newTitle	= accountsDom.createElement("title");
+	newTitle.appendChild(QDomText(accountsDom.createTextNode(tr("New un-named account"))));
+	newServer = accountsDom.createElement("server");
+	newServer.appendChild(QDomText(accountsDom.createTextNode(server)));
+	newLocation = accountsDom.createElement("location");
+	newLocation.appendChild(QDomText(accountsDom.createTextNode(location)));
+	newLogin = accountsDom.createElement("login");
+	newLogin.appendChild(QDomText(accountsDom.createTextNode(login)));
+	newPwd = accountsDom.createElement("password");
+	newPwd.appendChild(QDomText(accountsDom.createTextNode(password)));
+	newDetails.appendChild(newTitle);
+	newDetails.appendChild(newServer);
+	newDetails.appendChild(newLocation);
+	newDetails.appendChild(newLogin);
+	newDetails.appendChild(newPwd);
+	newAcct.appendChild(newDetails);
+	accountsDom.documentElement().appendChild(newAcct);
+	currentAccountElement = newAcct;
+	_control_tab->cbAccountSelector->addItem(newTitle.text(), newAcct.attribute("id"));
+	_control_tab->cbAccountSelector->setCurrentIndex(_control_tab->cbAccountSelector->count() - 1);
+
+	connect(this, SIGNAL(categoryRefreshFinished())
+	       , this, SLOT(setLoadedPostCategories()));
+	refreshBlogList();
+	saveAccountsDom();
+
+	filename		= fname;
+	entryEverSaved	= true;
+	setPostClean();
+	return true;
+}
+
+void EditingWindow::setLoadedPostCategories(){  // slot
+	int		a, b, j, z;
+	int		i = 0;
+	QString	c, cc, d;
+	bool	isOK;
+
+	disconnect(SIGNAL(categoryRefreshFinished()));
+	disconnect(SIGNAL(httpBusinessFinished()));
+
+	QDomNodeList blogNodes = currentAccountElement.firstChildElement("blogs")
+	    .elementsByTagName("blog");
+	if(! _control_tab->cbBlogSelector->count()){
+		j = blogNodes.size();
+		for(z = 0; z < j; z ++) _control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogNodes.at(z).firstChildElement("blogName").text())
+										 , QVariant(blogNodes.at(z).firstChildElement("blogName").text()));
+		_control_tab->cbBlogSelector->setCurrentIndex(currentBlog);
+	}
+	currentBlogElement = blogNodes.at(currentBlog).toElement();
+	_control_tab->cbBlogSelector->setCurrentIndex(currentBlog);
+	_control_tab->cbMainCat->clear();
+	_control_tab->lwOtherCats->clear();
+	QDomNodeList catNodeList = currentBlogElement.elementsByTagName("category");
+	b = catNodeList.count();
+	if(b){
+		// qDebug() << "populating cat list";
+		_control_tab->cbMainCat->clear();
+		_control_tab->lwOtherCats->clear();
+		for(j = 0; j < b; j ++){
+			_control_tab->cbMainCat->addItem(catNodeList.at(j).firstChildElement("categoryName").text()
+							, QVariant(catNodeList.at(j).firstChildElement("categoryId").text()));
+			_control_tab->lwOtherCats->addItem(catNodeList.at(j).firstChildElement("categoryName").text());
+		}
+	}else{
+		// qDebug() << "no categories found";
+		connect(this, SIGNAL(categoryRefreshFinished())
+		       , this, SLOT(setLoadedPostCategories()));
+		return;
+	}
+	if(noAlphaCats){
+		_control_tab->cbMainCat->setCurrentIndex(primaryCat);
+
+		QString f(otherCatsList.section(QChar(';'), - 1, - 1));
+		do {
+			c	= otherCatsList.section(QChar(';'), i, i);
+			a	= c.toInt(&isOK);
+			if(isOK) _control_tab->lwOtherCats->setItemSelected(_control_tab->lwOtherCats->item(a), true);
+			else break;
+			i ++;
+		} while(c != f);
+		initialChangeBlog = false;
+	}else{
+		QDomNodeList	catNodes		= currentBlogElement.firstChildElement("categories").elementsByTagName("category");
+		QStringList		catStringList	= otherCatsList.split(";");
+		// qDebug() << "current Blog is" << currentBlogElement.firstChildElement( "blogName" ).text();
+		// qDebug() << "primaryCat is" << primaryCat;
+		for(i = 0; i < catNodes.size(); i ++){
+			cc = catNodes.at(i).firstChildElement("categoryId").text();
+			if(cc == QString::number(primaryCat)){
+				// qDebug() << "found primary category";
+				_control_tab->cbMainCat->setCurrentIndex(i);
+			}else if(catStringList.contains(cc)) _control_tab->lwOtherCats->setItemSelected(_control_tab->lwOtherCats->item(i), true);
+		}
+		initialChangeBlog = false;
+	}
+}
+
+void EditingWindow::uploadFile(){
+	QString			fileInBase64;
+	QByteArray		conversionBuffer;
+	QFile			inFile;
+	QDomDocument	doc;
+	if(! _current_http_business){
+		QString uploadFilename = QFileDialog::getOpenFileName(this
+								     , tr("Select file to upload")
+								     , QDir::homePath());
+		if(! uploadFilename.isEmpty()){
+			if(QFile::exists(uploadFilename)){
+				inFile.setFileName(uploadFilename);
+				if(inFile.open(QIODevice::ReadOnly)){
+					conversionBuffer = inFile.readAll();
+					if(conversionBuffer.isEmpty()) _status_widget->showMessage(tr("This file was empty, or an error occurred."), 2000);
+					else{
+						QApplication::processEvents();
+						fileInBase64 = toBase64(conversionBuffer);
+						if(! fileInBase64.isEmpty()){
+							QDomElement methodCall = doc.createElement("methodCall");
+							methodCall.appendChild(XmlMethodName(doc, "metaWeblog.newMediaObject"));
+							QDomElement params = doc.createElement("params");
+
+							QString blogid = currentBlogElement.firstChildElement("blogid").text();
+/*              QRegExp blogidRegExp( "^[0-9]+$" );
+              bool blogidIsInt = blogidRegExp.exactMatch( blogid ); */
+
+							params.appendChild(XmlValue(doc, "string", blogid));
+							params.appendChild(XmlValue(doc, "string", login));
+							params.appendChild(XmlValue(doc, "string", password));
+
+							QDomElement param		= doc.createElement("param");
+							QDomElement value		= doc.createElement("value");
+							QDomElement rpcStruct	= doc.createElement("struct");
+							rpcStruct.appendChild(XmlMember(doc, "bits", "base64", fileInBase64));
+							rpcStruct.appendChild(XmlMember(doc, "name", "string"
+										       , QFileInfo(uploadFilename).fileName()));
+							value.appendChild(rpcStruct);
+							param.appendChild(value);
+							params.appendChild(param);
+
+							methodCall.appendChild(params);
+							doc.appendChild(methodCall);
+							doc.insertBefore(doc.createProcessingInstruction("xml"
+													, "version=\"1.0\" encoding=\"UTF-8\"")
+									, doc.firstChild());
+
+							_current_http_business = _metaWeblog_newMediaObject;
+
+							QByteArray requestArray(doc.toByteArray());
+							responseData = "";
+							placeNetworkRequest(_metaWeblog_newMediaObject, requestArray);
+							if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+						}else _status_widget->showMessage(tr("Upload was cancelled."), 2000);
+					}
+					inFile.close();
+				}else _status_widget->showMessage(tr("Could not open the file."), 2000);
+			}else _status_widget->showMessage(tr("That file could not be found."), 2000);
+		}
+	}else _status_widget->showMessage(tr("HTTP requests are blocked."), 2000);
+}
+
+void EditingWindow::doWhatsThis(){
+	QWhatsThis::enterWhatsThisMode();
+}
+
+void EditingWindow::doViewBasicSettings(){
+	_control_tab->setCurrentIndex(0);   // cw->cbPageSelector->setCurrentIndex(0);
+}
+
+void EditingWindow::doViewCategories(){
+	_control_tab->setCurrentIndex(1);   // cw->cbPageSelector->setCurrentIndex(1);
+}
+
+void EditingWindow::changeOtherCatsHeading(){
+	int c = _control_tab->lwOtherCats->selectedItems().count();
+	if(c) _control_tab->lOtherCats->setText(tr("Others (%1)").arg(c));
+	else _control_tab->lOtherCats->setText(tr("Others"));
+}
+
+void EditingWindow::doViewExcerpt(){
+	_control_tab->setCurrentIndex(2);   // cw->cbPageSelector->setCurrentIndex(2);
+	_control_tab->teExcerpt->setFocus();
+}
+
+void EditingWindow::doViewKeywordTags(){
+	_control_tab->setCurrentIndex(3);   // cw->cbPageSelector->setCurrentIndex(3);
+}
+
+void EditingWindow::doViewTechTags(){
+	_control_tab->setCurrentIndex(4);   // cw->cbPageSelector->setCurrentIndex(4);
+}
+
+void EditingWindow::doViewTBPings(){
+	_control_tab->setCurrentIndex(5);   //  cw->cbPageSelector->setCurrentIndex(5);
+}
+
+// This slot is to refresh categories automatically if there are none when the user
+// switches to the category page
+void EditingWindow::handleSideWidgetPageSwitch(int index){
+	QDomNodeList	cl;
+	QString			currentCatName, currentCatId;
+	int				uncategorized = 0;
+	if(index == 1){
+		if(  _control_tab->cbMainCat->count() == 0 && networkActionsEnabled
+		  && categoriesEnabled){
+			/*if( currentBlogElement.isNull() )
+			  qDebug() << "currentBlogElement is null"; */
+			cl = currentBlogElement.firstChildElement("categories").elementsByTagName("category");
+			if(cl.count() == 0){
+				_status_widget->showMessage(tr("Getting categories, please wait"), 2000);
+				refreshCategories();
+			}else{
+				_control_tab->cbMainCat->clear();
+				_control_tab->lwOtherCats->clear();
+				for(int i = 0; i < cl.count(); i ++){
+					currentCatName	= cl.at(i).firstChildElement("categoryName").text();
+					currentCatId	= cl.at(i).firstChildElement("categoryId").text();
+					_control_tab->cbMainCat->addItem(currentCatName, currentCatId);
+					if(currentCatId == "1") uncategorized = i;
+					_control_tab->lwOtherCats->addItem(currentCatName);
+				}
+				if(uncategorized) _control_tab->cbMainCat->setCurrentIndex(uncategorized);
+			}
+		}
+	}
+}
+
+void EditingWindow::newChildCategory(){
+	newCategory(_control_tab->lwOtherCats->currentRow() + 1);
+}
+
+void EditingWindow::newCategory(int parentCategory){
+	QDomElement		catsElement;
+	QDomDocument	doc;
+	QDomElement		methodCall, params, param, member, value
+	, string, rpcstruct, actualValue;
+	QDomNodeList	catNodeList;
+	int				b, j;
+	// This feature uses a Wordpress API call
+	if(useWordpressAPI){
+		QDialog				newCategoryDialog(this);
+		Ui::NewCategoryForm	ncui;
+		ncui.setupUi(&newCategoryDialog);
+
+		catsElement = currentBlogElement.firstChildElement("categories");
+		if(! catsElement.isNull()){
+			catNodeList = catsElement.elementsByTagName("category");
+			b			= catNodeList.count();
+			if(b){
+				ncui.cbParent->clear();
+				ncui.cbParent->addItem("(Top level)", QVariant("0"));
+				for(j = 0; j < b; j ++) ncui.cbParent->addItem(catNodeList.at(j).firstChildElement("categoryName").text()
+										  , QVariant(catNodeList.at(j).firstChildElement("categoryId").text()));
+				ncui.cbParent->setCurrentIndex(parentCategory);
+			}
+			if(newCategoryDialog.exec()){
+				if(! ncui.leName->text().isEmpty()){
+					if(! _current_http_business){
+						QString blogid = _control_tab->cbBlogSelector->itemData(_control_tab->cbBlogSelector->currentIndex()).toString();
+/*            QRegExp blogidRegExp( "^[0-9]+$" );
+            bool blogidIsInt = blogidRegExp.exactMatch( blogid ); */
+
+						methodCall = doc.createElement("methodCall");
+						methodCall.appendChild(XmlMethodName(doc, "wp.newCategory"));
+
+						params = doc.createElement("params");
+						params.appendChild(XmlValue(doc, "string", blogid));
+						params.appendChild(XmlValue(doc, "string", login));
+						params.appendChild(XmlValue(doc, "string", password));
+
+						param		= doc.createElement("param");
+						value		= doc.createElement("value");
+						rpcstruct	= doc.createElement("struct");
+
+						rpcstruct.appendChild(XmlMember(doc, "name", "string"
+									       , ncui.leName->text()));
+						rpcstruct.appendChild(XmlMember(doc, "slug", "string", ""));
+						rpcstruct.appendChild(XmlMember(doc, "parent_id", "int"
+									       , ncui.cbParent->itemData(ncui.cbParent->currentIndex()).toString()));
+						rpcstruct.appendChild(XmlMember(doc, "description", "string"
+									       , ncui.teDescription->toPlainText().simplified()));
+
+						value.appendChild(rpcstruct);
+						param.appendChild(value);
+						params.appendChild(param);
+
+						methodCall.appendChild(params);
+						doc.appendChild(methodCall);
+						doc.insertBefore(doc.createProcessingInstruction("xml"
+												, "version=\"1.0\" encoding=\"UTF-8\"")
+								, doc.firstChild());
+
+						QByteArray requestArray(doc.toByteArray());
+						responseData = "";
+						placeNetworkRequest(_wp_newCategory, requestArray);
+						if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+					}else _status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
+				}else _status_widget->showMessage(tr("Your category must have a name."), 2000);
+			}
+		}
+	}
+}
+
+void EditingWindow::addKeywordTag(){
+	_control_tab->setCurrentIndex(3);   // cw->cbPageSelector->setCurrentIndex(3);
+	_control_tab->leAddKeywordTag->setFocus();
+}
+
+void EditingWindow::addKeywordTagFromLineEdit(){
+	QString text(_control_tab->leAddKeywordTag->text());
+	if(! text.isEmpty()){
+		text.remove(QRegExp("^\""));
+		text.remove(QRegExp("\"$"));
+
+		_control_tab->lwKeywordTags->addItem(text);
+		_control_tab->leAddKeywordTag->clear();
+		if(! isWindowModified()) dirtify();
+	}
+}
+
+void EditingWindow::addKeywordTagFromAvailTags(){
+	if(_control_tab->lwAvailKeywordTags->count() && _control_tab->lwAvailKeywordTags->currentRow() != - 1){
+		// Check whether the tag selected is already in use
+		QListWidgetItem				*currentItem	= _control_tab->lwAvailKeywordTags->currentItem();
+		QList<QListWidgetItem *>	matches			= _control_tab->lwKeywordTags->findItems(currentItem->text()
+												    , Qt::MatchFixedString | Qt::MatchCaseSensitive);
+		if(! matches.count()) _control_tab->lwKeywordTags->addItem(currentItem->text());
+	}
+}
+
+void EditingWindow::refreshKeywordTags(){
+	if(! _current_http_business){
+		if(useWordpressAPI){
+			QDomDocument	doc;
+			QDomElement		methodCall = doc.createElement("methodCall");
+			methodCall.appendChild(XmlMethodName(doc, "wp.getTags"));
+
+			QDomElement params = doc.createElement("params");
+			params.appendChild(XmlValue(doc, "int", currentBlogid));
+			params.appendChild(XmlValue(doc, "string", currentAccountElement.firstChildElement("details")
+			    .firstChildElement("login").text()));
+			params.appendChild(XmlValue(doc, "string", currentAccountElement.firstChildElement("details")
+			    .firstChildElement("password").text()));
+
+			methodCall.appendChild(params);
+			doc.appendChild(methodCall);
+			doc.insertBefore(doc.createProcessingInstruction("xml"
+									, "version=\"1.0\" encoding=\"UTF-8\"")
+					, doc.firstChild());
+			addToConsole(doc.toString());
+			QByteArray requestArray(doc.toByteArray(2));
+			responseData = "";
+			placeNetworkRequest(_wp_getTags, requestArray);
+			if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+		}else _status_widget->showMessage(tr("This feature only works on Wordpress."), 2000);
+	}else{
+#ifdef QTM_DEBUG
+		statusWidget->showMessage(tr("refreshCategories: All HTTP requests are blocked")
+					 , 2000);
+#else
+		_status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
+#endif
+	}
+}
+
+void EditingWindow::removeKeywordTag(){
+	int c = _control_tab->lwKeywordTags->currentRow();
+	if(c != - 1){
+		_control_tab->lwKeywordTags->takeItem(c);
+		if(! isWindowModified()) dirtify();
+	}
+}
+
+void EditingWindow::addTechTag(){
+	_control_tab->setCurrentIndex(4);   // cw->cbPageSelector->setCurrentIndex(4);
+	_control_tab->leAddTag->setFocus();
+}
+
+void EditingWindow::addClipTag(){
+	int					l;
+	QRegExpValidator	tagFormat(QRegExp("^http:\\/\\/(www\\.)?technorati\\.com\\/tag\\/([a-zA-Z0-9\\.%]+[\\+ ])*[a-zA-Z0-9\\.%]+$")
+				     , this);
+	QString tagText = QApplication::clipboard()->text();
+
+	_control_tab->setCurrentIndex(4);   // cw->cbPageSelector->setCurrentIndex(4);
+	addToConsole(QString("Validating %1").arg(tagText));
+	if(tagFormat.validate(tagText, l) != QValidator::Acceptable) _status_widget->showMessage(tr("This is not a valid tag."), 2000);
+	else{
+		_status_widget->showMessage(tr("This tag validates OK."), 2000);
+		tagText.remove(QRegExp("(http:\\/\\/)?(www\\.)?technorati\\.com\\/tag\\/"));
+		_control_tab->lwTags->addItem(tagText);
+		if(! isWindowModified()) dirtify();
+	}
+}
+
+void EditingWindow::addTechTagFromLineEdit(){
+	if(! _control_tab->leAddTag->text().isEmpty()){
+		_control_tab->lwTags->addItem(_control_tab->leAddTag->text());
+		_control_tab->leAddTag->clear();
+		if(! isWindowModified()) dirtify();
+	}
+}
+
+void EditingWindow::addTechTagFromAddButton(){
+	int		i;
+	QString	lineEditText = _control_tab->leAddTag->text();
+	if(! lineEditText.isEmpty()){
+		if(tagValidator->validate(lineEditText, i) == QValidator::Acceptable){
+			_status_widget->showMessage(tr("This tag validates."), 2000);
+			_control_tab->lwTags->addItem(_control_tab->leAddTag->text());
+			_control_tab->leAddTag->clear();
+			if(! isWindowModified()) dirtify();
+		}else _status_widget->showMessage(tr("This is not a valid tag."), 2000);
+	}
+}
+
+void EditingWindow::addTBPing(){
+	_control_tab->setCurrentIndex(5);   // cw->cbPageSelector->setCurrentIndex(5);
+	_control_tab->leTBPingURL->setFocus();
+}
+
+
+void EditingWindow::addClipTBPing(){
+	QString clipboardText = QApplication::clipboard()->text();
+	if(! clipboardText.isEmpty()){
+		if(QUrl(clipboardText).isValid()){
+			_status_widget->showMessage(tr("This URL validates."));
+			_control_tab->lwTBPings->addItem(clipboardText);
+			if(! isWindowModified()) dirtify();
+		}else _status_widget->showMessage(tr("This is not a valid URL."), 2000);
+	}
+}
+
+void EditingWindow::addTBPingFromLineEdit(){
+	QString lineEditText = _control_tab->leTBPingURL->text();
+	if(! lineEditText.isEmpty()){
+		if(QUrl(lineEditText).isValid()){
+			_status_widget->showMessage(tr("This URL validates."), 2000);
+			_control_tab->lwTBPings->addItem(lineEditText);
+			_control_tab->leTBPingURL->clear();
+			if(! isWindowModified()) dirtify();
+		}else _status_widget->showMessage(tr("This is not a valid URL."), 2000);
+	}
+}
+
+void EditingWindow::removeTechTag(){
+	int c = _control_tab->lwTags->currentRow();
+	_control_tab->lwTags->takeItem(c);
+	if(! isWindowModified()) dirtify();
+}
+
+void EditingWindow::addTBPingFromAddButton(){
+	QString lineEditText = _control_tab->leTBPingURL->text();
+	if(! lineEditText.isEmpty()){
+		if(QUrl(lineEditText).isValid()){
+			_status_widget->showMessage(tr("This URL validates."), 2000);
+			_control_tab->lwTBPings->addItem(_control_tab->leTBPingURL->text());
+			_control_tab->leTBPingURL->clear();
+			if(! isWindowModified()) dirtify();
+		}else _status_widget->showMessage(tr("This is not a valid URL."), 2000);
+	}
+}
+
+void EditingWindow::removeTBPing(){
+	int c = _control_tab->lwTBPings->currentRow();
+	_control_tab->lwTBPings->takeItem(c);
+	if(! isWindowModified()) dirtify();
+}
+
+void EditingWindow::showPassword(bool showIt){
+	_control_tab->lePassword->setEchoMode(showIt ? QLineEdit::Normal : QLineEdit::Password);
+}
+
+void EditingWindow::dirtify(){
+	dirtyIndicator->show();
+	setWindowModified(true);
+	setDirtySignals(false);
+	cleanSave = false;
+}
+
+void EditingWindow::dirtifyIfText(){
+	if(! editor_object->document()->isEmpty()){
+		dirtyIndicator->show();
+		setWindowModified(true);
+		setDirtySignals(false);
+		cleanSave = false;
+	}
+}
+
+void EditingWindow::setDirtySignals(bool d){
+	QList<QWidget *> widgetList;
+	widgetList	<< editor_object << _control_tab->cbAccountSelector << _control_tab->cbBlogSelector << _control_tab->cbStatus
+		    << _control_tab->chAllowComments << _control_tab->chAllowTB << _control_tab->cbMainCat << _control_tab->lwOtherCats << _control_tab->teExcerpt;
+	if(d){
+		connect(editor_object->document(), SIGNAL(contentsChanged()), this, SLOT(dirtify()));
+		connect(_control_tab->leTitle, SIGNAL(textEdited(const QString&)), this, SLOT(dirtifyIfText()));
+		connect(_control_tab->cbAccountSelector, SIGNAL(activated(int)), this, SLOT(dirtifyIfText()));
+		connect(_control_tab->cbBlogSelector, SIGNAL(activated(int)), this, SLOT(dirtifyIfText()));
+		connect(_control_tab->cbStatus, SIGNAL(activated(int)), this, SLOT(dirtifyIfText()));
+		connect(_control_tab->chAllowComments, SIGNAL(clicked(bool)), this, SLOT(dirtifyIfText()));
+		connect(_control_tab->chAllowTB, SIGNAL(clicked(bool)), this, SLOT(dirtifyIfText()));
+		connect(_control_tab->cbMainCat, SIGNAL(activated(int)), this, SLOT(dirtifyIfText()));
+		connect(_control_tab->lwOtherCats, SIGNAL(activated(const QModelIndex&))
+		       , this, SLOT(dirtifyIfText()));
+		connect(_control_tab->teExcerpt, SIGNAL(textChanged()), this, SLOT(dirtify()));
+	}else{
+		foreach(QWidget * w, widgetList){
+			disconnect(w, 0, this, SLOT(dirtify()));
+			disconnect(w, 0, this, SLOT(dirtifyIfText()));
+		}
+		disconnect(editor_object->document(), 0, this, SLOT(dirtify()));
+	}
+}
+
+void EditingWindow::setPostClean(){
+	dirtyIndicator->hide();
+	setWindowModified(false);
+	setDirtySignals(true);
+	cleanSave = false;
+}
+
+void EditingWindow::showStatusBarMessage(const QString &msg){
+	_status_widget->showMessage(msg, 2000);
+}
+
+bool EditingWindow::saveCheck(bool){
+	bool return_value;
+	if(! isWindowModified()) return_value = true;
+	else return_value = saveCheck();
+	return return_value;
+}
+
+bool EditingWindow::saveCheck(){
+	bool return_value;
+
+	activateWindow();
+	int a = QMessageBox::warning(this, tr("Not saved")
+				    , tr("You have not saved this file.\n"
+					 "Save first?")
+				    , QMessageBox::Yes | QMessageBox::Default
+				    , QMessageBox::No, QMessageBox::Cancel);
+	switch(a){
+		case QMessageBox::Cancel:
+			return_value = false;
+			break;
+		case QMessageBox::Yes:
+			save();
+		default:
+			return_value = true;
+	}
+	return return_value;
+}
+
+void EditingWindow::doInitialChangeBlog(){
+#ifdef QTM_DEBUG
+	addToConsole(QString("loadedEntryBlog: %1\n").arg(loadedEntryBlog));
+#endif
+	disconnect(this, SIGNAL(httpBusinessFinished()), 0, 0);
+	if(loadedEntryBlog != 999){
+		currentBlog		= loadedEntryBlog;
+		loadedEntryBlog = 999;
+		_control_tab->cbBlogSelector->setCurrentIndex(currentBlog);
+		currentBlogElement = currentAccountElement.firstChildElement("blogs")
+		    .elementsByTagName("blog").at(currentBlog).toElement();
+		currentBlogid = currentBlogElement.firstChildElement("blogid").text();
+#ifndef NO_DEBUG_OUTPUT
+		// qDebug() << currentBlogid;
+#endif
+	}
+	changeBlog(currentBlog);
+
+	disconnect(_control_tab->cbBlogSelector, SIGNAL(activated(int))
+		  , this, SLOT(changeBlog(int)));
+	connect(_control_tab->cbBlogSelector, SIGNAL(activated(int))
+	       , this, SLOT(changeBlog(int)));
+}
+
+void EditingWindow::copyURL(){
+	QApplication::clipboard()->setText(remoteFileLocation);
+	if(_super_menu){
+		_super_menu->copyULAction->setVisible(false);
+		_super_menu->copyULAction->setEnabled(false);
+	}
+	_control_tab->copyURLWidget->hide();
+}
+
+void EditingWindow::handleFind(){
+	if(_search_widget->isVisible()){
+		if(_super_menu) _super_menu->findAction->setText(tr("&Find ..."));
+		_search_widget->close();
+	}else{
+		if(_super_menu) _super_menu->findAction->setText(tr("Exit &find"));
+		_search_widget->find();
+	}
+}
+
+void EditingWindow::findAgain(){
+#ifdef Q_OS_MAC
+	searchWidget->findAgain();
+#endif
+}
+
+QDomElement EditingWindow::XmlValue(QDomDocument &doc, QString valueType, QString actualValue, QString memberType){
+	QDomElement param		= doc.createElement(memberType);
+	QDomElement value		= doc.createElement("value");
+	QDomElement realValue	= doc.createElement(valueType);
+	realValue.appendChild(QDomText(doc.createTextNode(actualValue)));
+	value.appendChild(realValue);
+	param.appendChild(value);
+
+	return param;
+}
+
+QDomElement EditingWindow::XmlMember(QDomDocument &doc, QString valueName, QString valueType, QString actualValue){
+	QDomElement mem		= doc.createElement("member");
+	QDomElement name	= doc.createElement("name");
+	name.appendChild(QDomText(doc.createTextNode(valueName)));
+	mem.appendChild(name);
+	QDomElement value		= doc.createElement("value");
+	QDomElement realValue	= doc.createElement(valueType);
+	realValue.appendChild(QDomText(doc.createTextNode(actualValue)));
+	value.appendChild(realValue);
+	mem.appendChild(value);
+
+	return mem;
+}
+
+QDomElement EditingWindow::XmlMethodName(QDomDocument &doc, QString methodName){
+	QDomElement methName = doc.createElement("methodName");
+	methName.appendChild(QDomText(doc.createTextNode(methodName)));
+
+	return methName;
+}
+
+QDomElement EditingWindow::XmlRpcArray(QDomDocument &doc, QString valueName, QString valueType, QList<QString> text){
+	QDomElement arrayValue, arrayValueString;
+	int			i;
+
+	QDomElement mem		= doc.createElement("member");
+	QDomElement name	= doc.createElement("name");
+	name.appendChild(QDomText(doc.createTextNode(valueName)));
+	mem.appendChild(name);
+	QDomElement value		= doc.createElement("value");
+	QDomElement array		= doc.createElement("array");
+	QDomElement arrayData	= doc.createElement("data");
+	for(i = 0; i < text.count(); i ++){
+		arrayValue			= doc.createElement("value");
+		arrayValueString	= doc.createElement(valueType);
+		arrayValueString.appendChild(QDomText(doc.createTextNode(text.value(i))));
+		arrayValue.appendChild(arrayValueString);
+		arrayData.appendChild(arrayValue);
+	}
+	array.appendChild(arrayData);
+	value.appendChild(array);
+	mem.appendChild(value);
+
+	return mem;
+}
+
+QDomElement EditingWindow::XmlRpcArray(QDomDocument &doc, QString valueName, QList<QString> text){
+	return XmlRpcArray(doc, valueName, "string", text);
+}
+
+void EditingWindow::setNetworkActionsEnabled(bool a){
+	networkActionsEnabled = a;
+	if(_super_menu){
+		_super_menu->refreshBlogListAction->setEnabled(a);
+		_super_menu->refreshCatsAction->setEnabled(categoriesEnabled ? a : false);
+		_super_menu->updateCatsAction->setEnabled(categoriesEnabled ? a : false);
+		_super_menu->blogThisAction->setEnabled(a);
+	}
+	_control_tab->lBlog->setEnabled(a);
+	_control_tab->cbBlogSelector->setEnabled(a);
+	_control_tab->pbRefresh->setEnabled(a);
+}
+
+void EditingWindow::handleInitialLookup(const QHostInfo &hostInfo){
+	if(hostInfo.error() == QHostInfo::NoError){
+		refreshBlogList();
+		setNetworkActionsEnabled(true);
+	}else setNetworkActionsEnabled(false);
+}
+/*
+void EditingWindow::handleHostLookupFailed()
+{
+  statusBar()->showMessage( tr( "The host specified could not be found." ), 2000 );
+
+  http->disconnect();
+  http->abort();
+
+  disconnect( SIGNAL( httpBusinessFinished() ) );
+  if( QApplication::overrideCursor() != 0 )
+    QApplication::restoreOverrideCursor();
+} */
+
+void EditingWindow::configureQuickpostTemplates(){
+#if defined USE_SYSTRAYICON
+	if(sti) sti->configureQuickpostTemplates(this);
+#endif
+}
+
+void EditingWindow::setPublishStatus(int publishStatus){
+	_control_tab->cbStatus->setCurrentIndex(publishStatus);
+}
+
+QString EditingWindow::postTitle(){
+	return _control_tab->leTitle->text();
+}
+
+void EditingWindow::setPostTitle(const QString &t){
+	_control_tab->leTitle->setText(t);
+}
+
+void EditingWindow::saveAutoLinkDictionary(){
+	QDomDocument	doc;
+	QDomElement		currentElement, currentKey, currentValue, currentTitle, currentTarget;
+	QDomText		titleText, targetText;
+
+	QDomElement						autoLinkDictionaryElement = doc.createElement("AutoLinkDictionary");
+	QHashIterator<QString, QString>	aldIterator(autoLinkDictionary);
+	while(aldIterator.hasNext()){
+		aldIterator.next();
+		currentElement	= doc.createElement("entry");
+		currentKey		= doc.createElement("key");
+		currentKey.appendChild(QDomText(doc.createTextNode(aldIterator.key())));
+		currentValue = doc.createElement("URL");
+		currentValue.appendChild(QDomText(doc.createTextNode(aldIterator.value())));
+		currentElement.appendChild(currentKey);
+		currentElement.appendChild(currentValue);
+		if(autoLinkTitleDictionary.contains(aldIterator.key())){
+			currentTitle	= doc.createElement("title");
+			titleText		= doc.createTextNode(autoLinkTitleDictionary.value(aldIterator.key()));
+			currentTitle.appendChild(titleText);
+			currentElement.appendChild(currentTitle);
+		}
+		if(autoLinkTargetDictionary.contains(aldIterator.key())){
+			currentTarget	= doc.createElement("target");
+			targetText		= doc.createTextNode(QString::number(autoLinkTargetDictionary
+				.value(aldIterator.key())));
+			currentTarget.appendChild(targetText);
+			currentElement.appendChild(currentTarget);
+		}
+		autoLinkDictionaryElement.appendChild(currentElement);
+	}
+	doc.appendChild(autoLinkDictionaryElement);
+	doc.insertBefore(doc.createProcessingInstruction("xml"
+							, "version=\"1.0\" encoding=\"UTF-8\"")
+			, doc.firstChild());
+
+	QSettings qtm_settings(_config_file_name, QSettings::IniFormat);
+	qtm_settings.beginGroup("account");
+	QString dictionaryFileName = QString("%1/qtmautolinkdict.xml")
+	    .arg(qtm_settings.value("localStorageDirectory", "").toString());
+	qtm_settings.endGroup();
+	QFile dictionaryFile(dictionaryFileName);
+	if(dictionaryFile.open(QIODevice::WriteOnly)){
+		QTextStream dictionaryFileStream(&dictionaryFile);
+		doc.save(dictionaryFileStream, 4);
+		dictionaryFile.close();
+	}else _status_widget->showMessage(tr("Could not write to dictionary file"), 2000);
+}
+
+void EditingWindow::loadAutoLinkDictionary(){
+	QString		dictionaryFileName, errorString, currentKey, currentURL;
+	int			currentTarget;
+	QDomElement currentKeyElement, currentURLElement, currentTitleElement, currentTargetElement;
+	QSettings	qtm_settings(_config_file_name, QSettings::IniFormat);
+	int			errorLine, errorCol;
+	bool		ok;
+
+	qtm_settings.beginGroup("account");
+	dictionaryFileName = QString("%1/qtmautolinkdict.xml").
+	    arg(qtm_settings.value("localStorageDirectory", "").toString());
+	qtm_settings.endGroup();
+	if(QFile::exists(dictionaryFileName)){
+		QDomDocument	dictDoc("autoLinkDictionary");
+		QFile			file(dictionaryFileName);
+		if(! dictDoc.setContent(&file, true, &errorString, &errorLine, &errorCol))
+			QMessageBox::warning(0, tr("Failed to read templates")
+					    , QString(tr("Error: %1\n"
+							 "Line %2, col %3"))
+			    .arg(errorString).arg(errorLine)
+			    .arg(errorCol));
+		else{
+			QDomNodeList entryList = dictDoc.elementsByTagName("entry");
+			for(int i = 0; i < entryList.count(); i ++){
+				currentKeyElement		= entryList.at(i).firstChildElement("key");
+				currentURLElement		= entryList.at(i).firstChildElement("URL");
+				currentTitleElement		= entryList.at(i).firstChildElement("title");
+				currentTargetElement	= entryList.at(i).firstChildElement("target");
+				if(currentKeyElement.isNull() || currentURLElement.isNull()) continue;
+				else{
+					currentKey	= currentKeyElement.text();
+					currentURL	= currentURLElement.text();
+					autoLinkDictionary.insert(currentKey, currentURL);
+					if(! currentTitleElement.isNull()) autoLinkTitleDictionary.insert(currentKey, currentTitleElement.text());
+					if(! currentTargetElement.isNull()){
+						currentTarget = currentTargetElement.text().toInt(&ok);
+						if(ok) autoLinkTargetDictionary.insert(currentKey, currentTarget);
+					}
+				}
+			}
+		}
+	}
+}
+
+// This method was adapted from the QByteArray source code in Qt v4.3.1
+
+QByteArray EditingWindow::toBase64(QByteArray &qbarray){
+	QProgressDialog pdialog(tr("Converting file to Base64")
+			       , tr("Cancel")
+			       , 0, qbarray.size(), 0);
+	pdialog.setWindowModality(Qt::WindowModal);
+	pdialog.setMinimumDuration(2000);
+	pdialog.setWindowTitle(program_title);
+
+	const char alphabet[] = "ABCDEFGH" "IJKLMNOP" "QRSTUVWX" "YZabcdef"
+								 "ghijklmn" "opqrstuv" "wxyz0123" "456789+/";
+	const char	padchar = '=';
+	int			padlen	= 0;
+
+	char	*data	= qbarray.data();
+	int		size	= qbarray.size();
+
+	QByteArray tmp;
+	tmp.resize(((size * 4) / 3) + 3);
+
+	int		i		= 0;
+	char	*out	= tmp.data();
+	while(i < size){
+		int chunk = 0;
+		chunk |= int (uchar(data[i ++])) << 16;
+		if(i == size) padlen = 2;
+		else{
+			chunk |= int (uchar(data[i ++])) << 8;
+			if(i == size) padlen = 1;
+			else chunk |= int (uchar(data[i ++]));
+		}
+		int	j	= (chunk & 0x00fc0000) >> 18;
+		int	k	= (chunk & 0x0003f000) >> 12;
+		int	l	= (chunk & 0x00000fc0) >> 6;
+		int	m	= (chunk & 0x0000003f);
+		*out ++ = alphabet[j];
+		*out ++ = alphabet[k];
+		if(padlen > 1) *out ++ = padchar;
+		else *out ++ = alphabet[l];
+		if(padlen > 0) *out ++ = padchar;
+		else *out ++ = alphabet[m];
+		if(pdialog.wasCanceled()) break;
+		if(i % 1024 == 0){
+			pdialog.setValue(i);
+			qApp->processEvents();
+		}
+	}
+	tmp.truncate(out - tmp.data());
+	if(pdialog.wasCanceled()) return QByteArray();
+	else return tmp;
+}
+
+void EditingWindow::addToConsole(const QString &t){
+	QString text = t;
+#ifndef NO_DEBUG_OUTPUT
+	if(_current_http_business == _metaWeblog_newMediaObject)
+	// qDebug() << "Adding image to console";
+#endif
+	text.replace(QString("<string>%1</string>").arg(password)
+		    , tr("<string>(password omitted)</string>"));
+	QTextCursor cursor(_console->textCursor());
+
+	cursor.movePosition(QTextCursor::End);
+	_console->setTextCursor(cursor);
+	if(text.contains("<base64>"))
+		_console->insertPlainText(text.section("<base64>", 0, 0, QString::SectionIncludeTrailingSep)
+		    .append(tr(" ... base64 encoded file omitted ... "))
+		    .append(text.section("</base64>", 1, 1, QString::SectionIncludeLeadingSep)));
+	else _console->insertPlainText(text);
+}
+
+void EditingWindow::hideProgressBarIfMaximum(int val){
+	if(val == _control_tab->progressBar->maximum()) QTimer::singleShot(1000, this, SLOT(hideProgressBar()));
+}
+
+void EditingWindow::hideProgressBar(){
+	_control_tab->progressWidget->setVisible(false);
+	_control_tab->progressBar->reset();
+
+#ifdef WIN_QTV
+	taskbarProgress->setVisible(false);
+	taskbarProgress->reset();
+#endif
+	if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+}
+
+QString EditingWindow::checkBoxName(QString source){
+	QChar firstLetter(source.at(1));
+	return QString("%1%2%3")
+	       .arg("ch")
+	       .arg(firstLetter.toUpper())
+	       .arg(source.section(1, - 1));
+}
+
+QString EditingWindow::decodeXmlEntities(QString source){
+	QString		rv;
+	int			i, tc;
+	int			pos = 0;
+	QChar		thisChar;
+	QString		key, thisCap;
+	bool		ok;
+	QStringList lst, caps;
+
+	QRegExp	rx1("&(\\S+);");    // Detects named entities
+	QRegExp	rx2("&#(\\d{1-3});");   // Detects only numerically-defined characters
+	int		index = rx1.indexIn(source);
+	if(index == - 1) return source;
+	else{
+		lst = source.split(rx1);
+		while((pos = rx1.indexIn(source, pos)) != - 1){
+			caps += rx1.cap(0);
+			// qDebug() << "Matched" << rx1.cap( 0 );
+			pos += rx1.matchedLength();
+		}
+		// qDebug() << "Occurrences:" << caps.length();
+		for(i = 0; i < lst.count(); ++ i){
+			rv		+= lst.value(i);
+			thisCap	= caps.value(i);
+			// qDebug() << "i =" << i;
+			if(! thisCap.isNull()){
+				if(rx2.exactMatch(caps.value(i))){
+					tc = rx2.cap(0).toInt(&ok);
+					if(ok && tc < 256) rv += QChar(tc);
+					else rv += caps.value(i);
+				}else{
+					rx1 = QRegExp(rx1);
+					rx1.indexIn(thisCap);
+					key = rx1.cap(1);
+					// qDebug() << "Using caps value" << i;
+					// qDebug() << thisCap << "is not a numerical: caps:" << rx1.numCaptures();
+					if(xmlEntities.contains(key)) rv += xmlEntities.value(key);
+					else rv += rx1.cap(0);
+				}
+			}
+		}
+		return rv;
+	}
+}
+
+bool EditingWindow::event(QEvent *event){
+	if(event->type() == QEvent::WindowActivate){
+#ifdef Q_OS_MAC
+		_super_menu->editing_win(this);
+#endif
+		_app->editing_win(this);
+	}
+	return QMainWindow::event(event);
+}
+
+bool EditingWindow::eventFilter(QObject *obj, QEvent *event){
+	if(obj == editor_object){
+		if(event->type() == QEvent::KeyPress){
+			QKeyEvent *kpevent = static_cast<QKeyEvent *>(event);
+			if(kpevent->key() == Qt::Key_V && kpevent->modifiers() == Qt::ControlModifier){
+				paste();
+				return true;
+			}else return false;
+		}else return false;
+	}
+	if(obj == _preview_window && event->type() == QEvent::KeyPress){
+		QKeyEvent *kpevent = static_cast<QKeyEvent *>(event);
+		if(kpevent->key() == Qt::Key_Escape && kpevent->modifiers() == 0){
+			doPreview(false);
+			return true;
+		}else return false;
+	}
+	if(obj == _console && event->type() == QEvent::KeyPress){
+		QKeyEvent *kpevent = static_cast<QKeyEvent *>(event);
+		if(kpevent->key() == Qt::Key_Escape && kpevent->modifiers() == 0){
+			handleConsole(false);
+			return true;
+		}else return false;
+	}
+	return QMainWindow::eventFilter(obj, event);
+}
+
+// void EditingWindow::assembly_closebutton(void){
+//	// Вертикальная область с кнопкой закрытия и распоркой
+//	// чтобы кнопка была вверху
+//    _toolsarea_of_close_button = new QVBoxLayout();
+//    _toolsarea_of_close_button->setContentsMargins(0, 0, 0, 0);
+//    _toolsarea_of_close_button->addWidget(_close_button);
+//    _toolsarea_of_close_button->addStretch();
+// }
+
+// Полное сокрытие виджета
+void EditingWindow::widget_hide(bool checked){
+	Q_UNUSED(checked);
+	//    // Запоминается размер сплиттера перед скрытием виджета
+	//    QSplitter *findSplitterRel = find_object<QSplitter>("find_splitter");
+	//    appconfig.set_findsplitter_size_list(findSplitterRel->sizes());
+
+	// Виджет скрывается
+	_editentry->hide();
+	appconfig.editor_show(false);
+}
+
+
+// void EditingWindow::setup_closebutton(void){
+//	// Кнопка закрытия виджета
+//    _close_button = new FlatToolButton(this);
+//    _close_button->setVisible(true);
+//    _close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton));// SP_TitleBarCloseButton SP_DialogCloseButton
+//    _close_button->setAutoRaise(true);
+//    if(appconfig.interface_mode() == "desktop"){
+//	int	w	= _close_button->geometry().width();
+//	int	h	= _close_button->geometry().height();
+//	int	x	= std::min(w, h) / 2;	// imin(w, h) / 2;
+//	_close_button->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed, QSizePolicy::ToolButton));
+//	_close_button->setMinimumSize(x, x);
+//	_close_button->setMaximumSize(x, x);
+//	_close_button->resize(x, x);
+//    }
+// }
+
+QStackedWidget *EditingWindow::main_stack(){return _main_stack;}

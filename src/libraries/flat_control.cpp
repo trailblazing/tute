@@ -12,6 +12,10 @@
 W_OBJECT_IMPL(MtComboBox)
 #endif
 
+
+const QIcon default_icon = QIcon(QLatin1String(":/resource/pic/trace.svg"));
+
+
 MtComboBox::MtComboBox(QWidget *parent) : QComboBox(parent){
 	Q_UNUSED(parent);
 	currentindexchanged = &QComboBox::currentIndexChanged;
@@ -105,8 +109,8 @@ FlatFontComboBox::FlatFontComboBox(QWidget *parent)
 
 	QPalette plt(palette());
 	plt.setColor(QPalette::Background, Qt::darkGray
-		// white
-		);
+	    // white
+		    );
 	setPalette(plt);
 
 	currentindexchanged = &Super::currentIndexChanged;

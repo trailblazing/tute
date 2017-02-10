@@ -92,7 +92,7 @@
 #include "entrance.h"
 #include "views/main_window/main_window.h"
 #include "main.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "libraries/window_switcher.h"
 #include "libraries/walk_history.h"
 #include "libraries/wyedit/editor_text_area.h"

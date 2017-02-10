@@ -72,7 +72,7 @@ signals:
 
 
 
-class MetaEditor : public Editor
+class EditorWrap : public Editor
 //    : public QDockWidget
 {
 #if QT_VERSION == 0x050600
@@ -84,7 +84,7 @@ Q_OBJECT
 public slots:
 
 	void field(QString n, QString v);
-	void clear_all(void);
+	void initialize_data(void);
 	void on_click_to_tag(const QString &text);
 
 
@@ -98,8 +98,8 @@ signals:
 #endif
 
 public:
-	MetaEditor(FindScreen *find_screen, EditingWindow *editing_win, QStackedWidget *main_stack_ = nullptr, QString object_name = "");
-	~MetaEditor(void);
+	EditorWrap(FindScreen *find_screen, EditingWindow *editing_win, QStackedWidget *main_stack_ = nullptr, QString object_name = "");
+	~EditorWrap(void);
 
 //	void tree_path(const QString &path);
 	void pin(const QString &pin_);

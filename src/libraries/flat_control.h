@@ -10,7 +10,7 @@
 #include <QFontComboBox>
 #include <QCheckBox>
 #include <QLineEdit>
-
+#include <QIcon>
 
 
 #if QT_VERSION == 0x050600
@@ -18,36 +18,38 @@
 #include <QObject>
 #endif
 
+
+extern const QIcon  default_icon;
 // Класс, исправляющий QComboBox, чтобы правильно применялись QSS-стили
 // Проблема описана здесь: stackoverflow.com/questions/13308341/qcombobox-abstractitemviewitem
 
 
 class MtComboBox : public QComboBox {
 #if QT_VERSION == 0x050600
-    W_OBJECT(MtComboBox)
+W_OBJECT(MtComboBox)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
-    public:
+public:
 	void (MtComboBox::*currentindexchanged)(int index);
 	MtComboBox(QWidget *parent = 0);
 	virtual ~MtComboBox();
 
-    private:
+private:
 
 	QStyledItemDelegate *itemDelegate;
 };
 
 class FlatComboBox : public QComboBox {
-    typedef QComboBox Super;
+typedef QComboBox Super;
 
-    private:
+private:
 #if QT_VERSION == 0x050600
 	W_OBJECT(FlatComboBox)
 #else
 	Q_OBJECT
 #endif
-    public:
+public:
 	void (FlatComboBox::*currentindexchanged)(int index);
 	FlatComboBox(QWidget *parent = 0);
 	virtual ~FlatComboBox();
@@ -59,11 +61,11 @@ class FlatComboBox : public QComboBox {
 
 	void setArrowAlignment(Qt::Alignment a);
 
-    protected:
+protected:
 	virtual void paintEvent(QPaintEvent *e);
 	virtual void mousePressEvent(QMouseEvent *e);
 
-    signals:
+signals:
 	void aboutToPullDown()
 #if QT_VERSION == 0x050600
 	W_SIGNAL(aboutToPullDown)//
@@ -71,21 +73,21 @@ class FlatComboBox : public QComboBox {
 	;
 #endif
 
-    private:
+private:
 	QStyledItemDelegate	*itemDelegate;
 	Qt::Alignment arrowAlignment_;
 	bool flat_;
 };
 
 class FlatFontComboBox : public QFontComboBox {
-    typedef QFontComboBox Super;
+typedef QFontComboBox Super;
 #if QT_VERSION == 0x050600
-    W_OBJECT(FlatFontComboBox)
+W_OBJECT(FlatFontComboBox)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
-    public:
-	FlatFontComboBox(QWidget *parent = 0);	//: QFontComboBox(parent) {}
+public:
+	FlatFontComboBox(QWidget *parent = 0);  //: QFontComboBox(parent) {}
 
 	void (FlatFontComboBox::*currentindexchanged)(int index);
 
@@ -98,11 +100,11 @@ class FlatFontComboBox : public QFontComboBox {
 
 	void setArrowAlignment(Qt::Alignment a);
 
-    protected:
+protected:
 	virtual void paintEvent(QPaintEvent *e);
 	virtual void mousePressEvent(QMouseEvent *e);
 
-    signals:
+signals:
 	void aboutToPullDown()
 #if QT_VERSION == 0x050600
 	W_SIGNAL(aboutToPullDown)//
@@ -110,7 +112,7 @@ class FlatFontComboBox : public QFontComboBox {
 	;
 #endif
 
-    private:
+private:
 	QStyledItemDelegate	*itemDelegate;
 	Qt::Alignment arrowAlignment_;
 	bool flat_;
@@ -118,38 +120,38 @@ class FlatFontComboBox : public QFontComboBox {
 
 class FlatToolButton : public QToolButton {
 #if QT_VERSION == 0x050600
-    W_OBJECT(FlatToolButton)
-    W_PROPERTY(bool, autoRaise, &FlatToolButton::autoRaise, &FlatToolButton::setAutoRaise)	//
+W_OBJECT(FlatToolButton)
+W_PROPERTY(bool, autoRaise, &FlatToolButton::autoRaise, &FlatToolButton::setAutoRaise)      //
 #else
-    Q_OBJECT Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
+Q_OBJECT Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
 #endif
-    typedef QToolButton Super;
+typedef QToolButton Super;
 
-    private:
+private:
 
-    public:
-	FlatToolButton(const QString &name = "", QWidget *parent = nullptr, const QIcon &icon = QIcon());
+public:
+	FlatToolButton(const QString &name = "", QWidget *parent = nullptr, const QIcon &icon = default_icon);
 	FlatToolButton(QWidget *parent = nullptr, const QString &name = "");
 	// bool flat() const { return flat_; }
 	// void setFlat(bool flat);
 	// void setAutoRaise(bool yes) {QToolButton::setAutoRaise(yes);}
-    protected:
+protected:
 	virtual void paintEvent(QPaintEvent *e);
 	// virtual void mousePressEvent(QMouseEvent *e);
-    private:
+private:
 	// bool flat_;
 };
 
 class FlatCheckBox : public QCheckBox {
-    typedef QCheckBox Super;
-    public:
+typedef QCheckBox Super;
+public:
 	FlatCheckBox(const QString &name);
 };
 
 
 class FlatLineEdit : public QLineEdit {
-    typedef QLineEdit Super;
-    FlatLineEdit();
+typedef QLineEdit Super;
+FlatLineEdit();
 };
 
 #endif /* __MTCOMBOBOX_H__ */

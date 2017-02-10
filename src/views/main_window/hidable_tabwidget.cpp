@@ -25,66 +25,66 @@ extern AppConfig	appconfig;
 extern gl_para		globalparameters;
 extern const char	*record_screen_multi_instance_name;
 const char			*custom_hidabletabwidget_style =
-	"QTabWidget::pane {"
+    "QTabWidget::pane {"
 //    "width: 250px;"	// content space, can not change easily if set here
-	"border: 0 px;"
-	"}"
-	"QTabBar::tab {"
+    "border: 0 px;"
+    "}"
+    "QTabBar::tab {"
 //    "left 3 px;"
 //    "background: transparent;"
 //    "background-color: transparent;"
-	"border-color: white;"
-	"border-width: 0 px;"
-	"border-style: solid;"
-	"alignment: bottom;"
-	"max-height: 100px;"
-	"width: 26 px;"	// 16
-	"max-width: 28px;"
-	"qproperty-alignment: AlignBottom;"			//  AlignCenter | AlignVCenter;*/
-	"qproperty-wordWrap: false;"
-	"padding-bottom: 5px;"
+    "border-color: white;"
+    "border-width: 0 px;"
+    "border-style: solid;"
+    "alignment: bottom;"
+    "max-height: 100px;"
+    "width: 26 px;" // 16
+    "max-width: 28px;"
+    "qproperty-alignment: AlignBottom;"         //  AlignCenter | AlignVCenter;*/
+    "qproperty-wordWrap: false;"
+    "padding-bottom: 5px;"
 //    "padding: 0 px;"
-	"margin-left: 2 px;"
-	"margin-right: 0 px;"
-	"}"
+    "margin-left: 2 px;"
+    "margin-right: 0 px;"
+    "}"
 
-	"QTabWidget::tab-bar {"
+    "QTabWidget::tab-bar {"
 //    "background: transparent;"
 //    "border-color: transparent;"
-	"border-width: 0 px;"
-	"border-style: solid;"
-	"background-color: transparent;"
-	"alignment: bottom;"
-	"width: 28px;"	// 16
-	"max-width : 30 px;"
-	"text-align: left;"
-	"qproperty-alignment: AlignBottom;"
-	"qproperty-wordWrap: false;"
-	"padding : 0 px;"
-	"padding-bottom: 0px;"
+    "border-width: 0 px;"
+    "border-style: solid;"
+    "background-color: transparent;"
+    "alignment: bottom;"
+    "width: 28px;"  // 16
+    "max-width : 30 px;"
+    "text-align: left;"
+    "qproperty-alignment: AlignBottom;"
+    "qproperty-wordWrap: false;"
+    "padding : 0 px;"
+    "padding-bottom: 0px;"
 //    "padding-left: 0px;"
-	"margin-left : 0 px;"	// 0
-	"margin-right : 0 px;"	// 0
-	"}"
-	"QTabWidget{"
+    "margin-left : 0 px;"   // 0
+    "margin-right : 0 px;"  // 0
+    "}"
+    "QTabWidget{"
 //    "width: 250px;" // nake fiexed size
-	"background: transparent;"
-	"border-color: transparent;"
-	"}"
-	"QTabBar::tab:selected, QTabBar::tab:hover {"
-	"background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);"
-	"font-color: black;"
-	"}"
-	"QTabBar::tab:selected {"
-	"border-color: #9B9B9B;"
-	"border-bottom-color: white;"	// #C2C7CB         /* same as pane color */
-	"background-color: white;"
-	"}"
-	"QTabBar::tab:!selected {"
-	"margin-left: 0px;"		/* make non-selected tabs look smaller */
-	"background-color: transparent;"
-	"border-bottom-color: transparent;"
-	"}"
+    "background: transparent;"
+    "border-color: transparent;"
+    "}"
+    "QTabBar::tab:selected, QTabBar::tab:hover {"
+    "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);"
+    "font-color: black;"
+    "}"
+    "QTabBar::tab:selected {"
+    "border-color: #9B9B9B;"
+    "border-bottom-color: white;"   // #C2C7CB         /* same as pane color */
+    "background-color: white;"
+    "}"
+    "QTabBar::tab:!selected {"
+    "margin-left: 0px;"     /* make non-selected tabs look smaller */
+    "background-color: transparent;"
+    "border-bottom-color: transparent;"
+    "}"
 ;
 
 
@@ -94,20 +94,20 @@ W_OBJECT_IMPL(HidableTabWidget)
 
 
 HidableTabWidget::HidableTabWidget(ts_t *tree_screen_
-								  , FindScreen *find_screen_
-								  , Editentry *_editentry
-								  , browser::Entrance *entrance_
-								  , QMainWindow *main_window_
-								  , browser::Profile *profile_
-								  , QString style_source_
-								  , QSplitter *splitter
-								  , std::shared_ptr<QSettings> splitter_config
-								  , QString splitter_group_name
-								  , QString splitter_sizelist_name
-								  , QString collapsed_status_name, QWidget *parent)
+				  , FindScreen *find_screen_
+				  , Editentry *_editentry
+				  , browser::Entrance *entrance_
+				  , QMainWindow *main_window_
+				  , browser::Profile *profile_
+				  , QString style_source_
+				  , QSplitter *splitter
+				  , std::shared_ptr<QSettings> splitter_config
+				  , QString splitter_group_name
+				  , QString splitter_sizelist_name
+				  , QString collapsed_status_name, QWidget *parent)
 	: QTabWidget(parent)
 	  , _hide_action(new QAction(tr("▾"), this))
-	  , _layout(new QVBoxLayout(this))	// (new QStackedLayout(this))
+	  , _layout(new QVBoxLayout(this))  // (new QStackedLayout(this))
 	  , _tree_screen(tree_screen_)
 	  , _find_screen(find_screen_)
 	  , _editentry(_editentry)
@@ -131,47 +131,47 @@ HidableTabWidget::HidableTabWidget(ts_t *tree_screen_
 
 
 	connect(this, &::HidableTabWidget::tabCloseRequested, [&](int index){
-			auto w = widget(index);
-			this->removeTab(index);
-			if(w->objectName() == record_screen_multi_instance_name){
+		auto w = widget(index);
+		this->removeTab(index);
+		if(w->objectName() == record_screen_multi_instance_name){
 //		auto rs = dynamic_cast<rs_t *>(w);
-				auto _browser = dynamic_cast<rs_t *>(w)->browser();
-				if(_browser){
-					_browser->close();
+		    auto _browser = dynamic_cast<rs_t *>(w)->browser();
+		    if(_browser){
+			_browser->close();
 //		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-					_browser->deleteLater();
-				}
-			}else{
-				w->close();
-				w->deleteLater();
+			_browser->deleteLater();
 			}
-			w = nullptr;
-		});
+		}else{
+		    w->close();
+		    w->deleteLater();
+		}
+		w = nullptr;
+	});
 
 	connect(this, &::HidableTabWidget::currentChanged, [&](int index){
-			QWidget *w = nullptr;
-			w = widget(index);
-			if(w){
-				if(w->objectName() == record_screen_multi_instance_name){
+		QWidget *w = nullptr;
+		w = widget(index);
+		if(w){
+		    if(w->objectName() == record_screen_multi_instance_name){
 //		auto rs = dynamic_cast<rs_t *>(w);
-					auto _browser = dynamic_cast<rs_t *>(w)->browser();
-					if(_browser){
+			auto _browser = dynamic_cast<rs_t *>(w)->browser();
+			if(_browser){
 //		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-						if(_browser->tabmanager()->count() > 0){
-							auto v = _browser->currentTab();
-							if(v){
-								auto p = v->page();
-								if(p){
-									auto it = p->host();
-									if(_tree_screen->view()->current_item()->id() != it->id()) _tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
-								}
+			    if(_browser->tabmanager()->count() > 0){
+				auto v = _browser->currentTab();
+				if(v){
+				    auto p = v->page();
+				    if(p){
+					auto it = p->host();
+					if(_tree_screen->view()->current_item()->id() != it->id()) _tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
 							}
 						}
 					}
 				}
 			}
-			w = nullptr;
-		});
+		}
+		w = nullptr;
+	});
 	setUsesScrollButtons(true);
 	//    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
 //    setStyleSheet("QTabWidget::pane { border: 0 px; } QTabBar::tab { max-width: 200px; padding: 0 px; margin-left: 2 px; margin-right: 0 px;} QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2 px; padding: 0 px; margin-right: 0 px;}");    // QWidget{border: 0px;}
@@ -183,7 +183,7 @@ HidableTabWidget::HidableTabWidget(ts_t *tree_screen_
 //    settings.endGroup();
 //    QString style_source = globalparameters.entrance()->style_source();
 
-	setStyleSheet(custom_hidabletabwidget_style);	// _style
+	setStyleSheet(custom_hidabletabwidget_style);   // _style
 
 
 
@@ -211,20 +211,20 @@ HidableTabWidget::HidableTabWidget(ts_t *tree_screen_
 	_layout->addWidget(this);
 	setLayout(_layout);
 
-	setWindowFlags(	// Qt::Window |
+	setWindowFlags( // Qt::Window |
 		Qt::FramelessWindowHint
 		// |Qt::Popup
 		| Qt::CustomizeWindowHint
 //        | Qt::SplashScreen   // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
 		// | Qt::DockWidgetArea::NoDockWidgetArea
 		| Qt::MaximizeUsingFullscreenGeometryHint
-		);
+		      );
 
 	setAutoFillBackground(true);
 	adjustSize();
 
 
-	setTabPosition(TabPosition::West);		// South
+	setTabPosition(TabPosition::West);      // South
 	setTabShape(TabShape::Triangular);
 	setTabsClosable(true);
 
@@ -237,7 +237,7 @@ HidableTabWidget::HidableTabWidget(ts_t *tree_screen_
 
 HidableTabWidget::~HidableTabWidget(){
 //    if(_record_screens.size() > 0){
-	for(int i = 0; i < count(); i ++){	// for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+	for(int i = 0; i < count(); i ++){  // for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
 		auto w = widget(i);
 		if(w->objectName() == record_screen_multi_instance_name){
 			//	    auto	rs		= dynamic_cast<rs_t *>(w);
@@ -259,7 +259,7 @@ std::set<rs_t *> HidableTabWidget::record_screens() const {
 
 //    return browser_size_;
 	std::set<rs_t *> result;
-	for(int i = 0; i < count(); i ++){		// for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+	for(int i = 0; i < count(); i ++){      // for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
 		auto w = widget(i);
 		if(w->objectName() == record_screen_multi_instance_name){
 			auto rs = dynamic_cast<rs_t *>(w);
@@ -267,7 +267,7 @@ std::set<rs_t *> HidableTabWidget::record_screens() const {
 			if(rs) if(result.find(rs) == result.end()) result.insert(rs);// if(*i){	// && *i != widget()=>for entrance
 		}
 	}
-	return result;	// _record_screens;
+	return result;  // _record_screens;
 }
 
 
@@ -317,7 +317,7 @@ browser::WebView *HidableTabWidget::find(const std::function<bool (boost::intrus
 		if(v->page()){
 			boost::intrusive_ptr<::Binder> binder = v->page()->binder();
 			if(binder){
-				auto _this_item = v->page()->host();	// globalparameters.entrance()->find(_equal);
+				auto _this_item = v->page()->host();    // globalparameters.entrance()->find(_equal);
 				if(_this_item){
 					if(binder->integrity_external(_this_item, v->page())){
 //			assert(_this_item == v->page()->binder()->item());
@@ -347,7 +347,7 @@ browser::Browser *HidableTabWidget::new_browser(){
 	auto rs = new rs_t(_tree_screen, _find_screen, _editentry, _entrance, this, _style_source, _profile);
 
 	setUpdatesEnabled(false);
-	addTab(rs, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(vtab_record->count())
+	addTab(rs, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));    // QString("Browser ") + QString::number(vtab_record->count())
 	bool found = false;
 	for(int i = 0; i < count(); i ++){
 		auto r = widget(i);
@@ -390,7 +390,7 @@ browser::Browser *HidableTabWidget::activated_browser(){
 // } else { //
 //    if(count() > 0)
 	int count_browser = 0;
-	for(int i = 0; i < count(); i ++){		// for(auto i : _record_screens){
+	for(int i = 0; i < count(); i ++){      // for(auto i : _record_screens){
 		auto rs = widget(i);
 		if(rs->objectName() == record_screen_multi_instance_name){
 			count_browser ++;
@@ -398,7 +398,7 @@ browser::Browser *HidableTabWidget::activated_browser(){
 			auto browser_ = dynamic_cast<rs_t *>(rs)->browser();
 			if(browser_){
 				if(browser_->isVisible() || browser_->isActiveWindow()){
-					_browser = browser_;		// .data();
+					_browser = browser_;        // .data();
 
 					break;
 				}
@@ -418,7 +418,7 @@ browser::Browser *HidableTabWidget::activated_browser(){
 // assert(dp.second);
 	assert(_browser);
 
-	return _browser;	// qobject_cast<DockedWindow *>(widget()); //
+	return _browser;    // qobject_cast<DockedWindow *>(widget()); //
 // _mainWindows[0];
 }
 
@@ -433,7 +433,7 @@ std::tuple<int, QList<int> > HidableTabWidget::inner_rebuild_on_splitter_moved(i
 
 	auto bar_width = this->tabBar()->sizeHint().width();//
 	if(0 == bar_width){
-		bar_width = sizeHint().width();	// tabBar()->geometry().width();//
+		bar_width = sizeHint().width(); // tabBar()->geometry().width();//
 //		auto bar_width_ = minimumSizeHint().width();
 	}
 	assert(bar_width > 0);
@@ -451,7 +451,10 @@ std::tuple<int, QList<int> > HidableTabWidget::inner_rebuild_on_splitter_moved(i
 		this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
 		_splitter->setSizes(sizes);
-	}else{	// if(record_pos > bar_width)
+		auto right = _splitter->widget(1);
+		right->setMaximumWidth(win_width);
+		right->adjustSize();
+	}else{  // if(record_pos > bar_width)
 		this->setMaximumWidth(win_width);
 		if(record_pos < 0) record_pos = bar_width;
 		if(record_pos < win_width){
@@ -468,13 +471,15 @@ std::tuple<int, QList<int> > HidableTabWidget::inner_rebuild_on_splitter_moved(i
 
 		this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		_splitter->setSizes(sizes);
+		auto right = _splitter->widget(1);
+		right->adjustSize();
 	}
-	if(sizes[0] <= 0) sizes[0] = bar_width;																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																// tabBar()->sizeHint().width();
+	if(sizes[0] <= 0) sizes[0] = bar_width;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             // tabBar()->sizeHint().width();
 	if((sizes[1] > win_width - sizes[0]) || (sizes[1] <= 0)) sizes[1] = std::abs(win_width - sizes[0]);
 	assert(sizes[1] >= 0);
 	// If you build main stack and edtor too early before the container has been built, you will need following jobs.
 	auto	_main_stack = _splitter->widget(1);
-	auto	msw			= _main_stack->width();	// 50
+	auto	msw			= _main_stack->width(); // 50
 	if(msw < sizes[1]) _main_stack->resize(sizes[1], height());
 ////			assert(msw == sizes[1]);
 //	auto ew = _editor->width();	// 0
@@ -511,8 +516,8 @@ std::tuple<int, QList<int> > HidableTabWidget::inner_rebuild_on_splitter_moved(i
 	_splitter_config->endGroup();
 	//
 	_splitter_config->sync();
-	return	// std::make_tuple(bar_width, h_record_sizes);	//
-		   std::make_tuple<int, QList<int> > (std::move(bar_width), std::move(sizes));
+	return  // std::make_tuple(bar_width, h_record_sizes);	//
+	       std::make_tuple<int, QList<int> > (std::move(bar_width), std::move(sizes));
 }
 
 void HidableTabWidget::collapse_when_true(bool checked){
@@ -534,10 +539,10 @@ void HidableTabWidget::collapse_when_true(bool checked){
 //		QSettings	_splitter_config(_config_file_name, QSettings::IniFormat);
 		QStringList line_list_;
 		QList<int>	list_;
-		_splitter_config->beginGroup(_splitter_group_name);	// "geometry"
+		_splitter_config->beginGroup(_splitter_group_name); // "geometry"
 		line_list_ = (_splitter_config->value(_splitter_sizelist_name, "100,100")).toString().split(",");
 		for(int i = 0; i < line_list_.size(); ++ i) list_.append(line_list_.at(i).toInt());
-		auto win_width = _main_window->width();	// sizes[0] + sizes[1];
+		auto win_width = _main_window->width(); // sizes[0] + sizes[1];
 		if(list_[0] <= bar_width){
 			sizes[0]	= win_width * 20 / 100;
 			sizes[1]	= win_width - sizes[0];
@@ -555,11 +560,12 @@ void HidableTabWidget::collapse_when_true(bool checked){
 	};
 	//
 	if(checked){// close, collapse
-		if(this->tabPosition() == North || tabPosition() == South){	// , West, East
+		if(this->tabPosition() == North || tabPosition() == South){ // , West, East
 			this->setMaximumHeight(bar_height);
 			for(int i = 0; i < this->count(); i ++){
 				auto w = this->widget(0);
-				w->setMaximumSize(QSize(widget(0)->geometry().width(), 0));
+				w->setMaximumSize(QSize(// widget(0)->
+						geometry().width(), 0));
 				w->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 			}
 			sizes[1]	= win_height - bar_height;
@@ -571,7 +577,8 @@ void HidableTabWidget::collapse_when_true(bool checked){
 			this->setMaximumWidth(bar_width);
 			for(int i = 0; i < this->count(); i ++){
 				auto w = this->widget(0);
-				w->setMaximumSize(QSize(0, widget(0)->geometry().height()));
+				w->setMaximumSize(QSize(0  // widget(0)->
+						       , geometry().height()));
 				w->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 			}
 			sizes[1]	= win_width - bar_width;
@@ -581,21 +588,23 @@ void HidableTabWidget::collapse_when_true(bool checked){
 //	    this->setMaximumHeight([&] {auto p = this->parentWidget();return p ? p->height() : this->geometry().height();} ());
 			this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 		}
-	}else{	// open, expand
-		if(this->tabPosition() == North || tabPosition() == South){	// , West, East
-			this->setMaximumHeight(std::numeric_limits<int>::max());	// 100000// just a very big number
+	}else{  // open, expand
+		if(this->tabPosition() == North || tabPosition() == South){ // , West, East
+			this->setMaximumHeight(std::numeric_limits<int>::max());    // 100000// just a very big number
 			for(int i = 0; i < this->count(); i ++){
 				auto w = this->widget(0);
-				w->setMaximumSize(QSize(widget(0)->geometry().width(), std::numeric_limits<int>::max()));
+				w->setMaximumSize(QSize(// widget(0)->geometry().width()
+						std::numeric_limits<int>::max(), std::numeric_limits<int>::max()));
 				w->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 			}
 			//            setContentsMargins(0, 0, 0, 0);
 //	    this->setMaximumWidth([&] {auto p = this->parentWidget();return p ? p->width() : this->geometry().width();} ());
 		}else{
-			this->setMaximumWidth(std::numeric_limits<int>::max());	// 100000// just a very big number
+			this->setMaximumWidth(std::numeric_limits<int>::max()); // 100000// just a very big number
 			for(int i = 0; i < this->count(); i ++){
 				auto w = this->widget(0);
-				w->setMaximumSize(QSize(std::numeric_limits<int>::max(), widget(0)->geometry().height()));
+				w->setMaximumSize(QSize(std::numeric_limits<int>::max()  // widget(0)->, geometry().height()
+						       , std::numeric_limits<int>::max()));
 				w->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 			}
 			open_tab_widgets_west_east();
@@ -610,7 +619,7 @@ void HidableTabWidget::inner_and_spiltter_on_click(int index){
 //    [&](int index){	// deal with spiltter
 	(void) index;
 	auto	sizes		= _splitter->sizes();
-	auto	bar_width	= tabBar()->sizeHint().width();	// geometry().width();
+	auto	bar_width	= tabBar()->sizeHint().width(); // geometry().width();
 	//
 	//
 	//

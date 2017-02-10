@@ -58,7 +58,7 @@
 #include "views/browser/webview.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
-#include "views/record/meta_editor.h"
+#include "views/record/editor_wrap.h"
 #include "views/record_table/record_screen.h"
 #include "views/record_table/record_view.h"
 #include "views/tree/tree_screen.h"
@@ -371,7 +371,7 @@ void Editentry::on_activate_window(){
 			QString home = _item->field<home_type>();
 			QUrl homeurl = QUrl(home);
 			if(homeurl.isValid() && homeurl != page->url()){
-			    _item->field<url_type>(home);       // "url",
+			    _item->field<url_type>(home);   // "url",
 			    // boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
 
 			    // try {
@@ -383,7 +383,7 @@ void Editentry::on_activate_window(){
 			    page->bind(_item)->activate(std::bind(
 						&HidableTabWidget::find
 										 , globalparameters.main_window()->vtab_record()
-										 , std::placeholders::_1));     // page->load(record, true);
+										 , std::placeholders::_1)); // page->load(record, true);
 				}
 			}
 		}
@@ -1622,9 +1622,9 @@ QString Editentry::style_source(){return _style_source;}
 
 void Editentry::name(const QString &nm){blog_editor()->editor()->name(nm);}
 
-//void Editentry::tree_path(const QString &path){
+// void Editentry::tree_path(const QString &path){
 //	blog_editor()->editor()->tree_path(path);
-//}
+// }
 void Editentry::pin(const QString &pin_){blog_editor()->editor()->pin(pin_);}
 
 // void Editentry::switch_pin(bool checked){blog_editor()->editor()->switch_pin(checked);}
@@ -1660,12 +1660,12 @@ void Editentry::load_callback(const std::function<void (QObject *editor, QString
 	blog_editor()->editor()->load_callback(func);
 }
 
-void Editentry::editor_load_callback(QObject *editor, QString &loadText){
-	Editor::editor_load_callback(editor, loadText);
-}
-void Editentry::editor_save_callback(QObject *editor, const QString &saveText){
-	Editor::editor_save_callback(editor, saveText);
-}
+//void Editentry::editor_load_callback(QObject *editor, QString &load_text){
+//	Editor::editor_load_callback(editor, load_text);
+//}
+//void Editentry::editor_save_callback(QObject *editor, const QString &save_text){
+//	Editor::editor_save_callback(editor, save_text);
+//}
 
 bool Editentry::work_directory(QString dir_name){
 	return blog_editor()->editor()->work_directory(dir_name);
@@ -1731,7 +1731,7 @@ void Editentry::back_callback(void (*func)()){
 	blog_editor()->editor()->back_callback(func);
 }
 
-void Editentry::clear_all(){blog_editor()->editor()->clear_all();}
+void Editentry::clear_all(){blog_editor()->editor()->initialize_data();}
 
 FlatToolButton *Editentry::to_attach() const {
 	return blog_editor()->editor()->_to_attach;
@@ -1761,21 +1761,20 @@ void Editentry::to_attach_layout(){
 	blog_editor()->editor()->to_attach_layout();
 }
 
-MetaEditor *Editentry::editor(){return blog_editor()->editor();}
+EditorWrap *Editentry::editor(){return blog_editor()->editor();}
 
 EditingWindow *Editentry::blog_editor() const {return _blog_editor;}
 
 EditingWindow *Editentry::blog_editor(){
 	if(! _blog_editor)
 		_blog_editor = add_blog_editor(
-			new EditingWindow(
-				_tree_screen
-					     , _entrance
-					     , _profile
-					     , _find_screen
-					     , this
-					     , _flags
-					     , _style_source
+			new EditingWindow(_tree_screen
+					 , _entrance
+					 , _profile
+					 , _find_screen
+					 , this
+					 , _flags
+					 , _style_source
 					 ));
 	return _blog_editor;
 }

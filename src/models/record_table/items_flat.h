@@ -16,7 +16,7 @@
 
 class TreeItem;
 class Record;
-class MetaEditor;
+class EditorWrap;
 struct Linker;
 struct id_value;
 // extern const int add_new_record_to_end;
@@ -179,7 +179,7 @@ class ItemsFlat {
 	bool	_is_crypt	= false;
 	int	_workpos	= - 1;
 
-	friend class MetaEditor;
+	friend class EditorWrap;
 	friend class TreeItem;
 	friend struct Linker;
 	friend boost::intrusive_ptr<TreeItem> &operator <<(boost::intrusive_ptr<TreeItem> &host, boost::intrusive_ptr<TreeItem> _item);	// {return *it_left << it_right;}
