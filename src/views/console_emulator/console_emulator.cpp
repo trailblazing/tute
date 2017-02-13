@@ -4,28 +4,24 @@
 #include <wobjectimpl.h>
 #endif
 
-
-
-
 #include <QScrollBar>
 #include <QWidget>
 
 #include "console_emulator.h"
+#include "libraries/flat_control.h"
 #include "main.h"
 #include "models/app_config/app_config.h"
 #include "views/find_in_base_screen/find_screen.h"
-#include "libraries/flat_control.h"
-
 
 extern AppConfig appconfig;
-
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(ConsoleEmulator)
 #endif
 
-
-ConsoleEmulator::ConsoleEmulator(QWidget *parent) : QDialog(parent){
+ConsoleEmulator::ConsoleEmulator(QWidget* parent)
+    : QDialog(parent)
+{
     isError = false;
 
     setupUI();
@@ -33,7 +29,8 @@ ConsoleEmulator::ConsoleEmulator(QWidget *parent) : QDialog(parent){
     assembly();
 }
 
-ConsoleEmulator::~ConsoleEmulator(){
+ConsoleEmulator::~ConsoleEmulator()
+{
     delete waitClock;
     delete messageLabel;
     delete buttonCancel;
@@ -42,7 +39,8 @@ ConsoleEmulator::~ConsoleEmulator(){
     delete escShortcut;
 }
 
-void ConsoleEmulator::setupUI(void){
+void ConsoleEmulator::setupUI(void)
+{
     messageLabel = new QLabel(this);
 
     buttonDetails = new FlatToolButton("", this);
@@ -55,20 +53,23 @@ void ConsoleEmulator::setupUI(void){
     consoleOutput = new QTextEdit(this);
     consoleOutput->setReadOnly(true);
     consoleOutput->setFontFamily("monospace");
-    if(appconfig.synchro_console_details() == false)consoleOutput->hide();
+    if (appconfig.synchro_console_details() == false)
+        consoleOutput->hide();
     waitClock = new WaitClock(this);
 
     escShortcut = new QShortcut(QKeySequence("Esc"), this);
 }
 
-void ConsoleEmulator::setupSignals(void){
+void ConsoleEmulator::setupSignals(void)
+{
     connect(buttonCancel, &QPushButton::clicked, this, &ConsoleEmulator::onCancelClick);
     connect(buttonDetails, &FlatToolButton::clicked, this, &ConsoleEmulator::onDetailsClick);
 
     connect(escShortcut, &QShortcut::activated, this, &ConsoleEmulator::onCancelClick);
 }
 
-void ConsoleEmulator::assembly(void){
+void ConsoleEmulator::assembly(void)
+{
     upToolbar = new QHBoxLayout;
     upToolbar->addWidget(waitClock);
     upToolbar->addWidget(messageLabel);
@@ -76,8 +77,7 @@ void ConsoleEmulator::assembly(void){
     upToolbar->addWidget(buttonDetails);
     upToolbar->addWidget(buttonCancel);
 
-
-    QVBoxLayout *vLayout = new QVBoxLayout;
+    QVBoxLayout* vLayout = new QVBoxLayout;
     vLayout->addLayout(upToolbar);
     vLayout->addWidget(consoleOutput);
 
@@ -86,37 +86,43 @@ void ConsoleEmulator::assembly(void){
     setLayout(vLayout);
 }
 
-void ConsoleEmulator::setMessageText(QString text){
+void ConsoleEmulator::setMessageText(QString text)
+{
     messageLabel->setText(text);
 }
 
-void ConsoleEmulator::setConsoleOutput(QString text){
+void ConsoleEmulator::setConsoleOutput(QString text)
+{
     consoleOutput->setPlainText(text);
     consoleOutput->moveCursor(QTextCursor::End);
 
-    QScrollBar *v = consoleOutput->verticalScrollBar();
+    QScrollBar* v = consoleOutput->verticalScrollBar();
     v->setValue(v->maximum());
 }
 
-void ConsoleEmulator::clearConsoleOutput(void){
+void ConsoleEmulator::clearConsoleOutput(void)
+{
     consoleOutput->setPlainText("");
 }
 
-void ConsoleEmulator::addConsoleOutput(QString text){
+void ConsoleEmulator::addConsoleOutput(QString text)
+{
     consoleOutput->setPlainText(consoleOutput->toPlainText() + text);
     consoleOutput->moveCursor(QTextCursor::End);
 
-    QScrollBar *v = consoleOutput->verticalScrollBar();
+    QScrollBar* v = consoleOutput->verticalScrollBar();
     v->setValue(v->maximum());
 }
 
-void ConsoleEmulator::onCancelClick(void){
+void ConsoleEmulator::onCancelClick(void)
+{
     qDebug() << "ConsoleEmulator::onCancelClick() : Click cancel";
 
-    this->close();	// Будет сгенерировано событие closeEvent
+    this->close(); // Будет сгенерировано событие closeEvent
 }
 
-void ConsoleEmulator::closeEvent(QCloseEvent *event){
+void ConsoleEmulator::closeEvent(QCloseEvent* event)
+{
     qDebug() << "ConsoleEmulator::closeEvent() : Detect close event";
 
     emit cancelConsole();
@@ -124,31 +130,32 @@ void ConsoleEmulator::closeEvent(QCloseEvent *event){
     event->accept();
 }
 
-void ConsoleEmulator::onDetailsClick(void){
-    if(consoleOutput->isHidden()){
-	consoleOutput->show();
-	appconfig.synchro_console_details(true);
-    }else{
-	consoleOutput->hide();
-	appconfig.synchro_console_details(false);
+void ConsoleEmulator::onDetailsClick(void)
+{
+    if (consoleOutput->isHidden()) {
+        consoleOutput->show();
+        appconfig.synchro_console_details(true);
+    } else {
+        consoleOutput->hide();
+        appconfig.synchro_console_details(false);
     }
     this->adjustSize();
 }
 
-void ConsoleEmulator::switchToErrorView(void){
+void ConsoleEmulator::switchToErrorView(void)
+{
     qDebug() << "ConsoleEmulator::switchToErrorView() : Detect error!";
 
     isError = true;
 
-	// Верхняя строка скрывается
-	// QLayoutItem *child;
-	// while ((child = upToolbar->takeAt(0)) != 0)
-	//   child->widget()->hide();
+    // Верхняя строка скрывается
+    // QLayoutItem *child;
+    // while ((child = upToolbar->takeAt(0)) != 0)
+    //   child->widget()->hide();
 
-	// Сообщение об обнаруженной ошибке
+    // Сообщение об обнаруженной ошибке
     messageLabel->setText("<b>" + tr("Commands running error") + "</b>");
 
-	// Консольный вывод показывается, так как он возможно не был открыт, если не был выбран развернутый вид
+    // Консольный вывод показывается, так как он возможно не был открыт, если не был выбран развернутый вид
     consoleOutput->show();
 }
-

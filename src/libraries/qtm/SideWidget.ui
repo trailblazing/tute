@@ -27,78 +27,14 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout">
-     <item>
-      <spacer>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QComboBox" name="cbPageSelector">
-       <item>
-        <property name="text">
-         <string>Basics</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Categories</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Excerpt</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>WP tags</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Technorati tags</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Trackbacks</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item>
-      <spacer>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="tabPosition">
       <enum>QTabWidget::West</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
-     <widget class="QWidget" name="basicsPage" native="true">
+     <widget class="QWidget" name="basicsPage">
       <attribute name="title">
        <string/>
       </attribute>
@@ -163,7 +99,7 @@
           </widget>
          </item>
          <item row="0" column="0">
-          <widget class="QLabel" name="lTitle">
+          <widget class="QLabel" name="label_2">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -344,7 +280,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="categoryPage" native="true">
+     <widget class="QWidget" name="categoryPage">
       <attribute name="title">
        <string/>
       </attribute>
@@ -427,7 +363,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabWidgetPage3" native="true">
+     <widget class="QWidget" name="tabWidgetPage3">
       <attribute name="title">
        <string/>
       </attribute>
@@ -459,7 +395,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabWidgetPage4" native="true">
+     <widget class="QWidget" name="tabWidgetPage4">
       <attribute name="title">
        <string/>
       </attribute>
@@ -552,7 +488,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabWidgetPage5" native="true">
+     <widget class="QWidget" name="tabWidgetPage5">
       <attribute name="title">
        <string/>
       </attribute>
@@ -637,7 +573,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabWidgetPage6" native="true">
+     <widget class="QWidget" name="tabWidgetPage6">
       <attribute name="title">
        <string/>
       </attribute>
@@ -682,7 +618,6 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>cbPageSelector</tabstop>
   <tabstop>leTitle</tabstop>
   <tabstop>cbAccountSelector</tabstop>
   <tabstop>cbBlogSelector</tabstop>

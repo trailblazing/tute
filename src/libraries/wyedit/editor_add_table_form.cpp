@@ -3,31 +3,27 @@
 #include <wobjectimpl.h>
 #endif
 
-
-#include <QWidget>
-#include <QLabel>
-#include <QSpinBox>
+#include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QGridLayout>
+#include <QLabel>
+#include <QSpinBox>
 #include <QVBoxLayout>
-#include <QCheckBox>
+#include <QWidget>
 
 #include "editor_add_table_form.h"
-
-
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorAddTableForm)
 #endif
-
 
 EditorAddTableForm::EditorAddTableForm()
 {
     this->setWindowTitle(tr("Create a new table"));
 
     labelColumns = new QLabel(tr("Columns: "));
-    labelRows   = new QLabel(tr("Rows: "));
-    labelWidth  = new QLabel(tr("Width: "));
+    labelRows = new QLabel(tr("Rows: "));
+    labelWidth = new QLabel(tr("Width: "));
     labelPercent = new QLabel(tr("%"));
 
     spinColumns = new QSpinBox();
@@ -50,8 +46,7 @@ EditorAddTableForm::EditorAddTableForm()
     connect(buttonBox, &QDialogButtonBox::accepted, this, &EditorAddTableForm::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &EditorAddTableForm::reject);
 
-
-    QGridLayout *gridLayout = new QGridLayout();
+    QGridLayout* gridLayout = new QGridLayout();
 
     gridLayout->addWidget(labelColumns, 0, 0);
     gridLayout->addWidget(spinColumns, 0, 1);
@@ -66,29 +61,25 @@ EditorAddTableForm::EditorAddTableForm()
     // Максимально растягивается по ширине первый столбец
     gridLayout->setColumnStretch(0, 1);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->addLayout(gridLayout);
     mainLayout->addWidget(buttonBox);
 }
-
 
 int EditorAddTableForm::get_columns(void)
 {
     return spinColumns->value();
 }
 
-
 int EditorAddTableForm::get_rows(void)
 {
     return spinRows->value();
 }
 
-
 int EditorAddTableForm::get_width(void)
 {
     return spinWidth->value();
 }
-
 
 /*
 bool EditorAddTableForm::get_show_border(void)

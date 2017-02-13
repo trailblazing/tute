@@ -1,14 +1,11 @@
 #ifndef _APPCONFIGDIALOG_H_
 #define _APPCONFIGDIALOG_H_
 
-
-
 #include <QWidget>
 
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
 class ConfigDialog;
@@ -22,20 +19,21 @@ class AppConfigDialog : public QWidget {
     Q_OBJECT
 #endif
 
-    public:
-    AppConfigDialog(rctrl_t *_record_controller, QString first_page_name = "");
+public:
+    AppConfigDialog(rctrl_t* _record_controller, QString first_page_name = "");
     void change_page(QString name);
-    private:
-    ConfigDialog	*config_dialog;
-	QListWidgetItem *pageMain;
-	QListWidgetItem *pageCrypt;
-	QListWidgetItem *pageSynchro;
-	QListWidgetItem *pageRecordTable;
-	QListWidgetItem *pageMisc;
-	rctrl_t		*_record_controller;
 
-//	friend class XmlTree;
-//	friend class rctrl_t;
+private:
+    ConfigDialog* config_dialog;
+    QListWidgetItem* pageMain;
+    QListWidgetItem* pageCrypt;
+    QListWidgetItem* pageSynchro;
+    QListWidgetItem* pageRecordTable;
+    QListWidgetItem* pageMisc;
+    rctrl_t* _record_controller;
+
+    //	friend class XmlTree;
+    //	friend class rctrl_t;
 };
 
-#endif	// _APPCONFIGDIALOG_H_
+#endif // _APPCONFIGDIALOG_H_

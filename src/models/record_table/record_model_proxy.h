@@ -3,12 +3,10 @@
 
 #include <QSortFilterProxyModel>
 
-
 class RecordProxyModel : public QSortFilterProxyModel {
 public:
-    RecordProxyModel(QObject *pobj = 0);
+    RecordProxyModel(QObject* pobj = 0);
     ~RecordProxyModel();
-
 };
 
 #endif // __RECORDTABLEPROXYMODEL_H__

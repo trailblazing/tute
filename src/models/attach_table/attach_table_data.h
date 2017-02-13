@@ -1,16 +1,15 @@
 #ifndef ATTACHTABLEDATA_H
 #define ATTACHTABLEDATA_H
 
+#include <QDomElement>
 #include <QList>
 #include <QMetaType>
-#include <QDomElement>
 
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
 #include "models/attach_table/attach.h"
 #include "models/record_table/record.h"
-
 
 class Record;
 class AttachTableModel;
@@ -20,8 +19,8 @@ class AttachTableData {
 
 public:
     AttachTableData(boost::intrusive_ptr<Record> _record = nullptr);
-    AttachTableData(const AttachTableData &obj);
-    AttachTableData &operator =(const AttachTableData &obj);
+    AttachTableData(const AttachTableData& obj);
+    AttachTableData& operator=(const AttachTableData& obj);
     //    AttachTableData();
     virtual ~AttachTableData();
 
@@ -29,8 +28,8 @@ public:
     QDomElement dom_from_data(std::shared_ptr<QDomDocument> doc) const;
 
     void record(boost::intrusive_ptr<Record> record);
-    void related_attach_table_model(AttachTableModel *model);
-    void related_attach_table_model_only(AttachTableModel *model);
+    void related_attach_table_model(AttachTableModel* model);
+    void related_attach_table_model_only(AttachTableModel* model);
 
     void clear();
     int size() const;
@@ -74,24 +73,24 @@ public:
     // Обновление ссылок на таблицу аттачей внутри аттачей
     void update_attach_table_back_link();
     std::shared_ptr<AttachTableData> merge(std::shared_ptr<AttachTableData> cut);
-protected:
 
-    bool                            _lite_flag;
+protected:
+    bool _lite_flag;
 
     // Перечень файлов и их свойств
-    QList< Attach >                 _attach_table;
+    QList<Attach> _attach_table;
 
     // Какой записи принадлежит таблица файлов
-    boost::intrusive_ptr<Record>    _record;
+    boost::intrusive_ptr<Record> _record;
 
-    AttachTableModel                *_related_attach_table_model;
+    AttachTableModel* _related_attach_table_model;
 };
 
 // Регистрация в QVariant типа AttachTableData
 Q_DECLARE_METATYPE(AttachTableData);
 
 // Регистрация в QVariant типа *AttachTableData
-typedef AttachTableData *AttachTableDataPointer;
+typedef AttachTableData* AttachTableDataPointer;
 Q_DECLARE_METATYPE(AttachTableDataPointer);
 
 #endif // ATTACHTABLEDATA_H

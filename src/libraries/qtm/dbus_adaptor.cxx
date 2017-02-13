@@ -27,25 +27,27 @@
 
 #include <QApplication>
 
-DBusAdaptor::DBusAdaptor(SysTrayIcon *sti)
-    : QDBusAbstractAdaptor(sti), _sti(sti){
+DBusAdaptor::DBusAdaptor(SysTrayIcon* sti)
+    : QDBusAbstractAdaptor(sti)
+    , _sti(sti)
+{
     connect(qApp, SIGNAL(aboutToQuit()), SIGNAL(aboutToQuit()));
-    connect(_sti, SIGNAL(quickpostTemplatesUpdated(QStringList))
-	   , this, SIGNAL(quickpostTemplatesUpdated(QStringList)));
-    connect(_sti, SIGNAL(quickpostTemplateTitlesUpdated(QStringList))
-	   , this, SIGNAL(quickpostTemplateTitlesUpdated(QStringList)));
+    connect(_sti, SIGNAL(quickpostTemplatesUpdated(QStringList)), this, SIGNAL(quickpostTemplatesUpdated(QStringList)));
+    connect(_sti, SIGNAL(quickpostTemplateTitlesUpdated(QStringList)), this, SIGNAL(quickpostTemplateTitlesUpdated(QStringList)));
 }
 
 /** applicationVersion: Returns the version number of the application
  */
-QString DBusAdaptor::applicationVersion(){
+QString DBusAdaptor::applicationVersion()
+{
     return QCoreApplication::applicationVersion();
 }
 
 /** getQuickpostTemplateTitles: Returns a string list of the titles of available quickpost templates
  *  in format n.[title]
  */
-QStringList DBusAdaptor::getQuickpostTemplateTitles(){
+QStringList DBusAdaptor::getQuickpostTemplateTitles()
+{
     return _sti->templateTitles();
 }
 
@@ -53,27 +55,31 @@ QStringList DBusAdaptor::getQuickpostTemplateTitles(){
  *  in format n.[title].[template] - note that newlines are replaced with \n and closing square brackets
  *  with \]
  */
-QStringList DBusAdaptor::getQuickpostTemplates(){
+QStringList DBusAdaptor::getQuickpostTemplates()
+{
     return _sti->templates();
 }
 
 /** quit - Quits the application
  */
-Q_NOREPLY void DBusAdaptor::quit(){
+Q_NOREPLY void DBusAdaptor::quit()
+{
     _sti->doQuit();
 }
 
 /** saveAll - Saves all open documents
   */
-Q_NOREPLY void DBusAdaptor::saveAll(){
-    sapp_t *qtm = qobject_cast<sapp_t *>(qApp);
+Q_NOREPLY void DBusAdaptor::saveAll()
+{
+    sapp_t* qtm = qobject_cast<sapp_t*>(qApp);
     qtm->saveAll();
 }
 
 /** newDocument - Opens a new blank entry
  */
-Q_NOREPLY void DBusAdaptor::newDocument(){
-    EditingWindow *c = new EditingWindow(_find_screen, _editentry, Qt::Widget);
+Q_NOREPLY void DBusAdaptor::newDocument()
+{
+    EditingWindow* c = new EditingWindow(_find_screen, _editentry, Qt::Widget);
     c->setSTI(_sti);
     c->show();
     c->activateWindow();
@@ -84,8 +90,9 @@ Q_NOREPLY void DBusAdaptor::newDocument(){
  *  title - The title of the new document
  *  text - The content of the new document
  */
-void DBusAdaptor::newDocumentWithTitleAndText(QString title, QString text){
-    EditingWindow *c = new EditingWindow(_find_screen, _editentry, Qt::Widget, text);
+void DBusAdaptor::newDocumentWithTitleAndText(QString title, QString text)
+{
+    EditingWindow* c = new EditingWindow(_find_screen, _editentry, Qt::Widget, text);
     c->setSTI(_sti);
     c->setPostTitle(title);
     c->setPostClean();
@@ -99,7 +106,8 @@ void DBusAdaptor::newDocumentWithTitleAndText(QString title, QString text){
  *  Note that if the web location is associated with a particular template, that template will be
  *  used.
  */
-void DBusAdaptor::quickpost(QString url, QString content){
+void DBusAdaptor::quickpost(QString url, QString content)
+{
     _sti->quickpostFromDBus(url, content);
 }
 
@@ -107,24 +115,27 @@ void DBusAdaptor::quickpost(QString url, QString content){
   * determine the location or content. Designed for use with the Launcher on Ubuntu Unity.
   */
 
-void DBusAdaptor::quickpostFromLauncher(){
+void DBusAdaptor::quickpostFromLauncher()
+{
     _sti->quickpost(QClipboard::Clipboard);
 }
 
 /** open - Opens a saved entry from disk
  *  Returns true if successful and false if unsuccessful.
  */
-bool DBusAdaptor::open(QString path){
+bool DBusAdaptor::open(QString path)
+{
     bool rv = false;
-    if(! path.isEmpty()){
-	EditingWindow *e = new EditingWindow(_find_screen, _editentry, Qt::Widget);
-	rv = e->load(path, true);
-	if(rv){
-	    e->setSTI(_sti);
-	    e->show();
-	    e->activateWindow();
-	    QApplication::alert(e);
-	}else e->deleteLater();
+    if (!path.isEmpty()) {
+        EditingWindow* e = new EditingWindow(_find_screen, _editentry, Qt::Widget);
+        rv = e->load(path, true);
+        if (rv) {
+            e->setSTI(_sti);
+            e->show();
+            e->activateWindow();
+            QApplication::alert(e);
+        } else
+            e->deleteLater();
     }
     return rv;
 }
@@ -132,20 +143,26 @@ bool DBusAdaptor::open(QString path){
 /** choose - Opens a file from the file selector.
   */
 
-void DBusAdaptor::choose(){
-    if(_sti) _sti->choose();
+void DBusAdaptor::choose()
+{
+    if (_sti)
+        _sti->choose();
 }
 
 /** chooseRecentFile - Opens a recently-edited file using a dialog.
   */
-void DBusAdaptor::chooseRecentFile(){
-    if(_sti) _sti->chooseRecentFile();
+void DBusAdaptor::chooseRecentFile()
+{
+    if (_sti)
+        _sti->chooseRecentFile();
 }
 
 /** chooseQuickpostTemplate - Does a Quickpost by choosing a template from a dialog.
   */
-void DBusAdaptor::chooseQuickpostTemplate(){
-    if(_sti) _sti->chooseQuickpostTemplate();
+void DBusAdaptor::chooseQuickpostTemplate()
+{
+    if (_sti)
+        _sti->chooseQuickpostTemplate();
 }
 
 #endif

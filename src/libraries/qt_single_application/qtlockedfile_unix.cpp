@@ -44,10 +44,10 @@
 **
 ****************************************************************************/
 
-#include <string.h>
 #include <errno.h>
-#include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "qtlockedfile.h"
 
@@ -81,11 +81,9 @@ bool QtLockedFile::lock(LockMode mode, bool block)
         return false;
     }
 
-
     _lockmode = mode;
     return true;
 }
-
 
 bool QtLockedFile::unlock()
 {
@@ -118,4 +116,3 @@ QtLockedFile::~QtLockedFile()
     if (isOpen())
         unlock();
 }
-

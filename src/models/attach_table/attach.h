@@ -1,12 +1,11 @@
 #ifndef __ATTACH_H__
 #define __ATTACH_H__
 
-#include <memory>
-#include <QString>
-#include <QMap>
 #include <QByteArray>
 #include <QDomElement>
-
+#include <QMap>
+#include <QString>
+#include <memory>
 
 class AttachTableData;
 
@@ -14,14 +13,13 @@ class Attach {
     friend class AttachTableData;
 
 public:
+    enum EncryptDecryptArea { areaMemory = 0x1,
+        areaFile = 0x2,
+        areaAll = 0xFF };
 
-    enum EncryptDecryptArea {areaMemory = 0x1, areaFile = 0x2, areaAll = 0xFF};
-
-
-    Attach(AttachTableData *iParentTable);
-    Attach(QString iType, AttachTableData *iParentTable);
+    Attach(AttachTableData* iParentTable);
+    Attach(QString iType, AttachTableData* iParentTable);
     virtual ~Attach();
-
 
     void dom_to_data(QDomElement iDomElement);
     QDomElement dom_from_data(std::shared_ptr<QDomDocument> doc) const;
@@ -56,11 +54,9 @@ public:
     void encrypt(unsigned int area = areaAll);
     void decrypt(unsigned int area = areaAll);
 
-
 protected:
-
-    void init(AttachTableData *iParentTable);
-    void setParentTable(AttachTableData *iParentTable); // Защищенный метод, который может вызвать только этот класс и AttachTableData
+    void init(AttachTableData* iParentTable);
+    void setParentTable(AttachTableData* iParentTable); // Защищенный метод, который может вызвать только этот класс и AttachTableData
 
     QStringList fieldAvailableList(void) const;
     QStringList fieldCryptedList(void) const;
@@ -68,17 +64,17 @@ protected:
 
     void setFieldSource(QString name, QString value);
 
-    bool                    _lite_flag;
+    bool _lite_flag;
 
-    AttachTableData         *_parent_table; // Указатель на таблицу приаттаченных файлов, которой принадлежит данный аттач
+    AttachTableData* _parent_table; // Указатель на таблицу приаттаченных файлов, которой принадлежит данный аттач
 
-    QMap<QString, QString>  _fields;
+    QMap<QString, QString> _fields;
 
-    QByteArray              _file_content; // Содержимое файла, используется в режиме полных данных
-    friend inline bool operator ==(const Attach &left, const Attach &right);
+    QByteArray _file_content; // Содержимое файла, используется в режиме полных данных
+    friend inline bool operator==(const Attach& left, const Attach& right);
 };
 
-inline bool operator ==(const Attach &left, const Attach &right)
+inline bool operator==(const Attach& left, const Attach& right)
 {
     //    bool fields_has_defferences = false;
 
@@ -90,10 +86,9 @@ inline bool operator ==(const Attach &left, const Attach &right)
     //    }
 
     return left._parent_table == right._parent_table
-           && left._lite_flag == right._lite_flag
-           && left._fields == right._fields // !fields_has_defferences
-           && left._file_content == right._file_content
-           ;
+        && left._lite_flag == right._lite_flag
+        && left._fields == right._fields // !fields_has_defferences
+        && left._file_content == right._file_content;
 }
 
 #endif // __ATTACH_H__

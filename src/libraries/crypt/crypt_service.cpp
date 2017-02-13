@@ -1,7 +1,7 @@
-#include "main.h"
 #include "crypt_service.h"
-#include "rc5simple.h"
+#include "main.h"
 #include "password.h"
+#include "rc5simple.h"
 
 #include <QFile>
 
@@ -9,18 +9,18 @@ CryptService::CryptService() {}
 
 CryptService::~CryptService() {}
 
-void CryptService::convertByteArrayToVector(const QByteArray &qba, std::vector<unsigned char> &vec)
+void CryptService::convertByteArrayToVector(const QByteArray& qba, std::vector<unsigned char>& vec)
 {
     unsigned int size = qba.size();
     vec.resize(size, 0);
     memcpy(&vec[0], qba.constData(), size * sizeof(unsigned char));
 }
 
-void CryptService::convertVectorToByteArray(const std::vector<unsigned char> &vec, QByteArray &qba)
+void CryptService::convertVectorToByteArray(const std::vector<unsigned char>& vec, QByteArray& qba)
 {
     unsigned int size = vec.size();
     qba.clear();
-    qba.append((const char *)&vec[0], size * sizeof(unsigned char));
+    qba.append((const char*)&vec[0], size * sizeof(unsigned char));
 
     /*
     printf("\n");
@@ -101,7 +101,7 @@ QString CryptService::decryptString(QByteArray key, QString line)
     // Эта замена допустима, так как в Base64 используются только символы латиницы
     // и ограниченный набор прочих символов
     convertByteArrayToVector(QByteArray::fromBase64(line.toLatin1()),
-                             vectorLineIn);
+        vectorLineIn);
 
     /*
     printf("Decrypt vector source HEX ");
@@ -176,7 +176,7 @@ QByteArray CryptService::decryptByteArray(QByteArray key, QByteArray data)
 }
 
 QByteArray CryptService::encryptStringToByteArray(QByteArray key,
-        QString line)
+    QString line)
 {
     if (line == "")
         return QByteArray();
@@ -201,7 +201,7 @@ QByteArray CryptService::encryptStringToByteArray(QByteArray key,
 }
 
 QString CryptService::decryptStringFromByteArray(QByteArray key,
-        QByteArray data)
+    QByteArray data)
 {
     if (data.length() == 0)
         return QString();
@@ -248,8 +248,7 @@ void CryptService::encDecFileSmart(QByteArray key, QString fileName, int mode)
     QFile file(fileName);
 
     if (!file.open(QIODevice::ReadOnly))
-        critical_error("encDecFileSmart() : Cant open binary file " + fileName +
-                      " for reading.");
+        critical_error("encDecFileSmart() : Cant open binary file " + fileName + " for reading.");
 
     vector<unsigned char> vectorKey;
     convertByteArrayToVector(key, vectorKey);
@@ -273,8 +272,7 @@ void CryptService::encDecFileSmart(QByteArray key, QString fileName, int mode)
     convertVectorToByteArray(vectorDataOut, result);
 
     if (!file.open(QIODevice::WriteOnly))
-        critical_error("encryptFile() : Cant open binary file " + fileName +
-                      " for write.");
+        critical_error("encryptFile() : Cant open binary file " + fileName + " for write.");
     file.write(result);
 
     QApplication::restoreOverrideCursor();

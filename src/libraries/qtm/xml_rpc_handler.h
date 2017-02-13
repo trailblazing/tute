@@ -25,42 +25,41 @@
 #ifndef XMLRPCHANDLER_H
 #define XMLRPCHANDLER_H
 
-#include <QtXml>
 #include <QtCore>
+#include <QtXml>
 
 #include "editing_window.h"
 
 class XmlRpcHandler : public QXmlDefaultHandler {
-    public:
-	XmlRpcHandler(EditingWindow::HttpBusinessType x);
-	XmlRpcHandler();
+public:
+    XmlRpcHandler(EditingWindow::HttpBusinessType x);
+    XmlRpcHandler();
 
-	void setProtocol(EditingWindow::HttpBusinessType x);
+    void setProtocol(EditingWindow::HttpBusinessType x);
 
-	bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &attr);
-	bool endElement(const QString &nu, const QString &localName, const QString &qName);
-	bool characters(const QString &str);
-	bool fatalError(const QXmlParseException &exc);
-	bool isMethodResponseFinished();
-	QStringList returnList(const QString &);
-	// QString returnFirstEntry();
-	bool fault();
-	QString faultString();
-	QDomDocumentFragment returnXml();
+    bool startElement(const QString& namespaceURI, const QString& localName, const QString& qName, const QXmlAttributes& attr);
+    bool endElement(const QString& nu, const QString& localName, const QString& qName);
+    bool characters(const QString& str);
+    bool fatalError(const QXmlParseException& exc);
+    bool isMethodResponseFinished();
+    QStringList returnList(const QString&);
+    // QString returnFirstEntry();
+    bool fault();
+    QString faultString();
+    QDomDocumentFragment returnXml();
 
-    private:
-	EditingWindow::HttpBusinessType reqType;
-	QString currentString;
-	QString currentRpcArgumentName;
-	QString _faultString;
-	QDomDocument doc;
-	QDomElement returnElement, currentSuperElement, currentElement;
-	// QList<QString> returnData;
-	QMap<QString, QStringList> returnDataList;
-	bool _fault;
-	bool methodResponseFinished;
-	bool receivingArgumentName, insideStruct, receivingData
-	, receivingFaultString;
+private:
+    EditingWindow::HttpBusinessType reqType;
+    QString currentString;
+    QString currentRpcArgumentName;
+    QString _faultString;
+    QDomDocument doc;
+    QDomElement returnElement, currentSuperElement, currentElement;
+    // QList<QString> returnData;
+    QMap<QString, QStringList> returnDataList;
+    bool _fault;
+    bool methodResponseFinished;
+    bool receivingArgumentName, insideStruct, receivingData, receivingFaultString;
 };
 
 #endif

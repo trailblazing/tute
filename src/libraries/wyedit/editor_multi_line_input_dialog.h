@@ -1,21 +1,16 @@
 #ifndef _EDITORMULTILINEINPUTDIALOG_H_
-#define	_EDITORMULTILINEINPUTDIALOG_H_
+#define _EDITORMULTILINEINPUTDIALOG_H_
 
-
-
-
-#include <QtGlobal>
-#include <QWidget>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QTextEdit>
-
+#include <QWidget>
+#include <QtGlobal>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
 
 class EditorMultiLineInputDialog : public QDialog {
 #if QT_VERSION == 0x050600
@@ -25,7 +20,7 @@ class EditorMultiLineInputDialog : public QDialog {
 #endif
 
 public:
-    EditorMultiLineInputDialog(QWidget *parent=0);
+    EditorMultiLineInputDialog(QWidget* parent = 0);
     virtual ~EditorMultiLineInputDialog();
 
     void set_text(QString text);
@@ -35,14 +30,12 @@ public:
     void set_window_title(QString title);
 
 private:
-
-    QTextEdit *textArea;
-    QDialogButtonBox *buttonBox;
+    QTextEdit* textArea;
+    QDialogButtonBox* buttonBox;
 
     void setup_ui(void);
     void setup_signals(void);
     void assembly(void);
 };
 
-#endif	/* _EDITORMULTILINEINPUTDIALOG_H_ */
-
+#endif /* _EDITORMULTILINEINPUTDIALOG_H_ */

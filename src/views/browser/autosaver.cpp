@@ -39,54 +39,62 @@
 **
 ****************************************************************************/
 
-
 #if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
 #endif
 
-
-
 #include "autosaver.h"
 
-#include <QtCore/QDir>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDir>
 #include <QtCore/QMetaObject>
 #include <QtDebug>
 
-#define AUTOSAVE_IN	1000 * 3	// seconds
-#define MAXWAIT		1000 * 15	// seconds
+#define AUTOSAVE_IN 1000 * 3 // seconds
+#define MAXWAIT 1000 * 15 // seconds
 
 namespace browser {
 #if QT_VERSION == 0x050600
-    W_OBJECT_IMPL(AutoSaver)
+W_OBJECT_IMPL(AutoSaver)
 #endif
 
-
-    AutoSaver::AutoSaver(QObject *parent) : QObject(parent){
-	Q_ASSERT(parent);
-    }
-
-    AutoSaver::~AutoSaver(){
-	if(_timer.isActive())qWarning() << "AutoSaver: still active when destroyed, changes not saved.";
-    }
-
-    void AutoSaver::changeOccurred(){
-	if(_firstchange.isNull())_firstchange.start();
-	if(_firstchange.elapsed() > MAXWAIT)saveIfNeccessary();
-	else _timer.start(AUTOSAVE_IN, this);
-    }
-
-    void AutoSaver::timerEvent(QTimerEvent *event){
-	if(event->timerId() == _timer.timerId())saveIfNeccessary();
-	else QObject::timerEvent(event);
-    }
-
-    void AutoSaver::saveIfNeccessary(){
-	if(! _timer.isActive())return;
-	_timer.stop();
-	_firstchange = QTime();
-	if(! QMetaObject::invokeMethod(parent(), "save", Qt::DirectConnection))qWarning() << "AutoSaver: error invoking slot save() on parent";
-    }
+AutoSaver::AutoSaver(QObject* parent)
+    : QObject(parent)
+{
+    Q_ASSERT(parent);
 }
 
+AutoSaver::~AutoSaver()
+{
+    if (_timer.isActive())
+        qWarning() << "AutoSaver: still active when destroyed, changes not saved.";
+}
 
+void AutoSaver::changeOccurred()
+{
+    if (_firstchange.isNull())
+        _firstchange.start();
+    if (_firstchange.elapsed() > MAXWAIT)
+        saveIfNeccessary();
+    else
+        _timer.start(AUTOSAVE_IN, this);
+}
+
+void AutoSaver::timerEvent(QTimerEvent* event)
+{
+    if (event->timerId() == _timer.timerId())
+        saveIfNeccessary();
+    else
+        QObject::timerEvent(event);
+}
+
+void AutoSaver::saveIfNeccessary()
+{
+    if (!_timer.isActive())
+        return;
+    _timer.stop();
+    _firstchange = QTime();
+    if (!QMetaObject::invokeMethod(parent(), "save", Qt::DirectConnection))
+        qWarning() << "AutoSaver: error invoking slot save() on parent";
+}
+}

@@ -1,23 +1,21 @@
 #ifndef __CRYPTSERVICE_H__
 #define __CRYPTSERVICE_H__
 
+#include <QByteArray>
+#include <QString>
 #include <cstdio>
 #include <vector>
-#include <QString>
-#include <QByteArray>
 
 // Класс с функциями-помощниками, используемыми при шифрации/дешифровки
-
 
 class CryptService {
 
 public:
-
     CryptService();
     virtual ~CryptService();
 
-    static void convertByteArrayToVector(const QByteArray &qba, std::vector<unsigned char> &vec);
-    static void convertVectorToByteArray(const std::vector<unsigned char> &vec, QByteArray &qba);
+    static void convertByteArrayToVector(const QByteArray& qba, std::vector<unsigned char>& vec);
+    static void convertVectorToByteArray(const std::vector<unsigned char>& vec, QByteArray& qba);
 
     static QString encryptString(QByteArray key, QString line);
     static QString decryptString(QByteArray key, QString line);
@@ -31,7 +29,6 @@ public:
     static void encryptFile(QByteArray key, QString fileName);
     static void decryptFile(QByteArray key, QString fileName);
     static void encDecFileSmart(QByteArray key, QString fileName, int mode);
-
 };
 
 #endif // __CRYPTSERVICE_H__

@@ -2,22 +2,14 @@
 #ifndef __PASSWORD_H__
 #define __PASSWORD_H__
 
-
-
-
-
 #include <QString>
 
-
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #else
 #include <QObject>
 #endif
-
-
 
 // Терминология:
 // Ключ шифрования - это набор байт, полученный путем преобразования пароля.
@@ -26,8 +18,6 @@
 // Промежуточный хеш - это набор байт, полученный путем преобразования пароля,
 //                     по тому же алгоритму что и ключ шифрования,
 //                     только без завершающего преобразования в MD5
-
-
 
 #define SAVED_PASSWORD_CHECKING_LINE "This string is used for checking middle hash"
 
@@ -49,7 +39,6 @@ public:
     void setCryptKeyToMemory(QString password);
 
 private:
-
     bool enterExistsPassword(void);
     bool checkPasswordWithExists(QString password);
     void saveCheckPasswordKey(QString password);
@@ -64,8 +53,6 @@ private:
     bool checkMiddleHash(void);
 
     void setCryptKeyToMemoryFromMiddleHash(void);
-
 };
 
 #endif // __PASSWORD_H__
-

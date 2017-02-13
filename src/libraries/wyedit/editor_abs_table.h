@@ -3,14 +3,13 @@
 
 #include <QObject>
 
-
 class QTextTable;
 class EditorAbsTableCell;
 
 class EditorAbsTable : public QObject {
 public:
-    EditorAbsTable(int x, int y, QObject *parent=0);
-    EditorAbsTable(int x, int y, QString tableText, QObject *parent=0);
+    EditorAbsTable(int x, int y, QObject* parent = 0);
+    EditorAbsTable(int x, int y, QString tableText, QObject* parent = 0);
     ~EditorAbsTable(void);
 
     void set_table(int x, int y, QString tableText);
@@ -27,13 +26,12 @@ public:
     QString get_table(void);
 
 private:
-
     void create_cells_array(int x, int y);
     void clear_table(void);
     void clear_supercell_size_is_modify(void);
     void convert_table_to_internal(QString tableText);
     void print_internal_table(void);
-    int  get_cell_col_or_row_span(int x, int y, QString propName);
+    int get_cell_col_or_row_span(int x, int y, QString propName);
 
     void insert_column(int insX);
     void insert_row(int insY);
@@ -41,14 +39,12 @@ private:
     int columns;
     int rows;
 
-// Свойства таблицы, заполняются из свойств тега <table>
-    QMap< QString, QString > htmlProperty;
+    // Свойства таблицы, заполняются из свойств тега <table>
+    QMap<QString, QString> htmlProperty;
 
-// EditorAbsTableCell **cells;
+    // EditorAbsTableCell **cells;
 
-    QVector < QVector <EditorAbsTableCell> > cells;
-
+    QVector<QVector<EditorAbsTableCell> > cells;
 };
 
 #endif // _EDITORABSTABLE_H_
-

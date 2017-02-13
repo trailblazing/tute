@@ -1,26 +1,19 @@
 #ifndef _EDITORCONFIGMISC_H_
-#define	_EDITORCONFIGMISC_H_
+#define _EDITORCONFIGMISC_H_
 
-
-#include <QWidget>
-#include <QLineEdit>
 #include <QFontComboBox>
+#include <QLineEdit>
 #include <QSpinBox>
+#include <QWidget>
 
 #include "views/app_config/config_page.h"
 
-
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
-
-
-
 class EditorConfig;
-
 
 class EditorConfigMisc : public ConfigPage {
 #if QT_VERSION == 0x050600
@@ -30,19 +23,16 @@ class EditorConfigMisc : public ConfigPage {
 #endif
 
 public:
-    EditorConfigMisc(QWidget *parent = 0);
+    EditorConfigMisc(QWidget* parent = 0);
 
     int apply_changes(void);
 
 private slots:
 
 private:
-    QSpinBox *indentStep;
+    QSpinBox* indentStep;
 
-    EditorConfig *conf;
-
+    EditorConfig* conf;
 };
 
-
-#endif	// _EDITORCONFIGMISC_H_
-
+#endif // _EDITORCONFIGMISC_H_

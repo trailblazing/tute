@@ -4,18 +4,15 @@
 #include <wobjectimpl.h>
 #endif
 
-
-
-
-#include <QtGlobal>
-#include <QtDebug>
-#include <QString>
-#include <QString>
 #include <QMessageBox>
+#include <QString>
+#include <QString>
 #include <QTextCodec>
+#include <QtDebug>
+#include <QtGlobal>
 
-#include "execute_command.h"
 #include "console_emulator.h"
+#include "execute_command.h"
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
 #include "libraries/qt_single_application5/qtsingleapplication.h"
@@ -24,65 +21,73 @@
 #include "libraries/qt_single_application/qtsingleapplication.h"
 #endif
 
-
-
 #include "main.h"
-
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(ExecuteCommand)
 #endif
 
-ExecuteCommand::ExecuteCommand(QWidget *parent) : QDialog(parent){
-    command	= "";
-    console	= nullptr;
+ExecuteCommand::ExecuteCommand(QWidget* parent)
+    : QDialog(parent)
+{
+    command = "";
+    console = nullptr;
 
-	// Определяется, какую командную оболочку надо использовать
+    // Определяется, какую командную оболочку надо использовать
 
-	// Вначале определяется вид операционной системы
+    // Вначале определяется вид операционной системы
     QString os = "unix";
 #if defined(Q_WS_WIN) || defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_MSDOS) || defined(Q_OS_CYGWIN)
     os = "windows";
 #endif
 
-	// Определение командной оболочки
+    // Определение командной оболочки
     shell = "";
-    if(os == "unix"){
-	if(system("sh -c exit") == 0)shell = "sh -c";
-	else if(system("bash -c exit") == 0)shell = "bash -c";
-    }else if(os == "windows")shell = "cmd.exe /C";
-    if(shell.length() == 0){
-	critical_error("Can't detect sh, bash or cmd shell.");
+    if (os == "unix") {
+        if (system("sh -c exit") == 0)
+            shell = "sh -c";
+        else if (system("bash -c exit") == 0)
+            shell = "bash -c";
+    } else if (os == "windows")
+        shell = "cmd.exe /C";
+    if (shell.length() == 0) {
+        critical_error("Can't detect sh, bash or cmd shell.");
 
-	return;
+        return;
     }
-	// Выясняется кодировка локали
-    QTextCodec	*localeCodec	= QTextCodec::codecForLocale();
-    QString	localeCodepage	= localeCodec->name();	// Возможные варианты "windows-1251" для Windows
-	// Для Windows с русской кодировкой исправляется кодировка локали, так как в консли локаль CP866
-    if(localeCodepage == "windows-1251")localeCodepage = "CP866";
-	// Определяется кодек для вывода текста терминального потока
+    // Выясняется кодировка локали
+    QTextCodec* localeCodec = QTextCodec::codecForLocale();
+    QString localeCodepage = localeCodec->name(); // Возможные варианты "windows-1251" для Windows
+    // Для Windows с русской кодировкой исправляется кодировка локали, так как в консли локаль CP866
+    if (localeCodepage == "windows-1251")
+        localeCodepage = "CP866";
+    // Определяется кодек для вывода текста терминального потока
     outputCodec = QTextCodec::codecForName(localeCodepage.toLocal8Bit());
 }
 
-ExecuteCommand::~ExecuteCommand(){
+ExecuteCommand::~ExecuteCommand()
+{
     delete console;
 }
 
-void ExecuteCommand::setCommand(QString cmd){
+void ExecuteCommand::setCommand(QString cmd)
+{
     command = cmd;
 }
 
-void ExecuteCommand::setWindowTitle(QString title){
+void ExecuteCommand::setWindowTitle(QString title)
+{
     windowTitle = title;
 }
 
-void ExecuteCommand::setMessageText(QString text){
+void ExecuteCommand::setMessageText(QString text)
+{
     messageText = text;
 }
 
 // Слот, срабатывающий когда пользователь хочет вручную закрыть процесс
-void ExecuteCommand::manualCloseProcess(void){
+void ExecuteCommand::manualCloseProcess(void)
+{
     qDebug() << "Manual close process, PID" << process->pid();
 
     closeProcess();
@@ -90,7 +95,8 @@ void ExecuteCommand::manualCloseProcess(void){
     isManualClose = true;
 }
 
-void ExecuteCommand::closeProcess(void){
+void ExecuteCommand::closeProcess(void)
+{
     qDebug() << "Close process, PID" << process->pid();
 
     process->kill();
@@ -98,17 +104,19 @@ void ExecuteCommand::closeProcess(void){
     process->close();
 }
 
-void ExecuteCommand::run(void){
-	// Если командный интерпретатор не установлен
-    if(shell.length() == 0)critical_error("ExecuteCommand::run() : Not detect available shell");
-    isError		= false;
-    isManualClose	= false;
+void ExecuteCommand::run(void)
+{
+    // Если командный интерпретатор не установлен
+    if (shell.length() == 0)
+        critical_error("ExecuteCommand::run() : Not detect available shell");
+    isError = false;
+    isManualClose = false;
 
-	// Выясняется полная команда, которая будет запущена в QProcess
-	// QString commandLine=shell.toAscii()+" \""+command.toAscii()+"\"";
+    // Выясняется полная команда, которая будет запущена в QProcess
+    // QString commandLine=shell.toAscii()+" \""+command.toAscii()+"\"";
     QString commandLine = shell + " \"" + command + "\"";
 
-	// Создается виджет эмулятора консоли
+    // Создается виджет эмулятора консоли
     console = new ConsoleEmulator();
 
     console->setWindowTitle(windowTitle);
@@ -119,72 +127,76 @@ void ExecuteCommand::run(void){
     qDebug() << "Run shell" << shell;
     qDebug() << "Run command" << command;
 
-	// Создается процесс
+    // Создается процесс
     process = new QProcess();
 
     connect(console, &ConsoleEmulator::cancelConsole, this, &ExecuteCommand::manualCloseProcess);
-	//    connect(process, &QProcess::error, this, &ExecuteCommand::errorHanler);
+    //    connect(process, &QProcess::error, this, &ExecuteCommand::errorHanler);
     connect(process, &QProcess::errorOccurred, this, &ExecuteCommand::errorHanler);
 
-	// Объединение вывода стандартного канала и канала ошибок
+    // Объединение вывода стандартного канала и канала ошибок
     process->setProcessChannelMode(QProcess::MergedChannels);
 
-	// В процессе запускается команда на исполнение
+    // В процессе запускается команда на исполнение
     process->start(commandLine);
 
-	// Интерфейс обновляется
+    // Интерфейс обновляется
     sapp_t::instance()->processEvents();
 
     qDebug() << "Process started";
-	// Пока процесс не закончил свою работу
-    while(process->state() != QProcess::NotRunning){
-	printOutput(process, console);
-	// Разгружается основной цикл обработки событий приложения
-	if((rand() % 10) == 1)sapp_t::instance()->processEvents();
+    // Пока процесс не закончил свою работу
+    while (process->state() != QProcess::NotRunning) {
+        printOutput(process, console);
+        // Разгружается основной цикл обработки событий приложения
+        if ((rand() % 10) == 1)
+            sapp_t::instance()->processEvents();
     }
     Sleeper::sleep(1);
     sapp_t::instance()->processEvents();
-    printOutput(process, console);	// Считываются остатки из стандартного вывода, если они есть
+    printOutput(process, console); // Считываются остатки из стандартного вывода, если они есть
 
     closeProcess();
     sapp_t::instance()->processEvents();
-    printOutput(process, console);	// Считываются остатки из стандартного вывода, если они есть
-    if((isError == false && process->exitCode() == 0) || isManualClose)console->hide();
-    else{
-	console->switchToErrorView();
+    printOutput(process, console); // Считываются остатки из стандартного вывода, если они есть
+    if ((isError == false && process->exitCode() == 0) || isManualClose)
+        console->hide();
+    else {
+        console->switchToErrorView();
 
-	// Окно с консолью было просто видно (чтобы показывать вывод), а теперь запускается как модальное, чтобы началось ожидание нажатия кнопки Close
-	console->exec();
+        // Окно с консолью было просто видно (чтобы показывать вывод), а теперь запускается как модальное, чтобы началось ожидание нажатия кнопки Close
+        console->exec();
     }
     delete process;
 
     qDebug() << "Process stop";
 }
 
-void ExecuteCommand::printOutput(QProcess *process, ConsoleEmulator *console){
-	// Считываются данные из стандартного потока запущенного процесса
-    char	buf[1024];
-    int		readBytes = process->readLine(buf, sizeof(buf));
-	// Если считаны какие-то символы
-    if(readBytes >= 1){
-	/*
+void ExecuteCommand::printOutput(QProcess* process, ConsoleEmulator* console)
+{
+    // Считываются данные из стандартного потока запущенного процесса
+    char buf[1024];
+    int readBytes = process->readLine(buf, sizeof(buf));
+    // Если считаны какие-то символы
+    if (readBytes >= 1) {
+        /*
 	   QByteArray encodedString = "...";
 	   QTextCodec *codec = QTextCodec::codecForName("KOI8-R");
 	   QString string = codec->toUnicode(encodedString);
 	 */
 
-	// Преобразование в QString, необходимо чтобы исключать строки с нулями
-	// QString output=QString::fromLocal8Bit(buf); // Ранее было fromAscii, потом fromLatin1
-	QString output = outputCodec->toUnicode(buf);
-	if(output.length() > 0){
-	    console->addConsoleOutput(output);
-	    sapp_t::instance()->processEvents();
-	    qDebug() << "[Console] " << output;
-	}
+        // Преобразование в QString, необходимо чтобы исключать строки с нулями
+        // QString output=QString::fromLocal8Bit(buf); // Ранее было fromAscii, потом fromLatin1
+        QString output = outputCodec->toUnicode(buf);
+        if (output.length() > 0) {
+            console->addConsoleOutput(output);
+            sapp_t::instance()->processEvents();
+            qDebug() << "[Console] " << output;
+        }
     }
 }
 
-void ExecuteCommand::errorHanler(QProcess::ProcessError error){
+void ExecuteCommand::errorHanler(QProcess::ProcessError error)
+{
     qDebug() << "ExecuteCommand::errorHanler(): Detect error! Error code: " << error;
 
     isError = true;
@@ -203,10 +215,8 @@ void ExecuteCommand::errorHanler(QProcess::ProcessError error){
 //    console.setConsoleOutput(commandLine);
 //    console.show();
 
-
 //    qDebug() << "Run shell" << shell;
 //    qDebug() << "Run command" << command;
-
 
 //    QProcess process;
 //    process.start(commandLine);
@@ -238,4 +248,3 @@ void ExecuteCommand::errorHanler(QProcess::ProcessError error){
 
 //    qDebug() << "Process stop";
 // }
-

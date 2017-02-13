@@ -1,28 +1,22 @@
 #ifndef INFOFIELDENTER_H_
 #define INFOFIELDENTER_H_
 
-
 #include <QDialog>
-#include <QWidget>
+#include <QDialogButtonBox>
+#include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QDialogButtonBox>
 #include <QPushButton>
-#include <QGridLayout>
+#include <QWidget>
 
 #include <QCheckBox>
 
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
-
-
-
 class FlatToolButton;
-
 
 // Виджет ввода инфополей Title, Author, Url, Tags...
 
@@ -42,7 +36,7 @@ class InfoFieldEnter : public QWidget {
 #endif
 
 public:
-    InfoFieldEnter(QWidget *parent = 0);
+    InfoFieldEnter(QWidget* parent = 0);
     ~InfoFieldEnter();
 
     void setFocusToStart(void);
@@ -51,7 +45,7 @@ public:
     QString getField(QString name);
     void setField(QString name, QString value);
 
-    QCheckBox *tabbar() {return _recordpin;}
+    QCheckBox* tabbar() { return _recordpin; }
 
 public slots:
 
@@ -59,43 +53,41 @@ public slots:
 
 private:
     // current key for work
-    QLabel    *_recordpinlabel;
+    QLabel* _recordpinlabel;
     //    browser::TabBar *_tabbar;
-    QCheckBox *_recordpin;
+    QCheckBox* _recordpin;
 
     // Ввод названия записи
-    QLabel    *recordNameLabel;
-    QLineEdit *recordName;
+    QLabel* recordNameLabel;
+    QLineEdit* recordName;
 
     // Ввод автора
-    QLabel    *recordAuthorLabel;
-    QLineEdit *recordAuthor;
+    QLabel* recordAuthorLabel;
+    QLineEdit* recordAuthor;
 
     // home Url
-    QLabel    *recordHomeLabel;
-    QLineEdit *recordHome;
-
+    QLabel* recordHomeLabel;
+    QLineEdit* recordHome;
 
     // Ввод Url
-    QLabel    *recordUrlLabel;
-    QLineEdit *recordUrl;
+    QLabel* recordUrlLabel;
+    QLineEdit* recordUrl;
 
     // Ввод текстовых меток
-    QLabel    *recordTagsLabel;
-    QLineEdit *recordTags;
+    QLabel* recordTagsLabel;
+    QLineEdit* recordTags;
 
     // Кнопка, раскрывающая и скрывающая поля author, url, tags
-    FlatToolButton *expandInfo;
+    FlatToolButton* expandInfo;
 
     // Размещалка элементов
-    QGridLayout *infoFieldLayout;
+    QGridLayout* infoFieldLayout;
 
     void setup_ui(void);
     void setup_signals(void);
     void assembly(void);
 
     void expandInfoOnDisplay(QString expand);
-
 };
 
 #endif /* INFOFIELDENTER_H_ */

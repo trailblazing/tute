@@ -1,22 +1,18 @@
 #ifndef ATTACHTABLESCREEN_H
 #define ATTACHTABLESCREEN_H
 
-
-
-#include <QWidget>
+#include <QAction>
 #include <QToolBar>
 #include <QVBoxLayout>
-#include <QAction>
-
+#include <QWidget>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
 class AttachTableView;
 class AttachTableController;
-
 
 // Виджет
 
@@ -27,43 +23,41 @@ class AttachTableScreen : public QWidget {
     Q_OBJECT
 #endif
 
-    public:
-	AttachTableScreen(QWidget *parent = 0);
-	virtual ~AttachTableScreen();
+public:
+    AttachTableScreen(QWidget* parent = 0);
+    virtual ~AttachTableScreen();
 
-	void clear(void);
+    void clear(void);
 
-	QAction *actionAddAttach;
-	QAction *actionAddLink;
-	QAction *actionEditFileName;
-	QAction *actionDeleteAttach;
-	QAction *actionOpenAttach;
-	QAction *actionSaveAsAttach;
-	QAction *actionShowAttachInfo;
+    QAction* actionAddAttach;
+    QAction* actionAddLink;
+    QAction* actionEditFileName;
+    QAction* actionDeleteAttach;
+    QAction* actionOpenAttach;
+    QAction* actionSaveAsAttach;
+    QAction* actionShowAttachInfo;
 
-    signals:
+signals:
 
-    public slots:
+public slots:
 
-    protected:
+protected:
+    void setupActions(void);
+    void setupUI(void);
+    void setupSignals(void);
+    void assembly(void);
 
-	void	setupActions(void);
-	void	setupUI(void);
-	void	setupSignals(void);
-	void	assembly(void);
+    // Указатель на контроллер таблицы приаттаченных файлов
+    AttachTableController* attachTableController;
 
+    // Указатель на таблицу приаттаченных файлов (представление)
+    AttachTableView* attachTableView;
 
-	// Указатель на контроллер таблицы приаттаченных файлов
-	AttachTableController *attachTableController;
+    // Экранные элементы
+    QToolBar* toolsLine;
+    QVBoxLayout* screenLayout;
 
-	// Указатель на таблицу приаттаченных файлов (представление)
-	AttachTableView *attachTableView;
-
-	// Экранные элементы
-	QToolBar	*toolsLine;
-	QVBoxLayout	*screenLayout;
-
-	QAction *actionSwitchToEditor;
+    QAction* actionSwitchToEditor;
 };
 
-#endif	// ATTACHTABLESCREEN_H
+#endif // ATTACHTABLESCREEN_H

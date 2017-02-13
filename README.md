@@ -9,7 +9,7 @@ It's a client. You can manage your remote service with XML-RPC.
 
 The next step, I aim to append some real-time collaborative editing functions.
 
-Should you need more functions, feel free to contact me: hughvonyoung[at]gmail.com
+Should you need more functions? feel free to contact me: hughvonyoung[at]gmail.com
 
 Please note that Tute is distributed under the GPL v3.
 
@@ -19,9 +19,9 @@ _______________________________________________________________________
 Currently I choose Dropbox
 
 Move files to Dropbox:
-
+```
 	rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."
-
+```
 After that, change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
 
 ##How to build Tute
@@ -44,9 +44,9 @@ Let's say the directory of your current project is named "working":
 ```
 	git clone https://github.com/woboq/verdigris.git
 ```
-####1.3 Download and install Qt 5.7
+####1.3 Download and install Qt 5.7.0
 ```
-	wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run
+        wget http://download.qt.io/official_releases/qt/5.7/5.7.0/qt-opensource-linux-x64-5.7.0.run
 ```
 * Run the installation. Default location for administrator installation (hereafter called "path-to-qt-installation"):
 ```
@@ -90,13 +90,13 @@ but it's not a must
 ```
 	/path-to-qt-installation/gcc_64/bin/qmake tute.pro
 
-	make all
+        make -j$(nproc) all
 
 	sudo make install
 ```
-* Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7):
+* Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7 or more recent version):
         Open "tute.pro" under tute in qtcreator
-        "Configure" the project in qtcreator (no additional requirements)
+        "Configure" the project in qtcreator (append "-j*" with prefer process number * to "make" options might be better)
         Build it.
 
 _______________________________________________________________________
@@ -121,11 +121,11 @@ _______________________________________________________________________
 * Tab prohibited padding spaces are made;
 * Margin - 2 spaces;
 * Comments must have the same indentation that of the code;
-* The name of the file with the implementation of the class is based on the principle ClassName.cpp/classname.cxx;
-* The name of the file with the title of class is based on the principle ClassName.hxx/classname.hxx;
+* The name of the file with the implementation of the class is based on the principle ClassName.cpp/classname.cxx (class_name.cxx);
+* The name of the file with the title of class is based on the principle ClassName.hxx/classname.hxx (class_name.hxx);
 * The name of the class is based on the principle ClassName;
-* The name of the method is based on the principle method_name;
-* The name of the variables is based on the principle _parameter_name;
+* The name of the method is based on the principle method_name (underscore);
+* The name of the variables is based on the principle _parameter_name (underscore);
 * The opening "{" and closing bracket "}" should be on separate lines. It is unacceptable to place an opening bracket in the line for (), if (), etc .;
 * Each newly created method should contain a comment that describes what the method does. So it is desirable to describe the purpose of the method parameters;
 * The header class, after the section is necessary in #include class assignment to write comments.
@@ -156,7 +156,10 @@ For Tute:
 
 * master            - the main branch with the latest stable release;
 * develop           - branch to develop.
-* code beautifier   - https://github.com/beimprovised/tute/blob/tute/src/uncrustify.cfg
+* code beautifier   - clang-format::WebKit
+```
+        find . -iname "*.h" -or -iname "*.cpp" -or -iname "*.cxx" | xargs clang-format -i -style=WebKit
+```
 
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.
 

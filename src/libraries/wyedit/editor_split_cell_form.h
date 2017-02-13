@@ -1,21 +1,16 @@
 #ifndef _EDITORSPLITCELLFORM_H_
 #define _EDITORSPLITCELLFORM_H_
 
-
-
-
-
-#include <QWidget>
+#include <QCheckBox>
 #include <QDialog>
+#include <QDialogButtonBox>
 #include <QLabel>
 #include <QSpinBox>
-#include <QDialogButtonBox>
-#include <QCheckBox>
-
+#include <QWidget>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
 class EditorSplitCellForm : public QDialog {
@@ -24,33 +19,33 @@ class EditorSplitCellForm : public QDialog {
 #else
     Q_OBJECT
 #endif
-    public:
-	EditorSplitCellForm(int fixHorisontalSplit, int fixVerticalSplit);
-	~EditorSplitCellForm();
+public:
+    EditorSplitCellForm(int fixHorisontalSplit, int fixVerticalSplit);
+    ~EditorSplitCellForm();
 
-	int	get_num_split_h(void);
-	int	get_num_split_v(void);
+    int get_num_split_h(void);
+    int get_num_split_v(void);
 
-    private:
-	int	fixHSplit;
-	int	fixVSplit;
+private:
+    int fixHSplit;
+    int fixVSplit;
 
-	QCheckBox	*checkboxFixHSplit;
-	QCheckBox	*checkboxFixVSplit;
+    QCheckBox* checkboxFixHSplit;
+    QCheckBox* checkboxFixVSplit;
 
-	QLabel	*checkboxLabelFixHSplit;
-	QLabel	*checkboxLabelFixVSplit;
+    QLabel* checkboxLabelFixHSplit;
+    QLabel* checkboxLabelFixVSplit;
 
-	QLabel	*labelPictogramH;
-	QLabel	*labelPictogramV;
+    QLabel* labelPictogramH;
+    QLabel* labelPictogramV;
 
-	QLabel	*labelH;
-	QLabel	*labelV;
+    QLabel* labelH;
+    QLabel* labelV;
 
-	QSpinBox	*numSplitH;
-	QSpinBox	*numSplitV;
+    QSpinBox* numSplitH;
+    QSpinBox* numSplitV;
 
-	QDialogButtonBox *buttonBox;
+    QDialogButtonBox* buttonBox;
 };
 
-#endif	// _EDITORSPLITCELLFORM_H_
+#endif // _EDITORSPLITCELLFORM_H_

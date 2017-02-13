@@ -1,18 +1,14 @@
 #ifndef WINDOWSWITCHER_H
 #define WINDOWSWITCHER_H
 
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #else
 #include <QObject>
 #endif
 
-
-
 class Editentry;
-
 
 class WindowSwitcher : public QObject {
 #if QT_VERSION == 0x050600
@@ -22,7 +18,7 @@ class WindowSwitcher : public QObject {
 #endif
 
 public:
-    explicit WindowSwitcher(QString object_name, Editentry *meta_editor, QObject *parent = 0);
+    explicit WindowSwitcher(QString object_name, Editentry* meta_editor, QObject* parent = 0);
 
     void enable(void);
     void disable(void);
@@ -49,9 +45,7 @@ public slots:
     void find_in_base_click(void);
 
 private:
-
     bool enableSwitcher;
-
 };
 
 #endif // WINDOWSWITCHER_H

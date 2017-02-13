@@ -4,30 +4,28 @@
 #include <wobjectimpl.h>
 #endif
 
-
-
 #include <QHBoxLayout>
 #include <QIcon>
 
-#include "wait_clock.h"
 #include "main.h"
-
+#include "wait_clock.h"
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(WaitClock)
 #endif
 
-
-WaitClock::WaitClock(QWidget *parent) : QWidget(parent){
+WaitClock::WaitClock(QWidget* parent)
+    : QWidget(parent)
+{
     currentIconNum = 0;
 
-    kadr_00	= QIcon(":/resource/pic/waitclock_00.svg").pixmap(32, 32);
-    kadr_01	= QIcon(":/resource/pic/waitclock_01.svg").pixmap(32, 32);
-    kadr_02	= QIcon(":/resource/pic/waitclock_02.svg").pixmap(32, 32);
+    kadr_00 = QIcon(":/resource/pic/waitclock_00.svg").pixmap(32, 32);
+    kadr_01 = QIcon(":/resource/pic/waitclock_01.svg").pixmap(32, 32);
+    kadr_02 = QIcon(":/resource/pic/waitclock_02.svg").pixmap(32, 32);
 
     centralLayout = new QHBoxLayout(this);
 
-	// iconLabel.setPixmap(kadr_02);
+    // iconLabel.setPixmap(kadr_02);
 
     centralLayout->addWidget(&iconLabel);
 
@@ -37,31 +35,33 @@ WaitClock::WaitClock(QWidget *parent) : QWidget(parent){
 
     iconUpdate();
 
-	// timer.start(650);
+    // timer.start(650);
 }
 
 WaitClock::~WaitClock()
-{}
-
-void WaitClock::iconUpdate(void){
-    timer.stop();
-    if(currentIconNum == 0){
-	iconLabel.setPixmap(kadr_00);
-	timer.start(550);
-    }
-    if(currentIconNum == 1){
-	iconLabel.setPixmap(kadr_01);
-	timer.start(100);
-    }
-    if(currentIconNum == 2){
-	iconLabel.setPixmap(kadr_02);
-	timer.start(550);
-    }
-    if(currentIconNum == 3){
-	iconLabel.setPixmap(kadr_01);
-	timer.start(100);
-    }
-    currentIconNum ++;
-    if(currentIconNum == 4)currentIconNum = 0;
+{
 }
 
+void WaitClock::iconUpdate(void)
+{
+    timer.stop();
+    if (currentIconNum == 0) {
+        iconLabel.setPixmap(kadr_00);
+        timer.start(550);
+    }
+    if (currentIconNum == 1) {
+        iconLabel.setPixmap(kadr_01);
+        timer.start(100);
+    }
+    if (currentIconNum == 2) {
+        iconLabel.setPixmap(kadr_02);
+        timer.start(550);
+    }
+    if (currentIconNum == 3) {
+        iconLabel.setPixmap(kadr_01);
+        timer.start(100);
+    }
+    currentIconNum++;
+    if (currentIconNum == 4)
+        currentIconNum = 0;
+}

@@ -1,13 +1,11 @@
 #ifndef _CONFIGPAGE_H_
 #define _CONFIGPAGE_H_
 
-
 #include <QWidget>
 
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
 class ConfigPage : public QWidget {
@@ -17,12 +15,11 @@ class ConfigPage : public QWidget {
     Q_OBJECT
 #endif
 
-    public:
-	ConfigPage(QWidget *parent = 0);
-	virtual ~ConfigPage();
+public:
+    ConfigPage(QWidget* parent = 0);
+    virtual ~ConfigPage();
 
-	virtual int apply_changes(void);
+    virtual int apply_changes(void);
 };
 
-
-#endif	// _CONFIGPAGE_H_
+#endif // _CONFIGPAGE_H_

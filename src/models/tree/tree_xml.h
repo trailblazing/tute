@@ -1,17 +1,13 @@
 #ifndef __XMLTREE_H__
 #define __XMLTREE_H__
 
-
-
-#include <QtXml>
 #include <QTreeWidgetItem>
-
+#include <QtXml>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
 
 class DiskHelper;
 class TrashMonitoring;
@@ -23,15 +19,14 @@ class XmlTree : public QObject {
     Q_OBJECT
 #endif
 
-    public:
-	XmlTree(void);
-	~XmlTree(void);
-	bool		load(QString _file_path);
-	QDomDocument	*dom_model(void);
+public:
+    XmlTree(void);
+    ~XmlTree(void);
+    bool load(QString _file_path);
+    QDomDocument* dom_model(void);
 
-    protected:
-	QDomDocument *_dom_model;	// DOM-представление документа
+protected:
+    QDomDocument* _dom_model; // DOM-представление документа
 };
 
-
-#endif	// __XMLTREE_H__
+#endif // __XMLTREE_H__

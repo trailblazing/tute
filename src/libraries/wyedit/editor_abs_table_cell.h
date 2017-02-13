@@ -1,10 +1,9 @@
 #ifndef _EDITORABSTABLECELL_H_
 #define _EDITORABSTABLECELL_H_
 
+#include <QMap>
 #include <QObject>
 #include <QTextDocumentFragment>
-#include <QMap>
-
 
 // Этот класс нельзя унаследовать от QObject, так как в этом случае
 // при вставке ячейки в вектор потребуется конструктор копирования
@@ -15,23 +14,23 @@ public:
     EditorAbsTableCell();
     EditorAbsTableCell(QString init_value);
 
-    void    set_value(QString init_value);
+    void set_value(QString init_value);
     QString get_value(void);
 
-    void    set_html_property(QString propName, QString propValue);
+    void set_html_property(QString propName, QString propValue);
     QString get_html_property(QString propName);
-    QMap< QString, QString > get_html_property_map(void);
+    QMap<QString, QString> get_html_property_map(void);
 
     void clear(void);
 
     void set_cell_type(int i);
-    int  get_cell_type(void);
+    int get_cell_type(void);
 
     void set_ref_super_cell_xy(int x, int y);
     void set_ref_super_cell_x(int x);
     void set_ref_super_cell_y(int y);
-    int  get_ref_super_cell_x(void);
-    int  get_ref_super_cell_y(void);
+    int get_ref_super_cell_x(void);
+    int get_ref_super_cell_y(void);
 
     void set_supercell_size_is_modify(bool i);
     bool get_supercell_size_is_modify(void);
@@ -46,21 +45,20 @@ public:
     };
 
 private:
+    // Свойства ячейки, заполняются из свойств тега <td>
+    QMap<QString, QString> htmlProperty;
 
-// Свойства ячейки, заполняются из свойств тега <td>
-    QMap< QString, QString > htmlProperty;
-
-// Содержимое ячейки
+    // Содержимое ячейки
     QString value;
 
-// Тип ячейки
+    // Тип ячейки
     int cellType;
 
-// Координаты ведущей ячейки, если ячейка является подчиненной (isSubCell)
+    // Координаты ведущей ячейки, если ячейка является подчиненной (isSubCell)
     int refSuperCellX;
     int refSuperCellY;
 
-// Свойство, используемое только в суперячейке
+    // Свойство, используемое только в суперячейке
     bool superCellSizeIsModify;
 };
 

@@ -28,14 +28,14 @@
 // #include "useSTI.h"
 // #ifdef USE_SYSTRAYICON
 
-#include <QSystemTrayIcon>
-#include <QByteArray>
-#include <QString>
-#include <QClipboard>
-#include <QList>
-#include <QStringList>
-#include <QDomElement>
 #include "libraries/qt_single_application5/qtsingleapplication.h"
+#include <QByteArray>
+#include <QClipboard>
+#include <QDomElement>
+#include <QList>
+#include <QString>
+#include <QStringList>
+#include <QSystemTrayIcon>
 #ifdef UNITY_LAUNCHER
 #include "ui_ListDialogBase.h"
 #endif
@@ -51,97 +51,95 @@ class QNetworkReply;
 class sapp_t;
 
 #ifdef Q_OS_MAC
-#if QT_VERSION >= 0x050000	// This function is in QMenu in Qt 5.2
-void qt_mac_set_dock_menu(QMenu *);
+#if QT_VERSION >= 0x050000 // This function is in QMenu in Qt 5.2
+void qt_mac_set_dock_menu(QMenu*);
 #endif
 #endif
 
 class SysTrayIcon : public STI_SUPERCLASS {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		SysTrayIcon(ts_t *_tree_screen, browser::Entrance *_entrance, wn_t *_main_window, browser::Profile *_profile, Qt::WindowFlags flags
-				   , QString style_source, FindScreen *_find_screen, Editentry *editentry
-				   , bool noWindow = false, QObject *parent = 0);
-		~SysTrayIcon();
-		void setDoubleClickFunction(int);
-		bool dontStart(){return _dontStart;}
-		QStringList templates();
-		QStringList templateTitles();
-		void quickpostFromDBus(QString &, QString &);
+public:
+    SysTrayIcon(ts_t* _tree_screen, browser::Entrance* _entrance, wn_t* _main_window, browser::Profile* _profile, Qt::WindowFlags flags, QString style_source, FindScreen* _find_screen, Editentry* editentry, bool noWindow = false, QObject* parent = 0);
+    ~SysTrayIcon();
+    void setDoubleClickFunction(int);
+    bool dontStart() { return _dontStart; }
+    QStringList templates();
+    QStringList templateTitles();
+    void quickpostFromDBus(QString&, QString&);
 
-	public slots:
-		void configureQuickpostTemplates(QWidget *parent = 0);
-		void setCopyTitle(bool);
-		void newDoc();
-		void openRecentFile();
-		void choose(QString fname = QString());
-		void chooseRecentFile();
-		void quickpost(QClipboard::Mode mode = QClipboard::Clipboard);
-		void chooseQuickpostTemplate();
-		bool handleArguments();
-		void doQuit();
-		void saveAll();
-		void set_recent_files(const QList<sapp_t::RecentFile> &);
+public slots:
+    void configureQuickpostTemplates(QWidget* parent = 0);
+    void setCopyTitle(bool);
+    void newDoc();
+    void openRecentFile();
+    void choose(QString fname = QString());
+    void chooseRecentFile();
+    void quickpost(QClipboard::Mode mode = QClipboard::Clipboard);
+    void chooseQuickpostTemplate();
+    bool handleArguments();
+    void doQuit();
+    void saveAll();
+    void set_recent_files(const QList<sapp_t::RecentFile>&);
 
-	private slots:
-		void iconActivated(QSystemTrayIcon::ActivationReason);
-		void quickpostFromTemplate(int, QString, QString t = QString());
-		void setNewWindowAtStartup(bool);
-		void handleDone(QNetworkReply *);
-		void abortQP();
-		void openRecentFileFromDialog(QListWidgetItem *);
-		void actOnChooseQuickpostTemplate(QListWidgetItem *);
+private slots:
+    void iconActivated(QSystemTrayIcon::ActivationReason);
+    void quickpostFromTemplate(int, QString, QString t = QString());
+    void setNewWindowAtStartup(bool);
+    void handleDone(QNetworkReply*);
+    void abortQP();
+    void openRecentFileFromDialog(QListWidgetItem*);
+    void actOnChooseQuickpostTemplate(QListWidgetItem*);
 
-	signals:
-		void quickpostTemplateTitlesUpdated(QStringList);
-		void quickpostTemplatesUpdated(QStringList);
+signals:
+    void quickpostTemplateTitlesUpdated(QStringList);
+    void quickpostTemplatesUpdated(QStringList);
 
-	private:
-		sapp_t *_app;
-		// enum _cbtextIsURL { No, Yes, Untested };
-		// enum _cbtextIsURL cbtextIsURL;
-		bool _copyTitle;
-		int activeTemplate;
-		QAction *newWindowAtStartup;
-		QAction *abortAction;
-		QAction *configureTemplates;
+private:
+    sapp_t* _app;
+    // enum _cbtextIsURL { No, Yes, Untested };
+    // enum _cbtextIsURL cbtextIsURL;
+    bool _copyTitle;
+    int activeTemplate;
+    QAction* newWindowAtStartup;
+    QAction* abortAction;
+    QAction* configureTemplates;
 #ifndef SUPERMENU
-		QAction *quitAction;
+    QAction* quitAction;
 #endif
-		QList<QuickpostTemplate *> quickpostTemplateActions;
-		QMenu *menu;
-		QMenu *templateMenu;
-		bool _newWindowAtStartup;
-		QNetworkAccessManager *netmgr;
-		QNetworkReply *currentReply;
-		QByteArray responseData;
-		QString cbtext;
-		// bool cbtextIsURL;
-		int doubleClickFunction;
-		bool httpBusy;
-		bool templateQPActive;
-		bool _dontStart;
-		QStringList templateTitleList, templateList;
-		QList<int> defaultPublishStatusList;
-		QList<bool> copyTitleStatusList;
-		QList<QStringList> assocHostLists;
-		QList<sapp_t::RecentFile> recentFiles;
-		QAction *recentFileActions[10];
-		QAction *openRecent;
-		QAction *noRecentFilesAction;
-		QMenu *recentFilesMenu;
-		QByteArray userAgentString;
+    QList<QuickpostTemplate*> quickpostTemplateActions;
+    QMenu* menu;
+    QMenu* templateMenu;
+    bool _newWindowAtStartup;
+    QNetworkAccessManager* netmgr;
+    QNetworkReply* currentReply;
+    QByteArray responseData;
+    QString cbtext;
+    // bool cbtextIsURL;
+    int doubleClickFunction;
+    bool httpBusy;
+    bool templateQPActive;
+    bool _dontStart;
+    QStringList templateTitleList, templateList;
+    QList<int> defaultPublishStatusList;
+    QList<bool> copyTitleStatusList;
+    QList<QStringList> assocHostLists;
+    QList<sapp_t::RecentFile> recentFiles;
+    QAction* recentFileActions[10];
+    QAction* openRecent;
+    QAction* noRecentFilesAction;
+    QMenu* recentFilesMenu;
+    QByteArray userAgentString;
 
-		ts_t *_tree_screen;
-		browser::Entrance *_entrance;
-		wn_t *_main_window;
-		browser::Profile *_profile;
-		Qt::WindowFlags _flags;
-		QString _style_source;
+    ts_t* _tree_screen;
+    browser::Entrance* _entrance;
+    wn_t* _main_window;
+    browser::Profile* _profile;
+    Qt::WindowFlags _flags;
+    QString _style_source;
 
-		FindScreen *_find_screen;
-		Editentry *_editentry;
+    FindScreen* _find_screen;
+    Editentry* _editentry;
 
 //		QSplitter *_splitter;
 //		std::shared_ptr<QSettings>  _splitter_config;
@@ -149,13 +147,13 @@ class SysTrayIcon : public STI_SUPERCLASS {
 //		QString _splitter_sizelist;
 
 #ifndef DONT_USE_DBUS
-		// QDBusConnection *dbus;
+// QDBusConnection *dbus;
 #endif
 
-		void setupQuickpostTemplates();
-		void doQP(QString);
-		QDomElement templateElement(QDomDocument &, QString &, QString &, int &, bool &, QStringList &);
-		void updateRecentFileMenu();
+    void setupQuickpostTemplates();
+    void doQP(QString);
+    QDomElement templateElement(QDomDocument&, QString&, QString&, int&, bool&, QStringList&);
+    void updateRecentFileMenu();
 };
 
 // #endif

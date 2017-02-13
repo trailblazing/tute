@@ -1,22 +1,17 @@
 #ifndef _RECORD_TABLE_PRINT_H_
-#define	_RECORD_TABLE_PRINT_H_
+#define _RECORD_TABLE_PRINT_H_
 
-
-
-#include <QtGlobal>
-#include <QWidget>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QTextEdit>
-
+#include <QWidget>
+#include <QtGlobal>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
-
 
 class RecordProxyModel;
 class rs_t;
@@ -28,34 +23,32 @@ class RecordPrint : public QDialog {
     Q_OBJECT
 #endif
 
-    public:
-	RecordPrint(rs_t *_record_screen = 0);
-        virtual ~RecordPrint();
+public:
+    RecordPrint(rs_t* _record_screen = 0);
+    virtual ~RecordPrint();
 
-        void setModel(RecordProxyModel *iModel);
-        void generateHtmlTableFromModel(void);
-        void setTitleToHtml(QString title);
+    void setModel(RecordProxyModel* iModel);
+    void generateHtmlTableFromModel(void);
+    void setTitleToHtml(QString title);
 
-    protected slots:
+protected slots:
 
-        void print(void);
-        void save(void);
+    void print(void);
+    void save(void);
 
-    private:
+private:
+    QTextEdit* textArea; // Отображение текста с таблицей, выводимой на печать
+    QDialogButtonBox* buttonBox; // Линейка с кнопками
 
-        QTextEdit *textArea;	// Отображение текста с таблицей, выводимой на печать
-        QDialogButtonBox *buttonBox;	// Линейка с кнопками
+    QPushButton* printButton;
+    QPushButton* saveButton;
+    QPushButton* cancelButton;
 
-        QPushButton *printButton;
-        QPushButton *saveButton;
-        QPushButton *cancelButton;
+    RecordProxyModel* model;
 
-        RecordProxyModel *model;
-
-        void setup_ui(void);
-        void setup_signals(void);
-        void assembly(void);
+    void setup_ui(void);
+    void setup_signals(void);
+    void assembly(void);
 };
 
 #endif /* _RECORD_TABLE_PRINT_H_ */
-

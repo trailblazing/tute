@@ -72,6 +72,7 @@ DEFINES += USE_SYSTRAYICON
 DEFINES += DONT_USE_DBUS
 DEFINES += DONT_USE_PTE
 DEFINES += USE_WYEDIT
+DEFINES += USE_QTM
 
 # http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
 

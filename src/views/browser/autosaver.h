@@ -42,52 +42,46 @@
 #ifndef AUTOSAVER_H
 #define AUTOSAVER_H
 
-
-
-#include <QtCore/QObject>
 #include <QtCore/QBasicTimer>
+#include <QtCore/QObject>
 #include <QtCore/QTime>
 
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
 //QT_BEGIN_NAMESPACE
 
 namespace browser {
-	/*
+/*
 	    This class will call the save() slot on the parent object when the parent changes.
 	    It will wait several seconds after changed() to combining multiple changes and
 	    prevent continuous writing to disk.
 	  */
-    class AutoSaver : public QObject {
+class AutoSaver : public QObject {
 #if QT_VERSION == 0x050600
-	W_OBJECT(AutoSaver)
+    W_OBJECT(AutoSaver)
 #else
-	Q_OBJECT
+    Q_OBJECT
 #endif
-	public:
-	    AutoSaver(QObject *parent);
-	    ~AutoSaver();
-	    void saveIfNeccessary();
+public:
+    AutoSaver(QObject* parent);
+    ~AutoSaver();
+    void saveIfNeccessary();
 
-	public slots:
-	    void changeOccurred();
+public slots:
+    void changeOccurred();
 
-	protected:
-	    void timerEvent(QTimerEvent *event);
+protected:
+    void timerEvent(QTimerEvent* event);
 
-	private:
-	    QBasicTimer _timer;
-	    QTime	_firstchange;
-    };
+private:
+    QBasicTimer _timer;
+    QTime _firstchange;
+};
 }
 
 //QT_END_NAMESPACE
 
-#endif	// AUTOSAVER_H
-
-
-
+#endif // AUTOSAVER_H

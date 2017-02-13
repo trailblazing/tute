@@ -1,24 +1,16 @@
 #ifndef __ADDNEWRECORD_H__
 #define __ADDNEWRECORD_H__
 
-
 #include <QDialog>
+#include <QDialogButtonBox>
 #include <QLabel>
 #include <QLineEdit>
-#include <QDialogButtonBox>
 #include <QPushButton>
 
-
-
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
-
-
-
 
 class Editor;
 class InfoFieldEnter;
@@ -33,11 +25,10 @@ class AddNewRecord : public QDialog {
 #endif
 
 public:
-
 #if QT_VERSION < 0x050000
-    AddNewRecord( QWidget * parent = 0, Qt::WFlags f = 0 );
+    AddNewRecord(QWidget* parent = 0, Qt::WFlags f = 0);
 #else
-    AddNewRecord( QWidget * parent = 0, Qt::WindowFlags f = 0 );
+    AddNewRecord(QWidget* parent = 0, Qt::WindowFlags f = 0);
 #endif
 
     ~AddNewRecord();
@@ -50,14 +41,13 @@ private slots:
     void okClick(void);
 
 private:
+    // Ввод инфополей записи
+    InfoFieldEnter* infoField;
 
-// Ввод инфополей записи
-    InfoFieldEnter *infoField;
+    // Ввод текста записи
+    Editor* recordTextEditor;
 
-// Ввод текста записи
-    Editor    *recordTextEditor;
-
-    QDialogButtonBox *buttonBox;
+    QDialogButtonBox* buttonBox;
 
     QString imagesDirName;
 
@@ -67,7 +57,7 @@ private:
 
     void setupEventFilter(void);
 
-    virtual bool eventFilter(QObject *object, QEvent *event);
+    virtual bool eventFilter(QObject* object, QEvent* event);
 };
 
 #endif // __ADDNEWRECORD_H__

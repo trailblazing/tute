@@ -19,28 +19,27 @@
  *
  *****************************************************************************/
 
-
 #include <QAction>
 
 class QuickpostTemplate : public QAction {
     Q_OBJECT
 
-    public:
-	QuickpostTemplate(int, QString, QString, QObject *parent = 0);
-	~QuickpostTemplate();
+public:
+    QuickpostTemplate(int, QString, QString, QObject* parent = 0);
+    ~QuickpostTemplate();
 
-	void setIdentifier(int);
-	void setPostTemplate(QString);
-	int identifier(){return _identifier;}
-	QString postTemplate(){return _postTemplate;}
+    void setIdentifier(int);
+    void setPostTemplate(QString);
+    int identifier() { return _identifier; }
+    QString postTemplate() { return _postTemplate; }
 
-    signals:
-	void quickpostRequested(int, QString);
+signals:
+    void quickpostRequested(int, QString);
 
-    private:
-	int _identifier;
-	QString _postTemplate;
+private:
+    int _identifier;
+    QString _postTemplate;
 
-    private slots:
-	void emitRequestedSignal();
+private slots:
+    void emitRequestedSignal();
 };

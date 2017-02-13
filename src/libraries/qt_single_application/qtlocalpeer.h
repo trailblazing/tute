@@ -44,58 +44,48 @@
 **
 ****************************************************************************/
 
-
-
-
-
-
+#include <QtCore/QDir>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
-#include <QtCore/QDir>
 
 namespace QtLP_Private {
 #include "qtlockedfile.h"
 }
 
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
 
 namespace qt4 {
-    class QtLocalPeer : public QObject {
+class QtLocalPeer : public QObject {
 #if QT_VERSION == 0x050600
-	W_OBJECT(QtLocalPeer)
+    W_OBJECT(QtLocalPeer)
 #else
-	Q_OBJECT
+    Q_OBJECT
 #endif
-	public:
-	    QtLocalPeer(QObject *parent = 0, const QString &appId = QString());
-	    bool	isClient();
-	    bool	sendMessage(const QString &message, int timeout);
-	    QString applicationId() const {return id;}
+public:
+    QtLocalPeer(QObject* parent = 0, const QString& appId = QString());
+    bool isClient();
+    bool sendMessage(const QString& message, int timeout);
+    QString applicationId() const { return id; }
 
 Q_SIGNALS:
-	    void messageReceived(const QString &message)
+    void messageReceived(const QString& message)
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(messageReceived, (const QString &), message)
+        W_SIGNAL(messageReceived, (const QString&), message)
 #else
-	    ;
+        ;
 #endif
-	protected Q_SLOTS:
-	    void receiveConnection();
+            protected Q_SLOTS : void receiveConnection();
 
-	protected:
-	    QString			id;
-	    QString			socketName;
-	    QLocalServer		*server;
-	    QtLP_Private::QtLockedFile	lockFile;
+protected:
+    QString id;
+    QString socketName;
+    QLocalServer* server;
+    QtLP_Private::QtLockedFile lockFile;
 
-	private:
-	    static const char *ack;
-    };
+private:
+    static const char* ack;
+};
 }
-
-

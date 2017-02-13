@@ -96,7 +96,7 @@ QtLockedFile::QtLockedFile()
 
     \sa QFile::QFile()
 */
-QtLockedFile::QtLockedFile(const QString &name)
+QtLockedFile::QtLockedFile(const QString& name)
     : QFile(name)
 {
 #ifdef Q_OS_WIN
