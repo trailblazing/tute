@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -12,9 +13,10 @@
    height="16px"
    id="svg2385"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="edit_clear.svg"
-   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   version="1.1">
   <defs
      id="defs2387">
     <inkscape:perspective
@@ -32,24 +34,25 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="19.825067"
-     inkscape:cx="11.09431"
-     inkscape:cy="7.8461564"
+     inkscape:zoom="42.75"
+     inkscape:cx="8.1052632"
+     inkscape:cy="8"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
      gridtolerance="7"
      guidetolerance="3"
-     inkscape:window-width="1024"
-     inkscape:window-height="718"
+     inkscape:window-width="1600"
+     inkscape:window-height="848"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:snap-bbox="true"
      inkscape:object-paths="true"
      inkscape:object-nodes="true"
      showguides="true"
-     inkscape:guide-bbox="true">
+     inkscape:guide-bbox="true"
+     inkscape:window-maximized="1">
     <inkscape:grid
        type="xygrid"
        id="grid3169"
@@ -72,16 +75,17 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer">
     <path
-       style="fill:#a02c2c;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.50000000000000000;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1"
-       d="M 5.46875 2 C 4.0994734 2 3 3.0994736 3 4.46875 L 3 11.53125 C 3 12.900526 4.0994736 14 5.46875 14 L 10.53125 14 C 11.900526 14 13 12.900526 13 11.53125 L 13 10 L 11 10 L 11 11.03125 C 11 11.562193 10.562193 12 10.03125 12 L 5.96875 12 C 5.437806 12 5 11.562193 5 11.03125 L 5 4.96875 C 5 4.437806 5.4378061 4 5.96875 4 L 10.03125 4 C 10.562193 4 11 4.4378061 11 4.96875 L 11 6 L 13 6 L 13 4.46875 C 13 3.0994734 11.900526 2 10.53125 2 L 5.46875 2 z "
-       id="rect2382" />
+       style="fill:#a02c2c;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.5;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1"
+       d="m 5.2255582,2.3391805 c -1.4145551,0 -2.5503856,0.9757026 -2.5503856,2.1908355 l 0,6.267458 c 0,1.215132 1.1358306,2.190837 2.5503856,2.190837 l 5.2299028,0 c 1.414555,0 2.550385,-0.975705 2.550385,-2.190837 l 0,-1.3588773 -2.066135,0 0,0.9151613 c 0,0.471177 -0.452284,0.859698 -1.0007824,0.859698 l -4.1968366,0 c -0.548501,0 -1.0007843,-0.388521 -1.0007843,-0.859698 l 0,-5.3800287 c 0,-0.4711741 0.4522835,-0.8596947 1.0007843,-0.8596947 l 4.1968366,0 c 0.5484984,0 1.0007824,0.3885207 1.0007824,0.8596947 l 0,0.9151592 2.066135,0 0,-1.3588725 c 0,-1.2151331 -1.13583,-2.1908355 -2.550385,-2.1908355 l -5.2299028,0 z"
+       id="rect2382"
+       inkscape:connector-curvature="0" />
     <rect
        style="opacity:0;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3254"
-       width="16"
-       height="16"
-       x="0"
-       y="0"
+       width="8.727273"
+       height="10.666667"
+       x="3.272727"
+       y="2.333333"
        ry="0" />
   </g>
 </svg>

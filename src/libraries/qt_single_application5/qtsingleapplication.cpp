@@ -642,7 +642,7 @@ void sapp_t::browser_init()
 
     // Подключение перевода интерфейса
     // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/hapnote_"+hapnoteconfig.get_interfacelanguage()+".qm";
-    QString langFileName = ":/resource/translations/hapnote_" + _appconfig.interface_language() + ".qm";
+    QString langFileName = ":/resource/translations/" + program_title_qstring + "_" + _appconfig.interface_language() + ".qm";
     qDebug() << "Use language file " << langFileName;
 
     // QTranslator langTranslator;
@@ -1084,7 +1084,7 @@ void sapp_t::newLocalSocketConnection()
     //    //    std::pair<browser::Browser *, browser::WebView *> dp;
     if (entrance && tree_screen) { // && _tree_modelindex
         if (openLinksIn == 1) {
-            auto browser = _globalparameters.main_window()->vtab_record()->new_browser();
+	    auto browser = _globalparameters.main_window()->new_browser();
             //            boost::intrusive_ptr<TreeIndex> tree_index;
             //            try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item()->linker()->sibling_order()); } catch(std::exception &e) {throw e; }
 
@@ -1099,7 +1099,7 @@ void sapp_t::newLocalSocketConnection()
             boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return browser->record_screen()->record_controller()->source_model(); }, it); // , browser->record_screen()->record_controller()->source_model()->sibling(it)
             //            } catch(std::exception &) {}
             //            if(record_index){
-            browser->bind(record_index)->activate(std::bind(&HidableTabWidget::find, _globalparameters.main_window()->vtab_record(), std::placeholders::_1)); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
+	    browser->bind(record_index)->activate(std::bind(&wn_t::find, _globalparameters.main_window(), std::placeholders::_1)); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
             //            }
             //            else{
             //                tree_view->index_invoke(tree_view->source_model()->index(it));
@@ -1109,7 +1109,7 @@ void sapp_t::newLocalSocketConnection()
             //            try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item()->linker()->sibling_order()); } catch(std::exception &e) {throw e; }
 
             //            if(tree_index)
-            TreeIndex::activate([&] { return tree_view->source_model(); }, tree_view->current_item(), _url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool { return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString()); })->activate(std::bind(&HidableTabWidget::find, _globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+	    TreeIndex::activate([&] { return tree_view->source_model(); }, tree_view->current_item(), _url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool { return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString()); })->activate(std::bind(&wn_t::find, _globalparameters.main_window(), std::placeholders::_1));
         }
         // browser_view->mainWindow()->load_record(record);
     }
@@ -1203,7 +1203,7 @@ void sapp_t::postLaunch()
 
     loadSettings();
     // newMainWindow() needs to be called in main() for this to happen
-    if (_globalparameters.main_window()->vtab_record()->record_screens().size() > 0) { // _mainWindows.count()
+    if (_globalparameters.main_window()->record_screens().size() > 0) { // _mainWindows.count()
         QStringList args = QCoreApplication::arguments();
         //        browser::Browser *browser = _globalparameters.entrance()->activated_browser();
         //        assert(browser);
@@ -1333,7 +1333,7 @@ void sapp_t::saveSession()
     QDataStream stream(&buffer);
     buffer.open(QIODevice::ReadWrite);
 
-    auto _browsers = [&] {set<browser::Browser *> bs;for(auto rs : _globalparameters.main_window()->vtab_record()->record_screens()) bs.insert(rs->browser());return bs; }();
+    auto _browsers = [&] {set<browser::Browser *> bs;for(auto rs : _globalparameters.main_window()->record_screens()) bs.insert(rs->browser());return bs; }();
     uint count_win = static_cast<uint>(_browsers.size());
     ;
     stream << count_win; // static_cast<uint>(_browsers.size());
@@ -1373,16 +1373,16 @@ void sapp_t::restoreLastSession()
         //	browser::Browser *browser = globalparameters.main_window()->vtab_record()->activated_browser();
         ////	assert(browser->currentTab()->page()->url() == QUrl() || browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome));
         if (0 == i
-            && _globalparameters.main_window()->vtab_record()->record_screens().size() == 1
+	    && _globalparameters.main_window()->record_screens().size() == 1
             //	  && browser->tabWidget()->count() == 1
             //	  && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome)	// ?
             ) {
             //		// newWindow = globalParameters.browsermanager()->main_window();
             //	    globalparameters.entrance()->restore_state(historywindows.at(i));
-            _globalparameters.main_window()->vtab_record()->activated_browser()->restore_state(historywindows.at(i));
+	    _globalparameters.main_window()->activated_browser()->restore_state(historywindows.at(i));
         } else {
             // newWindow =
-            _globalparameters.main_window()->vtab_record()->new_browser()->restore_state(historywindows.at(i));
+	    _globalparameters.main_window()->new_browser()->restore_state(historywindows.at(i));
         }
         // newWindow->restoreState(windows.at(i));
     }
@@ -1590,7 +1590,7 @@ void sapp_t::setPrivateBrowsing(bool privateBrowsing)
     if (_private_browsing == privateBrowsing)
         return;
     _private_browsing = privateBrowsing;
-    auto browsers = [&] {set<browser::Browser *> bs;for(auto rs : _globalparameters.main_window()->vtab_record()->record_screens()) bs.insert(rs->browser());return bs; }();
+    auto browsers = [&] {set<browser::Browser *> bs;for(auto rs : _globalparameters.main_window()->record_screens()) bs.insert(rs->browser());return bs; }();
     if (privateBrowsing) {
         if (!_private_profile)
             _private_profile = new browser::Profile(profile_storage_name, this); // new QWebEngineProfile(this);

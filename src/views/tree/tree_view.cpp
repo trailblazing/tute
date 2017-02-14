@@ -1315,8 +1315,8 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index,
     // throw std::exception();
     // }
     if (_item) {
-        auto vr = globalparameters.main_window()->vtab_record();
-        auto v = vr->find([&](boost::intrusive_ptr<const Binder> b) { return b->host() == _item; });
+//        auto vr = globalparameters.main_window()->vtab_record();
+	auto v = globalparameters.main_window()->find([&](boost::intrusive_ptr<const Binder> b) { return b->host() == _item; });
         if (v) {
             auto p = v->page();
             if (p) {
@@ -1336,7 +1336,7 @@ browser::WebView* tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
 { // browser::WebView *view, const index_tree &_index
     auto _index = _tree_index->host_index();
     auto _host = _tree_index->host();
-    browser::WebView* activated_view = globalparameters.main_window()->vtab_record()->activated_browser()->currentTab(); // globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), _host->field<home_type>().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), _host->field<url_type>().toStdString());});;
+    browser::WebView* activated_view = globalparameters.main_window()->activated_browser()->currentTab(); // globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), _host->field<home_type>().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), _host->field<url_type>().toStdString());});;
     browser::WebView* v = nullptr;
     //    const index_tree &_index = _know_root->index(_item);
     if (static_cast<QModelIndex>(_index).isValid()) { // && index_current() != _index
@@ -1380,7 +1380,7 @@ browser::WebView* tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
                 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, result_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
             }
         }
-        if (!globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) { // !result_item->is_activated()
+	if (!globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { // !result_item->is_activated()
                 bool result = false;
                 // auto result_item = source_model()->item(_index);
                 if (result_item->binder()) {
@@ -1470,7 +1470,7 @@ browser::WebView* tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
                     path.removeAt(emptyStringIndex);
 
                     // find_object<RecordScreen>(table_screen_singleton_name)
-                    globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->tree_path(path.join(" > "));
+		    globalparameters.main_window()->activated_browser()->record_screen()->tree_path(path.join(" > "));
                 }
                 // Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
                 resizeColumnToContents(0);
@@ -1488,7 +1488,7 @@ browser::WebView* tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
                 // TreeIndex modelindex([&] {return _know_root;}, current_item()->parent(), current_item()->parent()->sibling_order(current_item()));
                 ////            select_and_current(result_item);
                 // auto item_bind_ = [&]() {return item_bind(current_item(), result_item, std::bind(&KnowView::view_paste_child, this, modelindex, std::placeholders::_2, std::placeholders::_3))->activate();};
-                auto browser = globalparameters.main_window()->vtab_record()->activated_browser();
+		auto browser = globalparameters.main_window()->activated_browser();
                 // auto previous_item = _know_root->item(_previous_index);
                 boost::intrusive_ptr<TreeItem> record_previous_item(nullptr);
                 if (activated_view)
@@ -1498,7 +1498,7 @@ browser::WebView* tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
                     boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return browser->record_screen()->record_controller()->source_model(); }, result_item); // record_previous_item,
 
                     auto browser_bind_activate = [&](boost::intrusive_ptr<RecordIndex> _record_index) -> browser::WebView* {
-                        return browser->bind(_record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)); // item_bind_();
+			return browser->bind(_record_index)->activate(std::bind(&wn_t::find, globalparameters.main_window(), std::placeholders::_1)); // item_bind_();
                     };
                     //                    if(record_index && ! result_item->binder())
                     v = browser_bind_activate(record_index); // browser->item_bind(record_index)->activate();   // item_bind_();
@@ -2997,8 +2997,8 @@ QList<boost::intrusive_ptr<TreeItem> > tv_t::delete_permanent(const std::functio
                             }
                             return left_sibling_;
                         };
-                        if (globalparameters.main_window()->vtab_record()->record_screens().size() > 0) {
-                            browser::Browser* browser = globalparameters.main_window()->vtab_record()->activated_browser();
+			if (globalparameters.main_window()->record_screens().size() > 0) {
+			    browser::Browser* browser = globalparameters.main_window()->activated_browser();
                             auto tabmanager = browser->tabmanager();
                             QList<boost::intrusive_ptr<TreeItem> > good_list;
                             for (int i = 0; i < tabmanager->count(); i++) {
@@ -3716,7 +3716,7 @@ std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > tv_t:
                     path.removeAt(empty_string_index);
 
                     // find_object<RecordScreen>(table_screen_singleton_name)
-                    globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->tree_path(path.join(" > "));
+		    globalparameters.main_window()->activated_browser()->record_screen()->tree_path(path.join(" > "));
                 }
                 // Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
                 resizeColumnToContents(0);

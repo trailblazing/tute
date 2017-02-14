@@ -613,7 +613,7 @@ void Browser::activateWindow()
 
     _find_screen->toolbarsearch()->lineedits(this->tabWidget()->lineEditStack());
 
-    auto _vtab_record = _main_window->vtab_record();
+    auto _vtab_record = _record_screen->vtab_record();
     int index = _vtab_record->indexOf(_record_screen);
     if (_vtab_record->currentIndex() != index) {
         auto previous_browser = _vtab_record->currentWidget();
@@ -1588,7 +1588,7 @@ void Browser::slotAboutToShowWindowMenu()
     _windowmenu->addAction(tr("Downloads"), this, &Browser::slotDownloadManager, QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
     _windowmenu->addSeparator();
 
-    auto _browsers = [&] {set<Browser *> bs;for(auto rs : _main_window->vtab_record()->record_screens()) bs.insert(rs->browser());return bs; }(); // QtSingleApplication::instance()->mainWindows();
+    auto _browsers = [&] {set<Browser *> bs;for(auto rs : _main_window->record_screens()) bs.insert(rs->browser());return bs; }(); // QtSingleApplication::instance()->mainWindows();
     size_t index = 0;
     for (auto& _browser : _browsers) { // for(size_t i = 0; i < _browsers.size(); i++) {
         // auto window = it;   // _browsers[i];
@@ -1607,7 +1607,7 @@ void Browser::slotShowWindow()
         QVariant v = action->data();
         if (v.canConvert<uint>()) {
             uint offset = qvariant_cast<uint>(v);
-            auto _browsers = [&] {set<Browser *> bs;for(auto rs : _main_window->vtab_record()->record_screens()) bs.insert(rs->browser());return bs; }(); // QtSingleApplication::instance()->mainWindows();
+	    auto _browsers = [&] {set<Browser *> bs;for(auto rs : _main_window->record_screens()) bs.insert(rs->browser());return bs; }(); // QtSingleApplication::instance()->mainWindows();
             auto _browser = [&]() -> Browser* {
                 Browser* r = nullptr;
                 size_t index = 0;
@@ -1687,7 +1687,7 @@ boost::intrusive_ptr<TreeItem> Browser::bind(boost::intrusive_ptr<RecordIndex> r
     ////            break;
     // } else
     if (!view) {
-        auto v = globalparameters.main_window()->vtab_record()->find(url_euql);
+	auto v = globalparameters.main_window()->find(url_euql);
         if (v && v->tabmanager() != _tabmanager)
             v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
         //// Record *blank_url = check_register_record(QUrl(DockedWindow::_defaulthome));

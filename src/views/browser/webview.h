@@ -153,33 +153,34 @@ class WebPage : public QWebEnginePage {
     Q_OBJECT
 #endif
 signals:
-    void loadingUrl(const QUrl& url)
+
 #if QT_VERSION == 0x050600
-        W_SIGNAL(loadingUrl, (const QUrl&), url) //
+    void loadingUrl(const QUrl& url) W_SIGNAL(loadingUrl, (const QUrl&), url); //
 #else
-        ;
+    void loadingUrl(const QUrl& url);
 #endif
-        //        void linkHovered(const QString &url, int time_out = 0);
-        void close_requested()
+//        void linkHovered(const QString &url, int time_out = 0);
+
 #if QT_VERSION == 0x050600
-            W_SIGNAL(close_requested) //
+    void close_requested() W_SIGNAL(close_requested); //
 #else
-        ;
+    void close_requested();
 #endif
 
-        public :
-        //        typedef Binder coupler_delegation;
-        //        typedef typename Binder::bind_interface      bind_interface;
-        //        typedef typename Binder::activate_interface  activate_interface;
-        //        typedef typename Binder::item_interface      item_interface;
-        //        typedef typename Binder::page_interface      page_interface;
+public:
+    //    typedef Binder coupler_delegation;
+    //    typedef typename Binder::bind_interface bind_interface;
+    //    typedef typename Binder::activate_interface activate_interface;
+    //    typedef typename Binder::item_interface item_interface;
+    //    typedef typename Binder::page_interface page_interface;
 
-        //        typedef typename Binder::bind_helper     bind_helper;
-        //        typedef typename Binder::activate_helper activate_helper;
-        //        typedef typename Binder::item_helper     item_helper;
-        //        typedef typename Binder::page_helper     page_helper;
+    //    typedef typename Binder::bind_helper bind_helper;
+    //    typedef typename Binder::activate_helper activate_helper;
+    //    typedef typename Binder::item_helper item_helper;
+    //    typedef typename Binder::page_helper page_helper;
 
-        WebPage(Profile* profile, boost::intrusive_ptr<TreeItem> item, ts_t* tree_screen, Editentry* editentry, Entrance* entrance, Browser* browser, TabWidget* tabmanager, rctrl_t* record_controller, WebView* parent = 0);
+public:
+    WebPage(Profile* profile, boost::intrusive_ptr<TreeItem> item, ts_t* tree_screen, Editentry* editentry, Entrance* entrance, Browser* browser, TabWidget* tabmanager, rctrl_t* record_controller, WebView* parent = 0);
 
     ~WebPage();
 
@@ -194,7 +195,7 @@ signals:
     void load(const QUrl& url) = delete;
 
     boost::intrusive_ptr<TreeItem> host() const; // {return _record_binder->bounded_item();}
-
+    bool activated() const;
     struct Binder : public std::enable_shared_from_this<Binder> { // boost::intrusive_ref_counter<Binder, boost::thread_safe_counter>    //
     private:
         boost::intrusive_ptr<TreeItem> _host;
@@ -269,6 +270,7 @@ private:
     boost::intrusive_ptr< ::Binder> _binder;
 
     bool _certificate_ignored = false;
+    bool _activated = false;
 
     friend class TabWidget;
     friend class WebView;

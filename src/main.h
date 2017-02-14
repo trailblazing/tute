@@ -59,19 +59,7 @@ extern const char* app_version;
 
 // bool    compare_qstringlist_length(const QStringList &list1, const QStringList &list2);
 
-template <typename tool_button>
-void add_action(QToolBar* tools_line, QAction* action)
-{ // void    insert_action_as_button(QToolBar *tools_line, QAction *action);
-    tools_line->addAction(action);
-    qobject_cast<tool_button*>(tools_line->widgetForAction(action))->setAutoRaise(true); // false
-}
 
-template <typename tool_button>
-void add_action(QToolBar* tools_line, QAction* before, QAction* action)
-{ // void    insert_action_as_button(QToolBar *tools_line, QAction *action);
-    tools_line->insertAction(before, action);
-    qobject_cast<tool_button*>(tools_line->widgetForAction(action))->setAutoRaise(true); // false
-}
 
 // int     imax(int x1, int x2);
 // int     imin(int x1, int x2);

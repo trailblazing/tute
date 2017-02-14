@@ -232,7 +232,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::create_treeitem_from_url(const QUrl& f
         bool item_is_brand_new = false;
 
         // if(browser_pages) {
-        auto browser_view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return equal_(b->host()); });
+	auto browser_view = globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return equal_(b->host()); });
 
         boost::intrusive_ptr<TreeItem> in_browser(nullptr);
         if (browser_view) {
@@ -258,7 +258,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::create_treeitem_from_url(const QUrl& f
                     _result->to_fat();
                 if (_result->field<id_type>() == "")
                     _result->field<id_type>(_result->field<dir_type>().length() > 0 ? _result->field<dir_type>() : get_unical_id());
-                assert(globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), _result->field<url_type>().toStdString()); })
+		assert(globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), _result->field<url_type>().toStdString()); })
                     || _result->field<url_type>() == browser::Browser::_defaulthome);
                 assert(equal_(_result));
             }
@@ -309,7 +309,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::create_treeitem_from_url(const QUrl& f
                     _result->to_fat();
                 if (_result->field<id_type>() == "")
                     _result->field<id_type>(_result->field<dir_type>().length() > 0 ? _result->field<dir_type>() : get_unical_id());
-                assert(globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString()); })
+		assert(globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString()); })
                     || _result->field<url_type>() == browser::Browser::_defaulthome);
                 if (_result->field<url_type>() == browser::Browser::_defaulthome && find_url_.toString() != browser::Browser::_defaulthome)
                     _result->field<url_type>(find_url_.toString());
@@ -355,9 +355,9 @@ boost::intrusive_ptr<TreeItem> TreeIndex::bind(const QUrl& _find_url, const inse
     if (binder) {
         auto host_ = binder->host();
         auto _equal = [&](boost::intrusive_ptr<const Binder> b) { return b->host() == host_ && b == binder && host_->parent() == b->host()->parent() && b->host()->id() == host_->id(); };
-        view = _recommend_browser ? _recommend_browser->tabmanager()->find(_equal) : globalparameters.main_window()->vtab_record()->find(_equal);
+	view = _recommend_browser ? _recommend_browser->tabmanager()->find(_equal) : globalparameters.main_window()->find(_equal);
     }
-    auto browser_ = _recommend_browser ? _recommend_browser : view ? view->page()->browser() : globalparameters.main_window()->vtab_record()->activated_browser();
+    auto browser_ = _recommend_browser ? _recommend_browser : view ? view->page()->browser() : globalparameters.main_window()->activated_browser();
     _current_item = browser_->tabmanager()->current_item(); // _tree_view->current_item();
 
     auto target_ = TreeIndex::create_treeitem_from_url(_find_url, _view_insert_strategy, _equal);
@@ -381,7 +381,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::activate(const std::function<tkm_t*()>
     boost::intrusive_ptr<TreeItem> result(nullptr);
     result = TreeIndex::create_treeindex_from_item(current_model_, host_)->bind(find_url_, view_insert_strategy_, equal_);
     if (result)
-        result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+	result->activate(std::bind(&wn_t::find, globalparameters.main_window(), std::placeholders::_1));
     return result;
 }
 

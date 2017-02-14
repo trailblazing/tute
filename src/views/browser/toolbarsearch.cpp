@@ -194,7 +194,7 @@ void ToolbarSearch::search_now()
 
                     auto ti = tree_index->bind(url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool { return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString()); });
                     if (ti)
-                        ti->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+			ti->activate(std::bind(&wn_t::find, globalparameters.main_window(), std::placeholders::_1));
                     assert(_lineedits);
                     if (_lineedits) {
                         QLineEdit* line_edit = qobject_cast<QLineEdit*>(_lineedits->currentWidget());
@@ -236,7 +236,7 @@ void ToolbarSearch::search_now()
                     //		    emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                     auto ti = tree_index->bind(search_engine, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool { return url_equal(it_->field<home_type>().toStdString(), search_engine.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), search_engine.toString().toStdString()); });
                     if (ti)
-                        ti->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+			ti->activate(std::bind(&wn_t::find, globalparameters.main_window(), std::placeholders::_1));
                 }
             }
         }
@@ -255,8 +255,8 @@ void ToolbarSearch::search_now()
                 tree_view->move_children(tree_index, result_item, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool { return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>(); });
             //
             //	    auto	child_items		= std::async(std::launch::async, &tv_t::move_children, tree_view, tree_index, result_item, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();}).get();
-            auto _vtab_record = globalparameters.main_window()->vtab_record();
-            auto browser = _vtab_record->activated_browser();
+	    //            auto _vtab_record = globalparameters.main_window()->vtab_record();
+	    auto browser = globalparameters.main_window()->activated_browser();
             auto ctrl = browser->record_screen()->record_controller();
             auto last = ctrl->source_model()->item(pos_source(ctrl->source_model()->count() - 1));
             //	    auto	current_item_	= ctrl->view()->current_item();	// source_model()->item(pos_source(0));
@@ -293,7 +293,7 @@ void ToolbarSearch::search_now()
             _view->setModel(ctrl->proxy_model());
             //	    if(! tab_brother)
             //
-            child_items[0]->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1)); //	    result_item->child_linkers()[0]->host()
+	    child_items[0]->activate(std::bind(&wn_t::find, globalparameters.main_window(), std::placeholders::_1)); //	    result_item->child_linkers()[0]->host()
 
             //	    std::function<void()> startWorkInAThread = [&] {
             //		WorkerThread *workerThread = new WorkerThread(this, child_items);
@@ -352,8 +352,8 @@ void WorkerThread::run()
 {
     //		    QString result;
     auto element = _child_items.last(); // acrosss thread
-    auto _vtab_record = globalparameters.main_window()->vtab_record();
-    auto browser = _vtab_record->activated_browser();
+    //    auto _vtab_record = globalparameters.main_window()->vtab_record();
+    auto browser = globalparameters.main_window()->activated_browser();
     auto record_controller = browser->record_screen()->record_controller();
     //	auto					tab_brother		= record_controller->view()->current_item();	// acrosss thread
     boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return record_controller->source_model(); }, element); // tab_brother
@@ -367,7 +367,7 @@ void WorkerThread::run()
     //                            }else{
     // auto previous_item = _source_model()->item(tree_view->previous_index());
     auto result = browser->bind(record_index);
-    result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
+    result->activate(std::bind(&wn_t::find, globalparameters.main_window(), std::placeholders::_1));
     _child_items.pop_back();
     emit result_ready();
 }

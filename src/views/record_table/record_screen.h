@@ -65,7 +65,7 @@ class rs_t : public QWidget {
 #endif
 
 public:
-    rs_t(ts_t* _tree_screen, FindScreen* _find_screen, Editentry* _editentry, browser::Entrance* _entrance, HidableTabWidget* _vtab_record, const QString& _style_source, browser::Profile* _profile);
+    rs_t(ts_t* _tree_screen, FindScreen* _find_screen, Editentry* editentry, browser::Entrance* _entrance, HidableTabWidget* _vtab_record, const QString& _style_source, browser::Profile* _profile);
 
     virtual ~rs_t();
 
@@ -86,6 +86,7 @@ public:
     //	QAction			*record_hide();	// move to main_window::_vtab_record->tabBar()->tabBarClicked
     //	void			restore_menubar();
 
+    HidableTabWidget *vtab_record();
 public slots:
 
     // Обновление панели инструментов
@@ -102,7 +103,7 @@ private slots:
 
 private:
     // bool                _inited = false;
-
+    HidableTabWidget* _vtab_record;
     ts_t* _tree_screen;
     Editentry* _editentry;
 

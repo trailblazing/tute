@@ -102,7 +102,7 @@ class EditingWindow : public QMainWindow {
 public:
     // EditingWindow( QWidget *widget = 0 );
     /*  Catkin( QList<QString>, QList<QString>, int,
-	    QWidget *parent = 0 );*/
+    QWidget *parent = 0 );*/
     EditingWindow(ts_t* _tree_screen, browser::Entrance* _entrance, browser::Profile* _profile, FindScreen* _find_screen, Editentry* editentry, Qt::WindowFlags flags, QString style_source_, QString newPost = QString());
     ~EditingWindow();
 #ifdef USE_SYSTRAYICON
@@ -115,18 +115,18 @@ public:
     static void positionWidget(QWidget*, QWidget*);
 
     typedef enum _hbiz {
-        None,
-        _blogger_getUsersBlogs,
-        _metaWeblog_newPost,
-        _metaWeblog_editPost,
-        _metaWeblog_newMediaObject,
-        _mt_publishPost,
-        _mt_getCategoryList,
-        _mt_setPostCategories,
-        _wp_getTags,
-        _wp_newCategory,
-        _wp_newPost,
-        _wp_editPost
+	None,
+	_blogger_getUsersBlogs,
+	_metaWeblog_newPost,
+	_metaWeblog_editPost,
+	_metaWeblog_newMediaObject,
+	_mt_publishPost,
+	_mt_getCategoryList,
+	_mt_setPostCategories,
+	_wp_getTags,
+	_wp_newCategory,
+	_wp_newPost,
+	_wp_editPost
     } HttpBusinessType;
     TEXTEDIT* editor();
     QStackedWidget* main_stack();
@@ -217,12 +217,7 @@ private:
     QRegExpValidator* tagValidator;
     QString editorFontString, previewFontString, consoleFontString;
     QString perlPath, markdownPath;
-    QColor editorBgColor,
-        editorFgColor,
-        previewBgColor,
-        previewFgColor,
-        consoleBgColor,
-        consoleFgColor;
+    QColor editorBgColor, editorFgColor, previewBgColor, previewFgColor, consoleBgColor, consoleFgColor;
     QColor tagBgColor, tagFgColor, entityBgColor, entityFgColor, commentBgColor, commentFgColor, linkFgColor, linkBgColor;
     bool tagBold, tagItalic, entityBold, entityItalic, commentBold, commentItalic, linkBold, linkItalic, linkUnderline;
 
@@ -383,7 +378,7 @@ public slots:
     void doPreview(bool, bool markdownFailed = false);
     void handleConsole(bool);
     void clearConsole();
-    void setToolBarVisible(bool);
+//    void setToolBarVisible(bool);
 
 protected:
     QWidget* _central_widget; // *leftWidget,

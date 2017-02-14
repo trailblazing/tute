@@ -85,7 +85,20 @@ const char* custom_hidabletabwidget_style = "QTabWidget::pane {"
 W_OBJECT_IMPL(HidableTabWidget)
 #endif
 
-HidableTabWidget::HidableTabWidget(ts_t* tree_screen_, FindScreen* find_screen_, Editentry* _editentry, browser::Entrance* entrance_, QMainWindow* main_window_, browser::Profile* profile_, QString style_source_, QSplitter* splitter, std::shared_ptr<QSettings> splitter_config, QString splitter_group_name, QString splitter_sizelist_name, QString collapsed_status_name, QWidget* parent)
+HidableTabWidget::HidableTabWidget(
+    ts_t* tree_screen_,
+    FindScreen* find_screen_,
+    Editentry* _editentry,
+    browser::Entrance* entrance_,
+    QMainWindow* main_window_,
+    browser::Profile* profile_,
+    QString style_source_,
+    QSplitter* splitter,
+    std::shared_ptr<QSettings> splitter_config,
+    QString splitter_group_name,
+    QString splitter_sizelist_name,
+    QString collapsed_status_name,
+    QWidget* parent)
     : QTabWidget(parent)
     , _hide_action(new QAction(tr("▾"), this))
     , _layout(new QVBoxLayout(this)) // (new QStackedLayout(this))
@@ -110,49 +123,6 @@ HidableTabWidget::HidableTabWidget(ts_t* tree_screen_, FindScreen* find_screen_,
     hide_button->setAutoRaise(true);
     this->setCornerWidget(hide_button);
 
-    connect(this, &::HidableTabWidget::tabCloseRequested, [&](int index) {
-        auto w = widget(index);
-        this->removeTab(index);
-        if (w->objectName() == record_screen_multi_instance_name) {
-            //		auto rs = dynamic_cast<rs_t *>(w);
-            auto _browser = dynamic_cast<rs_t*>(w)->browser();
-            if (_browser) {
-                _browser->close();
-                //		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-                _browser->deleteLater();
-            }
-        } else {
-            w->close();
-            w->deleteLater();
-        }
-        w = nullptr;
-    });
-
-    connect(this, &::HidableTabWidget::currentChanged, [&](int index) {
-        QWidget* w = nullptr;
-        w = widget(index);
-        if (w) {
-            if (w->objectName() == record_screen_multi_instance_name) {
-                //		auto rs = dynamic_cast<rs_t *>(w);
-                auto _browser = dynamic_cast<rs_t*>(w)->browser();
-                if (_browser) {
-                    //		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-                    if (_browser->tabmanager()->count() > 0) {
-                        auto v = _browser->currentTab();
-                        if (v) {
-                            auto p = v->page();
-                            if (p) {
-                                auto it = p->host();
-                                if (_tree_screen->view()->current_item()->id() != it->id())
-                                    _tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] { return _tree_screen->view()->source_model(); }, it));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        w = nullptr;
-    });
     setUsesScrollButtons(true);
     //    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
     //    setStyleSheet("QTabWidget::pane { border: 0 px; } QTabBar::tab { max-width: 200px; padding: 0 px; margin-left: 2 px; margin-right: 0 px;} QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2 px; padding: 0 px; margin-right: 0 px;}");    // QWidget{border: 0px;}
@@ -209,42 +179,22 @@ HidableTabWidget::HidableTabWidget(ts_t* tree_screen_, FindScreen* find_screen_,
 
 HidableTabWidget::~HidableTabWidget()
 {
-    //    if(_record_screens.size() > 0){
-    for (int i = 0; i < count(); i++) { // for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
-        auto w = widget(i);
-        if (w->objectName() == record_screen_multi_instance_name) {
-            //	    auto	rs		= dynamic_cast<rs_t *>(w);
-            auto browser_ = dynamic_cast<rs_t*>(w)->browser();
-            if (browser_) { // if(*i){	// && *i != widget()=>for entrance
-                //		_record_screens.erase(i);
-                browser_->deleteLater(); // (*i)->deleteLater();	// delete *i;
-                // *i = nullptr;
-            }
-        }
-    }
-    //    }
+//    //    if(_record_screens.size() > 0){
+//    for (int i = 0; i < count(); i++) { // for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+//        auto w = widget(i);
+//        if (w->objectName() == record_screen_multi_instance_name) {
+//            //	    auto	rs		= dynamic_cast<rs_t *>(w);
+//            auto browser_ = dynamic_cast<rs_t*>(w)->browser();
+//            if (browser_) { // if(*i){	// && *i != widget()=>for entrance
+//                //		_record_screens.erase(i);
+//                browser_->deleteLater(); // (*i)->deleteLater();	// delete *i;
+//                // *i = nullptr;
+//            }
+//        }
+//    }
+//    //    }
 }
 
-std::set<rs_t*> HidableTabWidget::record_screens() const
-{
-    //    int browser_size_ = 0;
-    //    for(int i = 0; i < count(); i ++)
-    //		if(widget(i)->objectName() == record_screen_multi_instance_name)browser_size_ ++;
-
-    //    return browser_size_;
-    std::set<rs_t*> result;
-    for (int i = 0; i < count(); i++) { // for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
-        auto w = widget(i);
-        if (w->objectName() == record_screen_multi_instance_name) {
-            auto rs = dynamic_cast<rs_t*>(w);
-            //	    auto	browser_	= dynamic_cast<rs_t *>(w)->browser();
-            if (rs)
-                if (result.find(rs) == result.end())
-                    result.insert(rs); // if(*i){	// && *i != widget()=>for entrance
-        }
-    }
-    return result; // _record_screens;
-}
 
 // void HidableTabWidget::onTabBarClicked(int index){
 //    if(currentIndex() == index){
@@ -267,140 +217,10 @@ bool HidableTabWidget::eventFilter(QObject* obj, QEvent* event)
     return QTabWidget::eventFilter(obj, event);
 }
 
-browser::WebView* HidableTabWidget::find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal) const
-{
-    // clean();
-    browser::WebView* v = nullptr;
-    //	// new_dockedwindow(record);
-    //    for(auto i : _record_screens){
-    //	if(i){
-    //	    v = i->browser()->tabWidget()->find(_equal);
-    //	    if(v != nullptr)break;
-    //	}
-    //    }
-    for (int i = 0; i < count(); i++) {
-        auto w = widget(i);
-        if (w->objectName() == record_screen_multi_instance_name) {
-            //	    auto	rs		= dynamic_cast<rs_t *>(w);
-            auto browser_ = dynamic_cast<rs_t*>(w)->browser();
-            if (browser_) {
-                v = browser_->tabWidget()->find(_equal);
-                if (v != nullptr)
-                    break;
-            }
-        }
-    }
-    boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
-    if (v) {
-        if (v->page()) {
-            boost::intrusive_ptr< ::Binder> binder = v->page()->binder();
-            if (binder) {
-                auto _this_item = v->page()->host(); // globalparameters.entrance()->find(_equal);
-                if (_this_item) {
-                    if (binder->integrity_external(_this_item, v->page())) {
-                        //			assert(_this_item == v->page()->binder()->item());
-                        //			if(_this_item && v->load_finished())																			// && (v->tabmanager()->currentWebView() == v)
-                        found_myself = _this_item;
-                    }
-                }
-            }
-        }
-    }
-    if (!found_myself)
-        v = nullptr;
-    return v;
-}
 
-browser::Browser* HidableTabWidget::new_browser()
-{
-    //	// DockedWindow *browser =
-    //	return new Browser(_tree_screen
-    //			  , _find_screen
-    //			  , _editor_screen	// , _vtab_tree
-    //			  , _main_window
-    //			  , this
-    //			  , _style_source
-    //			  , _profile
-    //			  , Qt::MaximizeUsingFullscreenGeometryHint
-    //		   );	// , dock_widget
 
-    auto rs = new rs_t(_tree_screen, _find_screen, _editentry, _entrance, this, _style_source, _profile);
 
-    setUpdatesEnabled(false);
-    addTab(rs, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
-    bool found = false;
-    for (int i = 0; i < count(); i++) {
-        auto r = widget(i);
-        if (r == rs) {
-            rs->browser()->activateWindow();
-            rs->browser()->setVisible(true);
-            this->setCurrentWidget(r);
-            found = true;
-        }
-    }
-    assert(found);
-    ////    bool found = false;
-    ////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
-    ////	if(*i == rs){
-    ////	    found = true;
-    ////	    break;
-    ////	}
-    ////    }
-    ////    if(! found) _record_screens.insert(rs);
-    //    _record_screens.insert(rs);
-    setUpdatesEnabled(true);
-    rs->adjustSize();
 
-    return rs->browser();
-
-    // return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
-}
-
-// not sure to succeeded
-browser::Browser* HidableTabWidget::activated_browser()
-{
-    // clean();
-
-    // std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
-    browser::Browser* _browser = nullptr;
-    // if(_mainWindows.isEmpty()) {
-    // dp = new_dockedwindow(
-    // QUrl(DockedWindow::_defaulthome)
-    // );
-    // } else { //
-    //    if(count() > 0)
-    int count_browser = 0;
-    for (int i = 0; i < count(); i++) { // for(auto i : _record_screens){
-        auto rs = widget(i);
-        if (rs->objectName() == record_screen_multi_instance_name) {
-            count_browser++;
-            //	    auto	rs		= dynamic_cast<rs_t *>(w);
-            auto browser_ = dynamic_cast<rs_t*>(rs)->browser();
-            if (browser_) {
-                if (browser_->isVisible() || browser_->isActiveWindow()) {
-                    _browser = browser_; // .data();
-
-                    break;
-                }
-            }
-        }
-    }
-    if (!_browser) {
-        // _browser = _browsers[0];
-        // }
-        // } else {
-        _browser = new_browser();
-        // assert(_browser);
-        // return _browser;
-        // dp.second = dp.first->tabWidget()->currentWebView();
-    }
-    // assert(dp.first);
-    // assert(dp.second);
-    assert(_browser);
-
-    return _browser; // qobject_cast<DockedWindow *>(widget()); //
-    // _mainWindows[0];
-}
 
 std::tuple<int, QList<int> > HidableTabWidget::inner_rebuild_on_splitter_moved(int record_pos, int index)
 {

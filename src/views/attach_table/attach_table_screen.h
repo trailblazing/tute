@@ -13,7 +13,7 @@
 
 class AttachTableView;
 class AttachTableController;
-
+class FlatToolButton;
 // Виджет
 
 class AttachTableScreen : public QWidget {
@@ -47,14 +47,14 @@ protected:
     void setupSignals(void);
     void assembly(void);
 
+    // Экранные элементы
+    QToolBar* toolsLine;
     // Указатель на контроллер таблицы приаттаченных файлов
     AttachTableController* attachTableController;
 
     // Указатель на таблицу приаттаченных файлов (представление)
     AttachTableView* attachTableView;
 
-    // Экранные элементы
-    QToolBar* toolsLine;
     QVBoxLayout* screenLayout;
 
     QAction* actionSwitchToEditor;

@@ -1,6 +1,9 @@
 #ifndef _EDITORCONFIGFONT_H_
 #define _EDITORCONFIGFONT_H_
 
+
+
+#include <memory>
 #include <QCheckBox>
 #include <QFontComboBox>
 #include <QLabel>
@@ -63,7 +66,7 @@ private:
     FlatToolButton* codeSelectColorButton;
     QColor* codeColor;
 
-    EditorConfig* conf;
+    std::shared_ptr<EditorConfig> conf;
 };
 
 #endif // _EDITORCONFIGFONT_H_

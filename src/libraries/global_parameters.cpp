@@ -678,9 +678,9 @@ browser::DownloadManager* gl_para::request_download_manager()
 
 browser::DownloadManager* gl_para::download_manager() const { return _download_manager; }
 
-void gl_para::editor_config(EditorConfig* dialog) { _editor_config = dialog; }
+void gl_para::editor_config(std::shared_ptr<EditorConfig> dialog) { _editor_config = dialog; }
 
-EditorConfig* gl_para::editor_config() const { return _editor_config; }
+std::shared_ptr<EditorConfig> gl_para::editor_config() const { return _editor_config; }
 
 AttachTableController* gl_para::attachtable_controller() const { return _attachtable_controller; }
 

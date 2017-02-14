@@ -24,8 +24,7 @@
 #include "views/record_table/record_view.h"
 #include "views/tree/tree_screen.h"
 
-boost::intrusive_ptr<TreeItem> RecordIndex::bind(
-    // const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_,
+boost::intrusive_ptr<TreeItem> RecordIndex::bind( // const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_,
     bool make_current) noexcept
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
@@ -133,7 +132,7 @@ boost::intrusive_ptr<TreeItem> RecordIndex::synchronize(boost::intrusive_ptr<Tre
 { // const std::function<RecordModel *()> &current_model_,
     boost::intrusive_ptr<TreeItem> _found_item(nullptr);
     if (host_) {
-        auto v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal(b->host()->field<home_type>().toStdString(), host_->field<home_type>().toStdString()); });
+	auto v = globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal(b->host()->field<home_type>().toStdString(), host_->field<home_type>().toStdString()); });
         if (v) {
             auto rctrl = v->tabmanager()->record_controller();
             auto current_model_ = [&] { return rctrl->source_model(); };

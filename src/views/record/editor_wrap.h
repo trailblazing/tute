@@ -63,9 +63,7 @@ signals:
 #endif
 };
 
-class EditorWrap : public Editor
-//    : public QDockWidget
-{
+class EditorWrap : public Editor {
 #if QT_VERSION == 0x050600
     W_OBJECT(MetaEditor)
 #else

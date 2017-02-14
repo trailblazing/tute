@@ -356,11 +356,8 @@ void Editentry::on_activate_window()
     _home_connection = QObject::connect(
         findscreen->historyhome(), &QAction::triggered, this, [this](bool checked = true) -> void {
             Q_UNUSED(checked)
-            assert(_main_window->vtab_record()->activated_browser());
-            auto view = _main_window->vtab_record()
-                            ->activated_browser()
-                            ->tabmanager()
-                            ->currentWebView();
+	    assert(_main_window->activated_browser());
+	    auto view = _main_window->activated_browser()->tabmanager()->currentWebView();
             assert(view);
             if (view) {
                 browser::WebPage* page = view->page();
@@ -380,7 +377,7 @@ void Editentry::on_activate_window()
                         // _item);
                         // } catch(std::exception &e) {throw e;}
                         page->bind(_item)->activate(std::bind(
-                            &HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)); // page->load(record, true);
+			    &wn_t::find, globalparameters.main_window(), std::placeholders::_1)); // page->load(record, true);
                     }
                 }
             }

@@ -606,7 +606,7 @@ browser::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
         if (_target_item->binder()) {
             //            if(_item->binder()->page()){
             //            view = _item->binder()->page()->view();	// activate();
-            auto v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal(b->host()->field<home_type>().toStdString(), _target_item->field<home_type>().toStdString()) && b->host()->field<id_type>() == _target_item->field<id_type>(); });
+	    auto v = globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal(b->host()->field<home_type>().toStdString(), _target_item->field<home_type>().toStdString()) && b->host()->field<id_type>() == _target_item->field<id_type>(); });
             if (v) {
                 if (v->tabmanager() != _record_controller->tabmanager()) {
                     v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));

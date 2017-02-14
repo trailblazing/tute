@@ -275,9 +275,9 @@ SuperMenu::SuperMenu(FindScreen* _find_screen, Editentry* editentry, QWidget* pa
     /*editingMenus << editMenu << insMenu << viewMenu << categoryMenu << servicesMenu
 	  << helpMenu; */
     Q_FOREACH (QAction* a, _editing_win_actions)
-        a->setEnabled(false);
+	a->setEnabled(false);
     connect(_app, &sapp_t::editing_win_changed, this, &SuperMenu::editing_win);
-    connect(_app, SIGNAL(lastWindowClosed()), this, SLOT(handleLastWindowClosed()));
+    connect(_app, &sapp_t::lastWindowClosed, this, &SuperMenu::handleLastWindowClosed);
 }
 
 void SuperMenu::setEditActionsEnabled(bool state)

@@ -320,7 +320,7 @@ browser::WebPage* Binder::page() const
     auto _host = _host_linker();
     if (!integrity_external(_host, _page) && _host) {
         browser::WebView* v = nullptr;
-        auto browser = globalparameters.main_window()->vtab_record()->activated_browser();
+	auto browser = globalparameters.main_window()->activated_browser();
 
         //	boost::intrusive_ptr<TreeItem> record_previous_item = browser->tabmanager()->currentWebView()->page()->binder()->host();
 
@@ -328,7 +328,7 @@ browser::WebPage* Binder::page() const
         boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return browser->record_screen()->record_controller()->source_model(); }, _host); // , record_previous_item
 
         auto browser_bind_activate = [&](boost::intrusive_ptr<RecordIndex> _record_index) -> browser::WebView* {
-            return browser->bind(_record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)); // item_bind_();
+	    return browser->bind(_record_index)->activate(std::bind(&wn_t::find, globalparameters.main_window(), std::placeholders::_1)); // item_bind_();
         };
 
         v = browser_bind_activate(record_index);

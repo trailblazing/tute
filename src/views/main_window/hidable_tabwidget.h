@@ -45,10 +45,7 @@ public:
     explicit HidableTabWidget(ts_t* _tree_screen, FindScreen* _find_screen, Editentry* _editentry, browser::Entrance* _entrance, QMainWindow* _main_window, browser::Profile* _profile, QString style_source_, QSplitter* splitter, std::shared_ptr<QSettings> splitter_config, QString splitter_group_name, QString splitter_sizelist_name, QString collapsed_status_name, QWidget* parent);
     ~HidableTabWidget();
     QAction* _hide_action;
-    std::set<rs_t*> record_screens() const;
-    browser::WebView* find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal) const;
-    browser::Browser* new_browser();
-    browser::Browser* activated_browser();
+
     //    HidableTabWidget *delegate_tab();
     std::tuple<int, QList<int> > inner_rebuild_on_splitter_moved(int record_pos, int index);
 protected slots:

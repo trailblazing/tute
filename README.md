@@ -156,6 +156,10 @@ For Tute:
 
 * master            - the main branch with the latest stable release;
 * develop           - branch to develop.
+* code beautifier   - uncrustify (recommended)
+```
+        https://github.com/beimprovised/tute/blob/master/src/uncrustify.cfg
+```
 * code beautifier   - clang-format::WebKit
 ```
         find . -iname "*.h" -or -iname "*.cpp" -or -iname "*.cxx" | xargs clang-format -i -style=WebKit

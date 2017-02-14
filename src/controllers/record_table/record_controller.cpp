@@ -149,8 +149,8 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
         msg_box.setText("In RecordView::cursor_to_index() input pos not equal model pos");
         msg_box.exec();
     }
-    //    int rowCount = row_count();
-    if ((int)pos_proxy_real >= 0 && (int)pos_proxy_real < row_count()) {
+    int tab_count = row_count();
+    if ((int)pos_proxy_real >= 0 && (int)pos_proxy_real < tab_count) {
         if (index_source_ != _source_model->current_index()) { // if(pos_real > (rowCount - 1))return;
             // Простой механизм выбора строки. Похоже, что его использовать не получится
             _view->selectRow((int)pos_proxy_real);
@@ -217,7 +217,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::index_invoke(const index_proxy& index_pr
     result = source_model()->item(pos_source_);
     //    auto	ov	= result->page()->view();
     //    auto v =
-    force_update ? result->binder()->activate() : result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+    force_update ? result->binder()->activate() : result->activate(std::bind(&wn_t::find, globalparameters.main_window(), std::placeholders::_1));
     //    assert(v == ov);
     //    assert(v->page()->host() == result);
     //    v->recovery_global_consistency();

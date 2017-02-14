@@ -2513,7 +2513,7 @@ browser::WebView* TreeItem::bind()
             || !_binder->host()) {
             if (!_binder->host())
                 _binder->host(this);
-            auto _browser = globalparameters.main_window()->vtab_record()->activated_browser();
+	    auto _browser = globalparameters.main_window()->activated_browser();
             auto record_index = RecordIndex::instance([&] { return _browser->record_screen()->record_controller()->source_model(); }, this);
             //	    if(! _binder->page())
             view = _browser->bind(record_index)->page()->view();
