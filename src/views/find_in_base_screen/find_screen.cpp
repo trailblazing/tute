@@ -39,16 +39,18 @@
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_know_model.h"
 #include "views/browser/chasewidget.h"
-#include "views/browser/entrance.h"
+#include "views/browser/browser_dock.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/toolbarsearch.h"
 #include "views/record/editor_wrap.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
+#include "libraries/qtm/editing_window.h"
+
 
 extern AppConfig appconfig;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 extern const char *global_root_id;
 
 #if QT_VERSION == 0x050600
@@ -397,7 +399,7 @@ void FindScreen::setup_signals(void){
 	// При нажатии кнопки закрытия
 	connect(_close_button, &FlatToolButton::clicked, this, &FindScreen::widget_hide);
 	connect(_close_button, &FlatToolButton::clicked, [] {
-			auto browser = globalparameters.main_window()->activated_browser();
+			auto browser = gl_paras.main_window()->activated_browser();
 
 			browser->updateToolbarActionText(false);
 		});
@@ -565,8 +567,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	// Сохраняется текущая редактируемая запись, чтобы и в ней
 	// были найдены введенные перед нажатием Find данные, если они есть
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.main_window()->save_text_area();
-
+	auto rs = dynamic_cast<rs_t *>(gl_paras.vtab_record()->currentWidget());
+	if(rs) rs->editing_window()->save_text_context();
 	//// Очищается таблица результата поиска
 	// _findtable->re_initialize();
 
@@ -653,7 +655,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 					       // boost::intrusive_ptr<TreeItem> _parent_item
 					       // resultset_item;
 					       // browser::Entrance *_entrance = globalparameters.entrance();
-					       for(auto &browser : [] {set<browser::Browser *> bs; for(auto rs : globalparameters.main_window()->record_screens()) bs.insert(rs->browser()); return bs;} ()){
+					       for(auto &browser : [] {set<browser::Browser *> bs; for(auto rs : gl_paras.main_window()->record_screens()) bs.insert(rs->browser()); return bs;} ()){
 						       auto _tabmanager = browser->tabmanager();
 						       for(int i = 0; i < _tabmanager->count(); i++){
 							       _start_item << _tabmanager->webView(i)->page()->host();
@@ -831,16 +833,16 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 							// _selected_branch_as_pages != _tree_screen->know_root()->root_item()
 						}
 						// }
-					}else assert_start_item();                                                                        // return nullptr;
+					}else assert_start_item();                                                                                                                                             // return nullptr;
 				}
-			}else assert_start_item();                                                        // return nullptr;
+			}else assert_start_item();                                                                                                             // return nullptr;
 		}
-	}else assert_start_item();                                        // return nullptr;
+	}else assert_start_item();                                                                             // return nullptr;
 
 #ifdef SHOW_PROCESS_DIALOG
 	close_progressbar();
 #else
-	globalparameters.status_bar()->showMessage("searched node(s) : " + QString::number(_total_progress_counter), 2000); // across thread message
+	gl_paras.status_bar()->showMessage("searched node(s) : " + QString::number(_total_progress_counter), 2000); // across thread message
 #endif
 
 	//// } else {
@@ -890,7 +892,7 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 		// globalparameters.crypt_key().length() == 0) {
 		// return _result_item;
 		// }
-		if(!(_start_item->field<crypt_type>() == "1" && globalparameters.crypt_key().length() == 0)){
+		if(!(_start_item->field<crypt_type>() == "1" && gl_paras.crypt_key().length() == 0)){
 			// Если в ветке присутсвует таблица конечных записей
 			if(_start_item->count_direct() > 0){
 				// auto _source_model = [&]() {return tree_view->source_model();};
@@ -1123,7 +1125,7 @@ void FindScreen::widget_show(void){
 // Полное сокрытие виджета
 void FindScreen::widget_hide(void){
 	// Запоминается размер сплиттера перед скрытием виджета
-	QSplitter *findSplitterRel = globalparameters.find_splitter(); // find_object<QSplitter>("find_splitter");
+	QSplitter *findSplitterRel = gl_paras.find_splitter(); // find_object<QSplitter>("find_splitter");
 	appconfig.findsplitter_sizelist(findSplitterRel->sizes());
 
 	// Виджет скрывается

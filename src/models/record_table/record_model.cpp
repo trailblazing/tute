@@ -21,7 +21,7 @@
 #include "models/tree/tree_know_model.h"
 #include "models/tree/tree_model.h"
 #include "views/browser/browser.h"
-#include "views/browser/entrance.h"
+#include "views/browser/browser_dock.h"
 #include "views/browser/tabwidget.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
@@ -33,7 +33,7 @@
 
 extern FixedParameters fixedparameters;
 extern AppConfig appconfig;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 
 // pages_container::pages_container(browser::TabWidget *_tabmanager)
 //    : _tabmanager(_tabmanager)	// new browser::TabWidget(_browser, _record_controller)
@@ -606,7 +606,7 @@ browser::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
         if (_target_item->binder()) {
             //            if(_item->binder()->page()){
             //            view = _item->binder()->page()->view();	// activate();
-	    auto v = globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal(b->host()->field<home_type>().toStdString(), _target_item->field<home_type>().toStdString()) && b->host()->field<id_type>() == _target_item->field<id_type>(); });
+	    auto v = gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal(b->host()->field<home_type>().toStdString(), _target_item->field<home_type>().toStdString()) && b->host()->field<id_type>() == _target_item->field<id_type>(); });
             if (v) {
                 if (v->tabmanager() != _record_controller->tabmanager()) {
                     v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
@@ -628,7 +628,7 @@ browser::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
             assert(returned_position != -1);
             assert(view);
         } else {
-            auto _tree_view = globalparameters.tree_screen()->view(); //			auto	this_index		= TreeIndex::instance([&] {return _tree_view->source_model();}, brother);
+            auto _tree_view = gl_paras.tree_screen()->view(); //			auto	this_index		= TreeIndex::instance([&] {return _tree_view->source_model();}, brother);
             auto target_url = _target_item->field<url_type>();
             auto _target_item = // this_index->
                 TreeIndex::create_treeitem_from_url(target_url, std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {

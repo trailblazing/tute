@@ -46,16 +46,7 @@
 #include <wobjectimpl.h>
 #endif
 
-#include "tabwidget.h"
 
-#include "libraries/qt_single_application5/qtsingleapplication.h"
-
-#include "browser.h"
-#include "downloadmanager.h"
-#include "fullscreennotification.h"
-#include "history.h"
-#include "urllineedit.h"
-#include "webview.h"
 
 #include <QException>
 #include <QtCore/QMimeData>
@@ -72,6 +63,18 @@
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QToolButton>
 
+
+#include "tabwidget.h"
+
+#include "libraries/qt_single_application5/qtsingleapplication.h"
+
+#include "browser.h"
+#include "downloadmanager.h"
+#include "fullscreennotification.h"
+#include "history.h"
+#include "urllineedit.h"
+#include "webview.h"
+
 #include "libraries/global_parameters.h"
 #include "models/record_table/linker.hxx"
 #include "models/record_table/record.h"
@@ -79,11 +82,12 @@
 #include "models/tree/tree_index.hxx"
 #include "views/record_table/record_screen.h"
 // #include "models/record_table/record_index.hxx"
-#include "entrance.h"
+#include "browser_dock.h"
 #include "libraries/disk_helper.h"
 #include "libraries/walk_history.h"
 #include "libraries/window_switcher.h"
 #include "libraries/wyedit/editor_text_area.h"
+#include "libraries/global_parameters.h"
 #include "main.h"
 #include "models/record_table/items_flat.h"
 #include "models/record_table/record_model.h"
@@ -101,7 +105,9 @@
 #include "controllers/record_table/record_controller.h"
 #include "models/record_table/record_model.h"
 #include "models/record_table/record_model_proxy.h"
-#include "views/record/editentry.h"
+#include "views/record/editor_dock.h"
+#include "libraries/qtm/editing_window.h"
+
 
 extern const char *custom_hidabletabwidget_style;
 extern const char *program_title;
@@ -243,7 +249,7 @@ const char *custom_widget_style =
 	// "padding-left: -13px;"
 
 	"}";
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 extern AppConfig appconfig;
 extern QMap<Qt::CheckState, QString> _string_from_check_state;
 extern QMap<QString, Qt::CheckState> _state_check_from_string;
@@ -720,15 +726,15 @@ namespace browser {
 	W_OBJECT_IMPL(TabWidget)
 #endif
 
-	TabWidget::TabWidget(ts_t *tree_screen_, FindScreen *find_screen_, Editentry *editentry_, Browser *browser_, rs_t *record_screen_, Entrance *entrance_, wn_t *main_window_, browser::Profile *profile_)
+	TabWidget::TabWidget(ts_t *tree_screen_, FindScreen *find_screen_, EditingWindow *editing_window_, Browser *browser_, rs_t *record_screen_, BrowserDock *entrance_, wn_t *main_window_, browser::Profile *profile_)
 		: QTabWidget(browser_)
 		  , _tree_screen(tree_screen_)
-		  , _editentry(editentry_)
+		  , _editing_window(editing_window_)
 		  , _entrance(entrance_)
 		  , _browser(browser_)
 		  , _record_screen(record_screen_)
 		  , _main_window(main_window_)
-		  , _record_controller(new rctrl_t(_editentry, this, _record_screen, _main_window))
+		  , _record_controller(new rctrl_t(editing_window_, this, record_screen_, main_window_))
 		  , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
 		  , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
 		  , _closetabaction(new QAction(QIcon(QLatin1String(":closetab.png")), tr("&Close Tab"), this))
@@ -935,7 +941,7 @@ namespace browser {
 	WebView *TabWidget::select_as_current(WebView *v){
 		auto index = webViewIndex(v);
 		setCurrentIndex(index);
-		auto tree_screen = globalparameters.main_window()->tree_screen();
+		auto tree_screen = gl_paras.main_window()->tree_screen();
 		auto it = v->page()->host();
 		if(static_cast<QModelIndex>(tree_screen->view()->source_model()->index(it)).isValid()){
 			if(tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return tree_screen->view()->source_model();}, it));
@@ -1018,11 +1024,11 @@ namespace browser {
 						   //                            }
 						   //                        }
 						   //                    }
-						   auto _mainwindow = globalparameters.main_window();
+						   auto _mainwindow = gl_paras.main_window();
 						   if(!_mainwindow->windowTitle().contains(view_current->page()->title())) _mainwindow->setWindowTitle(QString(program_title) + " : " + view_current->page()->title()); // webView->setFocus();
-						   Editentry *metaeditor = globalparameters.edit_entry(); // find_object<MetaEditor>(meta_editor_singleton_name);
-						   assert(metaeditor);
-						   if(metaeditor->item() != _target_in_browser) view_current->page()->metaeditor_sychronize(); // metaeditor->bind(record);
+//						   EditorDock *_editing_window = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
+						   assert(_editing_window);
+						   if(_editing_window->item() != _target_in_browser) view_current->page()->metaeditor_sychronize(); // metaeditor->bind(record);
 					   }
 				   };
 
@@ -1428,8 +1434,15 @@ namespace browser {
 				////           && !record->unique_page()
 				// ) {
 
-				view = new WebView(result, _profile // use record for return
-						  , _tree_screen, _editentry, _entrance, _browser, this, _record_controller);
+				view = new WebView(result
+						  , _profile // use record for return
+						  , _tree_screen
+						  , _editing_window
+						  , _entrance
+						  , _browser
+						  , this
+						  , _record_controller
+						  );
 				// } else {
 				// view = record->unique_page()->view();
 				// }
@@ -1676,7 +1689,7 @@ namespace browser {
 				}
 #endif
 				//		hasFocus = _view_to_close->hasFocus();
-				if(_profile == globalparameters.profile()){  // QWebEngineProfile::defaultProfile()
+				if(_profile == gl_paras.profile()){  // QWebEngineProfile::defaultProfile()
 					_recentlyclosedtabsaction->setEnabled(true);
 					_recentlyclosedtabs.prepend(_view_to_close->page()->url());
 					if(_recentlyclosedtabs.size() >= TabWidget::_recentlyclosedtabssize) _recentlyclosedtabs.removeLast();
@@ -1982,8 +1995,14 @@ namespace browser {
 			  && (it->field<pin_type>() != _string_from_check_state[Qt::Unchecked] || (it->page() && it->page()->view() == currentWebView()))) tabs_url.append(url);
 		}
 		stream << tabs_url;
-		stream << currentWebView()->page()->host()->field<id_type>(); // currentIndex();
-
+		auto v = currentWebView();
+		if(v){
+			auto p = v->page();
+			if(p){
+				auto h = p->host();
+				if(h) stream << h->field<id_type>(); // currentIndex();
+			}
+		}
 		return data;
 	}
 

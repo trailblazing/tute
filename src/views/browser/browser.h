@@ -78,7 +78,9 @@ class tm_t;
 class ts_t;
 class tsv_t;
 struct RecordIndex;
-class Editentry;
+class EditorDock;
+class EditingWindow;
+
 
 extern const char *profile_storage_name;
 
@@ -91,7 +93,7 @@ namespace browser {
 	class TabWidget;
 	class ToolbarSearch;
 	class WebView;
-	class Entrance;
+	class BrowserDock;
 
 	class UrlRequestInterceptor
 		: // public boost::intrusive_ref_counter<UrlRequestInterceptor, boost::thread_safe_counter>,
@@ -127,7 +129,7 @@ namespace browser {
 	Q_OBJECT
 #endif
 	public:
-		Browser(ts_t *_tree_screen, FindScreen *_find_screen, Editentry *_editentry, rs_t *_record_screen, Entrance *_entrance, const QString &style_source, browser::Profile *_profile, Qt::WindowFlags flags);
+		Browser(ts_t *tree_screen, FindScreen *find_screen, EditingWindow *editing_window, rs_t *record_screen, BrowserDock *entrance, const QString &style_source, browser::Profile *profile, Qt::WindowFlags flags);
 
 		//        Browser(QUrl const &url         // Record *const record
 		//                , TreeScreen        *_tree_screen
@@ -198,12 +200,12 @@ namespace browser {
 		bool is_under_construction() const;
 		QAction *historyback();
 		QStatusBar *statusBar() = delete;
-		QStatusBar *status_bar();
-		QStatusBar *status_bar() const;
+//		QStatusBar *status_bar();
+//		QStatusBar *status_bar() const;
 		boost::intrusive_ptr<TreeItem> bind(boost::intrusive_ptr<RecordIndex> record_index, bool make_current = true);
 		//        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
 		rs_t *record_screen();
-		Entrance *entrance();
+		BrowserDock *entrance();
 	public slots:
 		//            void loadPage(const QString &url) = delete;
 		void slotHome();
@@ -333,10 +335,10 @@ namespace browser {
 
 		rs_t *_record_screen;
 		TabWidget *_tabmanager;
-		Entrance *_entrance;
+		BrowserDock *_entrance;
 
 		friend class sapp_t; // QtSingleApplication;
-		friend class Entrance;
+		friend class BrowserDock;
 		friend class WebView;
 	};
 }

@@ -8,44 +8,46 @@
 #include <QObject>
 #endif
 
-class Editentry;
+class EditorDock;
+class EditingWindow;
+
 
 class WindowSwitcher : public QObject {
 #if QT_VERSION == 0x050600
-    W_OBJECT(WindowSwitcher)
+W_OBJECT(WindowSwitcher)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
 public:
-    explicit WindowSwitcher(QString object_name, Editentry* meta_editor, QObject* parent = 0);
+	explicit WindowSwitcher(QString object_name, EditorDock *editor_dock, QObject *parent = 0);
 
-    void enable(void);
-    void disable(void);
+	void enable(void);
+	void disable(void);
 
-    void tree_to_record_screen(void);
-    void tree_to_find_in_base(void);
-    bool status(void);
+	void tree_to_record_screen(void);
+	void tree_to_find_in_base(void);
+	bool status(void);
 
-    static void record_to_recordtable(void); // Используется как callback из редактора MetaEditor
-    void record_to_find_in_base(void);
+	static void record_to_recordtable(void); // Используется как callback из редактора MetaEditor
+	void record_to_find_in_base(void);
 
-    void recordtable_ro_record_editor(void);
-    void recordtable_to_find_in_base(void);
-    void recordtable_to_tree(void);
+	void recordtable_ro_record_editor(void);
+	void recordtable_to_find_in_base(void);
+	void recordtable_to_tree(void);
 
-    void close_find_in_base(void);
+	void close_find_in_base(void);
 
-    void restore_focus_widget();
+	void restore_focus_widget();
 
 signals:
 
 public slots:
 
-    void find_in_base_click(void);
+	void find_in_base_click(void);
 
 private:
-    bool enableSwitcher;
+	bool enableSwitcher;
 };
 
 #endif // WINDOWSWITCHER_H

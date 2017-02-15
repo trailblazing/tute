@@ -61,7 +61,7 @@ extern const std::string program_title_string;
 extern const char *meta_editor_singleton_name;
 
 namespace browser {
-	class Entrance;
+	class BrowserDock;
 	class Browser;
 	class DownloadManager;
 	class HistoryMenu;
@@ -80,9 +80,12 @@ class gl_para;
 class AppConfig;
 class DataBaseConfig;
 class tsv_t;
-class Editentry;
+class EditorDock;
 class QHBoxLayout;
 class QVBoxLayout;
+class SysTrayIcon;
+
+
 
 class wn_t
 	: public QMainWindow {
@@ -93,15 +96,15 @@ Q_OBJECT
 #endif
 
 public:
-	wn_t(gl_para &_globalparameters, AppConfig &_appconfig, DataBaseConfig &databaseconfig, browser::Profile *profile, QString style_source);
+	wn_t(gl_para &_gl_paras, AppConfig &_appconfig, DataBaseConfig &databaseconfig, browser::Profile *profile, QString style_source);
 
 	~wn_t();
 
 	void restore_geometry(void);
 	void restore_tree_position(void);
 	// void restore_recordtable_position(void);// too many _record_screen objects, deprecated
-	void restore_editor_cursor_position(void);
-	void restore_editor_scrollbar_position(void);
+//	void restore_editor_cursor_position(void);
+//	void restore_editor_scrollbar_position(void);
 	void restore_find_in_base_visible(void);
 
 	void set_tree_position(QString view_root_id, QStringList current_item_absolute_path);
@@ -111,10 +114,10 @@ public:
 
 	void synchronization(void);
 
-	void go_walk_history_previous(void);
-	void go_walk_history_next(void);
+//	void go_walk_history_previous(void);
+//	void go_walk_history_next(void);
 
-	void save_text_area(void);
+//	void save_text_context(void);
 	void save_all_state(void);
 
 	HidableTabWidget *vtab_record() const;
@@ -136,24 +139,25 @@ public:
 	browser::WebView *find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const;
 	browser::Browser *new_browser();
 	browser::Browser *activated_browser();
+//	EditingWindow *current_editing_window();
 public slots:
 	void application_exit(void);
 	void application_fast_exit(void);
 	void commit_data(QSessionManager &manager);
 
+	void on_expand_edit_area(bool flag);
 private slots:
 	void file_new(void);
 	void file_open(void);
 	bool file_save(void);
 	bool file_save_as(void);
-	void file_print(void);
-	void file_print_preview(void);
-	void file_print_pdf(void);
+//	void file_print(void);
+//	void file_print_preview(void);
+//	void file_print_pdf(void);
 	void tools_find(void);
 	void tools_preferences(void);
 	// void editor_switch(void);
 
-	void on_expand_edit_area(bool flag);
 
 	void on_click_help_about_this(void);
 	void on_click_help_about_qt(void);
@@ -175,30 +179,29 @@ private:
 
 	void init_itemsflat_actions(void);
 
-	void setup_icon_actions(void);
-	void create_tray_icon(void);
-	void set_icon(void);
+//	void setup_icon_actions(void);
+//	void create_tray_icon(void);
+//	void set_icon(void);
 
 	void save_geometry(void);
 	void save_tree_position(void);
 	// void save_recordtable_position(void);// too many _record_screen objects, deprecated
-	void save_editor_cursor_position(void);
-	void save_editor_scrollbar_position(void);
+//	void save_editor_cursor_position(void);
+//	void save_editor_scrollbar_position(void);
 
-	gl_para &_globalparameters;
+	gl_para &_gl_paras;
 	AppConfig &_appconfig;
 	DataBaseConfig &_databaseconfig;
 
 	QWidget *_central_widget;
 	browser::Profile *_profile;
 	QString _style_source;
-	QAction *_action_tray_restore;
-	QAction *_action_tray_maximize;
-	QAction *_action_tray_minimize;
-	QAction *_action_tray_quit;
+//	QAction *_action_tray_restore;
+//	QAction *_action_tray_maximize;
+//	QAction *_action_tray_minimize;
+//	QAction *_action_tray_quit;
 
-	QSystemTrayIcon *_tray_icon;
-	QMenu *_tray_icon_menu;
+
 
 	QSplitter *_v_right_splitter;
 	QSplitter *_v_find_splitter;
@@ -219,13 +222,15 @@ private:
 
 	ts_t *_tree_screen;
 	FindScreen *_find_screen;
-	browser::Entrance *_entrance;
-	Editentry *_editentry;
-	// browser::DownloadManager	*_download;
+	browser::BrowserDock *_browser_dock;
 	HidableTabWidget *_vtab_record;
+	EditorDock *_editor_dock;
+	// browser::DownloadManager	*_download;
+
 	QStatusBar *_statusbar;
 	WindowSwitcher *_switcher;
-
+	SysTrayIcon *_tray_icon = nullptr;
+//	QMenu *_tray_icon_menu;
 	// bool _treetable_hidden;       // = globalparameters.getTreeScreen()->isHidden();
 	// bool _recordtable_hidden;     // = globalparameters.getRecordTableScreen()->isHidden();
 
@@ -234,7 +239,7 @@ protected:
 
 	bool eventFilter(QObject *o, QEvent *e); // Отслеживание прочих событий
 
-	void go_walk_history(void);
+//	void go_walk_history(void);
 
 	bool _enable_real_close;
 

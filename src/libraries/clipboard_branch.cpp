@@ -21,7 +21,7 @@
 #include "models/tree/tree_know_model.h"
 #include "views/tree/tree_screen.h"
 
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 const char* clipboard_items_root = "clipboard_items_root";
 
 #if QT_VERSION == 0x050600
@@ -259,7 +259,7 @@ void ClipboardBranch::branch_push(boost::intrusive_ptr<TreeIndex> _modelindex //
                 //                messageBox.setText(tr("This item contains both unencrypted and encrypted data. Copy/paste operation is possible only for item that contain similar type data."));
                 //                messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
                 //                messageBox.exec();
-                globalparameters.status_bar()->showMessage(tr("This item contains both unencrypted and encrypted data. Copy/paste operation is possible only for item that contain similar type data."), 2000);
+                gl_paras.status_bar()->showMessage(tr("This item contains both unencrypted and encrypted data. Copy/paste operation is possible only for item that contain similar type data."), 2000);
                 break; // return copy_result;
             }
             //            // -------------------

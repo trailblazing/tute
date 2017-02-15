@@ -26,14 +26,14 @@
 #include "models/tree/tree_index.hxx"
 #include "views/app_config/app_config_dialog.h"
 #include "views/browser/browser.h"
-#include "views/browser/entrance.h"
+#include "views/browser/browser_dock.h"
 #include "views/browser/webview.h"
 #include "views/main_window/hidable_tabwidget.h"
 #include "views/main_window/main_window.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
 
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 extern const char* clipboard_items_root;
 extern AppConfig appconfig;
 extern TrashMonitoring trashmonitoring;
@@ -68,7 +68,7 @@ tkm_t::tkm_t(const QString& index_xml_file_name, tv_t* parent)
 
     //    assert(_root_item->linker()->host().get() == _root_item.get());
     //    assert(_root_item->linker()->host_parent().get() != _root_item.get());
-    _xml_file_path = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + index_xml_file_name;
+    _xml_file_path = gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + index_xml_file_name;
     init_from_xml(_xml_file_path); // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
     int all_count = count_records_all();
     while (all_count <= 0) {
@@ -148,8 +148,8 @@ void tkm_t::init(QDomDocument* dom_model)
     //    // то есть на экране будет один столбец
     //    root_data["id"] = global_root_id;
     //    root_data["name"] = "";
-    if (globalparameters.main_window())
-        globalparameters.main_window()->setDisabled(true);
+    if (gl_paras.main_window())
+        gl_paras.main_window()->setDisabled(true);
     beginResetModel();
 
     //    // Создание корневого Item объекта
@@ -172,8 +172,8 @@ void tkm_t::init(QDomDocument* dom_model)
     _root_item->dom_to_records(dom_content_root_as_record);
 
     endResetModel();
-    if (globalparameters.main_window())
-        globalparameters.main_window()->setEnabled(true);
+    if (gl_paras.main_window())
+        gl_paras.main_window()->setEnabled(true);
     //    save(); // temporary
 }
 
@@ -462,11 +462,11 @@ bool tkm_t::update_sub_version_from_1_to_2(void)
 
 void tkm_t::reload(void)
 {
-    globalparameters.main_window()->setDisabled(true);
+    gl_paras.main_window()->setDisabled(true);
     if (_xml_file_path == index_xml_file_name)
-        _xml_file_path = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + index_xml_file_name;
+        _xml_file_path = gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + index_xml_file_name;
     init_from_xml(_xml_file_path);
-    globalparameters.main_window()->setEnabled(true);
+    gl_paras.main_window()->setEnabled(true);
 }
 
 // Запись всех данных в XML файл
@@ -1278,12 +1278,12 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
             //    bool success = false;
             auto equal_linker = [&](boost::intrusive_ptr<const Linker> il) { return il->host()->id() == delete_target_linker->host()->id() && il == delete_target_linker; };
             int position = parent_of_delete->sibling_order(equal_linker);
-            globalparameters.main_window()->setDisabled(true);
+            gl_paras.main_window()->setDisabled(true);
             beginRemoveRows(parent_index, position, position); // + rows - 1
 
             //            remove_target->self_remove_from_parent();
             result = parent_of_delete->delete_permanent(equal_linker);
-	    browser::WebView* v = globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return b->host() == result; });
+	    browser::WebView* v = gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return b->host() == result; });
             if (v)
                 v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
             auto view = static_cast<tv_t*>(static_cast<QObject*>(this)->parent());
@@ -1293,7 +1293,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 
             view->update(parent_index);
             endRemoveRows();
-            globalparameters.main_window()->setEnabled(true);
+            gl_paras.main_window()->setEnabled(true);
         }
         return result;
     };
@@ -1377,12 +1377,12 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent_recursive(boost::intrusiv
                 //    bool success = false;
                 auto equal_linker = [&](boost::intrusive_ptr<const Linker> il) { return il->host()->id() == delete_target_linker->host()->id() && il == delete_target_linker; };
                 int position = host_parent()->sibling_order(equal_linker);
-                globalparameters.main_window()->setDisabled(true);
+                gl_paras.main_window()->setDisabled(true);
                 beginRemoveRows(parent_index, position, position); // + rows - 1
 
                 //            remove_target->self_remove_from_parent();
                 result = host_parent()->delete_permanent(equal_linker);
-		browser::WebView* v = globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return b->host() == result; });
+		browser::WebView* v = gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return b->host() == result; });
                 if (v)
                     v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
                 auto view = static_cast<tv_t*>(static_cast<QObject*>(this)->parent());
@@ -1392,7 +1392,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent_recursive(boost::intrusiv
 
                 view->update(parent_index);
                 endRemoveRows();
-                globalparameters.main_window()->setEnabled(true);
+                gl_paras.main_window()->setEnabled(true);
             }
         }
         return result;
@@ -2604,7 +2604,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::intercept(boost::intrusive_ptr<TreeItem> _
     //    // то есть на экране будет один столбец
     //    root_data["id"] = "0";
     //    root_data["name"] = "";
-    globalparameters.main_window()->setDisabled(true);
+    gl_paras.main_window()->setDisabled(true);
     beginResetModel();
     // Создание корневого Item объекта
     if (_root_item)
@@ -2642,7 +2642,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::intercept(boost::intrusive_ptr<TreeItem> _
     _root_item = _item;
 
     endResetModel();
-    globalparameters.main_window()->setEnabled(true);
+    gl_paras.main_window()->setEnabled(true);
     //    //    QObject *(QObject::*_parent)() const = &QObject::parent;
 
     //    KnowView *view = static_cast<KnowView *>(
@@ -2664,7 +2664,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::synchronize(boost::intrusive_ptr<TreeItem>
     if (result)
         parent = result->parent();
     //    int pos = parent ? parent->list_position(result) : 0;
-    globalparameters.main_window()->setDisabled(true);
+    gl_paras.main_window()->setDisabled(true);
     if (parent) {
         if (result)
             result.reset(); // ->clear_children();
@@ -2681,7 +2681,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::synchronize(boost::intrusive_ptr<TreeItem>
     assert(!result->attach_table()->is_lite());
 
     //    if(parent)parent->insert_new_item(pos, result);
-    globalparameters.main_window()->setEnabled(true);
+    gl_paras.main_window()->setEnabled(true);
     _synchronized = true;
 
     return result;

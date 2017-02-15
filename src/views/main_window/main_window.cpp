@@ -26,7 +26,7 @@
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_know_model.h"
 #include "views/app_config/app_config_dialog.h"
-#include "views/browser/entrance.h"
+#include "views/browser/browser_dock.h"
 #include "views/console_emulator/execute_command.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/print_preview/print_preview.h"
@@ -41,12 +41,13 @@
 #include "views/browser/browser.h"
 #include "views/browser/downloadmanager.h"
 #include "views/browser/history.h"
-#include "views/record/editentry.h"
+#include "views/record/editor_dock.h"
 #include "views/tree/tree_view.h"
+#include "libraries/qtm/sys_tray_icon.h"
 
 extern AppConfig appconfig;
 extern TrashMonitoring trashmonitoring;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 extern WalkHistory walkhistory;
 const char *program_title = "Tute";
 const QString program_title_qstring = "Tute";
@@ -75,17 +76,17 @@ wn_t::wn_t(gl_para &globalparameters
 	  , browser::Profile *profile
 	  , QString style_source)
 	: QMainWindow()
-	  , _globalparameters(globalparameters)
+	  , _gl_paras([&]() -> gl_para & {globalparameters.main_window(this); return globalparameters;} ())
 	  , _appconfig(appconfig)
 	  , _databaseconfig(databaseconfig)
 	  , _central_widget(new QWidget(this))
 	  , _profile(profile)
-	  , _style_source([&]() -> QString {this->_globalparameters.style_source(style_source); return style_source;} ())
-	  , _v_right_splitter([&]() -> QSplitter * {auto _v_r_s = new QSplitter(Qt::Vertical); _v_r_s->setSizes(_appconfig.v_right_splitter_sizelist()); _globalparameters.v_right_splitter(_v_r_s); return _v_r_s;} ())
-	  , _v_find_splitter([&]() -> QSplitter * {auto _v_f_s = new QSplitter(Qt::Vertical); _v_f_s->setSizes(_appconfig.findsplitter_sizelist()); _globalparameters.find_splitter(_v_f_s); return _v_f_s;} ())
-	  // , _vtab_tree([&](QString style_source_){auto vt = new HidableTabWidget(style_source_, this);_globalparameters.vtab_tree(vt);return vt;} (_style))
-	  , _h_record_splitter([&]() -> QSplitter * {auto _h_r_s = new QSplitter(Qt::Horizontal); _h_r_s->setSizes(_appconfig.h_record_splitter_sizelist()); _globalparameters.h_record_splitter(_h_r_s); return _h_r_s;} ())
-	  , _h_tree_splitter([&]() -> QSplitter * {auto _h_l_s = new QSplitter(Qt::Horizontal); _h_l_s->setSizes(_appconfig.h_tree_splitter_sizelist()); _globalparameters.h_tree_splitter(_h_l_s); return _h_l_s;} ()) // Qt::Vertical
+	  , _style_source([&]() -> QString {this->_gl_paras.style_source(style_source); return style_source;} ())
+	  , _v_right_splitter([&]() -> QSplitter * {auto vrs = new QSplitter(Qt::Vertical); vrs->setSizes(_appconfig.v_right_splitter_sizelist()); _gl_paras.v_right_splitter(vrs); return vrs;} ())
+	  , _v_find_splitter([&]() -> QSplitter * {auto vfs = new QSplitter(Qt::Vertical); vfs->setSizes(_appconfig.findsplitter_sizelist()); _gl_paras.find_splitter(vfs); return vfs;} ())
+	  // , _vtab_tree([&](QString style_source_){auto vt = new HidableTabWidget(style_source_, this);_gl_paras.vtab_tree(vt);return vt;} (_style))
+	  , _h_record_splitter([&]() -> QSplitter * {auto hrs = new QSplitter(Qt::Horizontal); hrs->setSizes(_appconfig.h_record_splitter_sizelist()); _gl_paras.h_record_splitter(hrs); return hrs;} ())
+	  , _h_tree_splitter([&]() -> QSplitter * {auto hls = new QSplitter(Qt::Horizontal); hls->setSizes(_appconfig.h_tree_splitter_sizelist()); _gl_paras.h_tree_splitter(hls); return hls;} ()) // Qt::Vertical
 	  // , _h_splitter(new QSplitter(Qt::Horizontal))
 	  , _filemenu(new QMenu(tr("&File"), this))
 	  , _editmenu(new QMenu(tr("&Edit"), this))
@@ -95,19 +96,20 @@ wn_t::wn_t(gl_para &globalparameters
 	  , _windowmenu(new QMenu(tr("&Window"), this))
 	  , _toolsmenu(new QMenu(tr("&Tools"), this))
 	  , _helpmenu(new QMenu(tr("&Help"), this))
-	  , _tree_screen(new ts_t(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, this)) // _vtabwidget
-	  , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen, this))
-	  , _entrance(new browser::Entrance(entrance_singleton_name, _tree_screen, _find_screen, this, _appconfig, style_source, profile, Qt::Widget)) // Qt::MaximizeUsingFullscreenGeometryHint
-	  , _editentry(new Editentry("", _tree_screen, _find_screen, _entrance, this, _appconfig, style_source, profile, Qt::Widget))
+	  , _tree_screen([&]() -> ts_t *{auto ts = new ts_t(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, this); _gl_paras.tree_screen(ts); return ts;} ()) // _vtabwidget
+	  , _find_screen([&]() -> FindScreen *{auto fs = new FindScreen(find_screen_singleton_name, _tree_screen, this); _gl_paras.find_screen(fs); return fs;} ())
+	  , _browser_dock([&]() -> browser::BrowserDock *{auto bd = new browser::BrowserDock(entrance_singleton_name, _tree_screen, _find_screen, this, _appconfig, style_source, profile, Qt::Widget); _gl_paras.browser_dock(bd); return bd;} ()) // Qt::MaximizeUsingFullscreenGeometryHint
+	  , _vtab_record([&] {auto vr = new HidableTabWidget(_tree_screen, _find_screen, _browser_dock, this, profile, style_source, _h_record_splitter, std::make_shared<QSettings>(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_record_splitter_sizelist", "collapsed", this); _gl_paras.vtab_record(vr); return vr;} ())
+	  , _editor_dock([&] {auto ed = new EditorDock("", _tree_screen, _find_screen, _vtab_record, _browser_dock, this, _appconfig, style_source, profile, Qt::Widget); _gl_paras.editor_dock(ed); return ed;} ())
 	  // , _download(new browser::DownloadManager(download_manager_singleton_name, _vtab_record))
-	  , _vtab_record([&] {auto vr = new HidableTabWidget(_tree_screen, _find_screen, _editentry, _entrance, this, profile, style_source, _h_record_splitter, std::make_shared<QSettings>(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_record_splitter_sizelist", "collapsed", this); _globalparameters.vtab_record(vr); return vr;} ())
-	  , _statusbar(new QStatusBar(this))
-	  , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editentry, this))
+	  , _statusbar([&] {auto st = new QStatusBar(this); _gl_paras.status_bar(st); return st;} ())
+	  , _switcher([&] {auto sw = new WindowSwitcher(windowswitcher_singleton_name, _editor_dock, this); _gl_paras.window_switcher(sw); return sw;} ())
+	  , _tray_icon([&] {auto ti = new SysTrayIcon(_tree_screen, _browser_dock, _vtab_record, _find_screen, _editor_dock, this, _profile, _style_source); _gl_paras.tray_icon(ti); return ti;} ())
 	  , _enable_real_close(false){
 	// _page_screen->setVisible(false);
 	// _page_screen->hide();
 
-	_globalparameters.main_window(this);
+//	_gl_paras.main_window(this);
 
 	QSettings main_settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat);
 
@@ -168,9 +170,21 @@ wn_t::wn_t(gl_para &globalparameters
 	// initToolsMenu();
 	// initHelpMenu();
 
-	setup_icon_actions();
-	create_tray_icon();
-	set_icon();
+//	setup_icon_actions();
+//	create_tray_icon();
+//	_tray_icon = [&] {auto ti = new SysTrayIcon(_tree_screen, _browser_dock, _vtab_record, _find_screen, _editor_dock, this, _profile, _style_source); _gl_paras.tray_icon(ti); return ti;} ();
+
+//	set_icon(void)
+	[&] {
+		connect(_tray_icon, &SysTrayIcon::activated, this, &wn_t::icon_activated);
+
+		QIcon icon = QIcon(":/resource/pic/logo.svg");
+		_tray_icon->setIcon(icon);
+		setWindowIcon(icon);
+
+		// tray_icon->setToolTip(iconComboBox->itemText(index));
+	} ();
+//	set_icon();
 	if(QSystemTrayIcon::isSystemTrayAvailable()) _tray_icon->show();
 	//// Инициализируется объект слежения за корзиной
 	// trashmonitoring.init(_appconfig.get_trashdir());
@@ -206,9 +220,9 @@ wn_t::wn_t(gl_para &globalparameters
 		_vtab_record->resize(list[0], _vtab_record->parentWidget()->geometry().height());
 		_h_record_splitter->setSizes(list);
 
-		_entrance->resize(list[1], this->geometry().height());
+		_browser_dock->resize(list[1], this->geometry().height());
 
-		assert(list[1] == _entrance->width());
+		assert(list[1] == _browser_dock->width());
 		emit _h_record_splitter->splitterMoved(list[0], 0);
 	}
 }
@@ -224,15 +238,15 @@ void wn_t::append_quit_menu(){
 wn_t::~wn_t(){
 	save_all_state();
 
-	_entrance->deleteLater();
-	_entrance = nullptr;
+	_browser_dock->deleteLater();
+	_browser_dock = nullptr;
 	// delete
 	_switcher->deleteLater();
 	// delete
 	_statusbar->deleteLater();
 	// delete
 	// _editor_screen->deleteLater();
-	_editentry->deleteLater();
+	_editor_dock->deleteLater();
 	// delete
 	_find_screen->deleteLater();
 	// delete  _download;
@@ -276,60 +290,51 @@ wn_t::~wn_t(){
 }
 
 void wn_t::setup_ui(void){
-	if(_globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized); // Для Андроида окно просто разворачивается на весь экран
+	if(_gl_paras.target_os() == "android") setWindowState(Qt::WindowMaximized); // Для Андроида окно просто разворачивается на весь экран
 	else{
 		QRect rect = _appconfig.mainwin_geometry();
 		resize(rect.size());
 		move(rect.topLeft());
 	}
 	// При создании объектов не указывается parent, так как он буден задан в момент вставки в layout в методе assembly()
-
 	// _tree_screen = new TreeScreen(_appconfig, this);
 	// _tree_screen->setObjectName(tree_screen_singleton_name);  // "treeScreen"
-	_globalparameters.tree_screen(_tree_screen);
+//	_globalparameters.tree_screen(_tree_screen);
 	//// _treetable_hidden = treeScreen->isHidden();
 	//// connect(treeScreen, &TreeScreen::hide, this, [this]() {_treetable_hidden = true;});
 	//// connect(treeScreen, &TreeScreen::show, this, [this]() {_treetable_hidden = false;});
-
 	//// _table_screen = new TableScreen(this);
 	//// _table_screen->setObjectName(table_screen_singleton_name); // "recordTableScreen"
-
 	//// _globalparameters.push_record_screen(_table_screen);
-
 	//// _recordtable_hidden = recordTableScreen->isHidden();
 	//// connect(recordTableScreen, &RecordTableScreen::hide, this, [this]() {_recordtable_hidden = true;});
 	//// connect(recordTableScreen, &RecordTableScreen::show, this, [this]() {_recordtable_hidden = false;});
-
 	//// _page_screen = new TableScreen(this);
 	//// _page_screen->setObjectName("page_screen");
 	//// _globalparameters.page_screen(_page_screen);
-
 	//// _download = new browser::DownloadManager(this);
 	//// _download->setObjectName(download_manager_singleton_name);
 	// _globalparameters.download_manager(_download);
-
 	// _editor_screen = new MetaEditor();
 	// _editor_screen->setObjectName(meta_editor_singleton_name);  // "editorScreen"
 	// _globalparameters.meta_editor(_editor_screen);
-
-	_globalparameters.edit_entry(_editentry);
+//	_gl_paras.editor_dock(_editor_dock);
 	// _find_screen = new FindScreen(this);
 	// _find_screen->setObjectName(find_screen_singleton_name);  // "findScreenDisp"
-	_globalparameters.find_screen(_find_screen);
+//	_gl_paras.find_screen(_find_screen);
 	// findScreenDisp->hide();
 	if(!_appconfig.editor_show()){
 		// _editor_screen->hide();
-		_editentry->hide();
+		_editor_dock->hide();
 	}
 	// _statusbar = new QStatusBar(this);
 	_statusbar->setObjectName("status_bar"); // "statusBar"
 	setStatusBar(_statusbar);
-	_globalparameters.status_bar(_statusbar);
-
+//	_gl_paras.status_bar(_statusbar);
 	// Вспомогательный объект переключения окон, используется в мобильном интерфейсе
 	// _switcher = new WindowSwitcher(this);
 	// _switcher->setObjectName(windowswitcher_singleton_name); // "windowSwitcher"
-	_globalparameters.window_switcher(_switcher);
+//	_gl_paras.window_switcher(_switcher);
 	if(!_find_screen->isVisible()) _switcher->find_in_base_click();
 	// if(_table_screen) {
 	// _entrance = new browser::Entrance(
@@ -340,9 +345,9 @@ void wn_t::setup_ui(void){
 	// , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
 	// );
 	////    browsermanager->adjustSize();
-	_entrance->set_scrollbars(true);
+	_browser_dock->set_scrollbars(true);
 	// _entrance->setObjectName(entrance_singleton_name);
-	_globalparameters.entrance(_entrance);
+//	_gl_paras.browser_dock(_browser_dock);
 	// }
 
 	// todo: Для проверки, почему то в этом месте поиск объекта по имени не работает, разобраться.
@@ -350,22 +355,18 @@ void wn_t::setup_ui(void){
 }
 
 void wn_t::setup_signals(void){
-	// connect(_editor_screen, &MetaEditor::send_expand_edit_area, this, &wn_t::on_expand_edit_area);
-	connect(_editentry->editor(), &EditorWrap::send_expand_edit_area, this, &wn_t::on_expand_edit_area);
 	// Сигнал, генерирующийся при выходе из оконных систем X11 и Windows
 	connect(sapp_t::instance(), &QApplication::commitDataRequest, this, &wn_t::commit_data);
 
 	connect(sapp_t::instance(), &QApplication::focusChanged, this, &wn_t::on_focus_changed);
 
 	// Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
-	connect(_tree_screen->_actionlist[action_find_in_base], &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
+	connect(_tree_screen->_actionlist[action_find_in_base], &QAction::triggered, gl_paras.window_switcher(), &WindowSwitcher::find_in_base_click);
 	// connect(_entrance->getactionFreeze(), &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
 	// connect(_table_screen->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
 	// if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
-	// connect(_editor_screen, &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
-	connect(_editentry->editor(), &EditorWrap::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
 	// auto hide_others = [this](int index) {
 	// if(-1 != index) {
 	// auto count = _vtabwidget->count();
@@ -707,9 +708,9 @@ void wn_t::setup_signals(void){
 // follow comments above to learn the "assembly function"
 void wn_t::assembly(void){
 	// v_right_splitter = new QSplitter(Qt::Vertical);
-	_v_right_splitter->addWidget(_entrance);
+	_v_right_splitter->addWidget(_browser_dock);
 	// _v_right_splitter->addWidget(_editor_screen);			// Text entries // Текст записи
-	_v_right_splitter->addWidget(_editentry);
+	_v_right_splitter->addWidget(_editor_dock);
 	_v_right_splitter->setCollapsible(0, true); // if true, make editor can overload it    // The list of final entries can not link up    // Список конечных записей не может смыкаться
 	_v_right_splitter->setCollapsible(1, false); // The contents of the recording can not link up    // Содержимое записи не может смыкаться
 	_v_right_splitter->setObjectName("v_right_splitter");
@@ -781,10 +782,12 @@ void wn_t::assembly(void){
 	// }
 	// emit _h_right_splitter->splitterMoved(sizes[0], 1);
 	// }
-	_globalparameters.v_right_splitter(_v_right_splitter);
-	_globalparameters.find_splitter(_v_find_splitter);
-	_globalparameters.h_tree_splitter(_h_tree_splitter);
-	_globalparameters.h_record_splitter(_h_record_splitter);
+
+
+//	_gl_paras.v_right_splitter(_v_right_splitter);
+//	_gl_paras.find_splitter(_v_find_splitter);
+//	_gl_paras.h_tree_splitter(_h_tree_splitter);
+//	_gl_paras.h_record_splitter(_h_record_splitter);
 
 	// _vtab_tree->setMinimumWidth(_vtab_tree->tabBar()->geometry().width());
 	// _vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -857,14 +860,21 @@ void wn_t::assembly(void){
 
 void wn_t::save_all_state(void){
 	// Сохранение данных в поле редактирования
-	save_text_area();
-
+	for(int i = 0; i < _vtab_record->count(); i++){
+		auto wd = _vtab_record->widget(i);
+		auto rs = dynamic_cast<rs_t *>(wd);
+		if(rs){
+			auto ew = rs->editing_window();
+			ew->save_text_context();
+			ew->save_editor_cursor_position();
+			ew->save_editor_scrollbar_position();
+		}
+	}
 	// Сохраняются данные сеанса работы
 	save_geometry();
 	save_tree_position();
 	// save_recordtable_position();
-	save_editor_cursor_position();
-	save_editor_scrollbar_position();
+
 
 	// Синхронизируется с диском конфиг программы
 	appconfig.sync();
@@ -932,7 +942,7 @@ void wn_t::commit_data(QSessionManager &manager){
 
 // Восстанавливается геометрия окна и позиции основных разделителей
 void wn_t::restore_geometry(void){
-	if(globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized); // Для Андроида окно просто разворачивается на весь экран
+	if(gl_paras.target_os() == "android") setWindowState(Qt::WindowMaximized); // Для Андроида окно просто разворачивается на весь экран
 	else{
 		QRect rect = appconfig.mainwin_geometry();
 		resize(rect.size());
@@ -1181,36 +1191,28 @@ bool wn_t::is_tree_position_crypt(){
 // _table_screen->select_id(id);
 // }
 
-void wn_t::save_editor_cursor_position(void){
-	// int n = _editor_screen->cursor_position();
-	int n = _editentry->cursor_position();
-	appconfig.editor_cursor_position(n);
-}
 
-void wn_t::restore_editor_cursor_position(void){
-	int n = appconfig.editor_cursor_position();
 
-	// _editor_screen->cursor_position(n);
-	_editentry->cursor_position(n);
-}
 
-void wn_t::save_editor_scrollbar_position(void){
-	// int n = _editor_screen->scrollbar_position();
-	int n = _editentry->scrollbar_position();
-	appconfig.editor_scroll_bar_position(n);
-}
+// void wn_t::restore_editor_cursor_position(void){
+//	int n = appconfig.editor_cursor_position();
 
-void wn_t::restore_editor_scrollbar_position(void){
-	int n = appconfig.editor_scroll_bar_position();
-	// _editor_screen->scrollbar_position(n);
-	_editentry->scrollbar_position(n);
-}
+//	// _editor_screen->cursor_position(n);
+//	_editor_dock->blog_editor()->cursor_position(n);
+// }
+
+
+// void wn_t::restore_editor_scrollbar_position(void){
+//	int n = appconfig.editor_scroll_bar_position();
+//	// _editor_screen->scrollbar_position(n);
+//	_editor_dock->blog_editor()->scrollbar_position(n);
+// }
 
 void wn_t::restore_find_in_base_visible(void){
 	bool n = appconfig.findscreen_show();
 
 	// Определяется ссылка на виджет поиска
-	FindScreen *find_screen = globalparameters.find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
+	FindScreen *find_screen = gl_paras.find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
 	if(n) find_screen->show();
 	else find_screen->hide();
 }
@@ -1229,7 +1231,7 @@ void wn_t::init_file_menu(void){
 	// addToolBar(tb);
 	// */
 
-	QAction *a;
+//	QAction *a;
 
 	/// *
 	// a = new QAction(tr("&New"), this);
@@ -1258,25 +1260,26 @@ void wn_t::init_file_menu(void){
 	// menu->addAction(a);
 	// menu->addSeparator();
 	// */
+	{
+// move to SuperMenu
+//	a = new QAction(tr("&Print..."), this);
+//	a->setShortcut(QKeySequence::Print);
+//	connect(a, &QAction::triggered, this, &wn_t::file_print);
+//	// tb->addAction(a);
+//	_filemenu->addAction(a);
 
-	a = new QAction(tr("&Print..."), this);
-	a->setShortcut(QKeySequence::Print);
-	connect(a, &QAction::triggered, this, &wn_t::file_print);
-	// tb->addAction(a);
-	_filemenu->addAction(a);
+//	a = new QAction(tr("Print Preview..."), this);
+//	connect(a, &QAction::triggered, this, &wn_t::file_print_preview);
+//	_filemenu->addAction(a);
 
-	a = new QAction(tr("Print Preview..."), this);
-	connect(a, &QAction::triggered, this, &wn_t::file_print_preview);
-	_filemenu->addAction(a);
+//	a = new QAction(tr("&Export PDF..."), this);
+//	a->setShortcut(Qt::CTRL + Qt::Key_D);
+//	connect(a, &QAction::triggered, this, &wn_t::file_print_pdf);
+//	// tb->addAction(a);
+//	_filemenu->addAction(a);
 
-	a = new QAction(tr("&Export PDF..."), this);
-	a->setShortcut(Qt::CTRL + Qt::Key_D);
-	connect(a, &QAction::triggered, this, &wn_t::file_print_pdf);
-	// tb->addAction(a);
-	_filemenu->addAction(a);
-
-	_filemenu->addSeparator();
-
+//	_filemenu->addSeparator();
+	}
 	// a = new QAction(tr("&Quit"), this);
 	// a->setShortcut(Qt::CTRL + Qt::Key_Q);
 	// connect(a, SIGNAL(triggered()), this, SLOT(applicationExit()));
@@ -1297,7 +1300,7 @@ void wn_t::init_tools_menu(void){
 	_toolsmenu->addAction(a);
 
 	auto b = new QAction(tr("Editor"), this);
-	connect(b, &QAction::triggered, _editentry, &Editentry::editor_switch);
+	connect(b, &QAction::triggered, _editor_dock, &EditorDock::editor_switch);
 	_toolsmenu->addAction(b);
 
 	_toolsmenu->addSeparator();
@@ -1371,46 +1374,57 @@ bool wn_t::file_save_as(void){
 	return true;
 }
 
-// Напечатать текущую статью
-void wn_t::file_print(void){
-#ifndef QT_NO_PRINTER
-	QPrinter printer(QPrinter::HighResolution);
-	printer.setFullPage(true);
+// EditingWindow *wn_t::current_editing_window(){
+//	EditingWindow *ew = nullptr;
+//	auto rs = dynamic_cast<rs_t *>(_vtab_record->currentWidget());
+//	if(rs) ew = rs->editing_window();
+//	return ew;
+// }
+//// Напечатать текущую статью
+// void wn_t::file_print(void){
+// #ifndef QT_NO_PRINTER
+//	QPrinter printer(QPrinter::HighResolution);
+//	printer.setFullPage(true);
 
-	QPrintDialog *dlg = new QPrintDialog(&printer, this);
-	dlg->setWindowTitle(tr("Print Document"));
-	if(dlg->exec() == QDialog::Accepted){
-		// _editor_screen->textarea_document()->print(&printer);
-		_editentry->textarea_document()->print(&printer);
-	}
-	delete dlg;
-#endif
-}
+//	QPrintDialog *dlg = new QPrintDialog(&printer, this);
+//	dlg->setWindowTitle(tr("Print Document"));
+//	if(dlg->exec() == QDialog::Accepted){
+//		// _editor_screen->textarea_document()->print(&printer);
+//		auto ew = current_editing_window();
+//		if(ew) ew->textarea_document()->print(&printer);
+//	}
+//	delete dlg;
+// #endif
+// }
 
-// Предпросмотр печати текущей статьи
-void wn_t::file_print_preview(void){
-	PrintPreview *preview = new PrintPreview( // _editor_screen->textarea_document()
-		_editentry->textarea_document(), this);
+//// Предпросмотр печати текущей статьи
+// void wn_t::file_print_preview(void){
+//	auto ew = current_editing_window();
+//	if(ew){
+//		PrintPreview *preview = new PrintPreview( // _editor_screen->textarea_document()
+//			ew->textarea_document(), this);
 
-	preview->setModal(true);
-	preview->setAttribute(Qt::WA_DeleteOnClose);
-	preview->show();
-}
+//		preview->setModal(true);
+//		preview->setAttribute(Qt::WA_DeleteOnClose);
+//		preview->show();
+//	}
+// }
 
-// Вывод текущей статьи в PDF файл
-void wn_t::file_print_pdf(void){
-#ifndef QT_NO_PRINTER
-	QString fileName = QFileDialog::getSaveFileName(this, "Export PDF", QString(), "*.pdf");
-	if(!fileName.isEmpty()){
-		if(QFileInfo(fileName).suffix().isEmpty()) fileName.append(".pdf");
-		QPrinter printer(QPrinter::HighResolution);
-		printer.setOutputFormat(QPrinter::PdfFormat);
-		printer.setOutputFileName(fileName);
-		// _editor_screen->textarea_document()->print(&printer);
-		_editentry->textarea_document()->print(&printer);
-	}
-#endif
-}
+//// Вывод текущей статьи в PDF файл
+// void wn_t::file_print_pdf(void){
+// #ifndef QT_NO_PRINTER
+//	QString fileName = QFileDialog::getSaveFileName(this, "Export PDF", QString(), "*.pdf");
+//	if(!fileName.isEmpty()){
+//		if(QFileInfo(fileName).suffix().isEmpty()) fileName.append(".pdf");
+//		QPrinter printer(QPrinter::HighResolution);
+//		printer.setOutputFormat(QPrinter::PdfFormat);
+//		printer.setOutputFileName(fileName);
+//		// _editor_screen->textarea_document()->print(&printer);
+//		auto ew = current_editing_window();
+//		if(ew) ew->textarea_document()->print(&printer);
+//	}
+// #endif
+// }
 
 // Слот - Нормальный выход из программы
 void wn_t::application_exit(void){
@@ -1435,14 +1449,14 @@ void wn_t::application_fast_exit(void){
 
 void wn_t::tools_find(void){
 	// Определяется ссылка на виджет поиска
-	FindScreen *findScreenRel = globalparameters.find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
+	FindScreen *findScreenRel = gl_paras.find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
 	if(!(findScreenRel->isVisible())) findScreenRel->show();
 	else findScreenRel->hide();
 }
 
 void wn_t::tools_preferences(void){
 	// Создается окно настроек, после выхода из этой функции окно удалится
-	AppConfigDialog appconfigdialog(globalparameters.main_window()->activated_browser()->record_screen()->record_controller(), "pageMain");
+	AppConfigDialog appconfigdialog(gl_paras.main_window()->activated_browser()->record_screen()->record_controller(), "pageMain");
 
 	appconfigdialog.show();
 }
@@ -1459,7 +1473,7 @@ void wn_t::on_expand_edit_area(bool flag){
 	// static bool _treetable_hidden;     // = globalparameters.getTreeScreen()->isHidden();
 	// static bool recordtable_hidden; // = globalparameters.getRecordTableScreen()->isHidden();
 	if(flag){
-		globalparameters.entrance()->hide(); // resize(QSize(0, 0)); //
+		gl_paras.browser_dock()->hide(); // resize(QSize(0, 0)); //
 
 		// if(!globalparameters.getTreeScreen()->isHidden()) {
 		// _treetable_hidden = false;
@@ -1491,7 +1505,7 @@ void wn_t::on_expand_edit_area(bool flag){
 
 		// resize(QSize(0, v_left_splitter->height())); // hide();
 	}else{
-		globalparameters.entrance()->show(); // resize(entrance_size); //
+		gl_paras.browser_dock()->show(); // resize(entrance_size); //
 
 		// if(!_treetable_hidden) {
 		// globalparameters.getTreeScreen()->show();    // resize(tree_size); //
@@ -1526,9 +1540,9 @@ void wn_t::on_click_help_about_this(void){
 	infoAuthor	= "Author: Hugh Von Young<br/>";
 	infoEmail = "Author Email:<i>hughvonyoung@gmail.com</i><br/>";
 	infoLicense	= "GNU General Public License v.3.0<br/><br/>";
-	infoTargetOs	= "Target OS: " + globalparameters.target_os() + "<br/>";
-	infoProgramFile = "Program file: " + globalparameters.main_program_full_file() + "<br/>";
-	infoWorkDirectory = "Work directory: " + globalparameters.root_path() + "<br/>";
+	infoTargetOs	= "Target OS: " + gl_paras.target_os() + "<br/>";
+	infoProgramFile = "Program file: " + gl_paras.main_program_full_file() + "<br/>";
+	infoWorkDirectory = "Work directory: " + gl_paras.root_path() + "<br/>";
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
 	infoDevicePixelRatio = "Device pixel ratio: " + (QString::number(sapp_t::instance()->devicePixelRatio(), 'f', 8)) + "<br/>";
@@ -1552,13 +1566,19 @@ void wn_t::on_click_help_about_qt(void){
 
 void wn_t::synchronization(void){
 	// Сохраняются данные в поле редактирования
-	save_text_area();
-
+	for(int i = 0; i < _vtab_record->count(); i++){
+		auto wd = _vtab_record->widget(i);
+		auto rs = dynamic_cast<rs_t *>(wd);
+		if(rs){
+			auto ew = rs->editing_window();
+			ew->save_text_context();
+			ew->save_editor_cursor_position();
+			ew->save_editor_scrollbar_position();
+		}
+	}
 	// Сохраняются данные о курсорах в дереве и таблице конечных записей
 	save_tree_position();
 	// save_recordtable_position();
-	save_editor_cursor_position();
-	save_editor_scrollbar_position();
 
 	// Считывается команда синхронизации
 	QString command = appconfig.synchro_command();
@@ -1570,7 +1590,7 @@ void wn_t::synchronization(void){
 	}
 	// Макрос %a заменяется на путь к директории базы данных
 	// QString databasePath=globalParameters.getWorkDirectory()+"/"+appconfig.datadir();
-	QDir databaseDir(globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName());
+	QDir databaseDir(gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName());
 	QString databasePath = databaseDir.canonicalPath();
 
 	command.replace("%a", databasePath);
@@ -1590,69 +1610,64 @@ void wn_t::synchronization(void){
 	_tree_screen->view()->know_model_reload();
 	restore_tree_position();
 	// restore_recordtable_position();
-	restore_editor_cursor_position();
-	restore_editor_scrollbar_position();
-
+	for(int i = 0; i < _vtab_record->count(); i++){
+		auto wd = _vtab_record->widget(i);
+		auto rs = dynamic_cast<rs_t *>(wd);
+		if(rs){
+			auto ew = rs->editing_window();
+			ew->restore_editor_cursor_position();
+			ew->restore_editor_scrollbar_position();
+		}
+	}
 	// азблокируется история посещений элементов
 	walkhistory.set_drop(false);
 }
 
-void wn_t::setup_icon_actions(void){
-	_action_tray_restore = new QAction(tr("&Restore window"), this);
-	connect(_action_tray_restore, &QAction::triggered, this, &wn_t::showNormal);
 
-	_action_tray_maximize = new QAction(tr("Ma&ximize window"), this);
-	connect(_action_tray_maximize, &QAction::triggered, this, &wn_t::showMaximized);
 
-	_action_tray_minimize = new QAction(tr("Mi&nimize window"), this);
-	connect(_action_tray_minimize, &QAction::triggered, this, &wn_t::hide);
+// void wn_t::create_tray_icon(void){
+////	_tray_icon_menu = new QMenu(this);
+////	_tray_icon_menu->addAction(_action_tray_restore);
+////	_tray_icon_menu->addAction(_action_tray_maximize);
+////	_tray_icon_menu->addAction(_action_tray_minimize);
+////	_tray_icon_menu->addSeparator();
+////	_tray_icon_menu->addAction(_action_tray_quit);
 
-	_action_tray_quit = new QAction(tr("&Quit"), this);
-	connect(_action_tray_quit, &QAction::triggered, this, &wn_t::application_exit);
-}
+//	_tray_icon = new SysTrayIcon(_tree_screen, _browser_dock, _vtab_record, _find_screen, _editor_dock, this, _profile, _style_source);
+////	_tray_icon->setContextMenu(_tray_icon_menu);
+// }
 
-void wn_t::create_tray_icon(void){
-	_tray_icon_menu = new QMenu(this);
-	_tray_icon_menu->addAction(_action_tray_restore);
-	_tray_icon_menu->addAction(_action_tray_maximize);
-	_tray_icon_menu->addAction(_action_tray_minimize);
-	_tray_icon_menu->addSeparator();
-	_tray_icon_menu->addAction(_action_tray_quit);
+//void wn_t::set_icon(void){
+//	connect(_tray_icon, &SysTrayIcon::activated, this, &wn_t::icon_activated);
 
-	_tray_icon = new QSystemTrayIcon(this);
-	_tray_icon->setContextMenu(_tray_icon_menu);
-}
+//	QIcon icon = QIcon(":/resource/pic/logo.svg");
+//	_tray_icon->setIcon(icon);
+//	setWindowIcon(icon);
 
-void wn_t::set_icon(void){
-	connect(_tray_icon, &QSystemTrayIcon::activated, this, &wn_t::icon_activated);
-
-	QIcon icon = QIcon(":/resource/pic/logo.svg");
-	_tray_icon->setIcon(icon);
-	setWindowIcon(icon);
-
-	// tray_icon->setToolTip(iconComboBox->itemText(index));
-}
+//	// tray_icon->setToolTip(iconComboBox->itemText(index));
+//}
 
 void wn_t::icon_activated(QSystemTrayIcon::ActivationReason reason){
-	if(QSystemTrayIcon::isSystemTrayAvailable() == false) return;
+	if(!QSystemTrayIcon::isSystemTrayAvailable()) return;
 	switch(reason){
-	case QSystemTrayIcon::Trigger:
-	case QSystemTrayIcon::DoubleClick:
-		if(isVisible()){
-			if(isMinimized()) showNormal();
-			else hide();
-		}else{
-			if(isMinimized()) showNormal();
-			else show();
-		}
-	default:;
+		case QSystemTrayIcon::Trigger:
+		case QSystemTrayIcon::DoubleClick:
+			if(isVisible()){
+				if(isMinimized()) showNormal();
+				else hide();
+			}else{
+				if(isMinimized()) showNormal();
+				else show();
+			}
+			break;
+		default:;
 	}
 }
 
 // Слот закрытия окна
 void wn_t::closeEvent(QCloseEvent *event){
 	if(_enable_real_close == false){
-		if(QSystemTrayIcon::isSystemTrayAvailable() == false) return;
+		if(!QSystemTrayIcon::isSystemTrayAvailable()) return;
 		// При приходе события закрыть окно, событие игнорируется
 		// и окно просто делается невидимым. Это нужно чтобы при закрытии окна
 		// программа не завершала работу
@@ -1675,104 +1690,104 @@ bool wn_t::eventFilter(QObject *o, QEvent *e){
 	return false; // Продолжать оработку событий дальше
 }
 
-void wn_t::go_walk_history_previous(void){
-	// _editor_screen->save_textarea();
-	_editentry->save_textarea();
-	id_value id = id_value( // _editor_screen->misc_field("id")
-		_editentry->misc_field("id"));
-	walkhistory.add<WALK_HISTORY_GO_PREVIOUS>(id, _editentry->cursor_position() // _editor_screen->cursor_position()
-						 ,
-						  _editentry->scrollbar_position() // _editor_screen->scrollbar_position()
-						 );
-	walkhistory.set_drop(true);
+// void wn_t::go_walk_history_previous(void){
+//	// _editor_screen->save_textarea();
+//	_editor_dock->blog_editor()->save_textarea();
+//	id_value id = id_value( // _editor_screen->misc_field("id")
+//		_editor_dock->blog_editor()->misc_field("id"));
+//	walkhistory.add<WALK_HISTORY_GO_PREVIOUS>(id
+//						 , _editor_dock->blog_editor()->cursor_position() // _editor_screen->cursor_position()
+//						 , _editor_dock->blog_editor()->scrollbar_position() // _editor_screen->scrollbar_position()
+//						 );
+//	walkhistory.set_drop(true);
 
-	go_walk_history();
-}
+//	go_walk_history();
+// }
 
-void wn_t::go_walk_history_next(void){
-	// _editor_screen->save_textarea();
-	_editentry->save_textarea();
-	id_value id = id_value( // _editor_screen->misc_field("id")
-		_editentry->misc_field("id"));
-	walkhistory.add<WALK_HISTORY_GO_NEXT>(id, _editentry->cursor_position() // _editor_screen->cursor_position()
-					     ,
-					      _editentry->scrollbar_position() // _editor_screen->scrollbar_position()
-					     );
-	walkhistory.set_drop(true);
+// void wn_t::go_walk_history_next(void){
+//	// _editor_screen->save_textarea();
+//	_editor_dock->blog_editor()->save_textarea();
+//	id_value id = id_value( // _editor_screen->misc_field("id")
+//		_editor_dock->blog_editor()->misc_field("id"));
+//	walkhistory.add<WALK_HISTORY_GO_NEXT>(id
+//					     , _editor_dock->blog_editor()->cursor_position() // _editor_screen->cursor_position()
+//					     , _editor_dock->blog_editor()->scrollbar_position() // _editor_screen->scrollbar_position()
+//					     );
+//	walkhistory.set_drop(true);
 
-	go_walk_history();
-}
+//	go_walk_history();
+// }
 
-void wn_t::go_walk_history(void){
-	// QString tree_root_id = walkhistory.tree_root_id();
+// void wn_t::go_walk_history(void){
+//	// QString tree_root_id = walkhistory.tree_root_id();
 
-	// if(_tree_screen->know_root()->root_item()->id() != tree_root_id) {
-	// _tree_screen->intercept(tree_root_id);
-	// }
+//	// if(_tree_screen->know_root()->root_item()->id() != tree_root_id) {
+//	// _tree_screen->intercept(tree_root_id);
+//	// }
 
-	// Выясняется идентификатор записи, на которую надо переключиться
-	auto record_id = walkhistory.record_id();
+//	// Выясняется идентификатор записи, на которую надо переключиться
+//	auto record_id = walkhistory.record_id();
 
-	// if(record_id.length() == 0) {
-	// walkhistory.set_drop(false);
-	// return;
-	// }
-	auto _tree_view = _tree_screen->view();
-	auto know_model_board = std::bind(&tv_t::know_model_board, _tree_view); // [&](){return _tree_screen->view()->know_model_board();};
-	if(static_cast<QString>(record_id).length() > 0){
-		// Выясняется путь к ветке, где находится данная запись
-		QStringList absolute_path = static_cast<tkm_t *>(know_model_board())->path_list(record_id); // on know_root semantic
+//	// if(record_id.length() == 0) {
+//	// walkhistory.set_drop(false);
+//	// return;
+//	// }
+//	auto _tree_view = _tree_screen->view();
+//	auto know_model_board = std::bind(&tv_t::know_model_board, _tree_view); // [&](){return _tree_screen->view()->know_model_board();};
+//	if(static_cast<QString>(record_id).length() > 0){
+//		// Выясняется путь к ветке, где находится данная запись
+//		QStringList absolute_path = static_cast<tkm_t *>(know_model_board())->path_list(record_id); // on know_root semantic
 
-		//// Проверяем, есть ли такая ветка
-		// if(_tree_screen->know_model_board()->is_item_valid(absolute_path) == false) {    // on know_root semantic
-		// walkhistory.set_drop(false);
-		// return;
-		// }
+//		//// Проверяем, есть ли такая ветка
+//		// if(_tree_screen->know_model_board()->is_item_valid(absolute_path) == false) {    // on know_root semantic
+//		// walkhistory.set_drop(false);
+//		// return;
+//		// }
 
-		// Выясняется позицию записи в таблице конечных записей
-		auto item = know_model_board()->item(absolute_path); // on know_root semantic
-		if(item && item != know_model_board()->root_item()){
-			//// Проверяем, есть ли такая позиция
-			// if(!item->item_direct(record_id)) {  // == false
-			// walkhistory.set_drop(false);
-			// return;
-			// }
-			// if(item->child_direct(record_id)){//?
-			set_tree_position(global_root_id, absolute_path);
-			// select_id(id);
-			if(appconfig.remember_cursor_at_history_navigation()){
-				// _editor_screen->cursor_position(walkhistory.cursor_position(record_id));
-				_editentry->cursor_position(walkhistory.cursor_position(record_id));
-				// _editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
-				_editentry->scrollbar_position(walkhistory.scrollbar_position(record_id));
-			}
-			// }
-			auto url_target = item->field<url_type>();
-			// walkhistory.set_drop(false);
-			TreeIndex::activate([&] {return _tree_view->source_model();}, _tree_view->current_item(), item->field<url_type>(), std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url_target.toStdString()) || url_equal(it_->field<url_type>().toStdString(), url_target.toStdString());});
-		}
-		// else {
-		// walkhistory.set_drop(false);
-		// }
-	}
-	walkhistory.set_drop(false);
-}
+//		// Выясняется позицию записи в таблице конечных записей
+//		auto item = know_model_board()->item(absolute_path); // on know_root semantic
+//		if(item && item != know_model_board()->root_item()){
+//			//// Проверяем, есть ли такая позиция
+//			// if(!item->item_direct(record_id)) {  // == false
+//			// walkhistory.set_drop(false);
+//			// return;
+//			// }
+//			// if(item->child_direct(record_id)){//?
+//			set_tree_position(global_root_id, absolute_path);
+//			// select_id(id);
+//			if(appconfig.remember_cursor_at_history_navigation()){
+//				// _editor_screen->cursor_position(walkhistory.cursor_position(record_id));
+//				_editor_dock->blog_editor()->cursor_position(walkhistory.cursor_position(record_id));
+//				// _editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
+//				_editor_dock->blog_editor()->scrollbar_position(walkhistory.scrollbar_position(record_id));
+//			}
+//			// }
+//			auto url_target = item->field<url_type>();
+//			// walkhistory.set_drop(false);
+//			TreeIndex::activate([&] {return _tree_view->source_model();}, _tree_view->current_item(), item->field<url_type>(), std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url_target.toStdString()) || url_equal(it_->field<url_type>().toStdString(), url_target.toStdString());});
+//		}
+//		// else {
+//		// walkhistory.set_drop(false);
+//		// }
+//	}
+//	walkhistory.set_drop(false);
+// }
 
-// Метод, вызываемый из всех точек интерфейса, в которых происходит
-// переход к другой записи. Метод вызывается до перехода, чтобы сохранить
-// текст редактируемой записи
-void wn_t::save_text_area(void){
-	id_value id = id_value( // _editor_screen->misc_field("id")
-		_editentry->misc_field("id"));
+//// Метод, вызываемый из всех точек интерфейса, в которых происходит
+//// переход к другой записи. Метод вызывается до перехода, чтобы сохранить
+//// текст редактируемой записи
+// void wn_t::save_text_context(void){
+//	id_value id = id_value( // _editor_screen->misc_field("id")
+//		_editor_dock->blog_editor()->misc_field("id"));
 
-	qDebug() << "MainWindow::saveTextarea() : id :" << id;
+//	qDebug() << "MainWindow::saveTextarea() : id :" << id;
 
-	// _editor_screen->save_textarea();
-	_editentry->save_textarea();
-	walkhistory.add<WALK_HISTORY_GO_NONE>(id, _editentry->cursor_position() // _editor_screen->cursor_position()
-					     ,
-					      _editentry->scrollbar_position()); // _editor_screen->scrollbar_position());
-}
+//	// _editor_screen->save_textarea();
+//	_editor_dock->blog_editor()->save_textarea();
+//	walkhistory.add<WALK_HISTORY_GO_NONE>(id
+//					     , _editor_dock->blog_editor()->cursor_position() // _editor_screen->cursor_position()
+//					     , _editor_dock->blog_editor()->scrollbar_position()); // _editor_screen->scrollbar_position());
+// }
 
 // Слот, обрабатывающий смену фокуса на виджетах
 void wn_t::on_focus_changed(QWidget *widgetFrom, QWidget *widgetTo){
@@ -1826,7 +1841,7 @@ browser::WebView *wn_t::find(const std::function<bool (boost::intrusive_ptr<cons
 	boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
 	if(v){
 		if(v->page()){
-			boost::intrusive_ptr< ::Binder> binder = v->page()->binder();
+			boost::intrusive_ptr<::Binder> binder = v->page()->binder();
 			if(binder){
 				auto _this_item = v->page()->host(); // globalparameters.entrance()->find(_equal);
 				if(_this_item){
@@ -1844,47 +1859,11 @@ browser::WebView *wn_t::find(const std::function<bool (boost::intrusive_ptr<cons
 }
 
 browser::Browser *wn_t::new_browser(){
-	//// DockedWindow *browser =
-	// return new Browser(_tree_screen
-	// , _find_screen
-	// , _editor_screen	// , _vtab_tree
-	// , _main_window
-	// , this
-	// , _style_source
-	// , _profile
-	// , Qt::MaximizeUsingFullscreenGeometryHint
-	// );	// , dock_widget
-
-	auto rs = new rs_t(_tree_screen, _find_screen, _editentry, _entrance, _vtab_record, _style_source, _profile);
-
-	_vtab_record->setUpdatesEnabled(false);
-	_vtab_record->addTab(rs, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
-	bool found = false;
-	for(int i = 0; i < _vtab_record->count(); i++){
-		auto r = _vtab_record->widget(i);
-		if(r == rs){
-			auto _browser = rs->browser();
-			if(_browser){
-				_browser->activateWindow();
-				_browser->setVisible(true);
-				_vtab_record->setCurrentWidget(r);
-				found = true;
-			}
-		}
+	auto editing_window = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
+	rs_t *rs = nullptr;
+	if(editing_window){
+		rs = editing_window->record_screen();// new rs_t(_tree_screen, _find_screen, _editentry, _dock_web, _vtab_record, _style_source, _profile);
 	}
-	assert(found);
-	////    bool found = false;
-	////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
-	////	if(*i == rs){
-	////	    found = true;
-	////	    break;
-	////	}
-	////    }
-	////    if(! found) _record_screens.insert(rs);
-	// _record_screens.insert(rs);
-	_vtab_record->setUpdatesEnabled(true);
-	rs->adjustSize();
-
 	return rs->browser();
 
 	// return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*

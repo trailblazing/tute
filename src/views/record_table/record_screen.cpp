@@ -24,18 +24,18 @@
 #include "record_screen.h"
 #include "record_view.h"
 #include "views/browser/browser.h"
-#include "views/browser/entrance.h"
+#include "views/browser/browser_dock.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/toolbarsearch.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
-#include "views/record/editentry.h"
+#include "views/record/editor_dock.h"
 #include "views/record/editor_wrap.h"
 #include "views/record_table/vertical_scrollarea.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
 
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 extern AppConfig appconfig;
 extern const char *tree_screen_viewer_name;
 
@@ -46,13 +46,19 @@ extern const char *tree_screen_viewer_name;
 W_OBJECT_IMPL(rs_t)
 #endif
 
-rs_t::rs_t(
-	ts_t *tree_screen, FindScreen *find_screen, Editentry *editentry, browser::Entrance *entrance //	  , browser::Browser    *_browser    //		  , wn_t *main_window
-	  , HidableTabWidget *vtab_record, const QString &style_source, browser::Profile *profile)
+rs_t::rs_t(ts_t *tree_screen
+	  , FindScreen *find_screen
+	  , EditorDock *editor_dock
+	  , EditingWindow *editing_window
+	  , browser::BrowserDock *browser_dock //	  , browser::Browser    *_browser    //		  , wn_t *main_window
+	  , HidableTabWidget *vtab_record
+	  , const QString &style_source
+	  , browser::Profile *profile)
 	: QWidget(vtab_record) // , _browser(_browser)
 	  , _vtab_record(vtab_record)
 	  , _tree_screen(tree_screen)
-	  , _editentry(editentry)
+	  , _editor_dock(editor_dock)
+	  , _editing_window(editing_window)
 //      , _record_hide(new QAction(tr("Hide record view"), this))	// move to main_window::_vtab_record->tabBar()->tabBarClicked// new QAction(_main_window->h_tree_splitter()->sizes()[0] == 0 ? tr("Show tree view") : tr("Hide tree view"), this)
 //      , _save_in_new_branch(new QAction(tr("Save in new branch manually"), this))
 #ifdef USE_BUTTON_PIN
@@ -88,7 +94,8 @@ rs_t::rs_t(
 	  , _toolsline(new QToolBar(this))
 	  , _extra_toolsline(new QToolBar(this))
 	  , _treepathlabel(new QLabel(this))
-	  , _browser(new browser::Browser(tree_screen, find_screen, editentry, this, entrance, style_source, profile, Qt::MaximizeUsingFullscreenGeometryHint)) // , _vtab_tree
+//	  , _editing_window(new EditingWindow(tree_screen, browser_dock, vtab_record, profile, find_screen, editor_dock, style_source))
+	  , _browser(new browser::Browser(tree_screen, find_screen, editing_window, this, browser_dock, style_source, profile, Qt::MaximizeUsingFullscreenGeometryHint)) // , _vtab_tree
 	  , _record_controller(_browser->tabmanager()->record_controller()) // , _tabmanager(_browser->tabmanager())
 	  , _vertical_scrollarea(new VerticalScrollArea(_record_controller->view(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void *> > >(&RecordView::resizeEvent, _tabmanager->record_controller()->view())
 	  , _records_toolslayout(new QHBoxLayout())
@@ -99,6 +106,7 @@ rs_t::rs_t(
 	// recordTableController = new RecordTableController(this);
 
 	setObjectName(record_screen_multi_instance_name);
+
 
 	// _table_controller->setObjectName(object_name + "_controller");
 
@@ -254,6 +262,36 @@ rs_t::rs_t(
 	//	return _browser->isVisible();
 	//    });
 	connect(this, &rs_t::isHidden, _browser, &browser::Browser::hide);
+
+	[&] {
+		_vtab_record->setUpdatesEnabled(false);
+		_vtab_record->addTab(this, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
+		bool found = false;
+		for(int i = 0; i < _vtab_record->count(); i++){
+			auto r = _vtab_record->widget(i);
+			if(r == this){
+				auto _browser = this->browser();
+				if(_browser){
+					_browser->activateWindow();
+					_browser->setVisible(true);
+					_vtab_record->setCurrentWidget(r);
+					found = true;
+				}
+			}
+		}
+		assert(found);
+		////    bool found = false;
+		////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+		////	if(*i == rs){
+		////	    found = true;
+		////	    break;
+		////	}
+		////    }
+		////    if(! found) _record_screens.insert(rs);
+		// _record_screens.insert(rs);
+		_vtab_record->setUpdatesEnabled(true);
+		this->adjustSize();
+	} ();
 }
 
 rs_t::~rs_t(){
@@ -455,7 +493,7 @@ void rs_t::setup_actions(void){
 	//////	    _tree_hide->setText(_hide_tree_text);
 	////////	    emit _tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
 	//	});
-	if(_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen")) emit globalparameters.h_record_splitter()->splitterMoved(globalparameters.h_record_splitter()->sizes()[0], 1);
+	if(_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen")) emit gl_paras.h_record_splitter()->splitterMoved(gl_paras.h_record_splitter()->sizes()[0], 1);
 // emit _tree_hide->triggered();
 
 //	// _save_in_new_branch = new QAction(tr("Save in new branch"), this);
@@ -616,7 +654,7 @@ void rs_t::setup_actions(void){
 	_editor->setStatusTip(tr("Switch editor open / close"));
 	_editor->setIcon(QIcon(":/resource/pic/attach_switch_to_editor.svg"));
 	_editor->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E));
-	connect(_editor, &QAction::triggered, _editentry, &Editentry::editor_switch);
+	connect(_editor, &QAction::triggered, _editor_dock, &EditorDock::editor_switch);
 
 	// Настройка внешнего вида таблицы конечных записей
 	// _settings = new QAction(tr("&View settings"), this);
@@ -646,7 +684,7 @@ void rs_t::setup_actions(void){
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)
-			globalparameters.tree_screen()->view()->know_model_save();
+			gl_paras.tree_screen()->view()->know_model_save();
 		}); // _record_controller, &RecordController::move_up
 
 	assert(_record_controller);
@@ -671,7 +709,7 @@ void rs_t::setup_actions(void){
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)
-			globalparameters.tree_screen()->view()->know_model_save();
+			gl_paras.tree_screen()->view()->know_model_save();
 		}); // _record_controller, &RecordController::move_up
 	// connect(_action_move_up, &QAction::triggered, _tabmanager, &browser::TabWidget::move_up);
 
@@ -696,7 +734,7 @@ void rs_t::setup_actions(void){
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)
-			globalparameters.tree_screen()->view()->know_model_save();
+			gl_paras.tree_screen()->view()->know_model_save();
 		}); // _record_controller, &RecordController::move_dn
 	// connect(_action_move_dn, &QAction::triggered, _tabmanager, &browser::TabWidget::move_dn);
 
@@ -845,7 +883,7 @@ void rs_t::setup_signals(void){
 
 	// }
 	// );
-	connect(this->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
+	connect(this->_find_in_base, &QAction::triggered, gl_paras.window_switcher(), &WindowSwitcher::find_in_base_click);
 }
 
 void rs_t::assembly(void){
@@ -1105,11 +1143,11 @@ void rs_t::tools_update(){
 		qDebug() << "In table select present";
 		//	qDebug() << "In table row count is" << _record_controller->row_count();
 		// find_object<MetaEditor>(meta_editor_singleton_name)
-		globalparameters.edit_entry()->textarea_editable(true);
+		_editing_window->textarea_editable(true);
 	}else{
 		qDebug() << "In table select non present";
 		// find_object<MetaEditor>(meta_editor_singleton_name)
-		globalparameters.edit_entry()->textarea_editable(false);
+		_editing_window->textarea_editable(false);
 	}
 }
 
@@ -1142,22 +1180,22 @@ void rs_t::tools_update(){
 // Действия при нажатии кнопки синхронизации
 void rs_t::on_syncro_click(void){
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.main_window()->synchronization();
+	gl_paras.main_window()->synchronization();
 }
 
 void rs_t::on_walkhistory_previous_click(void){
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.main_window()->go_walk_history_previous();
+	_editing_window->go_walk_history_previous();
 }
 
 void rs_t::on_walkhistory_next_click(void){
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.main_window()->go_walk_history_next();
+	_editing_window->go_walk_history_next();
 }
 
 // Возвращение к дереву разделов в мобильном интерфейсе
 void rs_t::on_back_click(void){
-	globalparameters.window_switcher()->recordtable_to_tree();
+	gl_paras.window_switcher()->recordtable_to_tree();
 }
 
 void rs_t::tree_path(QString path){
@@ -1178,3 +1216,5 @@ ts_t *rs_t::tree_screen(){return _tree_screen;}
 
 // QAction *rs_t::record_hide(){return _record_hide;}	// move to main_window::_vtab_record->tabBar()->tabBarClicked
 HidableTabWidget *rs_t::vtab_record(){return _vtab_record;}
+
+EditingWindow *rs_t::editing_window(){return _editing_window;}

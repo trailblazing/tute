@@ -83,7 +83,7 @@
 #endif
 
 class gl_para;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 extern QMap<Qt::CheckState, QString> _string_from_check_state;
 extern QMap<QString, Qt::CheckState> _state_check_from_string;
 extern QString get_unical_id(void);
@@ -127,8 +127,8 @@ class tm_t;
 class RecordModel;
 class rv_t;
 class tv_t;
-class Editentry;
-
+class EditorDock;
+class EditingWindow;
 QT_END_NAMESPACE
 
 namespace browser {
@@ -474,7 +474,7 @@ namespace browser {
 #endif
 
 	public:
-		TabWidget(ts_t *tree_screen_, FindScreen *find_screen_, Editentry *editentry_, Browser *browser_, rs_t *record_screen_, Entrance *entrance_, wn_t *main_window_, Profile *profile_);
+		TabWidget(ts_t *tree_screen_, FindScreen *find_screen_, EditingWindow *editing_window_, Browser *browser_, rs_t *record_screen_, BrowserDock *entrance_, wn_t *main_window_, Profile *profile_);
 		// , TableController *_page_controller
 		// , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
@@ -652,8 +652,8 @@ namespace browser {
 
 	private:
 		ts_t *_tree_screen;
-		Editentry *_editentry;
-		Entrance *_entrance;
+		EditingWindow *_editing_window;
+		BrowserDock *_entrance;
 		Browser *_browser;
 		rs_t *_record_screen;
 		wn_t *_main_window;

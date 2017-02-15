@@ -1,6 +1,8 @@
 #ifndef __ADDNEWRECORD_H__
 #define __ADDNEWRECORD_H__
 
+
+#include <memory>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QLabel>
@@ -14,6 +16,7 @@
 
 class Editor;
 class InfoFieldEnter;
+class EditingWindow;
 
 // Окно добавления новой записи
 
@@ -44,8 +47,9 @@ private:
 	// Ввод инфополей записи
 	InfoFieldEnter *infoField;
 
-	// Ввод текста записи
-	Editor *recordTextEditor;
+	std::unique_ptr<EditingWindow> _editing_window;
+//	// Ввод текста записи
+//	Editor *recordTextEditor;
 
 	QDialogButtonBox *buttonBox;
 

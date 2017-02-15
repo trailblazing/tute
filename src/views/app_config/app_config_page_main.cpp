@@ -21,7 +21,7 @@
 #include "models/app_config/app_config.h"
 
 extern AppConfig appconfig;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 const char *standardItem	= "Standard";
 const char *portableItem	= "Portable";
 
@@ -31,7 +31,7 @@ W_OBJECT_IMPL(AppConfigPageMain)
 
 AppConfigPageMain::AppConfigPageMain(QWidget *parent)
 	: ConfigPage(parent)
-	  , _original_root_state(std::make_tuple(true, globalparameters.root_path())){
+	  , _original_root_state(std::make_tuple(true, gl_paras.root_path())){
 	setup_ui();
 	setup_signals();
 	assembly();
@@ -62,7 +62,7 @@ void AppConfigPageMain::setup_ui(void){
 
 	_rootdir_input = new QLineEdit(this);
 	_rootdir_input->setMinimumWidth(50);
-	_rootdir_input->setText(globalparameters.root_path());
+	_rootdir_input->setText(gl_paras.root_path());
 
 	_rootdir_button = new FlatToolButton("", this);
 	_rootdir_button->setText(tr("..."));
@@ -350,7 +350,7 @@ int AppConfigPageMain::apply_changes(void){
 
 	int difficult_changes = 0;
 
-	QString root_path_ = globalparameters.root_path();
+	QString root_path_ = gl_paras.root_path();
 	auto write_root = [&](){
 				  auto root_path_ = _rootdir_input->text();
 				  QDir dir(root_path_);
@@ -365,16 +365,16 @@ int AppConfigPageMain::apply_changes(void){
 				  //	    }
 				  if(dir.exists() && dir.isReadable()){
 					  // Новое имя запоминается в конфиг
-					  globalparameters.root_path(dir.path());
+					  gl_paras.root_path(dir.path());
 					  difficult_changes = 1;
 					  if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
 					  _application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
 					  _application_current_path_label->update();
-					  assert(QDir(globalparameters.root_path()) == dir);
+					  assert(QDir(gl_paras.root_path()) == dir);
 					  assert(dir.absolutePath() == QDir::currentPath());
 				  }
 			  };
-	if(globalparameters.root_path() != _rootdir_input->text()) write_root();
+	if(gl_paras.root_path() != _rootdir_input->text()) write_root();
 	auto write_data = [&](){
 				  auto data_path = _datadir_input->text();
 				  QDir dir(data_path);
@@ -420,7 +420,7 @@ int AppConfigPageMain::apply_changes(void){
 		appconfig.interface_language(_interface_language->currentText());
 		difficult_changes = 1;
 	}
-	const auto result = globalparameters.coordinate_root(_rootdir_input->text()); // is_standard,
+	const auto result = gl_paras.coordinate_root(_rootdir_input->text()); // is_standard,
 	if(_original_root_state != result){
 		//	if(std::get<1>(result) != is_standard) _application_mode_option->setCurrentText(is_standard ?  standardItem : portableItem);
 		//	if(std::get<2>(result) != _rootdir_input->text()){
@@ -434,7 +434,7 @@ int AppConfigPageMain::apply_changes(void){
 		write_trash();
 		//	}
 		difficult_changes = 1;
-		assert(QDir(globalparameters.root_path()) == QDir(std::get<1>(result)));
+		assert(QDir(gl_paras.root_path()) == QDir(std::get<1>(result)));
 		assert(QDir(std::get<1>(result)).absolutePath() == QDir::currentPath());
 		//	if(std::get<0>(result)){
 		QMessageBox message;

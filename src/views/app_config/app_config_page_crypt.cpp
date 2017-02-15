@@ -20,7 +20,7 @@
 #include "views/enter_password/enter_password.h"
 
 extern AppConfig appconfig;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 extern DataBaseConfig databaseconfig;
 
 #if QT_VERSION == 0x050600

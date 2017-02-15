@@ -46,7 +46,6 @@
 #include "libraries/disk_helper.h"
 #include "libraries/fixed_parameters.h"
 #include "libraries/global_parameters.h"
-#include "libraries/global_parameters.h"
 #include "libraries/trash_monitoring.h"
 #include "libraries/walk_history.h"
 #include "libraries/window_switcher.h"
@@ -65,7 +64,7 @@ using namespace std;
 FixedParameters fixedparameters;
 
 // Глобальные параметры программы (вычислимые на этапе инициализации, иногда меняющиеся в процессе выполнения программы)
-gl_para globalparameters;
+gl_para gl_paras;
 
 // Конфигурация программы (считанная из файла конфигурации)
 AppConfig appconfig;
@@ -286,7 +285,7 @@ QString get_qtime()
 
 void smart_print_debug_message(QString msg)
 {
-    if (globalparameters.target_os() == "any" || globalparameters.target_os() == "meego") {
+    if (gl_paras.target_os() == "any" || gl_paras.target_os() == "meego") {
         ////	QTime	currTime	= QTime::currentTime();
         ////	QString timeText	= currTime.toString("hh:mm:ss");
         //	QDateTime	ctime_dt	= QDateTime::currentDateTime();
@@ -373,10 +372,10 @@ void my_message_output(QtMsgType type, const QMessageLogContext& context, const 
 
 void set_debug_message_handler()
 {
-    qDebug() << "Debug message before set message handler for target OS: " << globalparameters.target_os();
+    qDebug() << "Debug message before set message handler for target OS: " << gl_paras.target_os();
     // Для десктопных операционок можно переустановить обработчик qDebug()
     // Для Андроида переустановка qDebug() приводит к невозможности получения отладочных сообщений в удаленном отладчике
-    if (globalparameters.target_os() == "any" || globalparameters.target_os() == "meego") {
+    if (gl_paras.target_os() == "any" || gl_paras.target_os() == "meego") {
         qDebug() << "Set alternative handler my_message_output() for debug message";
 
 #if QT_VERSION < 0x050000
@@ -460,8 +459,8 @@ QString set_css_style()
 {
     QString style;
 
-    QString root_path_ = globalparameters.root_path();
-    auto target_os = globalparameters.target_os();
+    QString root_path_ = gl_paras.root_path();
+    auto target_os = gl_paras.target_os();
     auto location = root_path_ + "/" + target_os;
     if (!QDir(location).exists())
         if (!QDir::root().mkpath(location))
@@ -521,7 +520,7 @@ void set_kinetic_scrollarea(QAbstractItemView* object)
 #else
     if (object == nullptr)
         return;
-    if (globalparameters.target_os() == "android") {
+    if (gl_paras.target_os() == "android") {
         // Настройка жестов прокрутки
         QScroller* scroller = QScroller::scroller(object);
 
@@ -902,7 +901,7 @@ int main(int argc, char** argv)
     Q_INIT_RESOURCE(data); // added by hughvonyoung@gmail.com
     Q_INIT_RESOURCE(tute);
 
-    return sapp_t(argc, argv, globalparameters, appconfig, databaseconfig).exec(); // application.exec();
+    return sapp_t(argc, argv, gl_paras, appconfig, databaseconfig).exec(); // application.exec();
 }
 
 std::ifstream::pos_type filesize(const char* filename)

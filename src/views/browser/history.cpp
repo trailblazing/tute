@@ -230,7 +230,7 @@ void HistoryManager::clear()
 void HistoryManager::loadSettings()
 {
     // load settings
-    QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+    QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("history"));
     _historylimit = settings.value(QLatin1String("historyLimit"), 30).toInt();
 }
@@ -294,7 +294,7 @@ void HistoryManager::load()
 
 void HistoryManager::save()
 {
-    QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + globalparameters._browser_conf_filename, QSettings::IniFormat);
+    QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_paras._browser_conf_filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("history"));
     settings.setValue(QLatin1String("historyLimit"), _historylimit);
 

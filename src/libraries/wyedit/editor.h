@@ -95,7 +95,7 @@ extern const std::string editor_prefix;
 #define MAXIMUM_ALLOWED_FONT_SIZE	100
 
 class gl_para;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 
 class EditorConfig;
 class EditorTextEdit;
@@ -107,7 +107,7 @@ class FlatComboBox;
 class FlatFontComboBox;
 class FlatToolButton;
 class FindScreen;
-class Editentry;
+class EditorDock;
 class SuperMenu;
 class EditingWindow;
 class QStackedWidget;
@@ -290,8 +290,8 @@ public:
 	};
 
 	enum {
-		WYEDIT_DESKTOP_MODE	= 0
-		, WYEDIT_MOBILE_MODE	= 1
+		WYEDIT_DESKTOP_MODE = 0
+		, WYEDIT_MOBILE_MODE = 1
 	};
 
 signals:
@@ -425,7 +425,7 @@ private:
 	QString _work_file_name;
 
 	int _view_mode; // ежим отображения редактора - WYEDIT_DESKTOP_MODE или WYEDIT_MOBILE_MODE
-	EditingWindow *_blog_editor;
+	EditingWindow *_editing_window;
 
 private:
 	void setup_signals(void);
@@ -523,7 +523,7 @@ private:
 	// SuperMenu *_context_menu;
 
 	friend class MetaEditor;
-	friend class Editentry;
+	friend class EditorDock;
 	friend class EditingWindow;
 	friend class SuperMenu;
 

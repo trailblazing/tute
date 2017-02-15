@@ -22,12 +22,12 @@ namespace browser {
 class WebView;
 class Browser;
 class Profile;
-class Entrance;
+class BrowserDock;
 }
 struct Binder;
 class ts_t;
 class FindScreen;
-class Editentry;
+class EditorDock;
 class wn_t;
 class rs_t;
 class QSplitter;
@@ -42,7 +42,7 @@ class HidableTabWidget : public QTabWidget {
 #endif
 
 public:
-    explicit HidableTabWidget(ts_t* _tree_screen, FindScreen* _find_screen, Editentry* _editentry, browser::Entrance* _entrance, QMainWindow* _main_window, browser::Profile* _profile, QString style_source_, QSplitter* splitter, std::shared_ptr<QSettings> splitter_config, QString splitter_group_name, QString splitter_sizelist_name, QString collapsed_status_name, QWidget* parent);
+    explicit HidableTabWidget(ts_t* _tree_screen, FindScreen* _find_screen, browser::BrowserDock* _entrance, QMainWindow* _main_window, browser::Profile* _profile, QString style_source_, QSplitter* splitter, std::shared_ptr<QSettings> splitter_config, QString splitter_group_name, QString splitter_sizelist_name, QString collapsed_status_name, QWidget* parent);
     ~HidableTabWidget();
     QAction* _hide_action;
 
@@ -60,8 +60,7 @@ protected:
     QVBoxLayout* _layout;
     ts_t* _tree_screen;
     FindScreen* _find_screen;
-    Editentry* _editentry;
-    browser::Entrance* _entrance;
+    browser::BrowserDock* _entrance;
     QMainWindow* _main_window;
     browser::Profile* _profile;
     QString _style_source;

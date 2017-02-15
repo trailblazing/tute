@@ -78,8 +78,8 @@ void EditingWindow::blogger_getUsersBlogs(QByteArray response)
             // qDebug() << "appending new blogs element";
             currentAccountElement.appendChild(_accounts_dom.importNode(importedBlogList.firstChildElement("blogs"), true));
             // qDebug() << "done";
-            if (!noAutoSave) {
-                QFile domOut(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_local_storage_directory)));
+            if (!_no_auto_save) {
+                QFile domOut(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_directory)));
                 if (domOut.open(QIODevice::WriteOnly)) {
                     QTextStream domFileStream(&domOut);
                     _accounts_dom.save(domFileStream, 2);
@@ -134,8 +134,8 @@ void EditingWindow::metaWeblog_newPost(QByteArray response)
             if (!_control_tab->chNoCats->isChecked())
                 connect(this, SIGNAL(httpBusinessFinished()), this, SLOT(setPostCategories()));
         }
-        if (!entryEverSaved) {
-            if (postAsSave && cleanSave) {
+        if (!_entry_ever_saved) {
+            if (postAsSave && _clean_save) {
                 setWindowModified(false);
                 dirtyIndicator->hide();
                 setDirtySignals(true);
@@ -155,8 +155,8 @@ void EditingWindow::metaWeblog_editPost(QByteArray response)
     } else {
         if (!useWordpressAPI)
             connect(this, SIGNAL(httpBusinessFinished()), this, SLOT(setPostCategories()));
-        if (!entryEverSaved) {
-            if (postAsSave && cleanSave) {
+        if (!_entry_ever_saved) {
+            if (postAsSave && _clean_save) {
                 setWindowModified(false);
                 dirtyIndicator->hide();
                 setDirtySignals(true);
@@ -187,7 +187,7 @@ void EditingWindow::metaWeblog_newMediaObject(QByteArray response)
             _control_tab->setCurrentIndex(0);
             _control_tab->copyURLWidget->show();
             if (_super_menu)
-                _super_menu->copyULAction->setVisible(true);
+                _super_menu->copyURLAction->setVisible(true);
             statusBar()->showMessage(tr("Your file is here: %1").arg(remoteFileLocation), 2000);
         } else
             statusBar()->showMessage(tr("The upload returned a fault."), 2000);
@@ -251,7 +251,7 @@ void EditingWindow::mt_getCategoryList(QByteArray response)
                                .arg(returnedCats.at(j).firstChildElement("categoryName").text())
                                .arg(returnedCats.at(j).firstChildElement("categoryId").text()));
         }
-    if (!noAlphaCats)
+    if (!_no_alpha_cats)
         qSort(catList.begin(), catList.end(), EditingWindow::caseInsensitiveLessThan);
     if (xfault)
         statusBar()->showMessage(tr("Could not connect; check account details & password"), 2000);
@@ -292,8 +292,8 @@ void EditingWindow::mt_getCategoryList(QByteArray response)
             _control_tab->cbMainCat->setEnabled(true);
             _control_tab->lwOtherCats->setEnabled(true);
             handleEnableCategories();
-            if (!noAutoSave) {
-                QFile domOut(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_local_storage_directory)));
+            if (!_no_auto_save) {
+                QFile domOut(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_directory)));
                 if (domOut.open(QIODevice::WriteOnly)) {
                     QTextStream domFileStream(&domOut);
                     _accounts_dom.save(domFileStream, 2);

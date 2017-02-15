@@ -226,7 +226,6 @@ HEADERS     =   \
     src/views/browser/urllineedit.h \
     src/views/browser/webview.h \
     src/views/browser/xbel.h \
-    src/views/browser/entrance.h \
     src/views/browser/entranceinfo.h \
     src/utility/delegate.h \
     src/views/browser/browser.h \
@@ -314,7 +313,6 @@ HEADERS     =   \
     src/views/wait_clock/wait_clock.h \
     src/libraries/wyedit/editor_image_properties.h \
     src/views/browser/cookiejar.h \
-    src/views/record/editentry.h \
     src/libraries/qtm/markdown_header.h \
     src/libraries/qtm/qtm_version.h \
 #    src/views/browser/cookiejar.h \
@@ -334,7 +332,9 @@ HEADERS     =   \
     src/libraries/qtm/xml_rpc_handler.h \
     src/utility/add_action.h \
     src/libraries/qtm/side_tabwidget.h \
-    src/views/record/editor_wrap.h
+    src/views/record/editor_wrap.h \
+    src/views/browser/browser_dock.h \
+    src/views/record/editor_dock.h
 
 
 
@@ -377,7 +377,6 @@ SOURCES     =   src/main.cpp \
     src/views/browser/urllineedit.cpp \
     src/views/browser/webview.cpp \
     src/views/browser/xbel.cpp \
-    src/views/browser/entrance.cpp \
     src/views/browser/browser.cpp \
     src/models/tree/binder.cxx \
     src/models/record_table/linker.cxx \
@@ -458,7 +457,6 @@ SOURCES     =   src/main.cpp \
     src/views/wait_clock/wait_clock.cpp \
     src/views/app_config/app_config_page_table.cpp \
     src/views/browser/cookiejar.cpp \
-    src/views/record/editentry.cpp \
 #    src/views/browser/cookiejar.cpp \
     src/libraries/qtm/accounts_dialog.cxx \
     src/libraries/qtm/application.cxx \
@@ -479,7 +477,9 @@ SOURCES     =   src/main.cpp \
     src/libraries/global_parameters.cpp \
     src/libraries/flat_control.cpp \
     src/libraries/qtm/side_tabwidget.cxx \
-    src/views/record/editor_wrap.cpp
+    src/views/record/editor_wrap.cpp \
+    src/views/browser/browser_dock.cpp \
+    src/views/record/editor_dock.cpp
 
 
 lessThan(QT_MAJOR_VERSION,5) {

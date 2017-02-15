@@ -15,7 +15,7 @@
 #include "models/app_config/app_config_updater.h"
 
 extern AppConfig appconfig;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 
 // Объект для работы с конфигурацией (с настройками) базы данных
 // Конфигурация базы данных хранится в файле database.ini
@@ -48,7 +48,7 @@ void DataBaseConfig::init(void)
 {
     // Создается имя файла конфигурации
     // QString configFileName=globalParameters.getWorkDirectory()+"/"+appconfig.datadir()+"/database.ini";
-    QString configFileName = globalparameters.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + "/database.ini";
+    QString configFileName = gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + "/database.ini";
 
     // Проверяется, есть ли файл конфигурации
     QFile confFile(configFileName);

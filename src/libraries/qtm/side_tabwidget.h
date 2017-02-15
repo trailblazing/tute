@@ -37,13 +37,13 @@
 class HidableTabWidget;
 class ts_t;
 class FindScreen;
-class Editentry;
+class EditorDock;
 class wn_t;
 class EditingWindow;
 class QSplitter;
 
 namespace browser {
-class Entrance;
+class BrowserDock;
 class Profile;
 }
 
@@ -51,8 +51,10 @@ QT_BEGIN_NAMESPACE
 
 class SideTabWidget : public HidableTabWidget {
 public:
-    SideTabWidget(ts_t* _tree_screen, FindScreen* _find_screen, Editentry* _editentry, browser::Entrance* _entrance, QMainWindow* _main_window, browser::Profile* _profile, QString style_source_, QSplitter* splitter, QWidget* parent);
+    SideTabWidget(ts_t* _tree_screen, FindScreen* _find_screen, browser::BrowserDock* _entrance, QMainWindow* _main_window, browser::Profile* _profile, QString style_source_, QSplitter* splitter, QWidget* parent);
 
+    void title(const QString &title_);
+    QString title() const;
 private:
     //		QVBoxLayout *vboxLayout;
     //	QHBoxLayout *hboxLayout;

@@ -83,7 +83,7 @@ class WalkHistory;
 class gl_para;
 
 extern WalkHistory walkhistory;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 //extern const char	*application_name;
 extern const char* meta_editor_singleton_name;
 extern const char* record_screen_multi_instance_name;

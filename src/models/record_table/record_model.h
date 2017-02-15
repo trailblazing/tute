@@ -51,7 +51,7 @@ struct index_source;
 struct id_value;
 
 namespace browser {
-class Entrance;
+class BrowserDock;
 class Browser;
 class TabWidget;
 class WebView;
@@ -81,7 +81,7 @@ class RecordModel : public QAbstractTableModel // , public pages_container
 #endif
     // By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
     friend class rctrl_t;
-    friend class browser::Entrance;
+    friend class browser::BrowserDock;
 
 public:
     RecordModel(rctrl_t* _record_controller); // , RecordScreen *_record_screen

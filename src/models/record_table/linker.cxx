@@ -6,7 +6,7 @@
 #include "models/tree/tree_item.h"
 #include "utility/delegate.h"
 
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 
 Linker::~Linker()
 {
@@ -188,7 +188,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem> host_parent_item, boost::intrusive
                               // if(_tree_item) {
                               // if(_is_crypt) { //
                               if (_host_parent->field<crypt_type>() == "1") {
-                                  if (globalparameters.crypt_key().length() > 0)
+                                  if (gl_paras.crypt_key().length() > 0)
                                       is_crypt = true;
                                   else
                                       critical_error("Linker::child_move_unique() : Can not insert data to crypt branch. Password not setted.");

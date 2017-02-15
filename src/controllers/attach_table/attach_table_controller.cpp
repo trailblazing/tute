@@ -21,22 +21,26 @@
 #include "models/attach_table/attach_table_model.h"
 #include "views/attach_table/attach_table_view.h"
 #include "views/dialog/reduce_message_box.h"
-#include "views/record/editentry.h"
+#include "views/record/editor_dock.h"
 #include "views/record/editor_wrap.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
+#include "views/attach_table/attach_table_screen.h"
+#include "libraries/qtm/editing_window.h"
 
-extern gl_para globalparameters;
+
+extern gl_para gl_paras;
 extern AppConfig appconfig;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AttachTableController)
 #endif
 
-AttachTableController::AttachTableController(QObject *parent)
+AttachTableController::AttachTableController(EditingWindow *editing_window, AttachTableScreen *parent)
 	: QObject(parent)
 	  , _view(new AttachTableView(qobject_cast<QWidget *>(parent)))
-	  , _model(new AttachTableModel(this)){
+	  , _model(new AttachTableModel(this))
+	  , _editing_window(editing_window){
 	// Создается область со списком файлов
 	//    _view = new AttachTableView(qobject_cast<QWidget *>(parent)); // Вид размещается внутри виджета Screen
 	_view->setObjectName("attachTableView");
@@ -74,13 +78,13 @@ void AttachTableController::on_add_link(){
 }
 void AttachTableController::add_smart(QString attach_type){
 	QStringList files = select_files_for_adding(attach_type);
-	if(files.size() == 0) return;// Если ни один файл не выбран
+	if(files.size() == 0) return; // Если ни один файл не выбран
 
 	// Указатель на данные таблицы приаттаченных файлов
 	AttachTableData *attachTableData = attach_table_data();
 	if(attachTableData == nullptr) critical_error("Unset attach table data in AttachTableController::addSmart()");
 	// Перебираются выбранные в диалоге файлы
-	for(int i = 0; i < files.size(); ++ i){
+	for(int i = 0; i < files.size(); ++i){
 		// Текущее полное имя файла
 		QString currFullFileName = files.at(i);
 
@@ -104,7 +108,7 @@ void AttachTableController::add_smart(QString attach_type){
 		attach.setField("fileName", currShortFileName);
 
 		bool result = false;
-		if(attach_type == "file") result = attach.copyFileToBase(currFullFileName);// Файл аттача копируется в базу
+		if(attach_type == "file") result = attach.copyFileToBase(currFullFileName); // Файл аттача копируется в базу
 		else if(attach_type == "link"){
 			attach.setField("link", currFullFileName); // Запоминается куда указывает линк
 			result = true;
@@ -122,11 +126,11 @@ void AttachTableController::add_smart(QString attach_type){
 
 	// Сохранение дерева веток
 	//    find_object<TreeScreen>(tree_screen_singleton_name)
-	globalparameters.tree_screen()->view()->know_model_save();
+	gl_paras.tree_screen()->view()->know_model_save();
 	// Обновление иконки аттачей в редакторе
 	if(attachTableData->size() > 0){
-		auto *editor_ = globalparameters.edit_entry(); // find_object<MetaEditor>(meta_editor_singleton_name);
-		editor_->to_attach()->setIcon(editor_->icon_attach_exists());
+//		auto *editor_ = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
+		_editing_window->to_attach()->setIcon(_editing_window->icon_attach_exists());
 	}
 }
 QStringList AttachTableController::select_files_for_adding(QString attach_type){
@@ -248,13 +252,13 @@ void AttachTableController::save_attach_to_user_place(QString from_full_file_nam
 	}
 	// Сохранение
 	bool result = file.copy(to_full_file_name);
-	if(! result){
+	if(!result){
 		show_message_box(tr("Can't save file %1. Any i/o problem.").arg(to_full_file_name));
 
 		return;
 	}
 	// Расшифровка файла, если он был зашифрован и данные хранились в базе (то есть, это именно тип file, а не линк на файл)
-	if(is_attach_crypt && attach_type == "file") CryptService::decryptFile(globalparameters.crypt_key(), to_full_file_name);
+	if(is_attach_crypt && attach_type == "file") CryptService::decryptFile(gl_paras.crypt_key(), to_full_file_name);
 }
 void AttachTableController::on_edit_file_name(void){
 	QList<QString> selectedId = selected_id();
@@ -274,7 +278,7 @@ void AttachTableController::on_edit_file_name(void){
 	// Запрос нового имени файла
 	bool isOk;
 	QString newFileName = QInputDialog::getText(_view, tr("File name editing"), tr("File name:"), QLineEdit::Normal, fileName, &isOk);
-	if(! isOk) return;// Была нажата кнопка Cancel
+	if(!isOk) return; // Была нажата кнопка Cancel
 	if(newFileName.size() == 0){
 		show_message_box(tr("Cant save file with empty name."));
 
@@ -287,7 +291,7 @@ void AttachTableController::on_edit_file_name(void){
 
 	// Сохранение дерева веток
 	//    find_object<TreeScreen>(tree_screen_singleton_name)
-	globalparameters.tree_screen()->view()->know_model_save();
+	gl_paras.tree_screen()->view()->know_model_save();
 }
 void AttachTableController::on_delete_attach(void){
 	QList<QString> selectedId = selected_id();
@@ -312,11 +316,11 @@ void AttachTableController::on_delete_attach(void){
 
 	// Сохранение дерева веток
 	//    find_object<TreeScreen>(tree_screen_singleton_name)
-	globalparameters.tree_screen()->view()->know_model_save();
+	gl_paras.tree_screen()->view()->know_model_save();
 	// Обновление иконки аттачей в редакторе
 	if(attachTableData->size() == 0){
-		auto *editor_ = globalparameters.edit_entry(); // find_object<MetaEditor>(meta_editor_singleton_name);
-		editor_->to_attach()->setIcon(editor_->icon_attach_not_exists());
+//		auto *editor_ = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
+		_editing_window->to_attach()->setIcon(_editing_window->icon_attach_not_exists());
 	}
 }
 // Открытие аттача (аттачей) на просмотр
@@ -331,7 +335,7 @@ void AttachTableController::on_open_attach(void){
 		if(attachTableData->is_record_crypt() && attachTableData->attach(id).getField("type") == "file"){
 			if(appconfig.enable_decrypt_file_to_trash_directory()){
 				fullFileName = DiskHelper::copy_file_to_trash(fullFileName); // Копирование
-				CryptService::decryptFile(globalparameters.crypt_key(), fullFileName); // Расшифровка
+				CryptService::decryptFile(gl_paras.crypt_key(), fullFileName); // Расшифровка
 			}else{
 				show_message_box(tr("Can't preview encrypted attach file %1.\n\nUse \"Save As...\" button or enable decrypt to temporary file in settings.").arg(fullFileName));
 				continue;
@@ -371,8 +375,8 @@ void AttachTableController::on_show_attach_info(void){
 	messageBox.exec();
 }
 void AttachTableController::on_switch_to_editor(void){
-	auto *editor_ = globalparameters.edit_entry(); // find_object<MetaEditor>(meta_editor_singleton_name);
-	editor_->to_editor_layout();
+//	auto *editor_ = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
+	_editing_window->to_editor_layout();
 }
 // Получение списка идентификаторов аттачей, выделенных в представлении
 QList<QString> AttachTableController::selected_id(void){
@@ -382,8 +386,8 @@ QList<QString> AttachTableController::selected_id(void){
 	QModelIndexList selectItems = _view->selectionModel()->selectedIndexes();
 
 	// Перебор выделенных элементов. Так как имеем несколько столбцов, то для одной строки будет несколько QModelIndex
-	int previousRow = - 1;
-	for(int i = 0; i < selectItems.size(); i ++){
+	int previousRow = -1;
+	for(int i = 0; i < selectItems.size(); i++){
 		int row = selectItems.at(i).row();
 		// Строка обратабывается только один раз (из-за того что для одной строки несколько QModelIndex)
 		if(row != previousRow){

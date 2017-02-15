@@ -20,7 +20,7 @@
 
 extern AppConfig appconfig;
 extern FixedParameters fixedparameters;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfigPageTable)

@@ -23,7 +23,7 @@
 #include "views/tree/tree_view.h"
 
 extern AppConfig appconfig;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 extern DataBaseConfig databaseconfig;
 extern const char* knowtreeview_singleton_name;
 
@@ -46,7 +46,7 @@ Password::~Password(void)
 bool Password::retrievePassword()
 {
     // Если пароль в данной сессии не вводился
-    if (globalparameters.crypt_key().size() == 0) {
+    if (gl_paras.crypt_key().size() == 0) {
         // Если в хранилище данных вообще не задан пароль
         if (databaseconfig.get_crypt_mode() == 0) {
             // Запрашивается пароль
@@ -121,7 +121,7 @@ bool Password::replacePassword(void)
         msgBox.exec();
 
         // В памяти сбрасывается возможно вводимый ранее правильно пароль
-        globalparameters.crypt_key(QByteArray());
+        gl_paras.crypt_key(QByteArray());
 
         return false;
     }
@@ -131,7 +131,7 @@ bool Password::replacePassword(void)
 
     // Выясняется ссылка на модель дерева данных
     tkm_t* dataModel = static_cast<tkm_t*>( // find_object<TreeKnowView>(knowtreeview_singleton_name)
-        globalparameters.tree_screen()->view()->model());
+        gl_paras.tree_screen()->view()->model());
 
     // Перешифрация
     dataModel->re_encrypt(previousPassword, password);
@@ -161,7 +161,7 @@ void Password::setCryptKeyToMemory(QString password)
     // qDebug() << "Password::setCryptKeyToMemory() : Set crypt key to:" << key.toHex();
 
     // Ключ запоминается в память
-    globalparameters.crypt_key(key);
+    gl_paras.crypt_key(key);
 }
 void Password::setCryptKeyToMemoryFromMiddleHash(void)
 {
@@ -173,7 +173,7 @@ void Password::setCryptKeyToMemoryFromMiddleHash(void)
     // qDebug() << "Set crypt key from middle hash to:" << key.toHex();
 
     // Ключ запоминается в память
-    globalparameters.crypt_key(key);
+    gl_paras.crypt_key(key);
 }
 // Проверка правильности хранимого пароля (точнее промежуточного хеша)
 bool Password::checkMiddleHash(void)
@@ -345,7 +345,7 @@ void Password::resetPassword(void)
         databaseconfig.set_middle_hash_check_data("");
 
         // Ключ в памяти удаляется
-        globalparameters.crypt_key(QByteArray());
+        gl_paras.crypt_key(QByteArray());
     }
 }
 // Проверка переданного пароля на соответсвие запомненному хешу

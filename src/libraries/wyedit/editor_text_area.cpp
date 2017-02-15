@@ -17,7 +17,7 @@
 #include "editor.h"
 #include "editor_text_area.h"
 
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorTextArea)
@@ -74,7 +74,7 @@ bool EditorTextArea::gesture_event(QGestureEvent *event){
 void EditorTextArea::tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture){
 	// qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
 	if(gesture->state() == Qt::GestureFinished)
-		if(globalparameters.target_os() == "android") emit tap_and_hold_gesture_finished(mapFromGlobal(gesture->position().toPoint()));
+		if(gl_paras.target_os() == "android") emit tap_and_hold_gesture_finished(mapFromGlobal(gesture->position().toPoint()));
 }
 
 bool EditorTextArea::eventFilter(QObject *o, QEvent *e){

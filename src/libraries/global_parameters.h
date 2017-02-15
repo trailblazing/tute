@@ -17,7 +17,7 @@ extern const char *portableItem;
 // #endif
 
 namespace browser {
-	class Entrance;
+	class BrowserDock;
 	class DownloadManager;
 	class Profile;
 }
@@ -34,7 +34,8 @@ class EditorConfigDialog;
 class EditorConfig;
 class AttachTableController;
 class HidableTabWidget;
-class Editentry;
+class EditorDock;
+class SysTrayIcon;
 
 #ifndef USE_QTM
 #define USE_QTM
@@ -96,8 +97,8 @@ public:
 	void tree_screen(ts_t *point);
 	ts_t *tree_screen() const;
 
-	browser::Entrance *entrance() const;
-	void entrance(browser::Entrance * &b);
+	browser::BrowserDock *browser_dock() const;
+	void browser_dock(browser::BrowserDock * &b);
 
 	void push_record_screen(rs_t *point);
 	std::vector<rs_t *> record_screens() const;
@@ -108,8 +109,8 @@ public:
 	void find_screen(FindScreen *point);
 	FindScreen *find_screen() const;
 
-	void edit_entry(Editentry *point);
-	Editentry *edit_entry() const;
+	void editor_dock(EditorDock *point);
+	EditorDock *editor_dock() const;
 
 	void status_bar(QStatusBar *point);
 	QStatusBar *status_bar() const;
@@ -151,7 +152,9 @@ public:
 	static constexpr char _editor_conf_filename[] = "editorconf.ini";
 	static constexpr char _entrance_conf_filename[] = "entrance.ini";
 	static constexpr char _stylesheet_filename[] = "stylesheet.css";
-
+	//	static constexpr char _document_config_name[] = "document.ini";
+	SysTrayIcon *tray_icon();
+	void tray_icon(SysTrayIcon *ti);
 private:
 #define STANDARD_MODE	true
 #define PORTABLE_MODE	false
@@ -164,10 +167,10 @@ private:
 
 	browser::Profile *_profile = nullptr;
 	ts_t *_tree_screen = nullptr;
-	browser::Entrance *_entrance = nullptr;
+	browser::BrowserDock *_entrance = nullptr;
 	std::shared_ptr<EditorConfig> _editor_config;
 	FindScreen *_find_screen	= nullptr;
-	Editentry *_meta_editor		= nullptr;
+	EditorDock *_editor_dock	= nullptr;
 	QStatusBar *_statusbar = nullptr;
 	WindowSwitcher *_window_switcher = nullptr;
 	QSplitter *_find_splitter = nullptr;
@@ -189,6 +192,7 @@ private:
 	QString _standard_path = "";
 	std::pair<QString, QString> _standard_paths = {"", ""};
 	std::vector<rs_t *> _table_screens;
+	SysTrayIcon *_tray_icon;
 	friend class AppConfigPageMain;
 };
 

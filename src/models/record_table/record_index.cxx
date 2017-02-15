@@ -132,7 +132,7 @@ boost::intrusive_ptr<TreeItem> RecordIndex::synchronize(boost::intrusive_ptr<Tre
 { // const std::function<RecordModel *()> &current_model_,
     boost::intrusive_ptr<TreeItem> _found_item(nullptr);
     if (host_) {
-	auto v = globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal(b->host()->field<home_type>().toStdString(), host_->field<home_type>().toStdString()); });
+	auto v = gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal(b->host()->field<home_type>().toStdString(), host_->field<home_type>().toStdString()); });
         if (v) {
             auto rctrl = v->tabmanager()->record_controller();
             auto current_model_ = [&] { return rctrl->source_model(); };

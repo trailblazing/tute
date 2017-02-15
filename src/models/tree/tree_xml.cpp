@@ -19,7 +19,7 @@
 #include "views/record_table/record_screen.h"
 
 extern TrashMonitoring trashmonitoring;
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(XmlTree)

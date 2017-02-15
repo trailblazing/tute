@@ -26,13 +26,13 @@
 #include "models/tree/binder.hxx"
 #include "models/tree/tree_item.h"
 #include "views/attach_table/attach_table_screen.h"
-#include "views/browser/entrance.h"
+#include "views/browser/browser_dock.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/hidable_tabwidget.h"
 #include "views/main_window/main_window.h"
-#include "views/record/editentry.h"
+#include "views/record/editor_dock.h"
 #include "views/record_table/record_screen.h"
 #include "views/record_table/record_view.h"
 #include "views/tree/tree_screen.h"
@@ -42,12 +42,12 @@
 #include "libraries/qtm/editing_window.h"
 #endif
 
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 extern AppConfig appconfig;
 
 namespace browser {
 	class WebPage;
-	class Entrance;
+	class BrowserDock;
 }
 
 #if QT_VERSION == 0x050600
@@ -60,9 +60,10 @@ W_OBJECT_IMPL(MetaEditor)
 
 EditorWrap::EditorWrap(FindScreen *find_screen
 		      , EditingWindow *editing_win
+		      , QStringList hide_editor_tools_
 		      , QStackedWidget *main_stack_
 		      , QString object_name)
-	: Editor(main_stack_, editing_win, (appconfig.interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, appconfig.hide_editor_tools(), false, false)
+	: Editor(main_stack_, editing_win, (appconfig.interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, false, false)
 	  , _editor_main_screen(new QWidget(this)) // Сборка виджета редактирования текста (основной виджет)
 	  , _editor_main_layer(new QGridLayout(_editor_main_screen))
 	  , _label_pin(new QLabel(_editor_main_screen))
@@ -79,11 +80,11 @@ EditorWrap::EditorWrap(FindScreen *find_screen
 	  , _item_tags_container(new QWidget(_item_tags_scrollarea))
 	  , _item_tags_layout(new QHBoxLayout(_item_tags_container))
 	  , _label_tags(new QLabel(_item_tags_container))
-	  , _attachtable_screen(new AttachTableScreen(this))
+	  , _attachtable_screen(new AttachTableScreen(editing_win, this))
 	  , _meta_editor_join_layer(new QVBoxLayout(this))
 	  , _find_screen(find_screen)
 	  , _main_stack(main_stack_)
-	  , _editing_win(editing_win){ //      , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint))
+	  , _editing_window(editing_win){ //      , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint))
 	setObjectName(object_name);
 	_attachtable_screen->setHidden(true);
 
@@ -104,8 +105,8 @@ EditorWrap::EditorWrap(FindScreen *find_screen
 	adjustSize();
 	setup_signals(_find_screen);
 
-	// В редакторе устанавливается функция обратного вызова на кнопку Attach
-	attach_callback(&EditorWrap::to_attach_callback);
+//	// В редакторе устанавливается функция обратного вызова на кнопку Attach
+//	attach_callback(&EditorWrap::to_attach_callback);
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 //	Editor::update_indentline_geometry();
 	connect(_item_pin, &QCheckBox::clicked, [&](bool checked){pin(checked ? _string_from_check_state[Qt::CheckState::Checked] : _string_from_check_state[Qt::CheckState::Unchecked]);});
@@ -205,7 +206,7 @@ void EditorWrap::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
 						   Q_UNUSED(ev)
 						   assert(_item);
 						   assert(_item->page()); // _item->page_valid() &&
-						   _item->activate(std::bind(&wn_t::find, globalparameters.main_window(), std::placeholders::_1));
+						   _item->activate(std::bind(&wn_t::find, gl_paras.main_window(), std::placeholders::_1));
 					   });
 	_url_connection_initialized = true;
 	if(_home_connection_initialized) QObject::disconnect(_home_connection);
@@ -321,11 +322,11 @@ void EditorWrap::to_attach_layout(void){
 	_attachtable_screen->show();
 }
 
-// Статическая функция, обрабатывает клик в редакторе по кнопке переключения на список прикрепляемых файлов
-void EditorWrap::to_attach_callback(void){
-	auto *editentry_ = globalparameters.edit_entry(); // find_object<MetaEditor>(meta_editor_singleton_name);
-	editentry_->to_attach_layout();
-}
+//// Статическая функция, обрабатывает клик в редакторе по кнопке переключения на список прикрепляемых файлов
+//void EditorWrap::to_attach_callback(void){
+//	auto *editor_dock = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
+//	editor_dock->blog_editor()->to_attach_layout();
+//}
 
 // Слот для установки значений инфополей на экране
 void EditorWrap::field(QString n, QString v){
@@ -371,7 +372,7 @@ void EditorWrap::pin(const QString &pin_){
 	auto set_pin = [&](bool checked){
 			       //	if(checked != ("" != _string_from_check_state[_item_pin->checkState()])){
 			       // if(globalparameters.entrance()->activiated_browser()) {
-			       browser::TabWidget *_tabmanager = globalparameters.main_window()->activated_browser()->tabmanager();
+			       browser::TabWidget *_tabmanager = gl_paras.main_window()->activated_browser()->tabmanager();
 			       // record_screens()->record_controller();
 			       if(_tabmanager){
 				       RecordModel *source_model = _tabmanager->source_model();
@@ -419,7 +420,7 @@ void EditorWrap::pin(const QString &pin_){
 
 					       // Сохранение дерева веток
 					       // find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
-					       ts_t *_tree_screen = globalparameters.tree_screen();
+					       ts_t *_tree_screen = gl_paras.tree_screen();
 					       if(record_view){
 						       _record_controller->select_as_current(_record_controller->index<pos_proxy>(pos_source_));
 						       auto _binder = _item->binder();

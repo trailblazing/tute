@@ -25,7 +25,7 @@
 #include "models/app_config/app_config.h"
 #include "utility/add_action.h"
 #include "views/main_window/main_window.h"
-#include "views/record/editentry.h"
+#include "views/record/editor_dock.h"
 #include "views/record/editor_wrap.h"
 #include "views/tree/tree_screen.h"
 #include <QColor>
@@ -66,6 +66,8 @@
 // #include "libraries/qtm/addctag.xpm"
 // #include "libraries/qtm/remtag.xpm"
 
+#include "libraries/window_switcher.h"
+
 extern AppConfig appconfig;
 extern const char *action_find_in_base;
 const std::string editor_prefix = "editor_tb_";
@@ -81,12 +83,12 @@ Editor::Editor(QStackedWidget *main_stack
 	      , bool enable_assembly
 	      , bool enable_random_seed)
 	: QWidget(main_stack)
-	  , _editor_config([&]() -> std::shared_ptr<EditorConfig> {auto path = Editor::init_config_file_name(globalparameters.root_path() + "/" + globalparameters.target_os() + "/editorconf.ini"); return std::make_shared<EditorConfig>(path, nullptr);} ())
+	  , _editor_config([&]() -> std::shared_ptr<EditorConfig> {auto path = Editor::init_config_file_name(gl_paras.root_path() + "/" + gl_paras.target_os() + "/editorconf.ini"); return std::make_shared<EditorConfig>(path, nullptr);} ())
 	  , _find_dialog(std::make_unique<EditorFindDialog>(_editor_config, nullptr))
 	  , _tools_line_0(new QToolBar())
 	  , _tools_line_1(new QToolBar())
 	  , _text_area(new EditorTextArea(this))
-	  , _blog_editor(blog_editor){
+	  , _editing_window(blog_editor){
 	// _init_data_enable_assembly		= true;
 	// _init_data_config_file_name		= "";
 	// _init_data_enable_random_seed	= false;
@@ -163,17 +165,17 @@ const char *Editor::version(void){
 QString Editor::init_config_file_name(QString config_full_name){
 	// name				= globalparameters.work_directory()
 	// + "/" + globalparameters.target_os() + "/editorconf.ini"
-	auto location = globalparameters.root_path() + "/" + globalparameters.target_os();
+	auto location = gl_paras.root_path() + "/" + gl_paras.target_os();
 	assert(config_full_name.contains(location));
 	QDir conf_dir(location);
 	if(!conf_dir.exists())
 		if(!QDir::root().mkpath(location))
 			critical_error("void Editor::init_config_file_name(QString "
 				       "config_full_name) can not make dir \""
-				       + globalparameters.target_os() + "\"");
+				       + gl_paras.target_os() + "\"");
 	QFile conf_file(config_full_name);
 	if(!conf_file.exists())
-		if(!QFile::copy(":/resource/standardconfig/" + globalparameters.target_os() + "/editorconf.ini", config_full_name))
+		if(!QFile::copy(":/resource/standardconfig/" + gl_paras.target_os() + "/editorconf.ini", config_full_name))
 			critical_error("void Editor::init_config_file_name(QString "
 				       "config_full_name) can not copy file \""
 				       + config_full_name + "\"");
@@ -196,7 +198,7 @@ void Editor::init(int mode, QStringList hide_editor_tools, bool enable_assembly,
 	// Создается объект поддержки конфигурирования редактора
 //	_editor_config = std::make_shared<EditorConfig>(_init_data_config_file_name, nullptr);// this
 	_editor_config->setObjectName("editorconfig");
-	globalparameters.editor_config(_editor_config);
+	gl_paras.editor_config(_editor_config);
 
 	// Выясняется перечень кнопок на панели инструментов
 	_tools_name_list_in_line_0	= (_editor_config->tools_line_0()).split(",");
@@ -411,6 +413,12 @@ void Editor::setup_signals(void){
 	// нажатию
 	// connect(this, &Editor::tapandhold_gesture_finished, this,
 	// &Editor::on_custom_contextmenu_requested);
+
+	// connect(_editor_screen, &MetaEditor::send_expand_edit_area, this, &wn_t::on_expand_edit_area);
+	connect(this, &Editor::send_expand_edit_area, gl_paras.main_window(), &wn_t::on_expand_edit_area);
+
+	// connect(_editor_screen, &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
+	connect(this, &Editor::wyedit_find_in_base_clicked, gl_paras.window_switcher(), &WindowSwitcher::find_in_base_click);
 }
 
 // Создание объектов кнопок для линейки форматирования текста
@@ -511,32 +519,32 @@ void Editor::setup_buttons(void){
 	// move from EditingWindow
 
 	_action_open
-		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Open ...").c_str()), tr("Open ..."), tr("Load a saved entry from the disk"), QIcon(":/resource/pic/fileopen.svg"), [&](bool){_blog_editor->choose();});
+		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Open ...").c_str()), tr("Open ..."), tr("Load a saved entry from the disk"), QIcon(":/resource/pic/fileopen.svg"), [&](bool){_editing_window->choose();});
 	_action_save
-		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Save").c_str()), tr("Save"), tr("Save this entry to disk for editing or publication later"), QIcon(":/resource/pic/save.svg"), [&](bool){_blog_editor->save();});
+		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Save").c_str()), tr("Save"), tr("Save this entry to disk for editing or publication later"), QIcon(":/resource/pic/save.svg"), [&](bool){_editing_window->save();});
 
 	_action_link
 		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Link").c_str()), tr("Link"), tr("Inserts a link to another page, the location to be specified now"), QIcon(":/resource/pic/link.svg") // QPixmap(linkIcon_xpm)
 			    ,
-			     _blog_editor, &EditingWindow::insertLink);
+			     _editing_window, &EditingWindow::insertLink);
 	_action_image
 		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Image").c_str()), tr("Image"), tr(std::string(std::string("Insert an image into the text, the location, alignment and alternate \n") + "text to be specified now").c_str()), QIcon(":/resource/pic/flip.svg") // QPixmap(imgIcon_xpm)
 			    ,
-			     [&](bool){_blog_editor->insertImage();});
+			     [&](bool){_editing_window->insertImage();});
 	_action_more
 		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "More").c_str()), tr("More"), tr((std::string("Set this as the end of the main entry (which appears on the index) \n") + "and the beginning of the extended entry (which appears " + "when you click More, \n" + "Extended entry or view the entry on its own page).").c_str()), QIcon(":/resource/pic/more.svg") // QPixmap(more_xpm)
 			    ,
-			     [&](bool){_blog_editor->insertMore();});
+			     [&](bool){_editing_window->insertMore();});
 	_action_preview
 		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Entry in preview").c_str()), tr("Entry in preview"), tr("Preview the entry in this window"), QIcon(":/resource/pic/preview.svg") // QPixmap(previewIcon_xpm)
 			    ,
-			     [&](bool checked){_blog_editor->doPreview(checked);});
+			     [&](bool checked){_editing_window->doPreview(checked);});
 	_action_preview->setCheckable(true);
 	_action_preview->setChecked(false);
 	_action_blog_this
 		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Blog this!").c_str()), tr("Blog this!"), tr("Post this entry to the blog"), QIcon(":/resource/pic/pentalpha.svg") // pentalpha.svg//QPixmap(blogThisIcon_xpm)
 			    ,
-			     [&](bool){_blog_editor->blogThis();});
+			     [&](bool){_editing_window->blogThis();});
 
 	_tools_line_0->addSeparator();
 	_tools_line_0->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
@@ -566,7 +574,7 @@ void Editor::setup_buttons(void){
 	// Кнопка "назад", используется в мобильном интерфейсе
 	// Button "back", used in the mobile interface
 	_back
-		= add_action(_tools_line_0, this, tr((editor_prefix + "back").c_str()), tr("Back"), tr("Back"), QIcon(":/resource/pic/mobile_back.svg"), [&](bool){on_back_clicked();});
+		= add_action(_tools_line_0, this, tr((editor_prefix + "back").c_str()), tr("Back"), tr("Back"), QIcon(":/resource/pic/mobile_back.svg"), [&](bool){_editing_window->editor_dock()->on_back_clicked();});
 
 	// Кнопка "поиск по базе", используется в мобильном интерфейсе
 	// Button "search database" used in the mobile interface
@@ -939,7 +947,7 @@ void Editor::editor_load_callback(QObject *editor, QString &load_text){
 	bool work_with_crypt = false;
 	if(curr_editor->misc_field(boost::mpl::c_str<crypt_type>::value) == "1"){
 		// Если не установлено ключа шифрации
-		if(globalparameters.crypt_key().length() == 0){
+		if(gl_paras.crypt_key().length() == 0){
 			load_text = "";
 
 			return;
@@ -961,7 +969,7 @@ void Editor::editor_load_callback(QObject *editor, QString &load_text){
 		// Если незашифровано
 		if(work_with_crypt == false) load_text = QString::fromUtf8(f.readAll());
 		else load_text = CryptService::decryptStringFromByteArray(
-				globalparameters.crypt_key(), f.readAll());                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    // Если зашифровано
+				gl_paras.crypt_key(), f.readAll());                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  // Если зашифровано
 	}else load_text = "";
 }
 
@@ -982,7 +990,7 @@ void Editor::editor_save_callback(QObject *editor, const QString &save_text){
 	bool work_with_crypt = false;
 	if(curr_editor->misc_field(boost::mpl::c_str<crypt_type>::value) == "1"){
 		// Если не установлено ключа шифрации
-		if(globalparameters.crypt_key().length() == 0) return;
+		if(gl_paras.crypt_key().length() == 0) return;
 		work_with_crypt = true;
 	}
 	QString file_name = curr_editor->work_directory() + "/" + curr_editor->file_name();
@@ -997,7 +1005,7 @@ void Editor::editor_save_callback(QObject *editor, const QString &save_text){
 	}else{
 		// Текст шифруется
 		QByteArray encryptData = CryptService::encryptStringToByteArray(
-			globalparameters.crypt_key(), save_text);
+			gl_paras.crypt_key(), save_text);
 
 		// В файл сохраняются зашифрованные данные
 		QFile wfile(file_name);
@@ -1821,7 +1829,7 @@ void Editor::on_selection_changed(void){
 	}
 	// Список выбора шрифта начинает указывать на нужный шрифт
 	if(differentFontFlag == 0) set_fontselect_on_display(
-			startFontFamily);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            // Если всё выделение одним шрифтом
+			startFontFamily);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        // Если всё выделение одним шрифтом
 	else set_fontselect_on_display("");
 	// Список выбора размера начинает указывать на нужный размер
 	if(differentSizeFlag == 0) set_fontsize_on_display(
@@ -2042,7 +2050,7 @@ void Editor::on_custom_contextmenu_requested(const QPoint &_position){
 	// menu.exec(event->globalPos());
 	// Если выбрана картинка
 	// Или нет выделения, но курсор находится на позиции картинки
-	auto _context_menu = globalparameters.edit_entry()->super_menu();
+	auto _context_menu = gl_paras.editor_dock()->super_menu();
 	if(is_image_select() || is_cursor_on_image()) _context_menu->set_edit_image_properties(true);
 	else _context_menu->set_edit_image_properties(false);
 	// Контекстное меню запускается

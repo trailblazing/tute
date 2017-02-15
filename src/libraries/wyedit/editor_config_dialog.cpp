@@ -14,7 +14,7 @@
 #include "editor_config_misc.h"
 #include "libraries/global_parameters.h"
 
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorConfigDialog)

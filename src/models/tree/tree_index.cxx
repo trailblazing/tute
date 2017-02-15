@@ -14,7 +14,7 @@
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_know_model.h"
-#include "views/browser/entrance.h"
+#include "views/browser/browser_dock.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "views/main_window/main_window.h"
@@ -31,14 +31,14 @@ boost::intrusive_ptr<TreeIndex> TreeIndex::create_treeindex_from_item(const std:
     if (!host_)
         throw std::runtime_error("! _host");
     auto host_parent_ = host_->parent();
-    auto absolute_model = [&] { return globalparameters.tree_screen()->view()->know_model_board(); };
+    auto absolute_model = [&] { return gl_paras.tree_screen()->view()->know_model_board(); };
     auto absolute_root = absolute_model()->root_item();
     auto current_root = [&] { return static_cast<tkm_t*>(current_model_())->root_item(); };
     auto tree_view_ = static_cast<tv_t*>(static_cast<QObject*>(current_model_())->parent());
     //
     auto parent_is_valid = [&](boost::intrusive_ptr<TreeItem> host_parent) -> bool {
         bool result = false;
-        auto absolute_root = globalparameters.tree_screen()->view()->know_model_board()->root_item();
+	auto absolute_root = gl_paras.tree_screen()->view()->know_model_board()->root_item();
         auto current_root = [&]() { return static_cast<tkm_t*>(current_model_())->root_item(); };
         if (!host_parent)
             result = true;
@@ -177,7 +177,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::create_treeitem_from_url(const QUrl& f
 {
     boost::intrusive_ptr<TreeItem> _result(nullptr); // =  _know_model_board->root_item();
     if (find_url_ != QUrl()) {
-        auto _tree_view = globalparameters.tree_screen()->view(); // static_cast<tv_t *>(static_cast<QObject *>(_current_model())->parent());
+	auto _tree_view = gl_paras.tree_screen()->view(); // static_cast<tv_t *>(static_cast<QObject *>(_current_model())->parent());
         auto _current_model = [&] { return _tree_view->source_model(); };
         auto _current_item = _tree_view->current_item();
         auto _treeindex = TreeIndex::create_treeindex_from_item(_current_model, _current_item);
@@ -232,7 +232,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::create_treeitem_from_url(const QUrl& f
         bool item_is_brand_new = false;
 
         // if(browser_pages) {
-	auto browser_view = globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return equal_(b->host()); });
+	auto browser_view = gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return equal_(b->host()); });
 
         boost::intrusive_ptr<TreeItem> in_browser(nullptr);
         if (browser_view) {
@@ -258,7 +258,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::create_treeitem_from_url(const QUrl& f
                     _result->to_fat();
                 if (_result->field<id_type>() == "")
                     _result->field<id_type>(_result->field<dir_type>().length() > 0 ? _result->field<dir_type>() : get_unical_id());
-		assert(globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), _result->field<url_type>().toStdString()); })
+		assert(gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), _result->field<url_type>().toStdString()); })
                     || _result->field<url_type>() == browser::Browser::_defaulthome);
                 assert(equal_(_result));
             }
@@ -309,7 +309,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::create_treeitem_from_url(const QUrl& f
                     _result->to_fat();
                 if (_result->field<id_type>() == "")
                     _result->field<id_type>(_result->field<dir_type>().length() > 0 ? _result->field<dir_type>() : get_unical_id());
-		assert(globalparameters.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString()); })
+		assert(gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString()); })
                     || _result->field<url_type>() == browser::Browser::_defaulthome);
                 if (_result->field<url_type>() == browser::Browser::_defaulthome && find_url_.toString() != browser::Browser::_defaulthome)
                     _result->field<url_type>(find_url_.toString());
@@ -347,7 +347,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::bind(const QUrl& _find_url, const inse
 
     //    equal_url _equal = [&](boost::intrusive_ptr<const TreeItem> it_){return url_equal(it_->field<home_type>().toStdString(),  _find_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(),  _find_url.toString().toStdString());};
     boost::intrusive_ptr<TreeItem> result(nullptr);
-    auto _tree_view = globalparameters.tree_screen()->view(); // static_cast<tv_t *>(static_cast<QObject *>(_current_model())->parent());
+    auto _tree_view = gl_paras.tree_screen()->view(); // static_cast<tv_t *>(static_cast<QObject *>(_current_model())->parent());
     //    auto				_current_model	= [&] {return _tree_view->source_model();};
     auto _current_item = _tree_view->current_item();
     browser::WebView* view = nullptr;
@@ -355,9 +355,9 @@ boost::intrusive_ptr<TreeItem> TreeIndex::bind(const QUrl& _find_url, const inse
     if (binder) {
         auto host_ = binder->host();
         auto _equal = [&](boost::intrusive_ptr<const Binder> b) { return b->host() == host_ && b == binder && host_->parent() == b->host()->parent() && b->host()->id() == host_->id(); };
-	view = _recommend_browser ? _recommend_browser->tabmanager()->find(_equal) : globalparameters.main_window()->find(_equal);
+	view = _recommend_browser ? _recommend_browser->tabmanager()->find(_equal) : gl_paras.main_window()->find(_equal);
     }
-    auto browser_ = _recommend_browser ? _recommend_browser : view ? view->page()->browser() : globalparameters.main_window()->activated_browser();
+    auto browser_ = _recommend_browser ? _recommend_browser : view ? view->page()->browser() : gl_paras.main_window()->activated_browser();
     _current_item = browser_->tabmanager()->current_item(); // _tree_view->current_item();
 
     auto target_ = TreeIndex::create_treeitem_from_url(_find_url, _view_insert_strategy, _equal);
@@ -381,7 +381,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::activate(const std::function<tkm_t*()>
     boost::intrusive_ptr<TreeItem> result(nullptr);
     result = TreeIndex::create_treeindex_from_item(current_model_, host_)->bind(find_url_, view_insert_strategy_, equal_);
     if (result)
-	result->activate(std::bind(&wn_t::find, globalparameters.main_window(), std::placeholders::_1));
+	result->activate(std::bind(&wn_t::find, gl_paras.main_window(), std::placeholders::_1));
     return result;
 }
 

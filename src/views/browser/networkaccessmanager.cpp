@@ -59,7 +59,7 @@
 
 #include "libraries/global_parameters.h"
 #include "main.h"
-#include "views/browser/entrance.h"
+#include "views/browser/browser_dock.h"
 #include <QtNetwork/QAuthenticator>
 #include <QtNetwork/QNetworkDiskCache>
 #include <QtNetwork/QNetworkProxy>
@@ -67,7 +67,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QSslError>
 
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 
 namespace browser {
 #if QT_VERSION == 0x050600
@@ -129,7 +129,7 @@ void NetworkAccessManager::requestFinished(QNetworkReply* reply)
 
 void NetworkAccessManager::loadSettings()
 {
-    QSettings settings(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + globalparameters._browser_conf_filename, QSettings::IniFormat);
+    QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_paras._browser_conf_filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("proxy"));
     QNetworkProxy proxy;
     if (settings.value(QLatin1String("enabled"), false).toBool()) {
@@ -151,7 +151,7 @@ void NetworkAccessManager::sslErrors(QNetworkReply* reply, const QList<QSslError
     // check if SSL certificate has been trusted already
     QString replyHost = reply->url().host() + QString(":%1").arg(reply->url().port());
     if (!sslTrustedHostList.contains(replyHost)) {
-        Entrance* mainWindow = globalparameters.entrance(); // ->main_window(register_record(QUrl(DockedWindow::_defaulthome)));    //QtSingleApplication::instance()->mainWindow();
+        BrowserDock* mainWindow = gl_paras.browser_dock(); // ->main_window(register_record(QUrl(DockedWindow::_defaulthome)));    //QtSingleApplication::instance()->mainWindow();
 
         QStringList errorStrings;
         for (int i = 0; i < error.count(); ++i)

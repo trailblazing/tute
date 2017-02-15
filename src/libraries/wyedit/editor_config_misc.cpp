@@ -18,7 +18,7 @@
 #include "editor_config_misc.h"
 #include "libraries/global_parameters.h"
 
-extern gl_para globalparameters;
+extern gl_para gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorConfigMisc)
@@ -30,7 +30,7 @@ EditorConfigMisc::EditorConfigMisc(QWidget* parent)
     qDebug() << "Create editor config misc widget";
 
     // Устанавливается указатель на объект работы с конфигфайлом
-    conf = globalparameters.editor_config(); // find_object<EditorConfig>("editorconfig");
+    conf = gl_paras.editor_config(); // find_object<EditorConfig>("editorconfig");
 
     // Шаг изменения отступа
     QLabel* indentStepLabel = new QLabel(this);
