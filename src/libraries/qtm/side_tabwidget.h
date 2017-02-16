@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 class SideTabWidget : public HidableTabWidget {
 public:
-	SideTabWidget(ts_t *_tree_screen, FindScreen *_find_screen, browser::BrowserDock *_entrance, QMainWindow *_main_window, browser::Profile *_profile, QString style_source_, QSplitter *splitter, QWidget *parent);
+	SideTabWidget(ts_t *_tree_screen, FindScreen *_find_screen, browser::BrowserDock *_browser_dock, QMainWindow *_main_window, browser::Profile *_profile, QString style_source_, QSplitter *splitter, QWidget *parent);
 
 	void title(const QString &title_);
 	QString title() const;

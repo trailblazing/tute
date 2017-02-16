@@ -139,7 +139,8 @@ public:
 	browser::WebView *find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const;
 	browser::Browser *new_browser();
 	browser::Browser *activated_browser();
-//	EditingWindow *current_editing_window();
+	//	EditingWindow *current_editing_window();
+	EditingWindow *new_editing_window(const QString &topic);
 public slots:
 	void application_exit(void);
 	void application_fast_exit(void);

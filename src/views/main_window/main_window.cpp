@@ -1858,6 +1858,10 @@ browser::WebView *wn_t::find(const std::function<bool (boost::intrusive_ptr<cons
 	return v;
 }
 
+EditingWindow *wn_t::new_editing_window(const QString &topic){
+	return new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source, appconfig.hide_editor_tools(), topic);
+}
+
 browser::Browser *wn_t::new_browser(){
 	auto editing_window = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
 	rs_t *rs = nullptr;
@@ -1887,7 +1891,7 @@ browser::Browser *wn_t::activated_browser(){
 			// auto	rs		= dynamic_cast<rs_t *>(w);
 			auto browser_ = dynamic_cast<rs_t *>(rs)->browser();
 			if(browser_){
-				if(browser_->isVisible() || browser_->isActiveWindow()){
+				if(browser_->record_screen() == _vtab_record->currentWidget()){// browser_->isVisible() || browser_->isActiveWindow()
 					_browser = browser_; // .data();
 
 					break;

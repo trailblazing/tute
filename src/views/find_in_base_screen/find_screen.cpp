@@ -672,7 +672,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 					       _candidate_records = _start_item->count_children_all();
 				       };
 
-	auto _current_model_search_prepare = [&](boost::intrusive_ptr<TreeItem> &_start_item, int &_candidate_records){  // , boost::intrusive_ptr<TreeItem>   &_result_item
+	auto current_model_search_prepare = [&](boost::intrusive_ptr<TreeItem> &_start_item, int &_candidate_records){  // , boost::intrusive_ptr<TreeItem>   &_result_item
 						     //// Индекс текущей выбранной ветки
 						     // QModelIndex current_item_index =    // find_object<TreeScreen>(tree_screen_singleton_name)
 						     // _tree_screen->tree_view()->index_current();
@@ -744,10 +744,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 #endif
 
 	auto final_search = [&](boost::intrusive_ptr<TreeItem> &final_result // QList<boost::intrusive_ptr<Linker> >    &_result_list
-			       ,
-				boost::intrusive_ptr<TreeItem> &_session_root_item // std::shared_ptr<RecordTable> &resultset_data
-			       ,
-				boost::intrusive_ptr<TreeItem> &_start_item) -> boost::intrusive_ptr<TreeItem> & {
+			       , boost::intrusive_ptr<TreeItem> &_session_root_item// std::shared_ptr<RecordTable> &resultset_data
+			       , boost::intrusive_ptr<TreeItem> &_start_item) -> boost::intrusive_ptr<TreeItem> & {
 				    qDebug() << "Start finding in " << _candidate_records << " records";
 
 				    _total_progress_counter = 0;
@@ -801,7 +799,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 		// }
 		// stage 2
 		if(0 == final_result->count_direct()){
-			_current_model_search_prepare(_start_item, _candidate_records);
+			current_model_search_prepare(_start_item, _candidate_records);
 			if(_start_item){
 				if(0 != _candidate_records){
 					final_result = final_search(final_result, _session_root_item, _start_item);
@@ -833,11 +831,11 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 							// _selected_branch_as_pages != _tree_screen->know_root()->root_item()
 						}
 						// }
-					}else assert_start_item();                                                                                                                                             // return nullptr;
+					}else assert_start_item();                                                                                                                                                                                                                  // return nullptr;
 				}
-			}else assert_start_item();                                                                                                             // return nullptr;
+			}else assert_start_item();                                                                                                                                                                  // return nullptr;
 		}
-	}else assert_start_item();                                                                             // return nullptr;
+	}else assert_start_item();                                                                                                                  // return nullptr;
 
 #ifdef SHOW_PROCESS_DIALOG
 	close_progressbar();

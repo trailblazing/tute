@@ -5,7 +5,7 @@
 
 SideTabWidget::SideTabWidget(ts_t *_tree_screen
 			    , FindScreen *_find_screen
-			    , browser::BrowserDock *_entrance
+			    , browser::BrowserDock *_browser_dock
 			    , QMainWindow *_main_window
 			    , browser::Profile *_profile
 			    , QString style_source_
@@ -13,7 +13,7 @@ SideTabWidget::SideTabWidget(ts_t *_tree_screen
 			    , QWidget *parent)
 	: HidableTabWidget(_tree_screen
 			  , _find_screen
-			  , _entrance
+			  , _browser_dock
 			  , _main_window
 			  , _profile
 			  , style_source_

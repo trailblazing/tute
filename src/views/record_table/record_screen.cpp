@@ -231,23 +231,27 @@ rs_t::rs_t(ts_t *tree_screen
 			w = _vtab_record->widget(index);
 			if(w){
 				if(w->objectName() == record_screen_multi_instance_name){
-					//		auto rs = dynamic_cast<rs_t *>(w);
-					auto _browser = dynamic_cast<rs_t *>(w)->browser();
-					if(_browser){
-						//		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-						_browser->show();
-						_browser->activateWindow();
-						if(!_browser->isTopLevel()) _browser->raise();
-						if(_browser->tabmanager()->count() > 0){
-							auto v = _browser->currentTab();
-							if(v){
-								auto p = v->page();
-								if(p){
-									auto it = p->host();
-									if(_tree_screen->view()->current_item()->id() != it->id()) _tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
+					auto rs = dynamic_cast<rs_t *>(w);
+					if(rs){
+						auto browser = rs->browser();
+						if(browser){
+							//		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+							browser->show();
+							browser->activateWindow();
+							if(!browser->isTopLevel()) browser->raise();
+							browser->adjustSize();
+							if(browser->tabmanager()->count() > 0){
+								auto v = browser->currentTab();
+								if(v){
+									auto p = v->page();
+									if(p){
+										auto it = p->host();
+										if(_tree_screen->view()->current_item()->id() != it->id()) _tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
+									}
 								}
 							}
 						}
+//						rs->adjustSize();
 					}
 				}
 			}
@@ -262,36 +266,6 @@ rs_t::rs_t(ts_t *tree_screen
 	//	return _browser->isVisible();
 	//    });
 	connect(this, &rs_t::isHidden, _browser, &browser::Browser::hide);
-
-	[&] {
-		_vtab_record->setUpdatesEnabled(false);
-		_vtab_record->addTab(this, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
-		bool found = false;
-		for(int i = 0; i < _vtab_record->count(); i++){
-			auto r = _vtab_record->widget(i);
-			if(r == this){
-				auto _browser = this->browser();
-				if(_browser){
-					_browser->activateWindow();
-					_browser->setVisible(true);
-					_vtab_record->setCurrentWidget(r);
-					found = true;
-				}
-			}
-		}
-		assert(found);
-		////    bool found = false;
-		////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
-		////	if(*i == rs){
-		////	    found = true;
-		////	    break;
-		////	}
-		////    }
-		////    if(! found) _record_screens.insert(rs);
-		// _record_screens.insert(rs);
-		_vtab_record->setUpdatesEnabled(true);
-		this->adjustSize();
-	} ();
 }
 
 rs_t::~rs_t(){
