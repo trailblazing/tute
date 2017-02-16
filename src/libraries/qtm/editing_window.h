@@ -124,8 +124,8 @@ public:
 		     , EditorDock *editor_dock
 		     , QString style_source_
 		     , QStringList hide_editor_tools_ = appconfig.hide_editor_tools()
-		     , QString id = global_root_id// get_unical_id()
-		     , QString new_post_title = "default"// = QString()
+		     , QString new_post_topic = ""// global_root_id// get_unical_id()
+		     , QString new_post_content = "Welcome to topic"// = QString()
 		     , Qt::WindowFlags flags = Qt::Widget);
 	~EditingWindow();
 #ifdef USE_SYSTRAYICON
@@ -208,7 +208,7 @@ private:
 
 private:
 	sapp_t *_app;
-	QString _id;
+
 	QString _editors_shared_directory = "";
 
 	int currentAccount, currentBlog, loadedEntryBlog;

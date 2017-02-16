@@ -189,7 +189,7 @@ SysTrayIcon::SysTrayIcon(ts_t *tree_screen
 	menu->addAction(_action_tray_maximize);
 	menu->addAction(_action_tray_minimize);
 	menu->addSeparator();
-	menu->addAction(_action_tray_quit);
+
 
 #if (!defined Q_OS_MAC) || QT_VERSION <= 0x050000
 	// #ifndef Q_OS_MAC              // Always a new window at startup when
@@ -201,7 +201,8 @@ SysTrayIcon::SysTrayIcon(ts_t *tree_screen
 	menu->addSeparator();
 #endif
 #ifndef SUPERMENU
-	quitAction = menu->addAction(tr("Quit"), this, SLOT(doQuit()));
+//	quitAction = menu->addAction(tr("Quit"), this, SLOT(doQuit()));
+	menu->addAction(_action_tray_quit);
 #endif
 	// quitAction->setMenuRole( QAction::QuitRole );
 	menu->setObjectName("iconMenu");
@@ -747,10 +748,8 @@ void SysTrayIcon::doQuit(){
 	int a;
 
 	QWidgetList tlw = qApp->topLevelWidgets();
-	for(a = 0; a < tlw.size(); a++){
-		if(  (QString(tlw[a]->metaObject()->className()) == "EditingWindow")
-		  && tlw[a]->isVisible()) edwins++;
-	}
+	for(a = 0; a < tlw.size(); a++)
+		if((QString(tlw[a]->metaObject()->className()) == "EditingWindow") && tlw[a]->isVisible()) edwins++;
 	if(!edwins) QCoreApplication::quit();
 	else{
 		qApp->setQuitOnLastWindowClosed(true);
@@ -798,12 +797,12 @@ void SysTrayIcon::doQP(QString receivedText){
 					newPost = QString("<a title = \"%1\" href=\"%2\">%1</a>\n\n")
 						  .arg(newTitle)
 						  .arg(cbtext);
-			}else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // Post has no valid title
+			}else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           // Post has no valid title
 				newPost = QString(tr("<a href=\"%1\">Insert link text here</a>"))
 					  .arg(cbtext);
 		}
 	}
-	EditingWindow *c = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source, appconfig.hide_editor_tools(), get_unical_id(), newPost);
+	EditingWindow *c = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source, appconfig.hide_editor_tools(), global_root_id, newPost);
 	c->setSTI(this);
 	c->setPostClean();
 	if(activeTemplate >= 0){
@@ -871,8 +870,7 @@ void SysTrayIcon::setupQuickpostTemplates(){
 		QDomDocument domDoc("quickpostTemplates");
 		QFile file(templateFile);
 		if(!domDoc.setContent(&file, true, &errorString, &errorLine, &errorCol))
-			QMessageBox::warning(0, tr("Failed to read templates"), QString(tr("Error: %1\n"
-											   "Line %2, col %3"))
+			QMessageBox::warning(0, tr("Failed to read templates"), QString(tr("Error: %1\nLine %2, col %3"))
 					     .arg(errorString)
 					     .arg(errorLine)
 					     .arg(errorCol));
@@ -906,9 +904,7 @@ void SysTrayIcon::setupQuickpostTemplates(){
 				numTemplates = (titles.size() >= templateStrings.size()
 						? titles.size()
 						: templateStrings.size());
-				useDefaultPublishStatus = (defaultPublishStates.size() < numTemplates)
-							  ? false
-							  : true;
+				useDefaultPublishStatus = (defaultPublishStates.size() < numTemplates) ? false : true;
 
 				// // qDebug( "Populating template menu" );
 				// templateMenu->addSeparator();
@@ -968,9 +964,7 @@ void SysTrayIcon::configureQuickpostTemplates(QWidget *parent){
 		copyTitleStatusList = templateDialog.copyTitleStates();
 		assocHostLists = templateDialog.assocHostLists();
 		quickpostTemplates = templateDocument.createElement("QuickpostTemplates");
-		int numTemplates = (templateTitleList.size() <= templateList.size())
-				   ? templateTitleList.size()
-				   : templateList.size();
+		int numTemplates = (templateTitleList.size() <= templateList.size()) ? templateTitleList.size() : templateList.size();
 		quickpostTemplateActions.clear();
 		for(int i = 0; i < numTemplates; i++){
 			quickpostTemplates.appendChild(templateElement(templateDocument, templateTitleList[i], templateList[i], defaultPublishStatusList[i], copyTitleStatusList[i], assocHostLists[i]));

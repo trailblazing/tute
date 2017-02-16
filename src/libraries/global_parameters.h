@@ -124,8 +124,8 @@ public:
 	void crypt_key(QByteArray hash);
 	QByteArray crypt_key(void) const;
 
-	//	// Файл стилей может создаваться и после развертывания начальных файлов Hapnote
-	//	// Так как в более старых версиях Hapnote его еще небыло
+	//	// Файл стилей может создаваться и после развертывания начальных файлов
+	//	// Так как в более старых версиях его еще небыло
 	//	void create_stylesheet_file(QString config_dir);
 
 	void style_source(const QString &source);

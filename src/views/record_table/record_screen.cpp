@@ -1115,7 +1115,7 @@ void rs_t::tools_update(){
 	  || 0 == _view->model()->rowCount()){
 		const QMimeData *mime_data = QApplication::clipboard()->mimeData();
 		if(mime_data != nullptr)
-			if(mime_data->hasFormat("hapnote/records")) _paste->setEnabled(true);
+			if(mime_data->hasFormat(gl_paras.application_name() + "/records")) _paste->setEnabled(true);
 	}
 #endif
 	// Перемещение записи вверх

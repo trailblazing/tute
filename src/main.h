@@ -26,7 +26,7 @@
 
 using namespace std;
 
-// Hapnote - a program to accumulate meaningful information
+// Tute - a program to accumulate meaningful information
 // 2015 -
 // Contact: hughvonyoung@gmail.com,
 // version 0.0.1
@@ -91,7 +91,7 @@ extern const char* tree_screen_singleton_name;
 extern const char* find_screen_singleton_name;
 extern const char* download_manager_singleton_name;
 extern const char* windowswitcher_singleton_name;
-extern const char* entrance_singleton_name;
+extern const char* browser_dock_singleton_name;
 extern const char* record_controller_multi_instance_name;
 extern const char* knowtreeview_singleton_name;
 extern const char* global_root_id;

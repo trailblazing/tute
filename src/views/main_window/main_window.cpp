@@ -59,7 +59,7 @@ const char *tree_screen_singleton_name	= "tree_screen";
 const char *find_screen_singleton_name	= "find_screen";
 const char *download_manager_singleton_name = "download_manager";
 const char *windowswitcher_singleton_name = "window_switcher";
-const char *entrance_singleton_name = "entrance";
+const char *browser_dock_singleton_name = "entrance";
 const char *record_controller_multi_instance_name = "record_controller"; // std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
 const char *record_view_multi_instance_name = "record_view";
 
@@ -98,7 +98,7 @@ wn_t::wn_t(gl_para &globalparameters
 	  , _helpmenu(new QMenu(tr("&Help"), this))
 	  , _tree_screen([&]() -> ts_t *{auto ts = new ts_t(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, this); _gl_paras.tree_screen(ts); return ts;} ()) // _vtabwidget
 	  , _find_screen([&]() -> FindScreen *{auto fs = new FindScreen(find_screen_singleton_name, _tree_screen, this); _gl_paras.find_screen(fs); return fs;} ())
-	  , _browser_dock([&]() -> browser::BrowserDock *{auto bd = new browser::BrowserDock(entrance_singleton_name, _tree_screen, _find_screen, this, _appconfig, style_source, profile, Qt::Widget); _gl_paras.browser_dock(bd); return bd;} ()) // Qt::MaximizeUsingFullscreenGeometryHint
+	  , _browser_dock([&]() -> browser::BrowserDock *{auto bd = new browser::BrowserDock(browser_dock_singleton_name, _tree_screen, _find_screen, this, _appconfig, style_source, profile, Qt::Widget); _gl_paras.browser_dock(bd); return bd;} ()) // Qt::MaximizeUsingFullscreenGeometryHint
 	  , _vtab_record([&] {auto vr = new HidableTabWidget(_tree_screen, _find_screen, _browser_dock, this, profile, style_source, _h_record_splitter, std::make_shared<QSettings>(globalparameters.root_path() + "/" + globalparameters.target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_record_splitter_sizelist", "collapsed", this); _gl_paras.vtab_record(vr); return vr;} ())
 	  , _editor_dock([&] {auto ed = new EditorDock("", _tree_screen, _find_screen, _vtab_record, _browser_dock, this, _appconfig, style_source, profile, Qt::Widget); _gl_paras.editor_dock(ed); return ed;} ())
 	  // , _download(new browser::DownloadManager(download_manager_singleton_name, _vtab_record))
@@ -1349,7 +1349,7 @@ void wn_t::init_help_menu(void){
 
 	QAction *a;
 
-	a = new QAction(tr("About Hapnote"), this);
+	a = new QAction(tr(std::string("About " + program_title_string).c_str()), this);
 	connect(a, &QAction::triggered, this, &wn_t::on_click_help_about_this);
 	_helpmenu->addAction(a);
 
@@ -1535,7 +1535,7 @@ void wn_t::on_click_help_about_this(void){
 	QString infoPhysicalDpiX;
 	QString infoPhysicalDpiY;
 
-	infoProgramName = "<b>Hapnote</b> - smart manager<br/>for information collecting<br/><br/>";
+	infoProgramName = "<b>" + program_title_qstring + "</b> - smart manager<br/>for information collecting<br/><br/>";
 	infoVersion	= "v." + QString(app_version) + "<br/><br/>";
 	infoAuthor	= "Author: Hugh Von Young<br/>";
 	infoEmail = "Author Email:<i>hughvonyoung@gmail.com</i><br/>";
@@ -1637,7 +1637,7 @@ void wn_t::synchronization(void){
 ////	_tray_icon->setContextMenu(_tray_icon_menu);
 // }
 
-//void wn_t::set_icon(void){
+// void wn_t::set_icon(void){
 //	connect(_tray_icon, &SysTrayIcon::activated, this, &wn_t::icon_activated);
 
 //	QIcon icon = QIcon(":/resource/pic/logo.svg");
@@ -1645,7 +1645,7 @@ void wn_t::synchronization(void){
 //	setWindowIcon(icon);
 
 //	// tray_icon->setToolTip(iconComboBox->itemText(index));
-//}
+// }
 
 void wn_t::icon_activated(QSystemTrayIcon::ActivationReason reason){
 	if(!QSystemTrayIcon::isSystemTrayAvailable()) return;
@@ -1861,9 +1861,7 @@ browser::WebView *wn_t::find(const std::function<bool (boost::intrusive_ptr<cons
 browser::Browser *wn_t::new_browser(){
 	auto editing_window = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
 	rs_t *rs = nullptr;
-	if(editing_window){
-		rs = editing_window->record_screen();// new rs_t(_tree_screen, _find_screen, _editentry, _dock_web, _vtab_record, _style_source, _profile);
-	}
+	if(editing_window) rs = editing_window->record_screen(); // new rs_t(_tree_screen, _find_screen, _editentry, _dock_web, _vtab_record, _style_source, _profile);
 	return rs->browser();
 
 	// return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*

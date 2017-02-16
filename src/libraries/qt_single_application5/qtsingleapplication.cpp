@@ -117,14 +117,14 @@
 
 // using namespace std;
 
-//// Фиксированные параметры программы (жестко заданные в текущей версии Hapnote)
+//// Фиксированные параметры программы (жестко заданные в текущей версии )
 // FixedParameters fixedParameters;
 
 //// Глобальные параметры программы (вычислимые на этапе инициализации, иногда меняющиеся в процессе выполнения программы)
 // GlobalParameters globalParameters;
 
 //// Конфигурация программы (считанная из файла конфигурации)
-// AppConfig hapnoteConfig;
+// AppConfig appConfig;
 
 //// Конфигурация данных
 // DataBaseConfig dataBaseConfig;
@@ -391,7 +391,7 @@ void sapp_t::sys_init(char * *argv){
 
 //    // Do not run another copy    // Не запущен ли другой экземпляр
 //    if(application.isRunning() || !application.isTheOnlyBrowser()) {
-//        QString message = "Another Hapnote exemplar is running.\n";
+//        QString message = "Another exemplar is running.\n";
 
 //        printf(message.toLocal8Bit());
 
@@ -430,7 +430,7 @@ void sapp_t::sys_init(char * *argv){
 
 	//    // Do not run another copy    // Не запущен ли другой экземпляр
 	//    if(application.isRunning()) {
-	//        QString message = "Another Hapnote exemplar is running.\n";
+	//        QString message = "Another exemplar is running.\n";
 
 	//        printf(message.toLocal8Bit());
 
@@ -448,12 +448,12 @@ void sapp_t::sys_init(char * *argv){
 	//    // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
 	//    QSplashScreen splash(QPixmap(": / resource / pic / icon_splash.png"));
 
-	//    if(hapnoteConfig.getShowSplashScreen())
+	//    if(appConfig.getShowSplashScreen())
 	//        splash.show();
 
 	//    //    // Подключение перевода интерфейса
-	//    //    // QString langFileName=globalParameters.getWorkDirectory()+" / resource / translations / hapnote_"+hapnoteconfig.get_interfacelanguage()+".qm";
-	//    //    QString langFileName = ": / resource / translations / hapnote_" + hapnoteConfig.get_interfacelanguage() + ".qm";
+	//    //    // QString langFileName=globalParameters.getWorkDirectory()+" / resource / translations / tute_"+appconfig.get_interfacelanguage()+".qm";
+	//    //    QString langFileName = ": / resource / translations / tute_" + aooConfig.get_interfacelanguage() + ".qm";
 	//    //    qDebug() << "Use language file " << langFileName;
 
 	//    //    //QTranslator langTranslator;
@@ -469,7 +469,7 @@ void sapp_t::sys_init(char * *argv){
 	//    if(globalParameters.getTargetOs() == "android")
 	//        win.show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
 	//    else {
-	//        if(hapnoteConfig.get_runinminimizedwindow() == false)
+	//        if(appConfig.get_runinminimizedwindow() == false)
 	//            win.show();
 	//        else
 	//            win.hide();
@@ -490,7 +490,7 @@ void sapp_t::sys_init(char * *argv){
 	//    win.restoreEditorScrollBarPosition();
 	//    globalParameters.getWindowSwitcher()->enableSwitch();
 
-	//    if(hapnoteConfig.getInterfaceMode() == "mobile")
+	//    if(appconfig.getInterfaceMode() == "mobile")
 	//        globalParameters.getWindowSwitcher()->restoreFocusWidget();
 
 	//    qDebug() << "Restore session succesfull";
@@ -502,14 +502,14 @@ void sapp_t::sys_init(char * *argv){
 
 	//    // Если в конфиге настроено, что нужно синхронизироваться при старте
 	//    // И задана команда синхронизации
-	//    if(hapnoteConfig.get_synchroonstartup())
-	//        if(hapnoteConfig.get_synchrocommand().trimmed().length() > 0)
+	//    if(appconfig.get_synchroonstartup())
+	//        if(appconfig.get_synchrocommand().trimmed().length() > 0)
 	//            win.synchronization();
 
 	//    // Если настроено в конфиге, сразу запрашивается пароль доступа
 	//    // к зашифрованным данным
 	//    // И если есть хоть какие-то зашифрованные данные
-	//    if(hapnoteConfig.get_howpassrequest() == "atStartProgram")
+	//    if(appconfig.get_howpassrequest() == "atStartProgram")
 	//        if(globalParameters.getCryptKey().length() == 0)
 	//            if(dataBaseConfig.get_crypt_mode() > 0) {
 	//                // Запрашивается пароль только в том случае, если ветка,
@@ -525,8 +525,8 @@ void sapp_t::sys_init(char * *argv){
 	//    // И хранимый пароль (точнее его хеш) заполнен
 	//    if(globalParameters.getCryptKey().length() == 0)
 	//        if(dataBaseConfig.get_crypt_mode() > 0)
-	//            if(hapnoteConfig.getPasswordSaveFlag())
-	//                if(hapnoteConfig.getPasswordMiddleHash().length() > 0) {
+	//            if(appconfig.getPasswordSaveFlag())
+	//                if(appconfig.getPasswordMiddleHash().length() > 0) {
 	//                    // При запросе пароля ключ шифрования будет восстановлен автоматически
 	//                    Password password;
 	//                    password.retrievePassword();
@@ -554,7 +554,7 @@ void sapp_t::sys_init(char * *argv){
 	//    // app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win.commitData(QSessionManager)));
 
 	//    // Окно сплеш-скрина скрывается
-	//    if(hapnoteConfig.getShowSplashScreen())
+	//    if(appconfig.getShowSplashScreen())
 	//        splash.finish(&win);
 
 	// Initialize the main program of configurable variables    // Инициализация основных конфигурирующих программу переменных
@@ -628,7 +628,7 @@ void sapp_t::browser_init(){
 	installTranslator(QLatin1String("qt_") + localSysName);
 
 	// Подключение перевода интерфейса
-	// QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/hapnote_"+hapnoteconfig.get_interfacelanguage()+".qm";
+	// QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/tute_"+appconfig.get_interfacelanguage()+".qm";
 	QString langFileName = ":/resource/translations/" + program_title_qstring + "_" + _appconfig.interface_language() + ".qm";
 	qDebug() << "Use language file " << langFileName;
 
@@ -676,7 +676,7 @@ void sapp_t::qtm_init(){
 void sapp_t::main_window(){
 	// Do not run another copy    // Не запущен ли другой экземпляр
 	if(isRunning()){
-		QString message = "Another hapnote exemplar is running.\n";
+		QString message = "Another " + program_title_qstring + " exemplar is running.\n";
 
 		printf("%s", message.toStdString().c_str()); // message.toLocal8Bit()
 
@@ -694,8 +694,8 @@ void sapp_t::main_window(){
 	QSplashScreen splash(QPixmap(":/resource/pic/icon_splash.png"));
 	if(_appconfig.show_splash_screen()) splash.show();
 	//    // Подключение перевода интерфейса
-	//    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/hapnote_"+hapnoteconfig.get_interfacelanguage()+".qm";
-	//    QString langFileName = ":/resource/translations/hapnote_" + hapnoteConfig.get_interfacelanguage() + ".qm";
+	//    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/tute_"+appconfig.get_interfacelanguage()+".qm";
+	//    QString langFileName = ":/resource/translations/tute_" + appconfig.get_interfacelanguage() + ".qm";
 	//    qDebug() << "Use language file " << langFileName;
 
 	//    //QTranslator langTranslator;
@@ -1355,23 +1355,23 @@ void sapp_t::installTranslator(const QString &name){
 #if defined(Q_OS_OSX)
 bool QtSingleApplication::event(QEvent *event){
 	switch(event->type()){
-	case QEvent::ApplicationActivate: {
-		clean();
-		if(!_mainwindows.isEmpty()){
-			BrowserWindow *mw = mainWindow();
-			if(mw && !mw->isMinimized()) mainWindow()->show();
-			return true;
+		case QEvent::ApplicationActivate: {
+			clean();
+			if(!_mainwindows.isEmpty()){
+				BrowserWindow *mw = mainWindow();
+				if(mw && !mw->isMinimized()) mainWindow()->show();
+				return true;
+			}
 		}
-	}
 
-	case QEvent::FileOpen:
-		if(!_mainwindows.isEmpty()){
-			mainWindow()->loadPage(static_cast<QFileOpenEvent *>(event)->file());
+		case QEvent::FileOpen:
+			if(!_mainwindows.isEmpty()){
+				mainWindow()->loadPage(static_cast<QFileOpenEvent *>(event)->file());
 
-			return true;
-		}
-	default:
-		break;
+				return true;
+			}
+		default:
+			break;
 	}
 	return QApplication::event(event);
 }

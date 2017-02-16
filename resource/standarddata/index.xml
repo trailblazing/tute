@@ -5,7 +5,7 @@
  <content>
   <record crypt="0" id="0" name="Rename me" >
    <recordtable>
-    <record dir="0000000001" url="https://www.google.com" tags="Hapnote, Qt" author="" ctime="20081210124656" id="1" name="Welcome to Hapnote!" file="text.html" />
+    <record dir="0000000001" url="https://www.google.com" tags="Tute, Qt" author="" ctime="20081210124656" id="1" name="Welcome to Tute!" file="text.html" />
    </recordtable>
   </record>
  </content>

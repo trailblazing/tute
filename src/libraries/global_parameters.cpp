@@ -33,6 +33,11 @@ extern const char *index_xml_file_name;
 extern const char *standardItem;
 extern const char *portableItem;
 
+extern const char *program_title;
+extern const QString program_title_qstring;
+extern const std::string program_title_string;
+
+
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(GlobalParameters)
 #endif
@@ -219,7 +224,7 @@ std::tuple<const bool, const QString> gl_para::coordinate_root(const QString &ro
 					   qDebug() << "Check config file " << config_filename;
 					   bool result = false;
 					   QFileInfo info(config_filename);
-					   // Если файл существует, надо определить, от Hapnote он или от другой программы
+					   // Если файл существует, надо определить, от он или от другой программы
 					   if(info.exists()){
 						   qDebug() << "Config file " << config_filename << " is exists";
 
@@ -387,7 +392,7 @@ std::tuple<const bool, const QString> gl_para::coordinate_root(const QString &ro
 
 	QString dataDirName = ".config/" + application_name();
 
-	QString welcomeText = tr("Welcome to Hapnote v.") + QString::number(APPLICATION_RELEASE_VERSION) + '.' + QString::number(APPLICATION_RELEASE_SUBVERSION) + '.' + QString::number(APPLICATION_RELEASE_MICROVERSION) + "!";
+	QString welcomeText = tr(std::string("Welcome to " + program_title_string + " v.").c_str()) + QString::number(APPLICATION_RELEASE_VERSION) + '.' + QString::number(APPLICATION_RELEASE_SUBVERSION) + '.' + QString::number(APPLICATION_RELEASE_MICROVERSION) + "!";
 
 	QString standartText = tr("Create subdirectory  \"%1\"\nin user directory  \"%2\",\nand create application files in it.").arg(dataDirName).arg(QDir::homePath());
 
@@ -769,7 +774,7 @@ QByteArray gl_para::crypt_key(void) const {return _password_hash;}
 //	"   <content>\r\n"
 ////  <node name="Rename me" id="1">
 //	"   <recordtable>\r\n"
-//	"	<record name=\"Google\" dir=\"0000000001\" pin=\"1\" tags=\"Hapnote, Qt\" ctime=\"20081210124656\" url=\"https://www.google.com/?gws_rd=ssl\" file=\"text.html\" id=\"1\" author=\"\"/>\r\n"
+//	"	<record name=\"Google\" dir=\"0000000001\" pin=\"1\" tags=\"Tute, Qt\" ctime=\"20081210124656\" url=\"https://www.google.com/?gws_rd=ssl\" file=\"text.html\" id=\"1\" author=\"\"/>\r\n"
 //	"   </recordtable>\r\n"
 ////  </node>
 //	"   </content>\r\n"

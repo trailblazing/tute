@@ -1229,7 +1229,7 @@ void Record::check_and_create_text_file()
     QFileInfo fileInfo(f);
     // Если директория с файлом не существует
     if (!fileInfo.absoluteDir().exists()) {
-        // QString messageText = QObject::tr("Database consistency was broken.\n Directory %1 not found.\n Hapnote will try to create a blank entry for the corrections.").arg(fileInfo.absoluteDir().absolutePath());
+	// QString messageText = QObject::tr("Database consistency was broken.\n Directory %1 not found.\n Tute will try to create a blank entry for the corrections.").arg(fileInfo.absoluteDir().absolutePath());
 
         // qWarning() << messageText;
 
@@ -1246,7 +1246,7 @@ void Record::check_and_create_text_file()
     }
     // Если файл записи не существует
     if (!f.exists()) {
-        // QString messageText = QObject::tr("Database consistency was broken.\n File %1 not found.\n Hapnote will try to create a blank entry for the corrections.").arg(fileName);
+	// QString messageText = QObject::tr("Database consistency was broken.\n File %1 not found.\n Tute will try to create a blank entry for the corrections.").arg(fileName);
 
         // qWarning() << messageText;
 

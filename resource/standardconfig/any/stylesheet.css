@@ -21,9 +21,9 @@ QToolBar, QToolButton, QPushButton
 
 QMenu{
     border: 0px;
-    background: transparent;
+/*    background: transparent;*/
     margin: 0px 0px 0px 0px;
-    background-color: transparent;
+/*    background-color: transparent;*/
 }
 
 QToolButton {

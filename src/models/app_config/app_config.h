@@ -216,7 +216,7 @@ public:
     QString attach_save_as_dir(void) const;
     void attach_save_as_dir(QString dir);
 
-    // Разрешать ли для просмотра расшифровывать зашифрованные файлы в директорию корзины Hapnote
+    // Разрешать ли для просмотра расшифровывать зашифрованные файлы в директорию корзины
     bool enable_decrypt_file_to_trash_directory(void) const;
     void enable_decrypt_file_to_trash_directory(bool state);
 

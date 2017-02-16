@@ -551,7 +551,7 @@ void AppConfig::attach_save_as_dir(QString dir){
 	_app_conf->setValue("attachSaveAsDir", dir);
 }
 
-// Разрешать ли для просмотра расшифровывать зашифрованные файлы в директорию корзины Hapnote
+// Разрешать ли для просмотра расшифровывать зашифрованные файлы в директорию корзины
 bool AppConfig::enable_decrypt_file_to_trash_directory(void) const {
 	return _app_conf->value("enableDecryptFileToTrashDirectory").toBool();
 }

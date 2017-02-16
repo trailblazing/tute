@@ -77,8 +77,8 @@ struct switch_type {
                                                                                                                                                                                                                               >::type>::type>::type type;
 };
 
-// Неизменяемые параметры, то есть параметры, которые заданы жестко в текущей версии Hapnote
-// Immutable parameters, ie parameters that are hard-coded in the current version Hapnote
+// Неизменяемые параметры, то есть параметры, которые заданы жестко в текущей версии
+// Immutable parameters, ie parameters that are hard-coded in the current version
 
 class FixedParameters : public QObject {
 #if QT_VERSION == 0x050600

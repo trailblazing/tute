@@ -206,6 +206,18 @@ void SideTabWidget::setupUi(){
 		spacerItem2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
 		verticalLayout_3->addItem(spacerItem2);
+		_label_topic = new QLabel(_basics);
+		_label_topic->setObjectName(QStringLiteral("label_topic"));
+		QSizePolicy sizeP_policy_topic_label(QSizePolicy::Minimum, QSizePolicy::Preferred);
+		sizeP_policy_topic_label.setHorizontalStretch(0);
+		sizeP_policy_topic_label.setVerticalStretch(0);
+		sizeP_policy_topic_label.setHeightForWidth(_label_topic->sizePolicy().hasHeightForWidth());
+		_label_topic->setSizePolicy(sizeP_policy_topic_label);
+		gridLayout->addWidget(_label_topic, 6, 0, 1, 1);
+		_lineedit_topic = new QLineEdit(_basics);
+		_lineedit_topic->setObjectName(QStringLiteral("lineedit_topic"));
+		gridLayout->addWidget(_lineedit_topic, 6, 1, 1, 1);
+
 
 		this->addTab(_basics, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Basics"));
 	} ();
@@ -434,7 +446,8 @@ void SideTabWidget::setupUi(){
 	QWidget::setTabOrder(cbStatus, chAllowComments);
 	QWidget::setTabOrder(chAllowComments, chAllowTB);
 	QWidget::setTabOrder(chAllowTB, cbDoTB);
-	QWidget::setTabOrder(cbDoTB, cbMainCat);
+	QWidget::setTabOrder(cbDoTB, _lineedit_topic);
+	QWidget::setTabOrder(_lineedit_topic, cbMainCat);
 	QWidget::setTabOrder(cbMainCat, lwOtherCats);
 	QWidget::setTabOrder(lwOtherCats, chNoCats);
 	QWidget::setTabOrder(chNoCats, pbRefresh);
@@ -499,7 +512,8 @@ void SideTabWidget::retranslateUi(){
 	lPassword->setText(QApplication::translate("CategoryWidget", "Pass&word", 0));
 	lPassword->setBuddy(lePassword);
 	chShowPassword->setText(QApplication::translate("CategoryWidget", "Show passwor&d", 0));
-
+	_label_topic->setText(QApplication::translate("CategoryWidget", "Entry &Topic", 0));
+	_label_topic->setBuddy(_lineedit_topic);
 	label->setText(QApplication::translate("CategoryWidget", "<b>Feedback</b>", 0));
 #ifndef QT_NO_WHATSTHIS
 	chAllowComments->setWhatsThis(QApplication::translate("CategoryWidget", "Click here if comments are to be allowed", 0));
@@ -633,3 +647,5 @@ void SideTabWidget::retranslateUi(){
 
 void SideTabWidget::title(const QString &title_){leTitle->setText(title_);}
 QString SideTabWidget::title() const {return leTitle->text();}
+void SideTabWidget::topic(const QString &topic_){_lineedit_topic->setText(topic_);}
+QString SideTabWidget::topic() const {return _lineedit_topic->text();}

@@ -117,14 +117,15 @@ private:
 	QAction *abortAction;
 	QAction *configureTemplates;
 #ifndef SUPERMENU
-	QAction *quitAction;
+//	QAction *quitAction;
+	QAction *_action_tray_quit;
 #endif
 	QList<QuickpostTemplate *> quickpostTemplateActions;
 
 	QAction *_action_tray_restore;
 	QAction *_action_tray_maximize;
 	QAction *_action_tray_minimize;
-	QAction *_action_tray_quit;
+
 
 	QMenu *menu;
 	QMenu *templateMenu;
