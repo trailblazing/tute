@@ -2311,9 +2311,11 @@ void ts_t::resizeEvent(QResizeEvent *e){
 	// );
 }
 
+#ifdef USE_TREE_SCREEN_VIEW
 tsv_t *ts_t::viewer() const {return _viewer;}
 
 void ts_t::viewer(tsv_t *v){_viewer = v;}
+#endif // USE_TREE_SCREEN_VIEW
 
 void AdjustingScrollArea::resizeEvent(QResizeEvent *e){
 	(void) e;
@@ -2412,6 +2414,9 @@ void AdjustingScrollArea::setWidget(tv_t *view){
 // _scroll_area->update();
 // }
 
+#ifdef USE_TREE_SCREEN_VIEW
+
+
 tsv_t::~tsv_t(){_tree_screen->viewer(nullptr);}
 
 tsv_t::tsv_t(wn_t *main_window, ts_t *tree_screen, QWidget *widget_right)
@@ -2447,3 +2452,5 @@ void tsv_t::widget_right(QWidget *rs){
 }
 
 QWidget *tsv_t::widget_right() const {return _widget_right;}
+
+#endif// USE_TREE_SCREEN_VIEW

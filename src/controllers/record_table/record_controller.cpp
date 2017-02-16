@@ -1796,8 +1796,9 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 
 	//        // Надо очистить поля области редактировния, чтобы редактор не пытался сохранить текущую открытую, но удаленную запись
 	//        // find_object<MetaEditor>(meta_editor_singleton_name)
+#ifdef USE_FILE_PER_TREEITEM
 	_editing_window->clear_all();
-
+#endif// USE_FILE_PER_TREEITEM
 	// Вызывается удаление отмеченных записей
 	//    browser::WebView *v =
 	pages_remove_from_browser(delete_ids);
@@ -1820,7 +1821,11 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 		// Нужно очистить поле редактирования чтобы невидно было текста
 		// последней удаленной записи
 		// find_object<MetaEditor>(meta_editor_singleton_name)
+#ifdef USE_FILE_PER_TREEITEM
 		_editing_window->clear_all();
+#else
+		_editing_window->close();
+#endif// USE_FILE_PER_TREEITEM
 	}
 	//    qobject_cast<rs_t *>(parent())
 	_record_screen->tools_update();

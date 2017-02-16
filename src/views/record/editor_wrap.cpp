@@ -101,8 +101,10 @@ EditorWrap::EditorWrap(FindScreen *find_screen
 	setup_labels();
 	setup_ui();
 	assembly();
+#ifdef USE_FILE_PER_TREEITEM
 	initialize_data();
-	adjustSize();
+#endif// USE_FILE_PER_TREEITEM
+//	adjustSize();
 	setup_signals(_find_screen);
 
 //	// В редакторе устанавливается функция обратного вызова на кнопку Attach
@@ -323,10 +325,10 @@ void EditorWrap::to_attach_layout(void){
 }
 
 //// Статическая функция, обрабатывает клик в редакторе по кнопке переключения на список прикрепляемых файлов
-//void EditorWrap::to_attach_callback(void){
+// void EditorWrap::to_attach_callback(void){
 //	auto *editor_dock = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
 //	editor_dock->blog_editor()->to_attach_layout();
-//}
+// }
 
 // Слот для установки значений инфополей на экране
 void EditorWrap::field(QString n, QString v){

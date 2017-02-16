@@ -512,7 +512,7 @@ namespace browser {
 		// try {
 		// record_index = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _record_controller->source_model()->sibling(current_item), current_item);
 		// } catch(std::exception &) {}
-		// if(record_index) {
+#ifdef USE_FILE_PER_TREEITEM            // if(record_index) {
 		if(_editing_window->item() != current_item) _editing_window->bind(current_item);
 		// int pos = indexOf(currentWebView());
 		// Turns the reference to the table of final data   // Выясняется ссылка на таблицу конечных данных
@@ -526,13 +526,14 @@ namespace browser {
 		// чтобы затем при выборе этой же подветки засветка автоматически
 		// установилась на последнюю рабочую запись
 		// table->work_pos(pos);
-
+#endif // USE_FILE_PER_TREEITEM
 		// Устанавливается функция обратного вызова для записи данных
 		_editing_window->save_callback(Editor::editor_save_callback); // _editentry->editor_save_callback
 
 		// Сохраняется текст и картинки в окне редактирования
 		// find_object<MainWindow>("mainwindow")
 		_editing_window->save_text_context();
+#ifdef USE_FILE_PER_TREEITEM
 		// Для новой выбраной записи выясняется директория и основной файл
 		if(current_item->field<id_type>().length() == 0) current_item->field<id_type>(current_item->field<dir_type>().length() > 0 ? current_item->field<dir_type>() : get_unical_id()); // "id",	// || current_item->field("url") == Browser::_defaulthome
 		if(current_item->field<url_type>() == "") current_item->field<dir_type>(current_item->id()); // "dir",
@@ -567,7 +568,7 @@ namespace browser {
 		qDebug() << "void WebPage::metaeditor_sychronize() : id " << current_item->field<id_type>(); // table->field(pos, "id");
 		qDebug() << "void WebPage::metaeditor_sychronize() : name " << current_item->field<name_type>(); // table->field(pos, "name");
 		qDebug() << "void WebPage::metaeditor_sychronize() : crypt " << current_item->field<crypt_type>(); // table->field(pos, boost::mpl::c_str < crypt_type > ::value);
-		if(current_item->field<crypt_type>() == "1")                                                                                                                  // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
+		if(current_item->field<crypt_type>() == "1")                                                                                                                                                                                                                                                                                                                                                                                                                                        // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
 			if(full_dir.length() == 0 || current_file.length() == 0) _editing_window->dir_file_empty_reaction(EditorWrap::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 		//	    _editentry->blog_editor()->editor()->clear_all_misc_field();
 		// В редактор заносится информация, идет ли работа с зашифрованным текстом
@@ -607,8 +608,16 @@ namespace browser {
 			_editing_window->cursor_position(walkhistory.cursor_position(id));
 			_editing_window->scrollbar_position(walkhistory.scrollbar_position(id));
 		}
+#else
+		auto id = _editing_window->topic();
+		// В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
+		if(appconfig.remember_cursor_at_ordinary_selection()){
+			_editing_window->cursor_position(walkhistory.cursor_position(static_cast<id_value>(id)));
+			_editing_window->scrollbar_position(walkhistory.scrollbar_position(static_cast<id_value>(id)));
+		}
+#endif // USE_FILE_PER_TREEITEM
 		// Обновление иконки аттачей
-		if(current_item->attach_table()->size() == 0)                                                                                                                    // table->record(pos)->getAttachTablePointer()->size()
+		if(current_item->attach_table()->size() == 0)                                                                                                                                                                                                                                                                                                                                                                                                                                               // table->record(pos)->getAttachTablePointer()->size()
 			_editing_window->to_attach()->setIcon(_editing_window->icon_attach_not_exists());
 		// Если нет приаттаченных файлов
 		else _editing_window->to_attach()->setIcon(_editing_window->icon_attach_exists()); // Есть приаттаченные файлы
@@ -1151,21 +1160,21 @@ namespace browser {
 		connect(this, &QWebEngineView::renderProcessTerminated, [=](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode){
 				const char *status = "";
 				switch(termStatus){
-				case QWebEnginePage::NormalTerminationStatus:
-					status = "(normal exit)";
-					break;
+					case QWebEnginePage::NormalTerminationStatus:
+						status = "(normal exit)";
+						break;
 
-				case QWebEnginePage::AbnormalTerminationStatus:
-					status = "(abnormal exit)";
-					break;
+					case QWebEnginePage::AbnormalTerminationStatus:
+						status = "(abnormal exit)";
+						break;
 
-				case QWebEnginePage::CrashedTerminationStatus:
-					status = "(crashed)";
-					break;
+					case QWebEnginePage::CrashedTerminationStatus:
+						status = "(crashed)";
+						break;
 
-				case QWebEnginePage::KilledTerminationStatus:
-					status = "(killed)";
-					break;
+					case QWebEnginePage::KilledTerminationStatus:
+						status = "(killed)";
+						break;
 				}
 				qInfo() << "Render process exited with code" << statusCode << status;
 				QTimer::singleShot(0, [this] {reload();});
@@ -1452,21 +1461,21 @@ namespace browser {
 		connect(this, &QWebEngineView::renderProcessTerminated, [=](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode){
 				const char *status = "";
 				switch(termStatus){
-				case QWebEnginePage::NormalTerminationStatus:
-					status = "(normal exit)";
-					break;
+					case QWebEnginePage::NormalTerminationStatus:
+						status = "(normal exit)";
+						break;
 
-				case QWebEnginePage::AbnormalTerminationStatus:
-					status = "(abnormal exit)";
-					break;
+					case QWebEnginePage::AbnormalTerminationStatus:
+						status = "(abnormal exit)";
+						break;
 
-				case QWebEnginePage::CrashedTerminationStatus:
-					status = "(crashed)";
-					break;
+					case QWebEnginePage::CrashedTerminationStatus:
+						status = "(crashed)";
+						break;
 
-				case QWebEnginePage::KilledTerminationStatus:
-					status = "(killed)";
-					break;
+					case QWebEnginePage::KilledTerminationStatus:
+						status = "(killed)";
+						break;
 				}
 				qInfo() << "Render process exited with code" << statusCode << status;
 

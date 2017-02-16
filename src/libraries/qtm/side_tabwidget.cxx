@@ -6,7 +6,7 @@
 SideTabWidget::SideTabWidget(ts_t *_tree_screen
 			    , FindScreen *_find_screen
 			    , browser::BrowserDock *_browser_dock
-			    , QMainWindow *_main_window
+			    , EditingWindow *editing_window
 			    , browser::Profile *_profile
 			    , QString style_source_
 			    , QSplitter *splitter
@@ -14,7 +14,7 @@ SideTabWidget::SideTabWidget(ts_t *_tree_screen
 	: HidableTabWidget(_tree_screen
 			  , _find_screen
 			  , _browser_dock
-			  , _main_window
+			  , editing_window
 			  , _profile
 			  , style_source_
 			  , splitter
@@ -22,9 +22,11 @@ SideTabWidget::SideTabWidget(ts_t *_tree_screen
 			  , "geometry"
 			  , "splitter_sizelist"
 			  , "collapsed"
-			  , parent){
+			  , parent)
+	  , _editing_window(editing_window){
 	//      , tabWidget(new HidableTabWidget(_tree_screen, _find_screen, _editentry, _entrance, _main_window, _profile, style_source_, this))
 	setupUi();
+	connect(leTitle, &QLineEdit::textChanged, _editing_window, &EditingWindow::on_topic_changed);
 }
 
 void SideTabWidget::setupUi(){

@@ -76,7 +76,9 @@ class rctrl_t;
 class ts_t;
 class InfoFieldsEditor;
 class rs_t;
+#ifdef USE_TREE_SCREEN_VIEW
 class tsv_t;
+#endif // USE_TREE_SCREEN_VIEW
 class wn_t;
 struct TreeIndex;
 struct Linker;
@@ -202,10 +204,11 @@ public:
 	//    void resetup_model(boost::intrusive_ptr<TreeItem> _item);
 
 	//    void restore_menubar();
-
+#ifdef USE_TREE_SCREEN_VIEW
 	tsv_t *viewer() const;
 
 	void viewer(tsv_t *v);
+#endif
 
 public slots:
 	//    void view_paste_from_search(TreeIndex _modelindex, boost::intrusive_ptr<TreeItem> _result_item, std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition); // , std::shared_ptr<RecordTable> resultset_data
@@ -267,7 +270,11 @@ private:
 	//    TreeViewHelpWidget *_treeviewhelpwidget;
 
 	QVBoxLayout *_treescreenlayout;
+
+#ifdef USE_TREE_SCREEN_VIEW
 	tsv_t *_viewer = nullptr;
+#endif // USE_TREE_SCREEN_VIEW
+
 	const AppConfig &_appconfig;
 	//    QString         _session_id = global_root_id;
 
@@ -474,7 +481,8 @@ private:
 //    assert(result == _current_model->item(setto));
 //    return  result; // _current_model->item(setto);
 // }
-
+//
+#ifdef USE_TREE_SCREEN_VIEW
 // deprecated
 class tsv_t : public QFrame {
 public:
@@ -493,5 +501,6 @@ private:
 	QWidget *_widget_right;
 	QStackedLayout *_layout;
 };
-
+#endif// USE_TREE_SCREEN_VIEW
+//
 #endif // _TREESCREEN_H_

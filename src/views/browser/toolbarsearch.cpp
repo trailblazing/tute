@@ -189,7 +189,11 @@ namespace browser {
 					  ){
 						// QLineEdit *lineedit =
 
-						auto ti = tree_index->bind(url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());});
+						auto ti = tree_index->bind(url
+									  , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+									  , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
+									  , browser
+									  );
 						if(ti) ti->activate(std::bind(&wn_t::find, gl_paras.main_window(), std::placeholders::_1));
 						assert(_lineedits);
 						if(_lineedits){
@@ -226,7 +230,11 @@ namespace browser {
 						search_engine.setQuery(url_query);
 						search_engine.setFragment("q=" + search_text);
 						//		    emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-						auto ti = tree_index->bind(search_engine, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), search_engine.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), search_engine.toString().toStdString());});
+						auto ti = tree_index->bind(search_engine
+									  , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+									  , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), search_engine.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), search_engine.toString().toStdString());}
+									  , browser
+									  );
 						if(ti) ti->activate(std::bind(&wn_t::find, gl_paras.main_window(), std::placeholders::_1));
 					}
 				}

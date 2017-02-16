@@ -201,11 +201,7 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 				  if(!QDir::root().mkpath(path)) critical_error("Can not create directory: \"" + path + "\"");
 			  return path;
 		  } ())
-	  , _super_menu(editor_dock->super_menu())
-	  , _central_widget(new QWidget(this))
-	  , _splitter(new QSplitter(Qt::Horizontal, _central_widget))
-	  , _control_tab(new SideTabWidget(tree_screen, find_screen, browser_dock, this, profile, style_source, _splitter, _central_widget))
-	  , _current_topic_folder_name(_editors_shared_directory + new_post_topic)
+	  , _current_topic_folder_name([&]() -> QString {auto fn = _editors_shared_directory + "/" + tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str());  return fn;} ())
 	  , _current_topic_config_name(_current_topic_folder_name + "/" + gl_para::_editor_conf_filename)
 	  , _topic_editor_config([&]() -> std::unique_ptr<QSettings>{
 					 if(!QDir(_current_topic_folder_name).exists())
@@ -215,7 +211,7 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 					 if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
 					 return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
 				 } ())
-	  , _main_stack(new QStackedWidget(_central_widget))
+	  , _local_storage_file_extension(_topic_editor_config->value("local_storage_file_ext", "cqt").toString())
 	  , _current_reply(nullptr)
 	  , _tree_screen(tree_screen)
 	  , _browser_dock(browser_dock)
@@ -225,14 +221,18 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 	  , _style_source(style_source)
 	  , _editor_dock(editor_dock)
 	  , _find_screen(find_screen)
+	  , _super_menu(editor_dock->super_menu())
+	  , _central_widget(new QWidget(this))
+	  , _splitter(new QSplitter(Qt::Horizontal, _central_widget))
+	  , _main_stack(new QStackedWidget(_central_widget))
+	  , _control_tab([&]() -> SideTabWidget *{auto st = new SideTabWidget(tree_screen, find_screen, browser_dock, this, profile, style_source, _splitter, _central_widget); auto _topic = tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()); st->topic(_topic); st->title(_topic); return st;} ())
 	  , _console(new TEXTEDIT_FOR_READ(_main_stack))
-// Set up editor widget
-#ifdef USE_WYEDIT
-	  , _editor(new TEXTEDIT(_find_screen, this, hide_editor_tools_, _main_stack, ""))
-#else
+	  // Set up editor widget
+      #ifdef USE_WYEDIT
+	  , _editor(new TEXTEDIT(find_screen, this, hide_editor_tools_, _main_stack, ""))
+      #else
 	  , _editor(new TEXTEDIT(mainStack))
-#endif
-//	  , _browser(_record_screen->browser())
+      #endif
 	  , _record_screen(new rs_t(tree_screen, find_screen, editor_dock, this, browser_dock, vtab_record, style_source, profile)){
 	//
 
@@ -380,8 +380,8 @@ EditingWindow::EditingWindow(ts_t *tree_screen
  #else
 	editor_object->setPlainText(new_post_content);
  #endif
-	_control_tab->title(new_post_topic);
-	_control_tab->topic(new_post_topic);
+//	_control_tab->title(new_post_topic);
+//	_control_tab->topic(new_post_topic);
 	//
 	_main_stack->setCurrentIndex(_editor_id);
 
@@ -470,35 +470,46 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 	// _main_stack->setCurrentIndex(_console_id);
 
 	[&] {
-		_vtab_record->setUpdatesEnabled(false);
-		_vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
+		bool found = false;
+		for(int i = 0; i < _vtab_record->count(); i++){
+			auto w	= _vtab_record->widget(i);
+			auto rs = dynamic_cast<rs_t *>(w);
+			if(rs) if(rs->editing_window()->topic() == new_post_topic){
+					found = true;
+					break;
+				}
+		}
+		if(!found){
+			_vtab_record->setUpdatesEnabled(false);
+			_vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
 //		bool found = false;
 //		for(int i = 0; i < _vtab_record->count(); i++){
 //			auto r = _vtab_record->widget(i);
 //			if(r == _record_screen){
-		auto _browser = _record_screen->browser();
-		if(_browser){
-			_browser->activateWindow();
-			_browser->setVisible(true);
-			_browser->adjustSize();
-			_vtab_record->setCurrentWidget(_record_screen);
+			auto _browser = _record_screen->browser();
+			if(_browser){
+				_browser->activateWindow();
+				_browser->setVisible(true);
+				_browser->adjustSize();
+				_vtab_record->setCurrentWidget(_record_screen);
 //			found = true;
-		}
+			}
 //			}
 //		}
 //		assert(found);
-		////    bool found = false;
-		////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
-		////	if(*i == rs){
-		////	    found = true;
-		////	    break;
-		////	}
-		////    }
-		////    if(! found) _record_screens.insert(rs);
-		// _record_screens.insert(rs);
-		this->adjustSize();
-		_vtab_record->setUpdatesEnabled(true);
+			////    bool found = false;
+			////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+			////	if(*i == rs){
+			////	    found = true;
+			////	    break;
+			////	}
+			////    }
+			////    if(! found) _record_screens.insert(rs);
+			// _record_screens.insert(rs);
+			this->adjustSize();
+			_vtab_record->setUpdatesEnabled(true);
 //		_record_screen->adjustSize();
+		}
 	} ();
 }
 
@@ -886,7 +897,7 @@ bool EditingWindow::handleArguments(){
 	QStringList args = QApplication::arguments();
 	if(args.size() > 1){
 		for(i = 1; i < args.size(); i++){
-			if(c)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             // if there is a current new window
+			if(c)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             // if there is a current new window
 				d = c;
 			c = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
 #ifdef Q_OS_MAC
@@ -896,7 +907,7 @@ bool EditingWindow::handleArguments(){
 #ifdef USE_SYSTRAYICON
 				c->setSTI(sti);
 #endif
-				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     // if there's an old window
+				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     // if there's an old window
 					positionWidget(c, d);
 				c->show();
 				rv = false;
@@ -1316,6 +1327,93 @@ void EditingWindow::handleEnableCategories(){
 void EditingWindow::openRecentFile(){
 	QAction *action = qobject_cast<QAction *>(sender());
 	if(action) choose(action->data().toString());
+}
+
+void EditingWindow::save_impl(const QString &full_path_file_name, bool exp){
+//    save_impl = [&](const QString &fname, bool exp = false){
+	if(!_entry_ever_saved){
+		int count, tags;
+#ifdef LOAD_TEXT_BY_WYEDITOR
+#else
+		QString text = editor_object->document()->toPlainText();
+#endif// LOAD_TEXT_BY_WYEDITOR
+		auto file_exists = find(full_path_file_name);
+		if("" == file_exists){
+			// Rename the old file to a back-up file
+			if(QFile::exists(full_path_file_name)) QFile::rename(full_path_file_name, QString("%1~").arg(full_path_file_name));
+			QFile f(full_path_file_name);
+			if(!f.open(QIODevice::WriteOnly)){
+				_status_widget->showMessage(tr("Could not write to %1").arg(full_path_file_name), 2000);
+				return;
+			}
+			QTextStream out(&f);
+			if(useUtf8) out.setCodec(QTextCodec::codecForName("UTF-8"));
+			out << (exp ? (program_title_string + " saved blog entry v2.0\n").c_str() : (program_title_string + " saved blog entry v3.0\n").c_str());
+			out << QString("Title:%1\n").arg(_control_tab->leTitle->text());
+			out << QString("Publish:%1\n")
+				.arg(QString::number(_control_tab->cbStatus->currentIndex()));
+			if(entryBlogged) out << QString("EntryNumber:%1\n").arg(entryNumber);
+			out << QString("Comments:%1\n")
+				.arg(_control_tab->chAllowComments->isChecked() ? "1" : "0");
+			out << QString("TB:%1\n").arg(_control_tab->chAllowTB->isChecked() ? "1" : "0");
+			// out << QString( "Sticky:%1\n" ).arg( cw->chSticky->isChecked() ? "1" : "0" );
+			if(_control_tab->lePassword->text().length()) out << QString("PWD:%1\n").arg(_control_tab->lePassword->text());
+			if(exp){
+				out << QString("Server:%1\n").arg(server);
+				out << QString("Location:%1\n").arg(location);
+				out << QString("Login:%1\n").arg(login);
+				out << QString("Password:%1\n").arg(password);
+				out << QString("Blog:%1\n")
+					.arg(_control_tab->cbBlogSelector->currentIndex());
+			}else{
+				out << QString("AcctBlog:%1@%2 (%3)\n") // Include the blog name so it can be relayed to the user later
+					.arg(currentBlogid)
+					.arg(currentAccountId)
+					.arg(_control_tab->cbBlogSelector->itemText(_control_tab->cbBlogSelector->currentIndex()));
+			}
+			tags = _control_tab->lwTags->count();
+			if(tags){
+				out << "Tags:";
+				for(count = 0; count < tags; count++) out << QString(count ? ";%1" : "%1").arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'));
+				out << "\n";
+			}
+			tags = _control_tab->lwKeywordTags->count();
+			if(tags){
+				out << "Keywords:";
+				for(count = 0; count < tags; count++) out << QString(count ? ",%1" : "%1").arg(_control_tab->lwKeywordTags->item(count)->text());
+				out << "\n";
+			}
+			if(!_control_tab->chNoCats->isChecked()){
+				QDomNodeList catNodeList = currentBlogElement.firstChildElement("categories")
+							   .elementsByTagName("category");
+				out << QString("PrimaryID:%1\n").arg(_control_tab->cbMainCat->itemData(_control_tab->cbMainCat->currentIndex()).toString());
+				QString catsList;
+				int cats = 0;
+				for(int a = 0; a < _control_tab->lwOtherCats->count(); a++){
+					if(_control_tab->lwOtherCats->isItemSelected(
+						   _control_tab->lwOtherCats->item(a))){
+						if(cats) catsList.append(QString(";%1").arg(_control_tab->cbMainCat->itemData(a).toString()));
+						else catsList.append(_control_tab->cbMainCat->itemData(a).toString());
+						cats++;
+					}
+				}
+				out << QString("CatIDs:%1\n").arg(catsList);
+			}else out << "PrimaryID:none\n";
+			if(_control_tab->teExcerpt->toPlainText().length() > 0) out << QString("Excerpt:%1\n").arg(_control_tab->teExcerpt->toPlainText().replace(QChar('\n'), "\\n"));
+#ifdef LOAD_TEXT_BY_WYEDITOR
+			editor_object->save_textarea();
+#else
+			out << QString("Text:\n%1").arg(text);
+#endif// LOAD_TEXT_BY_WYEDITOR
+			f.close();
+
+			dirtyIndicator->hide();
+			setWindowModified(false);
+			setDirtySignals(true);
+
+			_entry_ever_saved = true;
+		}else critical_error("file \"" + full_path_file_name + "\" already exists");
+	}
 }
 
 void EditingWindow::writeSettings(){
@@ -3543,27 +3641,31 @@ void EditingWindow::saveAs(bool exp){
 //				save(fn);
 //			}
 //		}else
-		save(fn, exp);
+		save_impl(fn, exp);
 		_app->add_recent_file(_control_tab->leTitle->text(), fn);
 	}else _status_widget->showMessage(tr("Saving aborted"), 2000);
 }
 
 void EditingWindow::save(){
-	if(_filename.isEmpty()){
-		saveAs();
-		return;
+	auto full_path_file_name = this->_current_topic_folder_name + "/" + _default_filename + "." + _local_storage_file_extension;
+	if(!_no_auto_save) save_impl(full_path_file_name);
+	else{
+		if(_filename.isEmpty()){
+			saveAs();
+			return;
+		}
+		save_impl(_filename);
 	}
-	save(_filename);
 }
 
-QString EditingWindow::find(const QString &file_name){
+QString EditingWindow::find(const QString &file_name_){
 //	bool found	= false;
 //	QString id = global_root_id;
 	QString result = "";
 	QDirIterator it(_editors_shared_directory, QStringList() << "*." + _topic_editor_config->value("local_storage_file_ext").toString(), QDir::Files, QDirIterator::Subdirectories);
 	while(it.hasNext()){
 		auto item = it.next();
-		if(item.contains(file_name)){
+		if(item.contains(file_name_)){
 //			found = true;
 			result = item;
 			break;
@@ -3572,82 +3674,7 @@ QString EditingWindow::find(const QString &file_name){
 	return result;
 }
 
-void EditingWindow::save(const QString &fname, bool exp){
-	int count, tags;
-	QString text = editor_object->document()->toPlainText();
-	auto file_exists = find(fname);
-	if("" == file_exists){
-		// Rename the old file to a back-up file
-		if(QFile::exists(fname)) QFile::rename(fname, QString("%1~").arg(fname));
-		QFile f(fname);
-		if(!f.open(QIODevice::WriteOnly)){
-			_status_widget->showMessage(tr("Could not write to %1").arg(fname), 2000);
-			return;
-		}
-		QTextStream out(&f);
-		if(useUtf8) out.setCodec(QTextCodec::codecForName("UTF-8"));
-		out << (exp ? (program_title_string + " saved blog entry v2.0\n").c_str() : (program_title_string + " saved blog entry v3.0\n").c_str());
-		out << QString("Title:%1\n").arg(_control_tab->leTitle->text());
-		out << QString("Publish:%1\n")
-			.arg(QString::number(_control_tab->cbStatus->currentIndex()));
-		if(entryBlogged) out << QString("EntryNumber:%1\n").arg(entryNumber);
-		out << QString("Comments:%1\n")
-			.arg(_control_tab->chAllowComments->isChecked() ? "1" : "0");
-		out << QString("TB:%1\n").arg(_control_tab->chAllowTB->isChecked() ? "1" : "0");
-		// out << QString( "Sticky:%1\n" ).arg( cw->chSticky->isChecked() ? "1" : "0" );
-		if(_control_tab->lePassword->text().length()) out << QString("PWD:%1\n").arg(_control_tab->lePassword->text());
-		if(exp){
-			out << QString("Server:%1\n").arg(server);
-			out << QString("Location:%1\n").arg(location);
-			out << QString("Login:%1\n").arg(login);
-			out << QString("Password:%1\n").arg(password);
-			out << QString("Blog:%1\n")
-				.arg(_control_tab->cbBlogSelector->currentIndex());
-		}else{
-			out << QString("AcctBlog:%1@%2 (%3)\n") // Include the blog name so it can be relayed to the user later
-				.arg(currentBlogid)
-				.arg(currentAccountId)
-				.arg(_control_tab->cbBlogSelector->itemText(_control_tab->cbBlogSelector->currentIndex()));
-		}
-		tags = _control_tab->lwTags->count();
-		if(tags){
-			out << "Tags:";
-			for(count = 0; count < tags; count++) out << QString(count ? ";%1" : "%1").arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'));
-			out << "\n";
-		}
-		tags = _control_tab->lwKeywordTags->count();
-		if(tags){
-			out << "Keywords:";
-			for(count = 0; count < tags; count++) out << QString(count ? ",%1" : "%1").arg(_control_tab->lwKeywordTags->item(count)->text());
-			out << "\n";
-		}
-		if(!_control_tab->chNoCats->isChecked()){
-			QDomNodeList catNodeList = currentBlogElement.firstChildElement("categories")
-						   .elementsByTagName("category");
-			out << QString("PrimaryID:%1\n").arg(_control_tab->cbMainCat->itemData(_control_tab->cbMainCat->currentIndex()).toString());
-			QString catsList;
-			int cats = 0;
-			for(int a = 0; a < _control_tab->lwOtherCats->count(); a++){
-				if(_control_tab->lwOtherCats->isItemSelected(
-					   _control_tab->lwOtherCats->item(a))){
-					if(cats) catsList.append(QString(";%1").arg(_control_tab->cbMainCat->itemData(a).toString()));
-					else catsList.append(_control_tab->cbMainCat->itemData(a).toString());
-					cats++;
-				}
-			}
-			out << QString("CatIDs:%1\n").arg(catsList);
-		}else out << "PrimaryID:none\n";
-		if(_control_tab->teExcerpt->toPlainText().length() > 0) out << QString("Excerpt:%1\n").arg(_control_tab->teExcerpt->toPlainText().replace(QChar('\n'), "\\n"));
-		out << QString("Text:\n%1").arg(text);
-		f.close();
 
-		dirtyIndicator->hide();
-		setWindowModified(false);
-		setDirtySignals(true);
-
-		_entry_ever_saved = true;
-	}else critical_error("file \"" + fname + "\" already exists");
-}
 
 void EditingWindow::choose(QString fname){
 	QString fn;
@@ -3850,8 +3877,13 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 	}
 	if(emap.contains("Excerpt")) _control_tab->teExcerpt->setPlainText(
 			QString(emap.value("Excerpt")).replace("\\n", "\n"));
+#ifdef LOAD_TEXT_BY_WYEDITOR
+	editor_object->load_textarea();
+#else
 	while(!t.atEnd()) fetchedText += QString("%1\n").arg(t.readLine());
 	editor_object->setPlainText(fetchedText);
+
+#endif
 	f.close();
 	setDirtySignals(true);
 	dirtyIndicator->hide();
@@ -5119,13 +5151,13 @@ void EditingWindow::load_callback(const std::function<void (QObject *editor, QSt
 // void Editentry::editor_save_callback(QObject *editor, const QString &save_text){
 //	Editor::editor_save_callback(editor, save_text);
 // }
-
+#ifdef USE_FILE_PER_TREEITEM
 bool EditingWindow::work_directory(QString dir_name){return _editor->work_directory(dir_name);}
-
+#endif// USE_FILE_PER_TREEITEM
 QString EditingWindow::work_directory(){return _editor->work_directory();}
-
+#ifdef USE_FILE_PER_TREEITEM
 void EditingWindow::file_name(QString file_name_){_editor->file_name(file_name_);}
-
+#endif // USE_FILE_PER_TREEITEM
 QString EditingWindow::file_name(){return _editor->file_name();}
 
 void EditingWindow::save_textarea(){_editor->save_textarea();}
@@ -5153,9 +5185,9 @@ QTextDocument *EditingWindow::textarea_document(){return _editor->document();}
 void EditingWindow::textarea_editable(bool editable){_editor->textarea_editable(editable);}
 
 
-
+#ifdef USE_FILE_PER_TREEITEM
 void EditingWindow::clear_all(){_editor->initialize_data();}
-
+#endif // USE_FILE_PER_TREEITEM
 FlatToolButton *EditingWindow::to_attach() const {return _editor->_to_attach;}
 
 QIcon EditingWindow::icon_attach_exists() const {return _editor->_icon_attach_exists;}
@@ -5220,9 +5252,9 @@ void EditingWindow::save_text_context(void){
 		misc_field("id"));
 
 	qDebug() << "MainWindow::saveTextarea() : id :" << id;
-
+	save();//	save_textarea();
 	// _editor_screen->save_textarea();
-	save_textarea();
+
 	walkhistory.add<WALK_HISTORY_GO_NONE>(id
 					     , cursor_position() // _editor_screen->cursor_position()
 					     , scrollbar_position()); // _editor_screen->scrollbar_position());
@@ -5336,4 +5368,36 @@ void EditingWindow::restore_editor_scrollbar_position(void){
 	int n = _topic_editor_config->value("editor_scroll_bar_position").toInt();
 	// _editor_screen->scrollbar_position(n);
 	scrollbar_position(n);
+}
+
+void EditingWindow::topic(const QString &topic_){
+	if(topic_ != _control_tab->topic()) _control_tab->topic(topic_);
+}
+
+QString EditingWindow::topic() const {return _control_tab->topic();}
+
+void EditingWindow::on_topic_changed(const QString &tp){
+	auto topic = tp;
+	// deal with folder name change
+	QString original	= _current_topic_folder_name;
+	QString new_topic	= tr(topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str());
+	QString dest = _editors_shared_directory + "/" + new_topic;
+	if(original != dest){
+		QDir dir;
+		if(!dir.rename(original, dest)) critical_error("Move folder \"" + original + "\" to folder \"" + dest + "\" failed");
+		else{
+			_current_topic_folder_name	= dest;
+			_current_topic_config_name	= _current_topic_folder_name + "/" + gl_para::_editor_conf_filename;
+			_topic_editor_config = [&]() -> std::unique_ptr<QSettings>{
+						       if(!QDir(_current_topic_folder_name).exists())
+							       if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
+						       if(!QFile(_current_topic_config_name).exists())
+							       if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras.target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+						       if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
+						       return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
+					       } ();
+			_local_storage_file_extension = _topic_editor_config->value("local_storage_file_ext", "cqt").toString();
+			if(new_topic != _control_tab->topic()) _control_tab->topic(new_topic);
+		}
+	}
 }

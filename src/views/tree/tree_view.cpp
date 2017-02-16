@@ -607,7 +607,11 @@ void tv_t::dropEvent(QDropEvent *event){
 				// Если таблица конечных записей после удаления перемещенной записи стала пустой
 				if(_record_controller->row_count() == 0){
 					// find_object<MetaEditor>(meta_editor_singleton_name)
+#ifdef USE_FILE_PER_TREEITEM
 					_record_controller->editing_window()->clear_all(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
+#else
+					_record_controller->editing_window()->close();
+#endif// USE_FILE_PER_TREEITEM
 				}
 				// find_object<RecordScreen>(table_screen_singleton_name)
 				_record_controller->record_screen()->tools_update();
@@ -1332,15 +1336,15 @@ browser::WebView *tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
 			}
 		}
 		if(!gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b){  // !result_item->is_activated()
-								 bool result = false;
-								 // auto result_item = source_model()->item(_index);
-								 if(result_item->binder()){
-									 if(url_equal(b->host()->field<home_type>().toStdString(), result_item->field<home_type>().toStdString()))
-										 if(result_item->binder()->page())
-											 if(result_item->binder()->page()->view()->load_finished()) result = true;
-								 }
-								 return result;
-							 })){
+							 bool result = false;
+							 // auto result_item = source_model()->item(_index);
+							 if(result_item->binder()){
+								 if(url_equal(b->host()->field<home_type>().toStdString(), result_item->field<home_type>().toStdString()))
+									 if(result_item->binder()->page())
+										 if(result_item->binder()->page()->view()->load_finished()) result = true;
+							 }
+							 return result;
+						 })){
 			// QModelIndex index = nodetreeview->selectionModel()->currentIndex();
 
 			// Save the text in the edit box in the corresponding file// Сохраняется текст в окне редактирования в соответсвующий файл
@@ -1746,7 +1750,7 @@ void tv_t::encrypt(void){
 	if(gl_paras.crypt_key().size() == 0){
 		// Запрашивается пароль
 		Password password;
-		if(password.retrievePassword() == true)                                                                                                                                                                     // Если пароль введен правильно
+		if(password.retrievePassword() == true)                                                                                                                                                                                                                              // Если пароль введен правильно
 			item_encrypt(); // Ветка шифруется
 	}else{
 		// Иначе считается, что шифрующий ключ уже был задан и он правильный
@@ -1785,7 +1789,7 @@ void tv_t::decrypt(void){
 	if(gl_paras.crypt_key().size() == 0){
 		// Запрашивается пароль
 		Password password;
-		if(password.retrievePassword() == true)                                                                                                                                                                     // Если пароль введен правильно
+		if(password.retrievePassword() == true)                                                                                                                                                                                                                              // Если пароль введен правильно
 			item_decrypt(); // Ветка расшифровывается
 	}else{
 		// Иначе пароль в данной сессии вводился и он правильный
@@ -2687,7 +2691,7 @@ boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex> _treei
 
 				// }
 			}
-		}else                                                               // for current_item->contains_direct(_source_item->linker()) != nullptr, maybe just some merge, go view_paste_sibling upon
+		}else                                                                                      // for current_item->contains_direct(_source_item->linker()) != nullptr, maybe just some merge, go view_paste_sibling upon
 			result = _source_item;
 		assert(result);
 
@@ -2996,7 +3000,6 @@ QModelIndexList tv_t::copy(void){ // const
 	// find_object<MainWindow>("mainwindow")
 	auto rs = dynamic_cast<rs_t *>(gl_paras.vtab_record()->currentWidget());
 	if(rs) rs->editing_window()->save_text_context();
-
 	// Получение списка индексов QModelIndex выделенных элементов
 	// QModelIndexList _origin_index_list = selectionModel()->selectedIndexes();
 	QModelIndexList _selectitems = LocalLizeInitializer(this)().indexes(); // selectionModel()->selectedIndexes(); //
@@ -3552,7 +3555,6 @@ std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > tv_t:
 					     // Сохраняется текст в окне редактирования в соответсвующий файл
 					     auto rs = dynamic_cast<rs_t *>(gl_paras.vtab_record()->currentWidget());
 					     if(rs) rs->editing_window()->save_text_context();
-
 					     //	    auto	source_model_	= [&](){return source_model();};
 					     //	    auto	current_item_	= current_item();
 					     int origin_count = source_model_()->count_records_all();

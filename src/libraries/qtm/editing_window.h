@@ -23,6 +23,7 @@
 #ifndef CATKIN_H
 #define CATKIN_H
 #include <memory>
+#include <functional>
 // #include "ui_EditingWindowBase.h"
 #include "ui_SideWidget.h"
 #include "ui_aboutbox.h"
@@ -124,7 +125,7 @@ public:
 		     , EditorDock *editor_dock
 		     , QString style_source_
 		     , QStringList hide_editor_tools_ = appconfig.hide_editor_tools()
-		     , QString new_post_topic = ""// global_root_id// get_unical_id()
+		     , QString new_post_topic = "undefined"// global_root_id// get_unical_id()
 		     , QString new_post_content = "Welcome to topic"// = QString()
 		     , Qt::WindowFlags flags = Qt::Widget);
 	~EditingWindow();
@@ -211,6 +212,11 @@ private:
 
 	QString _editors_shared_directory = "";
 
+	QString _current_topic_folder_name	= "";
+	QString _current_topic_config_name	= "";
+
+	std::unique_ptr<QSettings> _topic_editor_config;
+
 	int currentAccount, currentBlog, loadedEntryBlog;
 	QString loadedAccountId;
 	QString applicationVersion;
@@ -237,7 +243,7 @@ private:
 	QHash<QString, int> autoLinkTargetDictionary;
 	QByteArray responseData;
 	QString entryNumber, dateTime;
-	QString _filename;
+	QString _default_filename = "text", _filename = "";
 	int primaryCat;
 	QString otherCatsList;
 	QRegExpValidator *tagValidator;
@@ -269,7 +275,7 @@ private:
 	SysTrayIcon *sti;
 #endif
 	QHash<QString, QChar> xmlEntities;
-	SuperMenu *_super_menu;
+
 	//	QToolBar *toolBar;
 	//	FlatToolButton
 	//	FlatToolButton *action_Open;
@@ -288,7 +294,7 @@ private:
 private slots:
 	void choose(const QString fname = QString());
 	void openRecentFile();
-	void save(const QString &, bool exp = false);
+	void save_impl(const QString &full_path_file_name, bool exp = false);
 	void exportEntry();
 	void saveAll();
 	void saveAs(bool exp = false);
@@ -411,16 +417,12 @@ public slots:
 	void file_print_preview();
 	void file_print();
 	void file_print_pdf();
+	void on_topic_changed(const QString &tp);
 protected:
-	QWidget *_central_widget; // *leftWidget,
-	QSplitter *_splitter;
-	//	Ui::CategoryWidget
-	SideTabWidget *_control_tab;
-	QString _current_topic_folder_name	= "";
-	QString _current_topic_config_name	= "";
 
-	std::unique_ptr<QSettings> _topic_editor_config;
-	QStackedWidget *_main_stack;
+
+
+
 	QTextBrowser *_preview_window;
 	Highlighter *_highlighter;
 
@@ -443,8 +445,19 @@ protected:
 	FindScreen *_find_screen;
 
 
+
+
+	SuperMenu *_super_menu;
+	QWidget *_central_widget; // *leftWidget,
+	QSplitter *_splitter;
+	QStackedWidget *_main_stack;
+
+
+	//	Ui::CategoryWidget
+	SideTabWidget *_control_tab;
 	TEXTEDIT_FOR_READ *_console;
 	TEXTEDIT *_editor;
+
 
 	QVBoxLayout *_main_layout_with_search;
 	QHBoxLayout *_main_layout;
@@ -482,6 +495,7 @@ protected:
 	virtual void resizeEvent(QResizeEvent *);
 	bool eventFilter(QObject *, QEvent *);
 	virtual bool event(QEvent *);
+//	std::function<void (const QString &, bool)> save_impl;
 
 signals:
 	void httpBusinessFinished();
@@ -518,15 +532,17 @@ public:
 
 	//		static void editor_load_callback(QObject *editor, QString &load_text);
 	//		static void editor_save_callback(QObject *editor, const QString &save_text);
-
+#ifdef USE_FILE_PER_TREEITEM
 	// Абсолютный или относительный путь (т.е. директория),
 	// куда будет сохраняться текст. Без завершающего слеша
 	bool work_directory(QString dir_name);
+#endif // USE_FILE_PER_TREEITEM
 	QString work_directory(void);
-
+#ifdef USE_FILE_PER_TREEITEM
 	// Имя файла, куда должен сохраняться текст
 	// Без пути, только имя
 	void file_name(QString file_name_);
+#endif// USE_FILE_PER_TREEITEM
 	QString file_name(void);
 	void save_textarea();
 
@@ -591,8 +607,9 @@ public:
 	////	QVBoxLayout		*_textformat_buttons_layout = nullptr;
 	////	// Область редактирования текста
 	////	EditorTextArea *_text_area;
-
+#ifdef USE_FILE_PER_TREEITEM
 	void clear_all(void);
+#endif// USE_FILE_PER_TREEITEM
 	FlatToolButton *to_attach() const;
 
 	QIcon icon_attach_exists() const;
@@ -611,7 +628,9 @@ public:
 	void go_walk_history_previous();
 	void restore_editor_cursor_position();
 	void restore_editor_scrollbar_position();
-	QString find(const QString &file_name);
+	QString find(const QString &file_name_);
+	void topic(const QString &topic_);
+	QString topic() const;
 };
 
 #endif

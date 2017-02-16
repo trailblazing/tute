@@ -99,6 +99,7 @@
 #include "views/record_table/record_view.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
+#include "libraries/qtm/editing_window.h"
 
 extern gl_para gl_paras;
 // Record *default_record = nullptr;
@@ -668,7 +669,7 @@ namespace browser {
 
 		stream << qint32(browser_magic);
 		stream << qint32(version);
-
+		stream << _record_screen->editing_window()->topic();
 		stream << size();
 		stream << menuBar()->isVisible();
 		stream << !_find_screen->isHidden();
@@ -694,19 +695,22 @@ namespace browser {
 		stream >> marker;
 		stream >> v;
 		if(marker != browser_magic || v != version) return false;
+		QString topic;
 		QSize size;
 		bool showMenuBar;
 		bool showToolbar;
 		bool showBookmarksBar;
 		bool showStatusbar;
 		QByteArray tabState;
-
+		stream >> topic;
 		stream >> size;
 		stream >> showMenuBar;
 		stream >> showToolbar;
 		stream >> showBookmarksBar;
 		stream >> showStatusbar;
 		stream >> tabState;
+
+		_record_screen->editing_window()->topic(topic);
 
 		resize(size);
 

@@ -77,7 +77,7 @@ W_OBJECT_IMPL(Editor)
 #endif
 
 Editor::Editor(QStackedWidget *main_stack
-	      , EditingWindow *blog_editor
+	      , EditingWindow *editing_window
 	      , int mode
 	      , QStringList hide_editor_tools
 	      , bool enable_assembly
@@ -88,7 +88,7 @@ Editor::Editor(QStackedWidget *main_stack
 	  , _tools_line_0(new QToolBar())
 	  , _tools_line_1(new QToolBar())
 	  , _text_area(new EditorTextArea(this))
-	  , _editing_window(blog_editor){
+	  , _editing_window(editing_window){
 	// _init_data_enable_assembly		= true;
 	// _init_data_config_file_name		= "";
 	// _init_data_enable_random_seed	= false;
@@ -98,7 +98,8 @@ Editor::Editor(QStackedWidget *main_stack
 	save_callback_func	= nullptr;
 	load_callback_func	= nullptr;
 	back_callback_func	= nullptr;
-
+	work_directory(editing_window->_current_topic_folder_name);
+	file_name(editing_window->_default_filename + ".html");
 //	init_enable_assembly(enable_assembly);
 //	init_enable_random_seed(enable_random_seed);
 	init(mode, hide_editor_tools, enable_assembly, enable_random_seed);
@@ -357,7 +358,7 @@ void Editor::setup_signals(void){
 	// &Editor::on_show_text_clicked);
 	// connect(_to_attach, &FlatToolButton::clicked, this,
 	// &Editor::on_to_attach_clicked);
-
+	connect(_text_area, &EditorTextArea::textChanged, [&] {_editing_window->_entry_ever_saved = false;});
 	connect(_text_area, &EditorTextArea::cursorPositionChanged, this, &Editor::on_cursor_position_changed);
 	connect(_text_area, &EditorTextArea::selectionChanged, this, &Editor::on_selection_changed);
 
@@ -669,7 +670,7 @@ void Editor::setup_closebutton(void){
 	if(appconfig.interface_mode() == "desktop"){
 		int w	= _close_button->geometry().width();
 		int h	= _close_button->geometry().height();
-		int x	= min(w, h) / 2; // imin(w, h) / 2;
+		int x	= min(w, h);// / 2; // imin(w, h) / 2;
 		_close_button->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed, QSizePolicy::ToolButton));
 		_close_button->setMinimumSize(x, x);
 		_close_button->setMaximumSize(x, x);
@@ -969,7 +970,7 @@ void Editor::editor_load_callback(QObject *editor, QString &load_text){
 		// Если незашифровано
 		if(work_with_crypt == false) load_text = QString::fromUtf8(f.readAll());
 		else load_text = CryptService::decryptStringFromByteArray(
-				gl_paras.crypt_key(), f.readAll());                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  // Если зашифровано
+				gl_paras.crypt_key(), f.readAll());                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        // Если зашифровано
 	}else load_text = "";
 }
 
@@ -1119,14 +1120,17 @@ bool Editor::save_textarea_images(int mode = SAVE_IMAGES_SIMPLE){
 
 void Editor::save_textarea(void){
 	qDebug() << "Save textarea...";
+	auto dir = work_directory();
+	auto fname = file_name();
+	auto full_path = dir + "/" + fname;
 	// Если запись была открыта на просмотр и изменена
-	if(work_directory().length() != 0 && file_name().length() != 0 && textarea_modified() == true){
+	if(dir.length() != 0 && fname.length() != 0 && textarea_modified() == true){
 		// Перенос текущего файла записи в корзину
 		qDebug()	<< "Try remove file " << file_name() << " from directory "
 				<< work_directory();
-		if(QFileInfo(work_directory() + "/" + file_name()).exists()){
+		if(QFileInfo(full_path).exists()){
 			qDebug() << "File exists. Remove it.";
-			DiskHelper::remove_file_to_trash(work_directory() + "/" + file_name());
+			DiskHelper::remove_file_to_trash(full_path);
 		}else qDebug() << "Cant remove file. File not exists.";
 		// Если происходит прямая работа с файлом текста
 		if(load_callback_func == nullptr){
@@ -1829,7 +1833,7 @@ void Editor::on_selection_changed(void){
 	}
 	// Список выбора шрифта начинает указывать на нужный шрифт
 	if(differentFontFlag == 0) set_fontselect_on_display(
-			startFontFamily);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        // Если всё выделение одним шрифтом
+			startFontFamily);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    // Если всё выделение одним шрифтом
 	else set_fontselect_on_display("");
 	// Список выбора размера начинает указывать на нужный размер
 	if(differentSizeFlag == 0) set_fontsize_on_display(

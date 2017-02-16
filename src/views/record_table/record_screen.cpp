@@ -209,19 +209,20 @@ rs_t::rs_t(ts_t *tree_screen
 	connect(_vtab_record, &::HidableTabWidget::tabCloseRequested, [&](int index){
 			assert(_vtab_record);
 			auto w = _vtab_record->widget(index);
-			assert(w);
-			_vtab_record->removeTab(index);
-			if(w->objectName() == record_screen_multi_instance_name){
-				//		auto rs = dynamic_cast<rs_t *>(w);
-				auto _browser = dynamic_cast<rs_t *>(w)->browser();
-				if(_browser){
-					_browser->close();
-					//		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-					_browser->deleteLater();
+			if(w){
+				_vtab_record->removeTab(index);
+				if(w->objectName() == record_screen_multi_instance_name){
+					//		auto rs = dynamic_cast<rs_t *>(w);
+					auto _browser = dynamic_cast<rs_t *>(w)->browser();
+					if(_browser){
+						_browser->close();
+						//		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+						_browser->deleteLater();
+					}
+				}else{
+					w->close();
+					w->deleteLater();
 				}
-			}else{
-				w->close();
-				w->deleteLater();
 			}
 			w = nullptr;
 		});
