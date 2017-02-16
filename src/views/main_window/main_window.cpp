@@ -104,7 +104,7 @@ wn_t::wn_t(gl_para &globalparameters
 	  // , _download(new browser::DownloadManager(download_manager_singleton_name, _vtab_record))
 	  , _statusbar([&] {auto st = new QStatusBar(this); _gl_paras.status_bar(st); return st;} ())
 	  , _switcher([&] {auto sw = new WindowSwitcher(windowswitcher_singleton_name, _editor_dock, this); _gl_paras.window_switcher(sw); return sw;} ())
-	  , _tray_icon([&] {auto ti = new SysTrayIcon(_tree_screen, _browser_dock, _vtab_record, _find_screen, _editor_dock, this, _profile, _style_source); _gl_paras.tray_icon(ti); return ti;} ())
+	  , _tray_icon([&] {auto ti = new SysTrayIcon(_tree_screen, _browser_dock, _vtab_record, _find_screen, _editor_dock, this, _profile, _style_source, true); _gl_paras.tray_icon(ti); return ti;} ())
 	  , _enable_real_close(false){
 	// _page_screen->setVisible(false);
 	// _page_screen->hide();
@@ -868,6 +868,9 @@ void wn_t::save_all_state(void){
 			ew->save_text_context();
 			ew->save_editor_cursor_position();
 			ew->save_editor_scrollbar_position();
+
+			auto brs = rs->browser();
+			if(brs) brs->save_state();
 		}
 	}
 	// Сохраняются данные сеанса работы

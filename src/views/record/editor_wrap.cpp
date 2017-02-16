@@ -101,9 +101,9 @@ EditorWrap::EditorWrap(FindScreen *find_screen
 	setup_labels();
 	setup_ui();
 	assembly();
-#ifdef USE_FILE_PER_TREEITEM
+
 	initialize_data();
-#endif// USE_FILE_PER_TREEITEM
+
 //	adjustSize();
 	setup_signals(_find_screen);
 
@@ -344,6 +344,7 @@ void EditorWrap::field(QString n, QString v){
 void EditorWrap::initialize_data(void){
 	qDebug() << "MetaEditor::clear_all()";
 	if(!_item){
+
 		// Очистка для слоя редактора
 		pin("");
 		name("");
@@ -351,10 +352,10 @@ void EditorWrap::initialize_data(void){
 		url("");
 		tags("");
 		textarea("");
-
+#ifdef USE_FILE_PER_TREEITEM
 		work_directory("");
 		file_name("");
-
+#endif// USE_FILE_PER_TREEITEM
 		clear_all_misc_field();
 
 		// Иконка аттачей должна показывать что аттачей нет

@@ -283,7 +283,7 @@ public:
 	RecentFile getRecentFile(int);
 	QStringList titles();
 	QStringList filenames();
-	EditingWindow *editing_win(){return _editing_win;}
+	EditingWindow *editing_window(){return _editing_win;}
 	void deleteSandbox();
 	bool isSandbox(){return _isSandbox;}
 
@@ -291,7 +291,7 @@ public slots:
 	void set_recent_files(const QStringList &, const QStringList &);
 	void add_recent_file(const QString &, const QString &);
 	void saveAll();
-	void editing_win(EditingWindow *sm);
+	void editing_window(EditingWindow *sm);
 
 signals:
 	void recent_files_updated(QStringList, QStringList);

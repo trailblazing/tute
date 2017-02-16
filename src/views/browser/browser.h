@@ -206,6 +206,8 @@ namespace browser {
 		//        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
 		rs_t *record_screen();
 		BrowserDock *entrance();
+		void configuration(std::unique_ptr<QSettings> &&conf);
+		void configuration_full_name(const QString &conf_name);
 	public slots:
 		//            void loadPage(const QString &url) = delete;
 		void slotHome();
@@ -336,7 +338,8 @@ namespace browser {
 		rs_t *_record_screen;
 		TabWidget *_tabmanager;
 		BrowserDock *_entrance;
-
+		QString _configuration_full_name = "";
+		std::unique_ptr<QSettings> _configuration;
 		friend class sapp_t; // QtSingleApplication;
 		friend class BrowserDock;
 		friend class WebView;

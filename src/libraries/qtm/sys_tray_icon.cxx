@@ -99,8 +99,8 @@ SysTrayIcon::SysTrayIcon(ts_t *tree_screen
 			, wn_t *main_window
 			, browser::Profile *profile
 			, QString style_source
-			, Qt::WindowFlags flags
 			, bool noWindow
+			, Qt::WindowFlags flags
 			, QObject *parent)
 	: STI_SUPERCLASS(parent)
 	  , _tree_screen(tree_screen)
@@ -391,7 +391,7 @@ void SysTrayIcon::newDoc(){
 #ifdef Q_OS_MAC
 // setNoStatusBar( c );
 #endif
-	EditingWindow *editing_win_ = _app->editing_win();
+	EditingWindow *editing_win_ = _app->editing_window();
 	qDebug() << "got active widget";
 	if(editing_win_) EditingWindow::positionWidget(c, editing_win_);
 	qDebug() << "positioned widget";

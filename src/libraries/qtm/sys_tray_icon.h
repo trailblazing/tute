@@ -70,8 +70,8 @@ public:
 		   , wn_t *main_window
 		   , browser::Profile *profile
 		   , QString style_source
-		   , Qt::WindowFlags flags = Qt::Widget
 		   , bool noWindow = false
+		   , Qt::WindowFlags flags = Qt::Widget
 		   , QObject *parent = 0);
 	~SysTrayIcon();
 	void setDoubleClickFunction(int);

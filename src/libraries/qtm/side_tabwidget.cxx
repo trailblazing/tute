@@ -26,7 +26,8 @@ SideTabWidget::SideTabWidget(ts_t *_tree_screen
 	  , _editing_window(editing_window){
 	//      , tabWidget(new HidableTabWidget(_tree_screen, _find_screen, _editentry, _entrance, _main_window, _profile, style_source_, this))
 	setupUi();
-	connect(leTitle, &QLineEdit::textChanged, _editing_window, &EditingWindow::on_topic_changed);
+	connect(_lineedit_topic, &QLineEdit::textChanged, _editing_window, &EditingWindow::on_topic_changed);
+
 }
 
 void SideTabWidget::setupUi(){

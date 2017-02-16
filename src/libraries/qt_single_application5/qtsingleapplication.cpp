@@ -1740,15 +1740,16 @@ void sapp_t::add_recent_file(const QString &title, const QString &filename){
 }
 
 void sapp_t::saveAll(){
-	EditingWindow *e;
-	QWidgetList tlw = QApplication::topLevelWidgets();
-	Q_FOREACH(QWidget *w, tlw){
-		e = qobject_cast<EditingWindow *>(w);
-		if(e) e->save();
-	}
+//	EditingWindow *e;
+//	QWidgetList tlw = QApplication::topLevelWidgets();
+//	Q_FOREACH(QWidget *w, tlw){
+//		e = qobject_cast<EditingWindow *>(w);
+//		if(e) e->save();
+//	}
+	gl_paras.main_window()->save_all_state();
 }
 
-void sapp_t::editing_win(EditingWindow *ew){
+void sapp_t::editing_window(EditingWindow *ew){
 #ifdef Q_OS_MAC
 	emit editing_win_changed(ew);
 #endif

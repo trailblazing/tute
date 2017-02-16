@@ -525,7 +525,18 @@ namespace browser {
 		  , _layout(new QVBoxLayout)
 		  , _record_screen(record_screen)
 		  , _tabmanager(new browser::TabWidget(tree_screen, find_screen, editing_window, this, record_screen, entrance, _main_window, profile)) // (_record_screen->tabmanager())
-		  , _entrance(entrance->prepend(this)){ // , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+		  , _entrance(entrance->prepend(this))
+		  , _configuration_full_name(record_screen->editing_window()->current_topic_folder_name() + "/" + gl_para::_browser_conf_filename)
+		  , _configuration([&]() -> std::unique_ptr<QSettings>{
+					   auto _current_topic_folder_name = record_screen->editing_window()->current_topic_folder_name();
+					   if(!QDir(_current_topic_folder_name).exists())
+						   if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
+					   auto _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_browser_conf_filename;
+					   if(!QFile(_current_topic_config_name).exists())
+						   if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras.target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+					   if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
+					   return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
+				   } ()){ // , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
 		init();
 
 		run_script(style_source); // assert(record->linkpage());
@@ -623,11 +634,11 @@ namespace browser {
 	}
 
 	void Browser::load_default_state(){
-		QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_paras._browser_conf_filename, QSettings::IniFormat);
-		settings.beginGroup(QLatin1String("browser"));
-		QByteArray data = settings.value(QLatin1String("default_state")).toByteArray();
+//		QSettings _configuration(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+		_configuration->beginGroup(QLatin1String("browser"));
+		QByteArray data = _configuration->value(QLatin1String("default_state")).toByteArray();
 		restore_state(data);
-		settings.endGroup();
+		_configuration->endGroup();
 	}
 
 	QSize Browser::sizeHint() const {
@@ -647,12 +658,12 @@ namespace browser {
 
 	void Browser::save(){
 		sapp_t::instance()->saveSession();
-		std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_paras._browser_conf_filename, QSettings::IniFormat);
+//		std::shared_ptr<QSettings> _configuration = std::make_shared<QSettings>(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_paras._browser_conf_filename, QSettings::IniFormat);
 		//	QSettings settings(globalparameters.work_directory() + "/" + globalparameters.target_os() +  "/"+globalparameters._browser_conf_filename, QSettings::IniFormat);
-		settings->beginGroup(QLatin1String("browser"));
+		_configuration->beginGroup(QLatin1String("browser"));
 		QByteArray data = save_state(false);
-		settings->setValue(QLatin1String("default_state"), data);
-		settings->endGroup();
+		_configuration->setValue(QLatin1String("default_state"), data);
+		_configuration->endGroup();
 	}
 
 	static const qint32 browser_magic = 0xba;
@@ -662,14 +673,14 @@ namespace browser {
 		assert(_find_screen);
 		// QToolBar *navigater = findscreen->navigater();
 		// assert(navigater);
-
-		int version = 2;
+		auto topic	= _record_screen->editing_window()->topic();
+		int version	= 2;
 		QByteArray data;
 		QDataStream stream(&data, QIODevice::WriteOnly);
 
 		stream << qint32(browser_magic);
 		stream << qint32(version);
-		stream << _record_screen->editing_window()->topic();
+		stream << topic;
 		stream << size();
 		stream << menuBar()->isVisible();
 		stream << !_find_screen->isHidden();
@@ -709,9 +720,29 @@ namespace browser {
 		stream >> showBookmarksBar;
 		stream >> showStatusbar;
 		stream >> tabState;
-
-		_record_screen->editing_window()->topic(topic);
-
+		if(_record_screen->editing_window()->topic() != topic){
+			_record_screen->editing_window()->topic(topic);
+			configuration(// std::make_unique<QSettings>(_current_topic_folder_name + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat)
+				[&]() -> std::unique_ptr<QSettings>{
+					auto _current_topic_folder_name = _record_screen->editing_window()->current_topic_folder_name();
+					if(!QDir(_current_topic_folder_name).exists())
+						if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
+					auto _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_browser_conf_filename;
+					if(!QFile(_current_topic_config_name).exists()){
+						if(QFile(this->_configuration_full_name).exists()){
+							//
+							if(!QFile::copy(this->_configuration_full_name, _current_topic_config_name)) critical_error(QString("Can not copy \"") + this->_configuration_full_name + "\"");
+						}else{
+							//
+							if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras.target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\"");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      // throw std::runtime_error("Can not copy document.ini");
+						}
+					}
+					if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
+					this->_configuration_full_name = _current_topic_config_name;
+					return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
+				} ());
+			//
+		}
 		resize(size);
 
 		_find_screen->setVisible(showToolbar);
@@ -1380,9 +1411,9 @@ namespace browser {
 
 // deprecated by record::preoperty::home
 	void Browser::slotHome(){
-		QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_paras._browser_conf_filename, QSettings::IniFormat);
-		settings.beginGroup(QLatin1String("MainWindow"));
-		QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
+//		QSettings _configuration(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_paras._browser_conf_filename, QSettings::IniFormat);
+		_configuration->beginGroup(QLatin1String("MainWindow"));
+		QString home = _configuration->value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
 		auto tree_view = _tree_screen->view();
 		// boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
@@ -1391,7 +1422,7 @@ namespace browser {
 		if(!parent) throw std::runtime_error(formatter() << "! parent");
 		TreeIndex::activate([&] {return tree_view->source_model();}, current_item, QUrl(home), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), home.toStdString()) || url_equal(it_->field<url_type>().toStdString(), home.toStdString());});
 		// }
-		settings.endGroup();
+		_configuration->endGroup();
 	}
 
 	void Browser::slotWebSearch(){
@@ -1642,4 +1673,7 @@ namespace browser {
 	rs_t *Browser::record_screen(){return _record_screen;}
 
 	BrowserDock *Browser::entrance(){return _entrance;}
+	void Browser::configuration(std::unique_ptr<QSettings> &&conf){_configuration = std::move(conf);}
+	void Browser::configuration_full_name(const QString &conf_name){_configuration_full_name = conf_name;}
 }
+

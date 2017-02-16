@@ -522,7 +522,7 @@ void Editor::setup_buttons(void){
 	_action_open
 		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Open ...").c_str()), tr("Open ..."), tr("Load a saved entry from the disk"), QIcon(":/resource/pic/fileopen.svg"), [&](bool){_editing_window->choose();});
 	_action_save
-		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Save").c_str()), tr("Save"), tr("Save this entry to disk for editing or publication later"), QIcon(":/resource/pic/save.svg"), [&](bool){_editing_window->save();});
+		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Save").c_str()), tr("Save"), tr("Save this entry to disk for editing or publication later"), QIcon(":/resource/pic/save.svg"), [&](bool){_editing_window->save_text_context();});
 
 	_action_link
 		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Link").c_str()), tr("Link"), tr("Inserts a link to another page, the location to be specified now"), QIcon(":/resource/pic/link.svg") // QPixmap(linkIcon_xpm)

@@ -487,7 +487,7 @@ protected:
 
 	QString _splitter_groupname;
 	QString _splitter_sizelist;
-	rs_t *_record_screen;
+	rs_t *_record_screen = nullptr;
 //	browser::Browser *_browser = nullptr;
 	// virtual void resizeEvent( QResizeEvent *e );
 	virtual void closeEvent(QCloseEvent *);
@@ -631,6 +631,7 @@ public:
 	QString find(const QString &file_name_);
 	void topic(const QString &topic_);
 	QString topic() const;
+	QString current_topic_folder_name() const;
 };
 
 #endif
