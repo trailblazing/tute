@@ -41,7 +41,7 @@
 #include "views/browser/chasewidget.h"
 #include "views/browser/browser_dock.h"
 #include "views/browser/tabwidget.h"
-#include "views/browser/toolbarsearch.h"
+#include "views/browser/toolbar_search.h"
 #include "views/record/editor_wrap.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_screen.h"

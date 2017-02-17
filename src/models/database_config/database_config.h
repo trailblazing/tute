@@ -12,6 +12,9 @@
 #define CRYPT_CHECK_ROUNDS 1000
 #define CRYPT_CHECK_HASH_LEN 160
 
+class gl_para;
+class AppConfig;
+
 class DataBaseConfig : public QObject {
 #if QT_VERSION == 0x050600
     W_OBJECT(DataBaseConfig)
@@ -23,7 +26,7 @@ public:
     DataBaseConfig(QObject* pobj = 0);
     ~DataBaseConfig();
 
-    void init(void);
+    void init(const gl_para &gl_paras_, const AppConfig& appconfig_);
     bool is_init(void);
 
     // Версия формата конфигфайла

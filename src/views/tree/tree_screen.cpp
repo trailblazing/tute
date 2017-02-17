@@ -32,7 +32,7 @@
 #include "models/tree/tree_know_model.h"
 #include "tree_view.h"
 #include "views/browser/browser_dock.h"
-#include "views/browser/toolbarsearch.h"
+#include "views/browser/toolbar_search.h"
 #include "views/browser/webview.h"
 #include "views/main_window/main_window.h"
 #include "views/record/editor_wrap.h"

@@ -94,7 +94,7 @@
 #include "models/tree/binder.hxx"
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_know_model.h"
-#include "toolbarsearch.h"
+#include "toolbar_search.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
 #include "views/record/editor_wrap.h"

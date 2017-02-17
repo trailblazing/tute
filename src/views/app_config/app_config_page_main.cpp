@@ -351,6 +351,7 @@ int AppConfigPageMain::apply_changes(void){
 	int difficult_changes = 0;
 
 	QString root_path_ = gl_paras.root_path();
+	std::tuple<bool, QString> result;
 	auto write_root = [&](){
 				  auto root_path_ = _rootdir_input->text();
 				  QDir dir(root_path_);
@@ -365,7 +366,8 @@ int AppConfigPageMain::apply_changes(void){
 				  //	    }
 				  if(dir.exists() && dir.isReadable()){
 					  // Новое имя запоминается в конфиг
-					  gl_paras.root_path(dir.path());
+//					  gl_paras.permanent_root_path_to_standard_path(dir.path());
+					  result = gl_paras.permanent_coordinate_root(_rootdir_input->text()); // is_standard,
 					  difficult_changes = 1;
 					  if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
 					  _application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
@@ -420,7 +422,6 @@ int AppConfigPageMain::apply_changes(void){
 		appconfig.interface_language(_interface_language->currentText());
 		difficult_changes = 1;
 	}
-	const auto result = gl_paras.coordinate_root(_rootdir_input->text()); // is_standard,
 	if(_original_root_state != result){
 		//	if(std::get<1>(result) != is_standard) _application_mode_option->setCurrentText(is_standard ?  standardItem : portableItem);
 		//	if(std::get<2>(result) != _rootdir_input->text()){

@@ -1,7 +1,9 @@
 #ifndef __GLOBALPARAMETERS_H__
 #define __GLOBALPARAMETERS_H__
 
+
 #include <memory>
+#include <functional>
 #include <QStatusBar>
 
 #if QT_VERSION == 0x050600
@@ -65,7 +67,7 @@ public:
 	//	void app_mode(const QString &mode);
 
 	QString root_path(void) const;
-	bool root_path(QString path_name);
+//	bool permanent_root_path_to_standard_path(QString path_name);
 
 	//	QString root_path(void) const;
 	QString config_filename(void) const;
@@ -158,7 +160,7 @@ public:
 private:
 #define STANDARD_MODE	true
 #define PORTABLE_MODE	false
-	std::tuple<const bool, const QString> coordinate_root(const QString &root_path_ = "");
+	std::tuple<const bool, const QString> permanent_coordinate_root(const QString &root_path_ = "");
 	//	bool check_workdirectory(bool enablePortable);
 
 	//	void create_root_standard(void);
@@ -189,10 +191,11 @@ private:
 	//	QString _main_program_path	= "";
 	//	QString	_root_path				= "./";
 
-	QString _standard_path = "";
-	std::pair<QString, QString> _standard_paths = {"", ""};
+	QString _standard_path = ".";
+	std::pair<QString, QString> _standard_paths = {".", "."};
 	std::vector<rs_t *> _table_screens;
 	SysTrayIcon *_tray_icon;
+	std::function<QString()> mode_file_location;
 	friend class AppConfigPageMain;
 };
 

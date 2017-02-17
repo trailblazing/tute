@@ -39,17 +39,18 @@ AppConfig::~AppConfig(){
 	//    }
 }
 
-void AppConfig::init(void){
-	auto location = gl_paras.root_path() + "/" + gl_paras.target_os();
+void AppConfig::init(const gl_para &gl_paras_){
+	auto location = gl_paras_.root_path() + "/" + gl_paras_.target_os();
+
 	// Создается имя файла конфигурации
-	_config_file_full_name = location + "/" + gl_paras.config_filename();
+	_config_file_full_name = location + "/" + gl_paras_.config_filename();
 	//	// Проверяется, есть ли файл конфигурации
 	//    QFile conf_file(_config_file_name);
 	//    if(! conf_file.exists()) critical_error("File " + _config_file_name + " not found.");
 	if(!QFile(_config_file_full_name).exists()){
 		if(!QDir(location).exists())
 			if(!QDir::root().mkpath(location)) critical_error("void AppConfig::init(void) can not make path \"" + location + "\"");
-		if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras.target_os() + "/" + gl_paras.config_filename(), _config_file_full_name)) critical_error("void AppConfig::init(void) can not copy " + gl_paras.config_filename());
+		if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras_.target_os() + "/" + gl_paras_.config_filename(), _config_file_full_name)) critical_error("void AppConfig::init(void) can not copy " + gl_paras_.config_filename());
 	}
 	// throw std::runtime_error("Can not copy " + name.toStdString());
 	if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_config_file_full_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_config_file_full_name, QFile::ReadUser | QFile::WriteUser);

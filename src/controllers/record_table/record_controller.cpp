@@ -53,7 +53,7 @@
 #include "views/tree/tree_view.h"
 
 #include "views/browser/browser.h"
-#include "views/browser/toolbarsearch.h"
+#include "views/browser/toolbar_search.h"
 #include "views/record/editor_dock.h"
 
 extern gl_para gl_paras;

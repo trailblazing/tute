@@ -558,14 +558,14 @@ void sapp_t::sys_init(char * *argv){
 	//        splash.finish(&win);
 
 	// Initialize the main program of configurable variables    // Инициализация основных конфигурирующих программу переменных
-	_appconfig.init();
+	_appconfig.init(_globalparameters);
 
 	// Инициализируется объект слежения за корзиной
 	trashmonitoring.init(gl_paras.root_path() + "/" + QDir(_appconfig.trash_dir()).dirName());
 	trashmonitoring.update();
 
 	// Инициализация переменных, отвечающих за хранилище данных
-	_databaseconfig.init();
+	_databaseconfig.init(_globalparameters, _appconfig);
 
 	QCoreApplication::setOrganizationName(QLatin1String(gl_paras.application_name().toLatin1()));
 	QCoreApplication::setApplicationName(QLatin1String(_globalparameters.application_name().toLatin1()));

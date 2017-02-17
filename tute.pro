@@ -223,7 +223,6 @@ HEADERS     =   \
     src/views/browser/settings.h \
     src/views/browser/squeezelabel.h \
     src/views/browser/tabwidget.h \
-    src/views/browser/toolbarsearch.h \
     src/views/browser/urllineedit.h \
     src/views/browser/webview.h \
     src/views/browser/xbel.h \
@@ -335,7 +334,8 @@ HEADERS     =   \
     src/libraries/qtm/side_tabwidget.h \
     src/views/record/editor_wrap.h \
     src/views/browser/browser_dock.h \
-    src/views/record/editor_dock.h
+    src/views/record/editor_dock.h \
+    src/views/browser/toolbar_search.h
 
 
 
@@ -374,7 +374,6 @@ SOURCES     =   src/main.cpp \
     src/views/browser/settings.cpp \
     src/views/browser/squeezelabel.cpp \
     src/views/browser/tabwidget.cpp \
-    src/views/browser/toolbarsearch.cpp \
     src/views/browser/urllineedit.cpp \
     src/views/browser/webview.cpp \
     src/views/browser/xbel.cpp \
@@ -480,7 +479,8 @@ SOURCES     =   src/main.cpp \
     src/libraries/qtm/side_tabwidget.cxx \
     src/views/record/editor_wrap.cpp \
     src/views/browser/browser_dock.cpp \
-    src/views/record/editor_dock.cpp
+    src/views/record/editor_dock.cpp \
+    src/views/browser/toolbar_search.cpp
 
 
 lessThan(QT_MAJOR_VERSION,5) {

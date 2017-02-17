@@ -121,8 +121,8 @@ _______________________________________________________________________
 * Tab prohibited padding spaces are made;
 * Margin - 2 spaces;
 * Comments must have the same indentation that of the code;
-* The name of the file with the implementation of the class is based on the principle ClassName.cpp/classname.cxx (class_name.cxx);
-* The name of the file with the title of class is based on the principle ClassName.hxx/classname.hxx (class_name.hxx);
+* The name of the file with the implementation of the class is based on the principle ClassName.cpp/classname.cxx (prefer: class_name.cxx);
+* The name of the file with the title of class is based on the principle ClassName.hxx/classname.hxx/classname.h (prefer: class_name.hxx);
 * The name of the class is based on the principle ClassName;
 * The name of the method is based on the principle method_name (underscore);
 * The name of the variables is based on the principle _parameter_name (underscore);

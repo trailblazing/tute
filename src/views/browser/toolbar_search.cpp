@@ -49,7 +49,7 @@
 #endif
 
 #include "autosaver.h"
-#include "toolbarsearch.h"
+#include "toolbar_search.h"
 
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 // #include "views/find_in_base_screen/FindTableWidget.h"

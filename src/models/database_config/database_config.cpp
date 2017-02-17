@@ -44,11 +44,11 @@ DataBaseConfig::~DataBaseConfig()
     }
 }
 
-void DataBaseConfig::init(void)
+void DataBaseConfig::init(const gl_para &gl_paras_, const AppConfig &appconfig_)
 {
     // Создается имя файла конфигурации
     // QString configFileName=globalParameters.getWorkDirectory()+"/"+appconfig.datadir()+"/database.ini";
-    QString configFileName = gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/" + "/database.ini";
+    QString configFileName = gl_paras_.root_path() + "/" + QDir(appconfig_.data_dir()).dirName() + "/" + "/database.ini";
 
     // Проверяется, есть ли файл конфигурации
     QFile confFile(configFileName);
