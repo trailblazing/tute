@@ -94,12 +94,12 @@
 #endif
 #ifdef USE_WYEDIT
 #include "libraries/global_parameters.h"
-#include "views/record/editor_wrap.h"
 #include "libraries/walk_history.h"
+#include "views/record/editor_wrap.h"
 #include "views/tree/tree_view.h"
 
 extern WalkHistory walkhistory;
-extern gl_para gl_paras;
+extern std::shared_ptr<gl_para> gl_paras;
 extern const char *program_title;
 #endif
 
@@ -109,9 +109,9 @@ extern const char *program_title;
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "views/main_window/hidable_tabwidget.h"
 #include "views/main_window/main_window.h"
+#include "views/print_preview/print_preview.h"
 #include "views/record/editor_dock.h"
 #include "views/record_table/record_screen.h"
-#include "views/print_preview/print_preview.h"
 
 extern const std::string editor_prefix;
 
@@ -177,40 +177,32 @@ extern const std::string editor_prefix;
 // #include "macFunctions.h"
 #endif
 
-// extern AppConfig appconfig;
+// extern std::shared_ptr<AppConfig> appconfig;
 
 #define editor_object _editor
 
-EditingWindow::EditingWindow(ts_t *tree_screen
-			    , browser::BrowserDock  *browser_dock
-			    , HidableTabWidget      *vtab_record
-			    , browser::Profile      *profile
-			    , FindScreen            *find_screen
-			    , EditorDock            *editor_dock
-			    , QString style_source
-			    , QStringList hide_editor_tools_
-			    , QString new_post_topic
-			    , QString new_post_content                      // , QWidget *parent
+EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_dock, HidableTabWidget *vtab_record, browser::Profile *profile, FindScreen *find_screen, EditorDock *editor_dock, QString style_source, QStringList hide_editor_tools_, QString new_post_topic, QString new_post_content // , QWidget *parent
 			    , Qt::WindowFlags flags)
 	: QMainWindow(nullptr, flags)
 	  , _app(qobject_cast<sapp_t *>(qApp))
 	  , _editors_shared_directory(
 		  [&]() -> QString {
-			  QString path = QString(_app->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog").arg(gl_paras.root_path());// + "/" + globalparameters.target_os());
+			  QString path = QString(_app->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog").arg(gl_paras->root_path()); // + "/" + globalparameters.target_os());
 			  if(!QDir(path).exists())
 				  if(!QDir::root().mkpath(path)) critical_error("Can not create directory: \"" + path + "\"");
 			  return path;
 		  } ())
 	  , _current_topic_folder_name([&]() -> QString {auto fn = _editors_shared_directory + "/" + tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str());  return fn;} ())
 	  , _current_topic_config_name(_current_topic_folder_name + "/" + gl_para::_editor_conf_filename)
-	  , _topic_editor_config([&]() -> std::unique_ptr<QSettings>{
-					 if(!QDir(_current_topic_folder_name).exists())
-						 if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
-					 if(!QFile(_current_topic_config_name).exists())
-						 if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras.target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
-					 if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
-					 return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
-				 } ())
+	  , _topic_editor_config(
+		  [&]() -> std::unique_ptr<QSettings> {
+			  if(!QDir(_current_topic_folder_name).exists())
+				  if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
+			  if(!QFile(_current_topic_config_name).exists())
+				  if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+			  if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
+			  return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
+		  } ())
 	  , _local_storage_file_extension(_topic_editor_config->value("local_storage_file_ext", "cqt").toString())
 	  , _current_reply(nullptr)
 	  , _tree_screen(tree_screen)
@@ -225,19 +217,19 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 	  , _central_widget(new QWidget(this))
 	  , _splitter(new QSplitter(Qt::Horizontal, _central_widget))
 	  , _main_stack(new QStackedWidget(_central_widget))
-	  , _control_tab([&]() -> SideTabWidget *{auto st = new SideTabWidget(tree_screen, find_screen, browser_dock, this, profile, style_source, _splitter, _central_widget); auto _topic = tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()); st->topic(_topic); st->title(_topic); return st;} ())
+	  , _control_tab([&]() -> SideTabWidget * {auto st = new SideTabWidget(tree_screen, find_screen, browser_dock, this, profile, style_source, _splitter, _central_widget); auto _topic = tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()); st->topic(_topic); st->title(_topic); return st;} ())
 	  , _console(new TEXTEDIT_FOR_READ(_main_stack))
-	  // Set up editor widget
-      #ifdef USE_WYEDIT
+// Set up editor widget
+#ifdef USE_WYEDIT
 	  , _editor(new TEXTEDIT(find_screen, this, hide_editor_tools_, _main_stack, ""))
-      #else
+#else
 	  , _editor(new TEXTEDIT(mainStack))
-      #endif
+#endif
 	  , _record_screen(new rs_t(tree_screen, find_screen, editor_dock, this, browser_dock, vtab_record, style_source, profile)){
 	//
 
 	QDomElement detailElem, attribElem, nameElem, serverElem, locElem, loginElem, pwdElem;
-//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 
 	_splitter->setHandleWidth(0);
 	_splitter->addWidget(_control_tab);
@@ -379,13 +371,13 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 	}
 	checkForEmptySettings();
 
- #ifdef USE_WYEDIT
+#ifdef USE_WYEDIT
 	editor_object->textarea(new_post_content);
- #else
+#else
 	editor_object->setPlainText(new_post_content);
- #endif
-//	_control_tab->title(new_post_topic);
-//	_control_tab->topic(new_post_topic);
+#endif
+	//	_control_tab->title(new_post_topic);
+	//	_control_tab->topic(new_post_topic);
 	//
 	_main_stack->setCurrentIndex(_editor_id);
 
@@ -396,7 +388,7 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 	_editor_dock->setWidget(this);
 	setParent(_editor_dock);
 	emit _editor_dock->editing_activated(this);
-//	_editor_dock->add_blog_editor(this);
+	//	_editor_dock->add_blog_editor(this);
 
 	//    _blog_editor = new EditingWindow();
 	setSTI(0); // No STI
@@ -446,7 +438,7 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 		if(ch == 0) ch = _central_widget->sizeHint().height();
 		auto cw = _central_widget->geometry().width();
 		if(cw == 0) cw = _central_widget->sizeHint().width();
-//		_central_widget->resize(edw, edh);
+		//		_central_widget->resize(edw, edh);
 		////    QSettings   qtm_settings(_config_file_name,
 		/// QSettings::IniFormat);
 		// auto    barwidth_geometry   =
@@ -487,7 +479,8 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 		for(int i = 0; i < _vtab_record->count(); i++){
 			auto w	= _vtab_record->widget(i);
 			auto rs = dynamic_cast<rs_t *>(w);
-			if(rs) if(rs->editing_window()->topic() == new_post_topic){
+			if(rs)
+				if(rs->editing_window()->topic() == new_post_topic){
 					found = true;
 					break;
 				}
@@ -495,21 +488,21 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 		if(!found){
 			_vtab_record->setUpdatesEnabled(false);
 			_vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
-//		bool found = false;
-//		for(int i = 0; i < _vtab_record->count(); i++){
-//			auto r = _vtab_record->widget(i);
-//			if(r == _record_screen){
+			//		bool found = false;
+			//		for(int i = 0; i < _vtab_record->count(); i++){
+			//			auto r = _vtab_record->widget(i);
+			//			if(r == _record_screen){
 			auto _browser = _record_screen->browser();
 			if(_browser){
 				_browser->activateWindow();
 				_browser->setVisible(true);
 				_browser->adjustSize();
 				_vtab_record->setCurrentWidget(_record_screen);
-//			found = true;
+				//			found = true;
 			}
-//			}
-//		}
-//		assert(found);
+			//			}
+			//		}
+			//		assert(found);
 			////    bool found = false;
 			////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
 			////	if(*i == rs){
@@ -521,13 +514,13 @@ EditingWindow::EditingWindow(ts_t *tree_screen
 			// _record_screens.insert(rs);
 			this->adjustSize();
 			_vtab_record->setUpdatesEnabled(true);
-//		_record_screen->adjustSize();
+			//		_record_screen->adjustSize();
 		}
 	} ();
 }
 
 EditingWindow::~EditingWindow(){
-//	if(_editor_dock->_editing_list.contains(this)) _editor_dock->_editing_list.removeOne(this);
+	//	if(_editor_dock->_editing_list.contains(this)) _editor_dock->_editing_list.removeOne(this);
 	deleteLater();
 }
 
@@ -847,47 +840,47 @@ void EditingWindow::doUiSetup(){
 	loadAutoLinkDictionary();
 	connect(this->_editor->_close_button, &FlatToolButton::clicked, _editor_dock, &EditorDock::editor_switch);
 
-////	moved to HidableTabWidget
-//	connect(_splitter, &QSplitter::splitterMoved, [&](int pos, int index){
-//			// save sizes
-//			(void) pos;
-//			(void) index;
-//			auto result =
-//				_control_panel->inner_rebuild_on_splitter_moved(pos, index);
+	////	moved to HidableTabWidget
+	//	connect(_splitter, &QSplitter::splitterMoved, [&](int pos, int index){
+	//			// save sizes
+	//			(void) pos;
+	//			(void) index;
+	//			auto result =
+	//				_control_panel->inner_rebuild_on_splitter_moved(pos, index);
 
-//			auto sizes = std::get<1>(result);
-//			//            auto sizes_ = _splitter->sizes();// 50, 50
-//			//            assert(sizes == sizes_);
-//			//
-//			if(sizes[0] <= 0) sizes[0] =
-//					_control_panel->tabBar()->sizeHint().width();
-//			if((sizes[1] > width() - sizes[0]) || (sizes[1] <= 0)) sizes[1]
-//				        = width() - sizes[0];
-//			assert(sizes[1] >= 0);
-//			auto msw = _main_stack->width();// 50
-//			if(msw < sizes[1]) _main_stack->resize(sizes[1], height());
-//			//            assert(msw == sizes[1]);
-//			auto ew = _editor->width(); // 0
-//			//            assert(ew == sizes[1]);
-//			if(ew < sizes[1]) _editor->resize(sizes[1], height());
-//			//
+	//			auto sizes = std::get<1>(result);
+	//			//            auto sizes_ = _splitter->sizes();// 50, 50
+	//			//            assert(sizes == sizes_);
+	//			//
+	//			if(sizes[0] <= 0) sizes[0] =
+	//					_control_panel->tabBar()->sizeHint().width();
+	//			if((sizes[1] > width() - sizes[0]) || (sizes[1] <= 0)) sizes[1]
+	//				        = width() - sizes[0];
+	//			assert(sizes[1] >= 0);
+	//			auto msw = _main_stack->width();// 50
+	//			if(msw < sizes[1]) _main_stack->resize(sizes[1], height());
+	//			//            assert(msw == sizes[1]);
+	//			auto ew = _editor->width(); // 0
+	//			//            assert(ew == sizes[1]);
+	//			if(ew < sizes[1]) _editor->resize(sizes[1], height());
+	//			//
 
-//			QSettings qtm_settings(_config_file_name
-//			                      , QSettings::IniFormat);
-//			QStringList line_list_;
-//			QList<int>  list_;
-//			qtm_settings.beginGroup("geometry");
-//			line_list_ = (qtm_settings.value("splitter_sizelist"
-//			                                , "100,100")).toString().split(",");
-//			for(int i = 0; i < line_list_.size(); ++i) list_.append(line_list_.at(i).toInt());
-//			if(sizes != list_){
-//			        QStringList line_list;
-//			        for(int i = 0; i < sizes.size(); ++i) line_list.append(QString::number(sizes.at(i)));
-//			        qtm_settings.setValue("splitter_sizelist"
-//			                             , line_list.join(","));
-//			}
-//			qtm_settings.endGroup();
-//		});
+	//			QSettings qtm_settings(_config_file_name
+	//			                      , QSettings::IniFormat);
+	//			QStringList line_list_;
+	//			QList<int>  list_;
+	//			qtm_settings.beginGroup("geometry");
+	//			line_list_ = (qtm_settings.value("splitter_sizelist"
+	//			                                , "100,100")).toString().split(",");
+	//			for(int i = 0; i < line_list_.size(); ++i) list_.append(line_list_.at(i).toInt());
+	//			if(sizes != list_){
+	//			        QStringList line_list;
+	//			        for(int i = 0; i < sizes.size(); ++i) line_list.append(QString::number(sizes.at(i)));
+	//			        qtm_settings.setValue("splitter_sizelist"
+	//			                             , line_list.join(","));
+	//			}
+	//			qtm_settings.endGroup();
+	//		});
 }
 
 //// QAction *
@@ -911,7 +904,7 @@ bool EditingWindow::handleArguments(){
 	QStringList args = QApplication::arguments();
 	if(args.size() > 1){
 		for(i = 1; i < args.size(); i++){
-			if(c)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              // if there is a current new window
+			if(c)                                                    // if there is a current new window
 				d = c;
 			c = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
 #ifdef Q_OS_MAC
@@ -921,7 +914,7 @@ bool EditingWindow::handleArguments(){
 #ifdef USE_SYSTRAYICON
 				c->setSTI(sti);
 #endif
-				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              // if there's an old window
+				if(d)                                                                // if there's an old window
 					positionWidget(c, d);
 				c->show();
 				rv = false;
@@ -948,8 +941,7 @@ bool EditingWindow::handleArguments(){
 }
 
 void EditingWindow::positionWidget(
-	QWidget *w
-				  , QWidget *refWidget){
+	QWidget *w, QWidget *refWidget){
 	QDesktopWidget *dw = QApplication::desktop();
 	QRect r = dw->availableGeometry();
 	if(qobject_cast<QWidget *>(refWidget)){
@@ -1109,7 +1101,7 @@ void EditingWindow::setInitialAccount(){
 	int i;
 
 	// qDebug() << "server is empty";
-//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	lastAccountID = _topic_editor_config->value("account/lastAccountID", "").toString();
 	QDomNodeList accountsList = _accounts_dom.documentElement().elementsByTagName("account");
 	QDomElement thisTitleElem;
@@ -1222,7 +1214,7 @@ void EditingWindow::readSettings(){
 	// globalparameters.target_os());
 	// #endif
 
-//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	applicationVersion = _topic_editor_config->value("application/version", "").toString();
 
 	_topic_editor_config->beginGroup("geometry");
@@ -1325,7 +1317,7 @@ void EditingWindow::readSettings(){
 
 void EditingWindow::readServerSettings(){
 	// qDebug() << "getting server settings";
-//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	_topic_editor_config->beginGroup("account");
 	server = _topic_editor_config->value("server", "").toString();
 	location = _topic_editor_config->value("location", "").toString();
@@ -1344,97 +1336,98 @@ void EditingWindow::openRecentFile(){
 }
 
 void EditingWindow::save_impl(const QString &full_path_file_name, bool exp){
-//    save_impl = [&](const QString &fname, bool exp = false){
+	//    save_impl = [&](const QString &fname, bool exp = false){
 	if(!_entry_ever_saved){
 		int count, tags;
 #ifdef LOAD_TEXT_BY_WYEDITOR
 #else
 		QString text = editor_object->document()->toPlainText();
-#endif// LOAD_TEXT_BY_WYEDITOR
+#endif // LOAD_TEXT_BY_WYEDITOR
 		auto file_exists = find(full_path_file_name);
-		if("" == file_exists){
-//			// Rename the old file to a back-up file
-//			if(QFile::exists(full_path_file_name)){
-////				QFile::rename(full_path_file_name, QString(QString("%1_") + get_unical_id()).arg(full_path_file_name));
-//				if(QFile::remove(full_path_file_name)) critical_error("Can\'t remove file \"" + full_path_file_name + "\"");
-//			}
-			QFile f(full_path_file_name);
-			if(!f.open(QIODevice::WriteOnly)){
-				_status_widget->showMessage(tr("Could not write to %1").arg(full_path_file_name), 2000);
-				return;
-			}
-			QTextStream out(&f);
-			if(useUtf8) out.setCodec(QTextCodec::codecForName("UTF-8"));
-			out << (exp ? (program_title_string + " saved blog entry v2.0\n").c_str() : (program_title_string + " saved blog entry v3.0\n").c_str());
-			out << QString("Title:%1\n").arg(_control_tab->leTitle->text());
-			out << QString("Publish:%1\n")
-				.arg(QString::number(_control_tab->cbStatus->currentIndex()));
-			if(entryBlogged) out << QString("EntryNumber:%1\n").arg(entryNumber);
-			out << QString("Comments:%1\n")
-				.arg(_control_tab->chAllowComments->isChecked() ? "1" : "0");
-			out << QString("TB:%1\n").arg(_control_tab->chAllowTB->isChecked() ? "1" : "0");
-			// out << QString( "Sticky:%1\n" ).arg( cw->chSticky->isChecked() ? "1" : "0" );
-			if(_control_tab->lePassword->text().length()) out << QString("PWD:%1\n").arg(_control_tab->lePassword->text());
-			if(exp){
-				out << QString("Server:%1\n").arg(server);
-				out << QString("Location:%1\n").arg(location);
-				out << QString("Login:%1\n").arg(login);
-				out << QString("Password:%1\n").arg(password);
-				out << QString("Blog:%1\n")
-					.arg(_control_tab->cbBlogSelector->currentIndex());
-			}else{
-				out << QString("AcctBlog:%1@%2 (%3)\n") // Include the blog name so it can be relayed to the user later
-					.arg(currentBlogid)
-					.arg(currentAccountId)
-					.arg(_control_tab->cbBlogSelector->itemText(_control_tab->cbBlogSelector->currentIndex()));
-			}
-			tags = _control_tab->lwTags->count();
-			if(tags){
-				out << "Tags:";
-				for(count = 0; count < tags; count++) out << QString(count ? ";%1" : "%1").arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'));
-				out << "\n";
-			}
-			tags = _control_tab->lwKeywordTags->count();
-			if(tags){
-				out << "Keywords:";
-				for(count = 0; count < tags; count++) out << QString(count ? ",%1" : "%1").arg(_control_tab->lwKeywordTags->item(count)->text());
-				out << "\n";
-			}
-			if(!_control_tab->chNoCats->isChecked()){
-				QDomNodeList catNodeList = currentBlogElement.firstChildElement("categories")
-							   .elementsByTagName("category");
-				out << QString("PrimaryID:%1\n").arg(_control_tab->cbMainCat->itemData(_control_tab->cbMainCat->currentIndex()).toString());
-				QString catsList;
-				int cats = 0;
-				for(int a = 0; a < _control_tab->lwOtherCats->count(); a++){
-					if(_control_tab->lwOtherCats->isItemSelected(
-						   _control_tab->lwOtherCats->item(a))){
-						if(cats) catsList.append(QString(";%1").arg(_control_tab->cbMainCat->itemData(a).toString()));
-						else catsList.append(_control_tab->cbMainCat->itemData(a).toString());
-						cats++;
-					}
+		if(file_exists != "") if(!QFile::remove(file_exists)) critical_error("Can\'t remove file \"" + file_exists + "\"");
+//		if("" == file_exists){
+		//			// Rename the old file to a back-up file
+		//			if(QFile::exists(full_path_file_name)){
+		////				QFile::rename(full_path_file_name, QString(QString("%1_") + get_unical_id()).arg(full_path_file_name));
+		//				if(QFile::remove(full_path_file_name)) critical_error("Can\'t remove file \"" + full_path_file_name + "\"");
+		//			}
+		QFile f(full_path_file_name);
+		if(!f.open(QIODevice::WriteOnly)){
+			_status_widget->showMessage(tr("Could not write to %1").arg(full_path_file_name), 2000);
+			return;
+		}
+		QTextStream out(&f);
+		if(useUtf8) out.setCodec(QTextCodec::codecForName("UTF-8"));
+		out << (exp ? (program_title_string + " saved blog entry v2.0\n").c_str() : (program_title_string + " saved blog entry v3.0\n").c_str());
+		out << QString("Title:%1\n").arg(_control_tab->leTitle->text());
+		out << QString("Publish:%1\n")
+			.arg(QString::number(_control_tab->cbStatus->currentIndex()));
+		if(entryBlogged) out << QString("EntryNumber:%1\n").arg(entryNumber);
+		out << QString("Comments:%1\n")
+			.arg(_control_tab->chAllowComments->isChecked() ? "1" : "0");
+		out << QString("TB:%1\n").arg(_control_tab->chAllowTB->isChecked() ? "1" : "0");
+		// out << QString( "Sticky:%1\n" ).arg( cw->chSticky->isChecked() ? "1" : "0" );
+		if(_control_tab->lePassword->text().length()) out << QString("PWD:%1\n").arg(_control_tab->lePassword->text());
+		if(exp){
+			out << QString("Server:%1\n").arg(server);
+			out << QString("Location:%1\n").arg(location);
+			out << QString("Login:%1\n").arg(login);
+			out << QString("Password:%1\n").arg(password);
+			out << QString("Blog:%1\n")
+				.arg(_control_tab->cbBlogSelector->currentIndex());
+		}else{
+			out << QString("AcctBlog:%1@%2 (%3)\n") // Include the blog name so it can be relayed to the user later
+				.arg(currentBlogid)
+				.arg(currentAccountId)
+				.arg(_control_tab->cbBlogSelector->itemText(_control_tab->cbBlogSelector->currentIndex()));
+		}
+		tags = _control_tab->lwTags->count();
+		if(tags){
+			out << "Tags:";
+			for(count = 0; count < tags; count++) out << QString(count ? ";%1" : "%1").arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'));
+			out << "\n";
+		}
+		tags = _control_tab->lwKeywordTags->count();
+		if(tags){
+			out << "Keywords:";
+			for(count = 0; count < tags; count++) out << QString(count ? ",%1" : "%1").arg(_control_tab->lwKeywordTags->item(count)->text());
+			out << "\n";
+		}
+		if(!_control_tab->chNoCats->isChecked()){
+			QDomNodeList catNodeList = currentBlogElement.firstChildElement("categories")
+						   .elementsByTagName("category");
+			out << QString("PrimaryID:%1\n").arg(_control_tab->cbMainCat->itemData(_control_tab->cbMainCat->currentIndex()).toString());
+			QString catsList;
+			int cats = 0;
+			for(int a = 0; a < _control_tab->lwOtherCats->count(); a++){
+				if(_control_tab->lwOtherCats->isItemSelected(
+					   _control_tab->lwOtherCats->item(a))){
+					if(cats) catsList.append(QString(";%1").arg(_control_tab->cbMainCat->itemData(a).toString()));
+					else catsList.append(_control_tab->cbMainCat->itemData(a).toString());
+					cats++;
 				}
-				out << QString("CatIDs:%1\n").arg(catsList);
-			}else out << "PrimaryID:none\n";
-			if(_control_tab->teExcerpt->toPlainText().length() > 0) out << QString("Excerpt:%1\n").arg(_control_tab->teExcerpt->toPlainText().replace(QChar('\n'), "\\n"));
+			}
+			out << QString("CatIDs:%1\n").arg(catsList);
+		}else out << "PrimaryID:none\n";
+		if(_control_tab->teExcerpt->toPlainText().length() > 0) out << QString("Excerpt:%1\n").arg(_control_tab->teExcerpt->toPlainText().replace(QChar('\n'), "\\n"));
 #ifdef LOAD_TEXT_BY_WYEDITOR
-			editor_object->save_textarea();
+		editor_object->save_textarea();
 #else
-			out << QString("Text:\n%1").arg(text);
-#endif// LOAD_TEXT_BY_WYEDITOR
-			f.close();
+		out << QString("Text:\n%1").arg(text);
+#endif // LOAD_TEXT_BY_WYEDITOR
+		f.close();
 
-			dirtyIndicator->hide();
-			setWindowModified(false);
-			setDirtySignals(true);
+		dirtyIndicator->hide();
+		setWindowModified(false);
+		setDirtySignals(true);
 
-			_entry_ever_saved = true;
-		}else critical_error("file \"" + full_path_file_name + "\" already exists");
+		_entry_ever_saved = true;
+//		}else critical_error("file \"" + full_path_file_name + "\" already exists");
 	}
 }
 
 void EditingWindow::writeSettings(){
-//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 
 	_topic_editor_config->beginGroup("geometry");
 	_topic_editor_config->setValue("size", size());
@@ -1538,7 +1531,7 @@ QString EditingWindow::processWithMarkdown(const QString &text){
 	// Now wait until the process finishes; use a loop and process events every 10th of
 	// a second
 	for(int i = 0; i <= 300; ++i){
-		if(i == 300){   // if 30 seconds has elapsed without a finish signal
+		if(i == 300){  // if 30 seconds has elapsed without a finish signal
 			_status_widget->showMessage(tr("Failed to convert"), 2000);
 			return QString();
 		}
@@ -1771,7 +1764,7 @@ void EditingWindow::getPreferences(){
 }
 
 void EditingWindow::getPreferences(const QString &title){
-//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	QPalette palette, widgetPalette;
 
 	PrefsDialog prefs_dialog(this);
@@ -1782,7 +1775,7 @@ void EditingWindow::getPreferences(const QString &title){
 			      .replace("/", "\\");
 #else
 		QString lsd = QString(_app->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog")
-			      .arg(gl_paras.root_path() + "/" + gl_paras.target_os()); // QDir::homePath()
+			      .arg(gl_paras->root_path() + "/" + gl_paras->target_os()); // QDir::homePath()
 
 #endif
 		prefs_dialog.leLocalDir->setText(lsd);
@@ -1977,7 +1970,7 @@ void EditingWindow::getPreferences(const QString &title){
 						.arg(globalparameters.root_path() + "/" + globalparameters.target_os()); // QDir::homePath()
 #else
 			_editors_shared_directory = QString(_app->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog")
-						    .arg(gl_paras.root_path() + "/" + gl_paras.target_os()); // QDir::homePath()
+						    .arg(gl_paras->root_path() + "/" + gl_paras->target_os()); // QDir::homePath()
 #endif
 		}
 		QDir qd(_editors_shared_directory);
@@ -1987,7 +1980,7 @@ void EditingWindow::getPreferences(const QString &title){
 			if(!_no_auto_save) saveAccountsDom();
 		}
 		/*setDirtySignals( false );
-		    setDirtySignals( true ); */
+			    setDirtySignals( true ); */
 		// Now check to see if this is an old-style Blogger account, which does not
 		// support categories.
 		if(server.contains("blogger.com")){
@@ -2063,7 +2056,7 @@ void EditingWindow::getPreferences(const QString &title){
 	}
 }
 void EditingWindow::setHighlighting(bool hl){
-//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 
 	enableHighlighting = hl;
 	disconnect(editor_object->document(), 0, this, SLOT(dirtify()));
@@ -2092,10 +2085,7 @@ void EditingWindow::saveAccountsDom(){
 	}else{
 		QDir dir(_editors_shared_directory);
 		if(!dir.exists()){
-			if(QMessageBox::question(0
-						, tr("Cannot find storage directory")
-						, tr((program_title_string + " cannot find the directory you specified to " + "store your account data and files.\n\n" + "Create it?").c_str())
-						, QMessageBox::Yes | QMessageBox::Default, QMessageBox::No)
+			if(QMessageBox::question(0, tr("Cannot find storage directory"), tr((program_title_string + " cannot find the directory you specified to " + "store your account data and files.\n\n" + "Create it?").c_str()), QMessageBox::Yes | QMessageBox::Default, QMessageBox::No)
 			   == QMessageBox::Yes){
 				if(dir.mkpath(_editors_shared_directory)){
 					domOut.setFileName(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_directory)));
@@ -2169,8 +2159,7 @@ void EditingWindow::populateBlogList(){ // slot
 		_control_tab->cbBlogSelector->clear();
 		for(i = 0; i < a; i++){
 			ct = blogNodeList.at(i).firstChildElement("blogName");
-			_control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogNodeList.at(i).firstChildElement("blogName").text())
-							     , QVariant(blogNodeList.at(i).firstChildElement("blogid").text()));
+			_control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogNodeList.at(i).firstChildElement("blogName").text()), QVariant(blogNodeList.at(i).firstChildElement("blogid").text()));
 			currentBlog = i;
 			currentBlogElement = currentAccountElement.firstChildElement("blogs")
 					     .elementsByTagName("blog")
@@ -2440,8 +2429,8 @@ void EditingWindow::changeAccount(int a){ // slot
 		currentAccountId = currentAccountElement.toElement().attribute("id");
 		extractAccountDetails();
 		/*qDebug() << "Current account: " <<
-		       currentAccountElement.firstChildElement( "details" )
-		      .firstChildElement( "title" ).text();
+			       currentAccountElement.firstChildElement( "details" )
+			      .firstChildElement( "title" ).text();
 		 */
 		QStringList accountStringNames(accountStrings.keys());
 		Q_FOREACH(QString s, accountStringNames)
@@ -2457,8 +2446,7 @@ void EditingWindow::changeAccount(int a){ // slot
 			if(b){
 				// qDebug() << "Blogs: " << b;
 				_control_tab->cbBlogSelector->clear();
-				for(int i = 0; i < b; i++) _control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogsList.at(i).firstChildElement("blogName").text())
-												, blogsList.at(i).firstChildElement("blogid").text());
+				for(int i = 0; i < b; i++) _control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogsList.at(i).firstChildElement("blogName").text()), blogsList.at(i).firstChildElement("blogid").text());
 				_control_tab->cbBlogSelector->setEnabled(true);
 				changeBlog(0, true);
 				currentBlogid = _control_tab->cbBlogSelector->itemData(0).toString();
@@ -2510,7 +2498,7 @@ void EditingWindow::extractAccountAttributes(){
 	if(_super_menu) _super_menu->addCatAction->setEnabled(useWordpressAPI);
 }
 
-void EditingWindow::changeBlog(int b, bool fromChangeAccount){     // slot
+void EditingWindow::changeBlog(int b, bool fromChangeAccount){ // slot
 	QString currentCategoryText, currentCatId;
 	QDomElement tagsElement;
 	QDomNodeList tagsList;
@@ -2567,15 +2555,15 @@ void EditingWindow::changeBlog(int b, bool fromChangeAccount){     // slot
 	}
 }
 
-bool EditingWindow::caseInsensitiveLessThan(const QString &s1, const QString   &s2){
+bool EditingWindow::caseInsensitiveLessThan(const QString &s1, const QString &s2){
 	return s1.toLower() < s2.toLower();
 }
 
 void EditingWindow::handleConsole(bool isChecked){
 	QAction *menuConsoleAction = nullptr, *menuPreviewAction = nullptr;
 	if(_super_menu){
-		menuConsoleAction	= _super_menu->getConsoleAction();// qobject_cast<QAction *>(_super_menu->getConsoleAction());
-		menuPreviewAction	= _super_menu->getPreviewAction();// qobject_cast<QAction *>(_super_menu->getPreviewAction());
+		menuConsoleAction	= _super_menu->getConsoleAction(); // qobject_cast<QAction *>(_super_menu->getConsoleAction());
+		menuPreviewAction	= _super_menu->getPreviewAction(); // qobject_cast<QAction *>(_super_menu->getPreviewAction());
 		if(menuConsoleAction) menuConsoleAction->setChecked(isChecked);
 	}
 	if(!isChecked){
@@ -2726,7 +2714,7 @@ void EditingWindow::insertImage(){
 				styleString += "float: right; ";
 		}
 		// Border
-		if(ieui.cbBorderStyle->currentIndex() != 0 && ieui.sbBorderWidth->value() != 0)	styleString += QString("border: %1px %2; ").arg(ieui.sbBorderWidth->value()).arg(borderStyles[ieui.cbBorderStyle->currentIndex() - 1]);
+		if(ieui.cbBorderStyle->currentIndex() != 0 && ieui.sbBorderWidth->value() != 0) styleString += QString("border: %1px %2; ").arg(ieui.sbBorderWidth->value()).arg(borderStyles[ieui.cbBorderStyle->currentIndex() - 1]);
 		// Margins
 		if(ieui.sbMarginLeft->value() != 0) styleString += QString("margin-left: %1px; ").arg(ieui.sbMarginLeft->value());
 		if(ieui.sbMarginRight->value() != 0) styleString += QString("margin-right: %1px; ").arg(ieui.sbMarginRight->value());
@@ -3013,17 +3001,17 @@ void EditingWindow::newMTPost(){
 				convertedString = processWithMarkdown(description);
 				if(!convertedString.isNull())
 					/* description = stripParaTags ?
-					       convertedString.remove( "<p>"
-					       ).remove( "</p>" ) : convertedString; */
+								   convertedString.remove( "<p>"
+								   ).remove( "</p>" ) : convertedString; */
 					description = convertedString;
 				else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
 				if(!extEntry.isEmpty()){
 					convertedString = processWithMarkdown(extEntry);
 					if(!convertedString.isNull())
 						/*extEntry = stripParaTags ?
-						      convertedString.remove(
-						       "<p>" ).remove( "</p>" ) :
-						       convertedString; */
+									      convertedString.remove(
+									       "<p>" ).remove( "</p>" ) :
+									       convertedString; */
 						extEntry = convertedString;
 					else _status_widget->showMessage(tr("Markdown conversion failed; posting extension as is."), 2000);
 				}
@@ -3041,7 +3029,7 @@ void EditingWindow::newMTPost(){
 					 ->itemData(_control_tab->cbBlogSelector->currentIndex())
 					 .toString();
 			/*      QRegExp blogidRegExp( "^[0-9]+$" );
-			    blogidIsInt = blogidRegExp.exactMatch( blogid ); */
+					blogidIsInt = blogidRegExp.exactMatch( blogid ); */
 
 			methodCall = doc.createElement("methodCall");
 			methodCall.appendChild(XmlMethodName(doc, "metaWeblog.newPost"));
@@ -3111,7 +3099,7 @@ void EditingWindow::newMTPost(){
 			// cw->cbPageSelector->setCurrentIndex(0);
 			_control_tab->setCurrentIndex(0);
 			/*#ifndef Q_OS_MAC
-			    progressBarAction->setVisible( true );
+					progressBarAction->setVisible( true );
 			 #endif */
 		}else submitMTEdit();
 	}else{
@@ -3139,8 +3127,8 @@ void EditingWindow::newWPPost(){
 			convertedString = processWithMarkdown(entryText);
 			if(!convertedString.isNull())
 				/* description = stripParaTags ?
-				       convertedString.remove( "<p>" ).remove(
-				       "</p>" ) : convertedString; */
+						       convertedString.remove( "<p>" ).remove(
+						       "</p>" ) : convertedString; */
 				entryText = convertedString;
 			else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
 		}
@@ -3159,8 +3147,8 @@ void EditingWindow::newWPPost(){
 		// Make a list of the selected categories (WP API has no "primary category")
 		if(_control_tab->chAllowComments->isChecked()){
 			/*primCatElem = currentBlogElement.firstChildElement( "categories" )
-			      .childNodes().at( cw->cbMainCat->currentIndex()
-			       ).toElement(); */
+					  .childNodes().at( cw->cbMainCat->currentIndex()
+					   ).toElement(); */
 			catList << _control_tab->cbMainCat
 				->itemData(
 				_control_tab->cbMainCat->currentIndex())
@@ -3206,8 +3194,8 @@ void EditingWindow::newWPPost(){
 		rpcstruct.appendChild(XmlMember(doc, "ping_status", "string", takeTB ? "open" : "closed"));
 		if(!_control_tab->lePassword->text().isEmpty()) rpcstruct.appendChild(XmlMember(doc, "post_password", "string", _control_tab->lePassword->text()));
 		/* if( cw->chSticky->isChecked() )
-		      rpcstruct.appendChild( XmlMember( doc, "sticky", "bool", "true" )
-		       ); */
+			      rpcstruct.appendChild( XmlMember( doc, "sticky", "bool", "true" )
+			       ); */
 		if(catList.count()){
 			taxMember = doc.createElement("member");
 			taxMemberName = doc.createElement("name");
@@ -3271,16 +3259,16 @@ void EditingWindow::submitMTEdit(){
 		convertedString = processWithMarkdown(description);
 		if(!convertedString.isNull())
 			/* description = stripParaTags ?
-			      convertedString.remove( "<p>" ).remove( "</p>" ) :
-			       convertedString; */
+					  convertedString.remove( "<p>" ).remove( "</p>" ) :
+					   convertedString; */
 			description = convertedString;
 		else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
 		if(!extEntry.isEmpty()){
 			convertedString = processWithMarkdown(extEntry);
 			if(!convertedString.isNull())
 				/* extEntry = stripParaTags ?
-				      convertedString.remove( "<p>" ).remove( "</p>"
-				       ) : convertedString; */
+						      convertedString.remove( "<p>" ).remove( "</p>"
+						       ) : convertedString; */
 				extEntry = convertedString;
 			else _status_widget->showMessage(tr("Markdown conversion failed; posting extension as is."), 2000);
 		}
@@ -3377,8 +3365,8 @@ void EditingWindow::submitWPEdit(){
 			convertedString = processWithMarkdown(entryText);
 			if(!convertedString.isNull())
 				/* description = stripParaTags ?
-				       convertedString.remove( "<p>" ).remove(
-				       "</p>" ) : convertedString; */
+						       convertedString.remove( "<p>" ).remove(
+						       "</p>" ) : convertedString; */
 				entryText = convertedString;
 			else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
 		}
@@ -3401,8 +3389,8 @@ void EditingWindow::submitWPEdit(){
 		// Make a list of the selected categories (WP API has no "primary category")
 		if(_control_tab->chAllowComments->isChecked()){
 			/*primCatElem = currentBlogElement.firstChildElement( "categories" )
-			      .childNodes().at( cw->cbMainCat->currentIndex()
-			       ).toElement(); */
+					  .childNodes().at( cw->cbMainCat->currentIndex()
+					   ).toElement(); */
 			catList << _control_tab->cbMainCat
 				->itemData(
 				_control_tab->cbMainCat->currentIndex())
@@ -3448,7 +3436,7 @@ void EditingWindow::submitWPEdit(){
 		rpcstruct.appendChild(XmlMember(doc, "ping_status", "string", takeTB ? "open" : "closed"));
 		rpcstruct.appendChild(XmlMember(doc, "post_password", "string", _control_tab->lePassword->text()));
 		/*rpcstruct.appendChild( XmlMember( doc, "sticky", "bool",
-		      cw->chSticky->isChecked() ? "true" : "false" ) ); */
+			      cw->chSticky->isChecked() ? "true" : "false" ) ); */
 		if(catList.count()){
 			taxMember = doc.createElement("member");
 			taxMemberName = doc.createElement("name");
@@ -3646,18 +3634,18 @@ void EditingWindow::saveAs(bool exp){
 		if(!_local_storage_file_extension.isEmpty())
 			if(!fn.endsWith(QString(".%1").arg(_local_storage_file_extension))) fn.append(QString(".%1").arg(_local_storage_file_extension));
 		_filename = fn;
-//		       This section has been commented out as unnecessary; the
-//		       getSaveFileName function
-//		       already checks for the existence of a file.  Keeping in code
-//		       until tested on other platforms.
-//		if(QFile::exists(fn)){
-//			if(!QMessageBox::warning(0, tr("File exists")
-//						, tr("A file by this name already exists. Continue?")
-//						, QMessageBox::Yes, QMessageBox::No | QMessageBox::Default)){
-//				QFile::remove(fn);
-//				save(fn);
-//			}
-//		}else
+		//		       This section has been commented out as unnecessary; the
+		//		       getSaveFileName function
+		//		       already checks for the existence of a file.  Keeping in code
+		//		       until tested on other platforms.
+		//		if(QFile::exists(fn)){
+		//			if(!QMessageBox::warning(0, tr("File exists")
+		//						, tr("A file by this name already exists. Continue?")
+		//						, QMessageBox::Yes, QMessageBox::No | QMessageBox::Default)){
+		//				QFile::remove(fn);
+		//				save(fn);
+		//			}
+		//		}else
 		save_impl(fn, exp);
 		_app->add_recent_file(_control_tab->leTitle->text(), fn);
 	}else _status_widget->showMessage(tr("Saving aborted"), 2000);
@@ -3676,22 +3664,20 @@ void EditingWindow::save(){
 }
 
 QString EditingWindow::find(const QString &file_name_){
-//	bool found	= false;
-//	QString id = global_root_id;
+	//	bool found	= false;
+	//	QString id = global_root_id;
 	QString result = "";
 	QDirIterator it(_editors_shared_directory, QStringList() << "*." + _topic_editor_config->value("local_storage_file_ext").toString(), QDir::Files, QDirIterator::Subdirectories);
 	while(it.hasNext()){
 		auto item = it.next();
 		if(item.contains(file_name_)){
-//			found = true;
+			//			found = true;
 			result = item;
 			break;
 		}
 	}
 	return result;
 }
-
-
 
 void EditingWindow::choose(QString fname){
 	QString fn;
@@ -3799,7 +3785,7 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 	if(emap.contains("Comments")) _control_tab->chAllowComments->setChecked(emap.value("Comments") == "1" ? true : false);
 	if(emap.contains("TB")) _control_tab->chAllowTB->setChecked(emap.value("TB") == "1" ? true : false);
 	/* if( emap.contains( "Sticky" ) )
-	   cw->chSticky->setChecked( emap.value( "Sticky" ) == "1" ? true : false ); */
+	       cw->chSticky->setChecked( emap.value( "Sticky" ) == "1" ? true : false ); */
 	if(emap.contains("PWD")) _control_tab->lePassword->setText(emap.value("PWD"));
 	else _control_tab->lePassword->clear();
 	if(emap.contains("Server")){
@@ -3897,7 +3883,8 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 #ifdef LOAD_TEXT_BY_WYEDITOR
 	editor_object->load_textarea();
 #else
-	while(!t.atEnd()) fetchedText += QString("%1\n").arg(t.readLine());
+	while(!t.atEnd())
+		fetchedText += QString("%1\n").arg(t.readLine());
 	editor_object->setPlainText(fetchedText);
 
 #endif
@@ -3914,14 +3901,13 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 				// qDebug() << accts.count() << "accounts";
 				// i.e. if it gets to the end of the accounts tree without
 				// finding the account
-				QMessageBox::information(0
-							, tr((program_title_string + " - No such account").c_str())
-							, tr((program_title_string + " could not find this account (perhaps it was "
-										     "deleted).\n\n"
-										     "Will set up a blank default account; you will "
-										     "need to fill in the access "
-										     "details by choosing Accounts from the File "
-										     "menu.").c_str())
+				QMessageBox::information(0, tr((program_title_string + " - No such account").c_str()), tr((program_title_string + " could not find this account (perhaps it was "
+																		  "deleted).\n\n"
+																		  "Will set up a blank default account; you will "
+																		  "need to fill in the access "
+																		  "details by choosing Accounts from the File "
+																		  "menu.")
+															  .c_str())
 							, QMessageBox::Ok);
 				QDomElement newDefaultAccount = _accounts_dom.createElement("account");
 				newDefaultAccount.setAttribute("id", QString("newAccount_%1").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
@@ -3977,10 +3963,7 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 				// qDebug() << "connecting changeBlog";
 				connect(_control_tab->cbBlogSelector, SIGNAL(activated(int)), this, SLOT(changeBlog(int)));
 				if(!isOK){
-					QMessageBox::information(0
-								, tr((program_title_string + " - Invalid blog").c_str())
-								, tr("Could not get a valid blog number. Please set it again.")
-								, QMessageBox::Ok);
+					QMessageBox::information(0, tr((program_title_string + " - Invalid blog").c_str()), tr("Could not get a valid blog number. Please set it again."), QMessageBox::Ok);
 					return true;
 				}
 				for(hh = 0; hh < _control_tab->cbBlogSelector->count(); hh++){
@@ -4007,7 +3990,8 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 						_control_tab->lwOtherCats->clear();
 						for(int j = 0; j < b; j++){
 							catName = decodeXmlEntities(catNodeList.at(j)
-										    .firstChildElement("categoryName").text());
+										    .firstChildElement("categoryName")
+										    .text());
 							_control_tab->cbMainCat->addItem(catName, QVariant(catNodeList.at(j).firstChildElement("categoryId").text()));
 							_control_tab->lwOtherCats->addItem(catName);
 						}
@@ -4069,8 +4053,7 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 				   .elementsByTagName("category")
 				   .count()){
 					_control_tab->cbBlogSelector->clear();
-					for(hh = 0; hh < blogs.count(); hh++) _control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogs.at(hh).firstChildElement("blogName").text())
-														   , QVariant(blogs.at(hh).firstChildElement("blogid").text()));
+					for(hh = 0; hh < blogs.count(); hh++) _control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogs.at(hh).firstChildElement("blogName").text()), QVariant(blogs.at(hh).firstChildElement("blogid").text()));
 					setLoadedPostCategories();
 					setPostClean();
 					return true;
@@ -4088,11 +4071,9 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 		pui.setupUi(&pwd);
 		if(pwd.exec()) password = pui.lePassword->text();
 		else
-			QMessageBox::warning(0
-					    , tr("No password")
-					    , tr("This entry was saved without a password.\n"
-						 "You will need to set one, using the\n"
-						 "Preferences window.")
+			QMessageBox::warning(0, tr("No password"), tr("This entry was saved without a password.\n"
+								      "You will need to set one, using the\n"
+								      "Preferences window.")
 					    , QMessageBox::Ok, QMessageBox::NoButton);
 	}
 	// This is an old-style account which isn't in the database
@@ -4146,8 +4127,7 @@ void EditingWindow::setLoadedPostCategories(){ // slot
 	QDomNodeList blogNodes = currentAccountElement.firstChildElement("blogs").elementsByTagName("blog");
 	if(!_control_tab->cbBlogSelector->count()){
 		j = blogNodes.size();
-		for(z = 0; z < j; z++) _control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogNodes.at(z).firstChildElement("blogName").text())
-									    , QVariant(blogNodes.at(z).firstChildElement("blogName").text()));
+		for(z = 0; z < j; z++) _control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogNodes.at(z).firstChildElement("blogName").text()), QVariant(blogNodes.at(z).firstChildElement("blogName").text()));
 		_control_tab->cbBlogSelector->setCurrentIndex(currentBlog);
 	}
 	currentBlogElement = blogNodes.at(currentBlog).toElement();
@@ -4221,10 +4201,10 @@ void EditingWindow::uploadFile(){
 
 							QString blogid = currentBlogElement.firstChildElement("blogid").text();
 							/*              QRegExp
-							       blogidRegExp( "^[0-9]+$" );
-							    bool blogidIsInt =
-							       blogidRegExp.exactMatch( blogid
-							       ); */
+											   blogidRegExp( "^[0-9]+$" );
+											bool blogidIsInt =
+											   blogidRegExp.exactMatch( blogid
+											   ); */
 
 							params.appendChild(XmlValue(doc, "string", blogid));
 							params.appendChild(XmlValue(doc, "string", login));
@@ -4241,8 +4221,7 @@ void EditingWindow::uploadFile(){
 
 							methodCall.appendChild(params);
 							doc.appendChild(methodCall);
-							doc.insertBefore(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"")
-									, doc.firstChild());
+							doc.insertBefore(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""), doc.firstChild());
 
 							_current_http_business = _metaWeblog_newMediaObject;
 
@@ -4303,7 +4282,7 @@ void EditingWindow::handleSideWidgetPageSwitch(int index){
 	if(index == 1){
 		if(_control_tab->cbMainCat->count() == 0 && _network_actions_enabled && categoriesEnabled){
 			/*if( currentBlogElement.isNull() )
-			      qDebug() << "currentBlogElement is null"; */
+					  qDebug() << "currentBlogElement is null"; */
 			cl = currentBlogElement.firstChildElement("categories")
 			     .elementsByTagName("category");
 			if(cl.count() == 0){
@@ -4348,8 +4327,7 @@ void EditingWindow::newCategory(int parentCategory){
 			if(b){
 				ncui.cbParent->clear();
 				ncui.cbParent->addItem("(Top level)", QVariant("0"));
-				for(j = 0; j < b; j++) ncui.cbParent->addItem(catNodeList.at(j).firstChildElement("categoryName").text()
-									     , QVariant(catNodeList.at(j).firstChildElement("categoryId").text()));
+				for(j = 0; j < b; j++) ncui.cbParent->addItem(catNodeList.at(j).firstChildElement("categoryName").text(), QVariant(catNodeList.at(j).firstChildElement("categoryId").text()));
 				ncui.cbParent->setCurrentIndex(parentCategory);
 			}
 			if(newCategoryDialog.exec()){
@@ -4388,8 +4366,7 @@ void EditingWindow::newCategory(int parentCategory){
 
 						methodCall.appendChild(params);
 						doc.appendChild(methodCall);
-						doc.insertBefore(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"")
-								, doc.firstChild());
+						doc.insertBefore(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""), doc.firstChild());
 
 						QByteArray requestArray(doc.toByteArray());
 						responseData = "";
@@ -4442,8 +4419,7 @@ void EditingWindow::refreshKeywordTags(){
 
 			methodCall.appendChild(params);
 			doc.appendChild(methodCall);
-			doc.insertBefore(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"")
-					, doc.firstChild());
+			doc.insertBefore(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""), doc.firstChild());
 			addToConsole(doc.toString());
 			QByteArray requestArray(doc.toByteArray(2));
 			responseData = "";
@@ -4632,9 +4608,7 @@ bool EditingWindow::saveCheck(){
 	bool return_value;
 
 	activateWindow();
-	int a = QMessageBox::warning(this
-				    , tr("Not saved"), tr("You have not saved this file.\n Save first?")
-				    , QMessageBox::Yes | QMessageBox::Default, QMessageBox::No, QMessageBox::Cancel);
+	int a = QMessageBox::warning(this, tr("Not saved"), tr("You have not saved this file.\n Save first?"), QMessageBox::Yes | QMessageBox::Default, QMessageBox::No, QMessageBox::Cancel);
 	switch(a){
 		case QMessageBox::Cancel:
 			return_value = false;
@@ -4698,10 +4672,7 @@ void EditingWindow::findAgain(){
 #endif
 }
 
-QDomElement EditingWindow::XmlValue(QDomDocument &doc
-				   , QString valueType
-				   , QString actualValue
-				   , QString memberType){
+QDomElement EditingWindow::XmlValue(QDomDocument &doc, QString valueType, QString actualValue, QString memberType){
 	QDomElement param	= doc.createElement(memberType);
 	QDomElement value	= doc.createElement("value");
 	QDomElement realValue = doc.createElement(valueType);
@@ -4712,10 +4683,7 @@ QDomElement EditingWindow::XmlValue(QDomDocument &doc
 	return param;
 }
 
-QDomElement EditingWindow::XmlMember(QDomDocument &doc
-				    , QString valueName
-				    , QString valueType
-				    , QString actualValue){
+QDomElement EditingWindow::XmlMember(QDomDocument &doc, QString valueName, QString valueType, QString actualValue){
 	QDomElement mem		= doc.createElement("member");
 	QDomElement name	= doc.createElement("name");
 	name.appendChild(QDomText(doc.createTextNode(valueName)));
@@ -4729,18 +4697,14 @@ QDomElement EditingWindow::XmlMember(QDomDocument &doc
 	return mem;
 }
 
-QDomElement EditingWindow::XmlMethodName(QDomDocument &doc
-					, QString methodName){
+QDomElement EditingWindow::XmlMethodName(QDomDocument &doc, QString methodName){
 	QDomElement methName = doc.createElement("methodName");
 	methName.appendChild(QDomText(doc.createTextNode(methodName)));
 
 	return methName;
 }
 
-QDomElement EditingWindow::XmlRpcArray(QDomDocument &doc
-				      , QString valueName
-				      , QString valueType
-				      , QList<QString>  text){
+QDomElement EditingWindow::XmlRpcArray(QDomDocument &doc, QString valueName, QString valueType, QList<QString> text){
 	QDomElement arrayValue, arrayValueString;
 	int i;
 
@@ -4765,9 +4729,7 @@ QDomElement EditingWindow::XmlRpcArray(QDomDocument &doc
 	return mem;
 }
 
-QDomElement EditingWindow::XmlRpcArray(QDomDocument &doc
-				      , QString valueName
-				      , QList<QString>  text){
+QDomElement EditingWindow::XmlRpcArray(QDomDocument &doc, QString valueName, QList<QString> text){
 	return XmlRpcArray(doc, valueName, "string", text);
 }
 
@@ -4855,7 +4817,7 @@ void EditingWindow::saveAutoLinkDictionary(){
 	doc.appendChild(autoLinkDictionaryElement);
 	doc.insertBefore(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""), doc.firstChild());
 
-//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	_topic_editor_config->beginGroup("account");
 	QString dictionaryFileName = QString("%1/qtmautolinkdict.xml")
 				     .arg(_topic_editor_config->value("editors_shared_directory", "").toString());
@@ -4872,7 +4834,7 @@ void EditingWindow::loadAutoLinkDictionary(){
 	QString dictionaryFileName, errorString, currentKey, currentURL;
 	int currentTarget;
 	QDomElement currentKeyElement, currentURLElement, currentTitleElement, currentTargetElement;
-//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	int errorLine, errorCol;
 	bool ok;
 
@@ -5067,8 +5029,7 @@ bool EditingWindow::event(QEvent *event){
 }
 
 bool EditingWindow::eventFilter(
-	QObject *obj
-			       , QEvent      *event){
+	QObject *obj, QEvent *event){
 	if(obj == editor_object){
 		if(event->type() == QEvent::KeyPress){
 			QKeyEvent *kpevent = static_cast<QKeyEvent *>(event);
@@ -5104,7 +5065,6 @@ bool EditingWindow::eventFilter(
 //	_toolsarea_of_close_button->addStretch();
 // }
 
-
 // void EditingWindow::setup_closebutton(void){
 //// Кнопка закрытия виджета
 //	_close_button = new FlatToolButton(this);
@@ -5112,7 +5072,7 @@ bool EditingWindow::eventFilter(
 //	_close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton));//
 //	SP_TitleBarCloseButton SP_DialogCloseButton
 //	_close_button->setAutoRaise(true);
-//	if(appconfig.interface_mode() == "desktop"){
+//	if(appconfig->interface_mode() == "desktop"){
 //		int w	= _close_button->geometry().width();
 //		int h	= _close_button->geometry().height();
 //		int x	= std::min(w, h) / 2;   // imin(w, h) / 2;
@@ -5128,11 +5088,9 @@ QStackedWidget *EditingWindow::main_stack(){
 	return _main_stack;
 }
 
-
 rs_t *EditingWindow::record_screen(){return _record_screen;}
 
 EditorDock *EditingWindow::editor_dock(){return _editor_dock;}
-
 
 void EditingWindow::name(const QString &nm){_editor->name(nm);}
 
@@ -5169,13 +5127,21 @@ void EditingWindow::load_callback(const std::function<void (QObject *editor, QSt
 //	Editor::editor_save_callback(editor, save_text);
 // }
 #ifdef USE_FILE_PER_TREEITEM
-bool EditingWindow::work_directory(QString dir_name){return _editor->work_directory(dir_name);}
-#endif// USE_FILE_PER_TREEITEM
-QString EditingWindow::work_directory(){return _editor->work_directory();}
-#ifdef USE_FILE_PER_TREEITEM
-void EditingWindow::file_name(QString file_name_){_editor->file_name(file_name_);}
+bool EditingWindow::work_directory(QString dir_name){
+	return _editor->work_directory(dir_name);
+}
 #endif // USE_FILE_PER_TREEITEM
-QString EditingWindow::file_name(){return _editor->file_name();}
+QString EditingWindow::work_directory(){
+	return _editor->work_directory();
+}
+#ifdef USE_FILE_PER_TREEITEM
+void EditingWindow::file_name(QString file_name_){
+	_editor->file_name(file_name_);
+}
+#endif // USE_FILE_PER_TREEITEM
+QString EditingWindow::file_name(){
+	return _editor->file_name();
+}
 
 void EditingWindow::save_textarea(){_editor->save_textarea();}
 
@@ -5201,11 +5167,14 @@ QTextDocument *EditingWindow::textarea_document(){return _editor->document();}
 
 void EditingWindow::textarea_editable(bool editable){_editor->textarea_editable(editable);}
 
-
 #ifdef USE_FILE_PER_TREEITEM
-void EditingWindow::clear_all(){_editor->initialize_data();}
+void EditingWindow::clear_all(){
+	_editor->initialize_data();
+}
 #endif // USE_FILE_PER_TREEITEM
-FlatToolButton *EditingWindow::to_attach() const {return _editor->_to_attach;}
+FlatToolButton *EditingWindow::to_attach() const {
+	return _editor->_to_attach;
+}
 
 QIcon EditingWindow::icon_attach_exists() const {return _editor->_icon_attach_exists;}
 
@@ -5218,7 +5187,6 @@ EditorTextArea *EditingWindow::text_area() const {return _editor->_text_area;}
 void EditingWindow::to_editor_layout(){_editor->to_editor_layout();}
 
 void EditingWindow::to_attach_layout(){_editor->to_attach_layout();}
-
 
 // Предпросмотр печати текущей статьи
 void EditingWindow::file_print_preview(void){
@@ -5245,7 +5213,6 @@ void EditingWindow::file_print(void){
 #endif
 }
 
-
 // Вывод текущей статьи в PDF файл
 void EditingWindow::file_print_pdf(void){
 #ifndef QT_NO_PRINTER
@@ -5268,16 +5235,16 @@ void EditingWindow::save_text_context(void){
 	id_value id = // static_cast<id_value>(_control_tab->topic());//
 		      id_value(misc_field("id")); // _editor_screen->misc_field("id")
 
-
 	qDebug() << "MainWindow::saveTextarea() : id :" << id;
-	save();//	save_textarea();
+	save(); //	save_textarea();
 	// _editor_screen->save_textarea();
 
-	walkhistory.add<WALK_HISTORY_GO_NONE>(static_cast<id_value>(_control_tab->topic())// id
-					     , cursor_position() // _editor_screen->cursor_position()
-					     , scrollbar_position()); // _editor_screen->scrollbar_position());
+	walkhistory.add<WALK_HISTORY_GO_NONE>(static_cast<id_value>(_control_tab->topic()) // id
+					     ,
+					      cursor_position() // _editor_screen->cursor_position()
+					     ,
+					      scrollbar_position()); // _editor_screen->scrollbar_position());
 }
-
 
 void EditingWindow::save_editor_cursor_position(void){
 	// int n = _editor_screen->cursor_position();
@@ -5297,9 +5264,9 @@ void EditingWindow::go_walk_history_previous(void){
 	id_value id = // static_cast<id_value>(_control_tab->topic()); //
 		      id_value(misc_field("id")); // _editor_screen->misc_field("id")
 
-	walkhistory.add<WALK_HISTORY_GO_PREVIOUS>(id
-						 , cursor_position() // _editor_screen->cursor_position()
-						 , scrollbar_position() // _editor_screen->scrollbar_position()
+	walkhistory.add<WALK_HISTORY_GO_PREVIOUS>(id, cursor_position() // _editor_screen->cursor_position()
+						 ,
+						  scrollbar_position() // _editor_screen->scrollbar_position()
 						 );
 	walkhistory.set_drop(true);
 
@@ -5312,9 +5279,9 @@ void EditingWindow::go_walk_history_next(void){
 	id_value id = // static_cast<id_value>(_control_tab->topic());//
 		      id_value(misc_field("id")); // _editor_screen->misc_field("id")
 
-	walkhistory.add<WALK_HISTORY_GO_NEXT>(id
-					     , cursor_position() // _editor_screen->cursor_position()
-					     , scrollbar_position() // _editor_screen->scrollbar_position()
+	walkhistory.add<WALK_HISTORY_GO_NEXT>(id, cursor_position() // _editor_screen->cursor_position()
+					     ,
+					      scrollbar_position() // _editor_screen->scrollbar_position()
 					     );
 	walkhistory.set_drop(true);
 
@@ -5356,7 +5323,7 @@ void EditingWindow::go_walk_history(void){
 			// return;
 			// }
 			// if(item->child_direct(record_id)){//?
-			gl_paras.main_window()->set_tree_position(global_root_id, absolute_path);
+			gl_paras->main_window()->set_tree_position(global_root_id, absolute_path);
 			// select_id(id);
 			if(_topic_editor_config->value("remember_cursor_at_history_navigation").toBool()){
 				// _editor_screen->cursor_position(walkhistory.cursor_position(record_id));
@@ -5383,7 +5350,6 @@ void EditingWindow::restore_editor_cursor_position(void){
 	cursor_position(n);
 }
 
-
 void EditingWindow::restore_editor_scrollbar_position(void){
 	int n = _topic_editor_config->value("editor_scroll_bar_position").toInt();
 	// _editor_screen->scrollbar_position(n);
@@ -5403,13 +5369,13 @@ void EditingWindow::on_topic_changed(const QString &tp){
 	QString new_topic = tr(topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).trimmed().toStdString().c_str());
 	QString dest_topic_folder = _editors_shared_directory + "/" + new_topic;
 	auto update_folder = [&](bool is_initializing) -> void {
-				     _current_topic_folder_name	= dest_topic_folder;
-				     _current_topic_config_name	= _current_topic_folder_name + "/" + gl_para::_editor_conf_filename;
-				     _topic_editor_config = [&]() -> std::unique_ptr<QSettings>{
+				     _current_topic_folder_name = dest_topic_folder;
+				     _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_editor_conf_filename;
+				     _topic_editor_config = [&]() -> std::unique_ptr<QSettings> {
 								    if(!QDir(_current_topic_folder_name).exists())
 									    if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
 								    if(!QFile(_current_topic_config_name).exists())
-									    if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras.target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+									    if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
 								    if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
 								    return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
 							    } ();
@@ -5424,8 +5390,8 @@ void EditingWindow::on_topic_changed(const QString &tp){
 						     if(brs){
 							     auto original_config_name = original_topic_folder + "/" + gl_para::_browser_conf_filename;
 							     brs->configuration_full_name(original_config_name);
-							     brs->configuration(// std::make_unique<QSettings>(_current_topic_folder_name + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat)
-								     [&]() -> std::unique_ptr<QSettings>{
+							     brs->configuration( // std::make_unique<QSettings>(_current_topic_folder_name + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat)
+								     [&]() -> std::unique_ptr<QSettings> {
 									     if(!QDir(_current_topic_folder_name).exists())
 										     if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
 									     auto _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_browser_conf_filename;
@@ -5435,17 +5401,16 @@ void EditingWindow::on_topic_changed(const QString &tp){
 											     if(!QFile::copy(original_config_name, _current_topic_config_name)) critical_error(QString("Can not copy \"") + original_config_name + "\"");
 										     }else{
 											     //
-											     if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras.target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\"");                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // throw std::runtime_error("Can not copy document.ini");
+											     if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
 										     }
 									     }
 									     if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
 									     return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
-								     } ()
-									       );
+								     } ());
 							     brs->save_state();
 						     }
 					     }
-//					     load(_filename);
+					     //					     load(_filename);
 				     }
 				     _entry_ever_saved = false;
 			     };

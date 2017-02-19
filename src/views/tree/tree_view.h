@@ -13,6 +13,7 @@
 #include <QTreeView>
 #include <QWidget>
 
+#include "libraries/global_parameters.h"
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
 #include "models/tree/tree_index.hxx"
@@ -108,7 +109,7 @@ public:
     //    QModelIndex current_index(void)const;
     QModelIndex current_index(void) const;
 
-    QModelIndex select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index, select_strategy _select_strategy = [](tv_t* const v, const QModelIndex& _i) -> QModelIndex {assert(v);assert(v->selectionModel());assert(_i.isValid());v->selectionModel()->select(_i, current_tree_selection_mode);return _i; }, current_strategy _current_strategy = [](tv_t* const v, const QModelIndex& _i, const int dummy = 0) -> QModelIndex {(void) (dummy);assert(v);assert(v->selectionModel());assert(_i.isValid());v->selectionModel()->setCurrentIndex(_i, current_tree_current_index_mode);return _i; });
+    QModelIndex select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index, select_strategy _select_strategy = [](tv_t* const v, const QModelIndex& _i) -> QModelIndex {assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->select(_i, current_tree_selection_mode); return _i; }, current_strategy _current_strategy = [](tv_t* const v, const QModelIndex& _i, const int dummy = 0) -> QModelIndex {(void)(dummy); assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->setCurrentIndex(_i, current_tree_current_index_mode); return _i; });
 
     //    QModelIndex select_as_current_item(boost::intrusive_ptr<TreeItem> _item
     //                                       , select_strategy _select_strategy = [](KnowView *const v, const QModelIndex &_i) ->QModelIndex{assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->select(_i, current_tree_selection_mode); return _i;}
@@ -195,7 +196,7 @@ protected:
         const QMimeData* mime_data = event->mimeData();
         if (mime_data == nullptr)
             return false;
-        if (!(mime_data->hasFormat("tute/records")))
+        if (!(mime_data->hasFormat(QString(gl_para::_program_instance_name) + "/records")))
             return false;
         QObject* source_object = qobject_cast<QObject*>(event->source());
         if (source_object->objectName() == record_view_multi_instance_name) // "recordTableView"

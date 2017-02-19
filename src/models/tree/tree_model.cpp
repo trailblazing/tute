@@ -35,8 +35,8 @@
 #include "views/record/editor_wrap.h"
 #include "views/record_table/record_screen.h"
 
-extern gl_para gl_paras;
-extern AppConfig appconfig;
+extern std::shared_ptr<gl_para> gl_paras;
+extern std::shared_ptr<AppConfig> appconfig;
 extern const char* clipboard_items_root;
 
 // TreeModel - Это модель данных, которая работает с видом TreeScreen
@@ -101,9 +101,9 @@ QVariant tm_t::data(const QModelIndex& _index, int role) const
     // Если запрашивается окраска текста элемента
     if (role == Qt::ForegroundRole) {
         boost::intrusive_ptr<TreeItem> it = item(_index);
-        if (it->id() == _session_id && _index != gl_paras.tree_screen()->view()->current_index())
+        if (it->id() == _session_id && _index != gl_paras->tree_screen()->view()->current_index())
             return QColor(Qt::red);
-        else if (it->id() == _session_id && _index == gl_paras.tree_screen()->view()->current_index())
+        else if (it->id() == _session_id && _index == gl_paras->tree_screen()->view()->current_index())
             return QColor(Qt::cyan);
         else if (it->count_direct() > 0)
             return QColor(Qt::black); // Если узел содержит таблицу конечных записей
@@ -125,7 +125,7 @@ QVariant tm_t::data(const QModelIndex& _index, int role) const
         // Если ветка зашифрована
         if (it->field<crypt_type>() == "1") {
             // Если пароль не введен, доступа к ветке нет
-            if (gl_paras.crypt_key().length() == 0)
+            if (gl_paras->crypt_key().length() == 0)
                 return QIcon(":/resource/pic/branch_closed.svg");
             else
                 return QIcon(":/resource/pic/branch_opened.svg");

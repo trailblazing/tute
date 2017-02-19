@@ -21,7 +21,7 @@
 #include "models/tree/tree_know_model.h"
 #include "views/tree/tree_screen.h"
 
-extern gl_para gl_paras;
+extern std::shared_ptr<gl_para> gl_paras;
 const char* clipboard_items_root = "clipboard_items_root";
 
 #if QT_VERSION == 0x050600
@@ -42,7 +42,7 @@ void ClipboardBranch::init(void)
     _branch_data._records.clear();
 
     _clipboard_branch_format.clear();
-    _clipboard_branch_format << "tute/branch";
+    _clipboard_branch_format << QString(gl_para::_program_instance_name) + "/branch";
 }
 void ClipboardBranch::print(void) const
 {
@@ -54,9 +54,8 @@ void ClipboardBranch::print(void) const
         qDebug() << "Branch:";
 
         foreach (QString field_name, current_branch.keys()) {
-            if (field_name == "id" || field_name == "name") {
+            if (field_name == "id" || field_name == "name")
                 qDebug() << field_name << ":" << current_branch.value(field_name);
-            }
         }
 
         // Запоминается id текущей ветки
@@ -71,9 +70,8 @@ void ClipboardBranch::print(void) const
             QMap<QString, QString> current_record_fields = record->natural_field_list();
 
             foreach (QString field_name, current_record_fields.keys()) {
-                if (field_name == "id" || field_name == "name") {
+                if (field_name == "id" || field_name == "name")
                     qDebug() << field_name << ":" << current_record_fields.value(field_name);
-                }
             }
         }
     }
@@ -96,9 +94,8 @@ QList<CLIPB_TREE_ONE_LINE> ClipboardBranch::id_tree_get(void) const
         QStringList subbranches;
 
         foreach (branch_type current_subbranch, _branch_data._branch) {
-            if (current_subbranch.value("parent_id") == current_id) {
+            if (current_subbranch.value("parent_id") == current_id)
                 subbranches << current_subbranch.value("id");
-            }
         }
 
         CLIPB_TREE_ONE_LINE one_line;
@@ -145,9 +142,8 @@ QMap<QString, QString> ClipboardBranch::fields_by_parent_id(QString id) const
     QMap<QString, QString> result;
     for (auto& current_branch : _branch_data._branch) { // foreach(branch_type current_branch, _branch_data._branch) {
         if (current_branch.contains("id")) {
-            if (current_branch["id"] == id) {
+            if (current_branch["id"] == id)
                 result = current_branch;
-            }
         }
     }
     //    critical_error("Can not find id " + id + " in clipboard data");
@@ -245,11 +241,10 @@ void ClipboardBranch::branch_push(boost::intrusive_ptr<TreeIndex> _modelindex //
             // Флаги на основе состояния подветок
             for (int i = 0; i < item->count_direct(); i++) { // foreach(QStringList curr_absolute_path, sub_branches_absolute_path)
                 if ( // _know_model_board->item(curr_absolute_path)
-                    item->child_direct(i)->field<crypt_type>() == "1") { // boost::mpl::c_str < crypt_type > ::value
+                    item->child_direct(i)->field<crypt_type>() == "1") // boost::mpl::c_str < crypt_type > ::value
                     encrypt_presence = true;
-                } else {
+                else
                     nocrypt_presence = true;
-                }
             }
             // Если ветка содержит как шифрованные так и нешифрованные данные
             // то такую ветку копировать в буфер нельзя
@@ -259,7 +254,7 @@ void ClipboardBranch::branch_push(boost::intrusive_ptr<TreeIndex> _modelindex //
                 //                messageBox.setText(tr("This item contains both unencrypted and encrypted data. Copy/paste operation is possible only for item that contain similar type data."));
                 //                messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
                 //                messageBox.exec();
-                gl_paras.status_bar()->showMessage(tr("This item contains both unencrypted and encrypted data. Copy/paste operation is possible only for item that contain similar type data."), 2000);
+                gl_paras->status_bar()->showMessage(tr("This item contains both unencrypted and encrypted data. Copy/paste operation is possible only for item that contain similar type data."), 2000);
                 break; // return copy_result;
             }
             //            // -------------------

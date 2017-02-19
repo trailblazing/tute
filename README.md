@@ -160,7 +160,7 @@ For Tute:
 ```
         https://github.com/beimprovised/tute/blob/master/src/uncrustify.cfg
 ```
-* code beautifier   - clang-format::WebKit
+* code beautifier   - clang-format::WebKit (to save time)
 ```
         find . -iname "*.h" -or -iname "*.cpp" -or -iname "*.cxx" | xargs clang-format -i -style=WebKit
 ```

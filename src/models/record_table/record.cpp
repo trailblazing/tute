@@ -22,9 +22,9 @@
 #include "views/browser/webview.h"
 #include "views/record_table/record_view.h"
 
-extern AppConfig appconfig;
+extern std::shared_ptr<AppConfig> appconfig;
 extern FixedParameters fixedparameters;
-extern gl_para gl_paras;
+extern std::shared_ptr<gl_para> gl_paras;
 
 Record::Record() // boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
     : _lite_flag(true),
@@ -65,10 +65,10 @@ Record::Record() // boost::intrusive_ref_counter<Record, boost::thread_safe_coun
               _field_data[name] = _field_data[boost::mpl::c_str<url_type>::value]; // for history reason
           if (_field_data.contains(crypt_field_name)) { // boost::mpl::c_str < crypt_type > ::value
               if (_field_data[crypt_field_name] == "1") {
-                  if (_field_data[name].length() > 0 && gl_paras.crypt_key().length() > 0) {
+                  if (_field_data[name].length() > 0 && gl_paras->crypt_key().length() > 0) {
                       // is_crypt = true;
                       // Поле расшифровывается
-                      result = CryptService::decryptString(gl_paras.crypt_key(), _field_data[name]);
+                      result = CryptService::decryptString(gl_paras->crypt_key(), _field_data[name]);
                   }
               } else
                   result = _field_data[name];
@@ -89,7 +89,7 @@ Record::Record() // boost::intrusive_ref_counter<Record, boost::thread_safe_coun
           if (_field_data.contains(boost::mpl::c_str<crypt_type>::value)) {
               if (_field_data[boost::mpl::c_str<crypt_type>::value] == "1") {
                   if (value.length() > 0) {
-                      if (gl_paras.crypt_key().length() > 0)
+                      if (gl_paras->crypt_key().length() > 0)
                           is_crypt = true;
                       else
                           critical_error("In Record::field() can not set data to crypt field " + _name + ". Password not setted");
@@ -100,7 +100,7 @@ Record::Record() // boost::intrusive_ref_counter<Record, boost::thread_safe_coun
           QString _value = value;
           // Если нужно шифровать, поле шифруется
           if (is_crypt == true)
-              _value = CryptService::encryptString(gl_paras.crypt_key(), value);
+              _value = CryptService::encryptString(gl_paras->crypt_key(), value);
           // Устанавливается значение поля
 
           _field_data.insert(_name, _value); // _field_data[_name] = value; //
@@ -147,10 +147,10 @@ Record::Record(QMap<QString, QString> field_data)
         QString crypt_field_name = boost::mpl::c_str<crypt_type>::value;
         if (_field_data.contains(crypt_field_name)) { // boost::mpl::c_str < crypt_type > ::value
             if (_field_data[crypt_field_name] == "1") {
-                if (_field_data[name].length() > 0 && gl_paras.crypt_key().length() > 0) {
+                if (_field_data[name].length() > 0 && gl_paras->crypt_key().length() > 0) {
                     // is_crypt = true;
                     // Поле расшифровывается
-                    result = CryptService::decryptString(gl_paras.crypt_key(), _field_data[name]);
+                    result = CryptService::decryptString(gl_paras->crypt_key(), _field_data[name]);
                 }
             } else
                 result = _field_data[name];
@@ -171,7 +171,7 @@ Record::Record(QMap<QString, QString> field_data)
         if (_field_data.contains(boost::mpl::c_str<crypt_type>::value)) {
             if (_field_data[boost::mpl::c_str<crypt_type>::value] == "1") {
                 if (value.length() > 0) {
-                    if (gl_paras.crypt_key().length() > 0)
+                    if (gl_paras->crypt_key().length() > 0)
                         is_crypt = true;
                     else
                         critical_error("In Record::field() can not set data to crypt field " + _name + ". Password not setted");
@@ -182,7 +182,7 @@ Record::Record(QMap<QString, QString> field_data)
         QString _value = value;
         // Если нужно шифровать, поле шифруется
         if (is_crypt == true)
-            _value = CryptService::encryptString(gl_paras.crypt_key(), value);
+            _value = CryptService::encryptString(gl_paras->crypt_key(), value);
         // Устанавливается значение поля
 
         _field_data.insert(_name, _value); // _field_data[_name] = value; //
@@ -744,8 +744,8 @@ QMap<QString, QString> Record::natural_field_list() const
                 // Если поле не подлежит шифрованию (не все поля в зашифрованной ветке шифруются. Например, не шифруется ID записи)
                 if (fixedparameters._record_field_crypted.contains(currName) == false)
                     result = _field_data[currName]; // Напрямую значение поля
-                else if (gl_paras.crypt_key().length() > 0 && fixedparameters._record_field_crypted.contains(currName))
-                    result = CryptService::decryptString(gl_paras.crypt_key(), _field_data[currName]); // асшифровывается значение поля
+                else if (gl_paras->crypt_key().length() > 0 && fixedparameters._record_field_crypted.contains(currName))
+                    result = CryptService::decryptString(gl_paras->crypt_key(), _field_data[currName]); // асшифровывается значение поля
             }
             resultFieldList[currName] = result;
         }
@@ -820,12 +820,12 @@ QString Record::text_from_fat() const
         critical_error("Can\'t get text from lite record object" + id_and_name());
     // Если запись зашифрована, но ключ не установлен (т.е. человек не вводил пароль)
     // то расшифровка невозможна
-    if (!(_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1" && gl_paras.crypt_key().length() == 0)) { // return "";
+    if (!(_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1" && gl_paras->crypt_key().length() == 0)) { // return "";
         // Если шифровать ненужно
         if (_field_data.value(boost::mpl::c_str<crypt_type>::value).length() == 0 || _field_data.value(boost::mpl::c_str<crypt_type>::value) == "0")
             result = QString(_text); // Текст просто преобразуется из QByteArray
         else if (_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1") // Если нужно шифровать
-            result = CryptService::decryptStringFromByteArray(gl_paras.crypt_key(), _text);
+            result = CryptService::decryptStringFromByteArray(gl_paras->crypt_key(), _text);
         else
             critical_error("Record::text_from_fat() : Unavailable crypt field value \"" + _field_data.value(boost::mpl::c_str<crypt_type>::value) + "\"");
     }
@@ -840,7 +840,7 @@ QString Record::text_from_lite_direct() const
         critical_error("Can\'t run Record::text_from_lite_direct() for non lite record " + id_and_name());
     // Если запись зашифрована, но ключ не установлен (т.е. человек не вводил пароль)
     // то расшифровка невозможна
-    if (_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1" && gl_paras.crypt_key().length() == 0)
+    if (_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1" && gl_paras->crypt_key().length() == 0)
         return "";
     // Выясняется полное имя файла с текстом записи
     QString fileName = full_text_file_name();
@@ -859,7 +859,7 @@ QString Record::text_from_lite_direct() const
     } else {
         qDebug() << "Record::text_from_lite_direct() : return direct data after decrypt";
 
-        return CryptService::decryptStringFromByteArray(gl_paras.crypt_key(), f.readAll()); // Если зашифровано
+        return CryptService::decryptStringFromByteArray(gl_paras->crypt_key(), f.readAll()); // Если зашифровано
     }
     return "";
 }
@@ -875,7 +875,7 @@ void Record::text_to_fat(QString _text_source)
     if (_field_data.value(boost::mpl::c_str<crypt_type>::value).length() == 0 || _field_data.value(boost::mpl::c_str<crypt_type>::value) == "0")
         _text = _text_source.toUtf8(); // Текст просто запоминается в виде QByteArray
     else if (_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1") // Если нужно шифровать
-        _text = CryptService::encryptStringToByteArray(gl_paras.crypt_key(), _text_source);
+        _text = CryptService::encryptStringToByteArray(gl_paras->crypt_key(), _text_source);
     else
         critical_error("Record::text_to_fat() : Unavailable crypt field value \"" + _field_data.value(boost::mpl::c_str<crypt_type>::value) + "\"");
 }
@@ -896,7 +896,7 @@ void Record::text_to_direct(QString _text_source)
         out << _text_source;
     } else if (_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1") {
         // Текст шифруется
-        QByteArray encryptData = CryptService::encryptStringToByteArray(gl_paras.crypt_key(), _text_source);
+        QByteArray encryptData = CryptService::encryptStringToByteArray(gl_paras->crypt_key(), _text_source);
 
         // В файл сохраняются зашифрованные данные
         QFile wfile(file_name);
@@ -997,7 +997,7 @@ void Record::to_encrypt_and_save_lite(void)
     QString dir_name;
     QString file_name;
     check_and_fill_file_dir(dir_name, file_name);
-    CryptService::encryptFile(gl_paras.crypt_key(), file_name);
+    CryptService::encryptFile(gl_paras->crypt_key(), file_name);
 
     // Шифрование приаттаченных файлов на диске
     _attach_table_data->encrypt(Attach::areaFile);
@@ -1018,7 +1018,7 @@ void Record::to_encrypt_and_save_fat(void)
     if (_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1")
         critical_error("Cant call to_encrypt_and_save_fat() for crypt record object " + id_and_name());
     // Зашифровывается текст записи в памяти
-    _text = CryptService::encryptByteArray(gl_paras.crypt_key(), _text);
+    _text = CryptService::encryptByteArray(gl_paras->crypt_key(), _text);
 
     // Зашифровываются аттачи в памяти
     _attach_table_data->encrypt(Attach::areaMemory);
@@ -1043,7 +1043,7 @@ void Record::to_decrypt_and_save_lite(void)
     QString dir_name;
     QString file_name;
     check_and_fill_file_dir(dir_name, file_name);
-    CryptService::decryptFile(gl_paras.crypt_key(), file_name);
+    CryptService::decryptFile(gl_paras->crypt_key(), file_name);
 
     // асшифровка приаттаченных файлов на диске
     _attach_table_data->decrypt(Attach::areaFile);
@@ -1065,7 +1065,7 @@ void Record::to_decrypt_and_save_fat(void)
     if (_field_data.value(boost::mpl::c_str<crypt_type>::value) != "1")
         critical_error("Cant call to_decrypt_and_save_fat() for non crypt record object " + id_and_name());
     // асшифровывается текст записи в памяти
-    _text = CryptService::decryptByteArray(gl_paras.crypt_key(), _text);
+    _text = CryptService::decryptByteArray(gl_paras->crypt_key(), _text);
 
     // асшифровываются аттачи в памяти
     _attach_table_data->decrypt(Attach::areaMemory);
@@ -1086,7 +1086,7 @@ void Record::push_lite_attributes()
     // critical_error("Cant push lite record object" + id_and_name());
     // Если запись зашифрована, но ключ не установлен (т.е. человек не вводил пароль)
     // то зашифровать текст невозможно
-    if (_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1" && gl_paras.crypt_key().length() == 0)
+    if (_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1" && gl_paras->crypt_key().length() == 0)
         critical_error("Record::push_lite_attributes() : Try save text for crypt record while password not setted.");
     // Заполняются имена директории и полей
     // Директория при проверке создается если ее небыло
@@ -1113,7 +1113,7 @@ void Record::push_fat_attributes()
         critical_error("Cant push lite record object" + id_and_name());
     // Если запись зашифрована, но ключ не установлен (т.е. человек не вводил пароль)
     // то зашифровать текст невозможно
-    if (_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1" && gl_paras.crypt_key().length() == 0)
+    if (_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1" && gl_paras->crypt_key().length() == 0)
         critical_error("Record::push_fat_attributes() : Try save text for crypt record while password not setted.");
     // Заполняются имена директории и полей
     // Директория при проверке создается если ее небыло
@@ -1136,7 +1136,7 @@ QString Record::full_dir() const
 {
     if (_field_data.contains(boost::mpl::c_str<dir_type>::value) == false)
         const_cast<Record*>(this)->_field_data[boost::mpl::c_str<dir_type>::value] = _field_data.value(boost::mpl::c_str<id_type>::value); // critical_error("Record::full_dir() : Not present dir field");
-    return gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + _field_data.value(boost::mpl::c_str<dir_type>::value);
+    return gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/base/" + _field_data.value(boost::mpl::c_str<dir_type>::value);
 }
 
 // Короткое имя директории записи
@@ -1181,9 +1181,9 @@ void Record::check_and_fill_file_dir(QString& idir_name, QString& i_file_name)
     // Проверяется наличие директории, куда будет вставляться файл с текстом записи
     if (!recordDir.exists()) {
         // Создается новая директория в директории base
-        QDir directory(gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base");
+        QDir directory(gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/base");
         if (!directory.exists())
-            QDir(gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName()).mkdir("base");
+            QDir(gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName()).mkdir("base");
         bool result = directory.mkdir(short_dir());
         if (!result)
             critical_error("Record::check_and_fill_file_dir() : Can't create directory '" + short_dir() + "'");
@@ -1229,7 +1229,7 @@ void Record::check_and_create_text_file()
     QFileInfo fileInfo(f);
     // Если директория с файлом не существует
     if (!fileInfo.absoluteDir().exists()) {
-	// QString messageText = QObject::tr("Database consistency was broken.\n Directory %1 not found.\n Tute will try to create a blank entry for the corrections.").arg(fileInfo.absoluteDir().absolutePath());
+        // QString messageText = QObject::tr("Database consistency was broken.\n Directory %1 not found.\n Tute will try to create a blank entry for the corrections.").arg(fileInfo.absoluteDir().absolutePath());
 
         // qWarning() << messageText;
 
@@ -1246,7 +1246,7 @@ void Record::check_and_create_text_file()
     }
     // Если файл записи не существует
     if (!f.exists()) {
-	// QString messageText = QObject::tr("Database consistency was broken.\n File %1 not found.\n Tute will try to create a blank entry for the corrections.").arg(fileName);
+        // QString messageText = QObject::tr("Database consistency was broken.\n File %1 not found.\n Tute will try to create a blank entry for the corrections.").arg(fileName);
 
         // qWarning() << messageText;
 

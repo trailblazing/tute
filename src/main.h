@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstdio>
 #include <fstream>
+#include <memory>
 
 #include <QAbstractItemView>
 #include <QDomNode>
@@ -48,6 +49,34 @@ using namespace std;
 // #define ADD_NEW_RECORD_BEFORE 1
 // #define ADD_NEW_RECORD_AFTER 2
 
+class FixedParameters;
+class gl_para;
+class AppConfig;
+class DataBaseConfig;
+class TrashMonitoring;
+class WalkHistory;
+
+// Фиксированные параметры программы (жестко заданные в текущей версии )
+extern FixedParameters fixedparameters;
+
+// Глобальные параметры программы (вычислимые на этапе инициализации, иногда меняющиеся в процессе выполнения программы)
+extern std::shared_ptr<gl_para> gl_paras;
+
+// Конфигурация программы (считанная из файла конфигурации)
+extern std::shared_ptr<AppConfig> appconfig;
+
+// Конфигурация данных
+extern std::shared_ptr<DataBaseConfig> databaseconfig;
+
+// Объект слежения за состоянием корзины
+extern TrashMonitoring trashmonitoring;
+
+// Объект с историей посещаемых записей
+extern WalkHistory walkhistory;
+
+// Указатель на основное окно программы
+extern QObject* mainwindow;
+
 // extern const int add_new_record_after;
 
 // Прототипы функций, которые могут использоваться в других файлах
@@ -58,8 +87,6 @@ QString xml_node_to_qstring(QDomNode xmlData);
 extern const char* app_version;
 
 // bool    compare_qstringlist_length(const QStringList &list1, const QStringList &list2);
-
-
 
 // int     imax(int x1, int x2);
 // int     imin(int x1, int x2);
@@ -80,11 +107,11 @@ extern QString set_css_style();
 void set_kinetic_scrollarea(QAbstractItemView* object);
 
 class WalkHistory;
-class gl_para;
+//class gl_para;
 
 extern WalkHistory walkhistory;
-extern gl_para gl_paras;
-//extern const char	*application_name;
+//extern std::shared_ptr<gl_para> gl_paras;
+// extern const char	*application_name;
 extern const char* meta_editor_singleton_name;
 extern const char* record_screen_multi_instance_name;
 extern const char* tree_screen_singleton_name;

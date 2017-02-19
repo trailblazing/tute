@@ -3,6 +3,7 @@
 
 #include <QSettings>
 #include <QString>
+#include <memory>
 
 #if QT_VERSION == 0x050600
 #include <QObject>
@@ -23,10 +24,10 @@ class DataBaseConfig : public QObject {
 #endif
 
 public:
-    DataBaseConfig(QObject* pobj = 0);
+    DataBaseConfig(std::shared_ptr<gl_para> gl_paras_, std::shared_ptr<AppConfig> appconfig_, QObject* pobj = 0);
     ~DataBaseConfig();
 
-    void init(const gl_para &gl_paras_, const AppConfig& appconfig_);
+    //	void init(const gl_para &gl_paras_, const AppConfig &appconfig_);
     bool is_init(void);
 
     // Версия формата конфигфайла
@@ -49,7 +50,7 @@ private:
     QSettings* conf;
     QString get_parameter(QString name) const;
 
-    bool is_init_flag;
+    bool is_init_flag = false;
 };
 
 #endif // __DATABASECONFIG_H__

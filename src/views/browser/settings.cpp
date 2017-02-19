@@ -100,7 +100,7 @@ void SettingsDialog::loadDefaults()
     // #endif
 
     enableScrollAnimator->setChecked(defaultSettings->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled));
-    auto profile = gl_paras.profile();
+    auto profile = gl_paras->profile();
     persistentDataPath->setText(profile->persistentStoragePath()); // QWebEngineProfile::defaultProfile()
     sessionCookiesCombo->setCurrentIndex(profile->persistentCookiesPolicy()); // QWebEngineProfile::defaultProfile()
     httpUserAgent->setText(profile->httpUserAgent()); // QWebEngineProfile::defaultProfile()
@@ -108,7 +108,7 @@ void SettingsDialog::loadDefaults()
 
 void SettingsDialog::loadFromSettings()
 {
-    QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_paras._browser_conf_filename, QSettings::IniFormat);
+    QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("MainWindow"));
     const QString default_home_ = QLatin1String(Browser::_defaulthome);
     homeLineEdit->setText(settings.value(QLatin1String("home"), default_home_).toString());
@@ -197,7 +197,7 @@ void SettingsDialog::loadFromSettings()
 
 void SettingsDialog::saveToSettings()
 {
-    QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_paras._browser_conf_filename, QSettings::IniFormat);
+    QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("MainWindow"));
     settings.setValue(QLatin1String("home"), homeLineEdit->text());
     settings.endGroup();

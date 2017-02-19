@@ -35,8 +35,8 @@
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
 
-extern gl_para gl_paras;
-extern AppConfig appconfig;
+extern std::shared_ptr<gl_para> gl_paras;
+extern std::shared_ptr<AppConfig> appconfig;
 extern const char *tree_screen_viewer_name;
 
 // Виджет, который отображает список записей в ветке
@@ -46,14 +46,8 @@ extern const char *tree_screen_viewer_name;
 W_OBJECT_IMPL(rs_t)
 #endif
 
-rs_t::rs_t(ts_t *tree_screen
-	  , FindScreen *find_screen
-	  , EditorDock *editor_dock
-	  , EditingWindow *editing_window
-	  , browser::BrowserDock *browser_dock //	  , browser::Browser    *_browser    //		  , wn_t *main_window
-	  , HidableTabWidget *vtab_record
-	  , const QString &style_source
-	  , browser::Profile *profile)
+rs_t::rs_t(ts_t *tree_screen, FindScreen *find_screen, EditorDock *editor_dock, EditingWindow *editing_window, browser::BrowserDock *browser_dock //	  , browser::Browser    *_browser    //		  , wn_t *main_window
+	  , HidableTabWidget *vtab_record, const QString &style_source, browser::Profile *profile)
 	: QWidget(vtab_record) // , _browser(_browser)
 	  , _vtab_record(vtab_record)
 	  , _tree_screen(tree_screen)
@@ -69,18 +63,18 @@ rs_t::rs_t(ts_t *tree_screen
 	  , _addnew_before(new QAction(tr("Add note before"), this))
 	  , _addnew_after(new QAction(tr("Add note after"), this))
 #endif
-	  , _edit_field(new QAction(tr("Edit properties (name, url, tags...)"), this))
+	  , _edit_field(new QAction(tr("Edit properties "), this))// (name, url, tags...)
 #ifdef USE_BUTTON_CLOSE
 	  , _close(new QAction(tr("Close note(s)"), this))
 #endif
-	  , _delete(new QAction(tr("Delete note(s)"), this))
+	  , _delete(new QAction(tr("Delete note"), this))
 #ifdef USE_WITHOUT_REGISTERED_TREEITEM
 	  , _cut(new QAction(tr("&Cut note(s)"), this))
 	  , _copy(new QAction(tr("&Copy note(s)"), this))
 	  , _paste(new QAction(tr("&Paste note(s)"), this))
 #endif
 	  , _editor(new QAction(tr("&Editor"), this))
-	  , _settings(new QAction(tr("&View settings"), this))
+	  , _settings(new QAction(tr("&Settings"), this))
 	  , _action_move_top(new QAction(tr("Move to &Top"), this))
 	  , _action_move_up(new QAction(tr("Move &Up"), this))
 	  , _action_move_dn(new QAction(tr("Move &Down"), this))
@@ -94,7 +88,7 @@ rs_t::rs_t(ts_t *tree_screen
 	  , _toolsline(new QToolBar(this))
 	  , _extra_toolsline(new QToolBar(this))
 	  , _treepathlabel(new QLabel(this))
-//	  , _editing_window(new EditingWindow(tree_screen, browser_dock, vtab_record, profile, find_screen, editor_dock, style_source))
+	  //	  , _editing_window(new EditingWindow(tree_screen, browser_dock, vtab_record, profile, find_screen, editor_dock, style_source))
 	  , _browser(new browser::Browser(tree_screen, find_screen, editing_window, this, browser_dock, style_source, profile, Qt::MaximizeUsingFullscreenGeometryHint)) // , _vtab_tree
 	  , _record_controller(_browser->tabmanager()->record_controller()) // , _tabmanager(_browser->tabmanager())
 	  , _vertical_scrollarea(new VerticalScrollArea(_record_controller->view(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void *> > >(&RecordView::resizeEvent, _tabmanager->record_controller()->view())
@@ -106,7 +100,6 @@ rs_t::rs_t(ts_t *tree_screen
 	// recordTableController = new RecordTableController(this);
 
 	setObjectName(record_screen_multi_instance_name);
-
 
 	// _table_controller->setObjectName(object_name + "_controller");
 
@@ -252,7 +245,7 @@ rs_t::rs_t(ts_t *tree_screen
 								}
 							}
 						}
-//						rs->adjustSize();
+						//						rs->adjustSize();
 					}
 				}
 			}
@@ -369,7 +362,7 @@ void rs_t::setup_actions(void){
 	//    connect(_main_window->h_tree_splitter(), &QSplitter::splitterMoved, [&, _hide_tree_text, _hide_tree_icon](int _tree_pos = 0, int index = 0) mutable {
 	//	    (void) _tree_pos;
 	//	    (void) index;
-	//	    auto old_tree_sizes = appconfig.h_tree_splitter_sizelist();
+	//	    auto old_tree_sizes = appconfig->h_tree_splitter_sizelist();
 	//	    auto h_record_splitter = _main_window->h_record_splitter();
 	//	    auto record_sizes = h_record_splitter->sizes();
 	//	    auto vtab_tree = _main_window->vtab_tree();
@@ -401,7 +394,7 @@ void rs_t::setup_actions(void){
 	//	    h_record_splitter->setSizes(record_sizes);
 	//		//	    if(0 != pos){
 	////	    auto tree_siezes = _main_window->h_tree_splitter()->sizes();
-	//	    if(tree_siezes != appconfig.h_tree_splitter_sizelist())appconfig.h_tree_splitter_sizelist(tree_siezes);
+	//	    if(tree_siezes != appconfig->h_tree_splitter_sizelist())appconfig->h_tree_splitter_sizelist(tree_siezes);
 	//		//	    }
 	//	});
 	//    // move to main_window::_vtab_record->tabBar()->tabBarClicked
@@ -426,7 +419,7 @@ void rs_t::setup_actions(void){
 	////		auto vtab_tree_min_width = std::max(_vtab_record->minimumSizeHint().width(), _vtab_record->tabBar()->geometry().width());// _tree_screen->minimumSizeHint().width();     // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
 	////		// auto h = h_right_splitter->handle(1);
 	////		// h->move(lr + shw, h->rect().top());
-	////		auto tree_size_memory = appconfig.h_tree_splitter_sizelist();
+	////		auto tree_size_memory = appconfig->h_tree_splitter_sizelist();
 	////		auto tree_sum = tree_size_memory[0] + tree_size_memory[1];
 	////		h_record_sizes[0] = tree_size_memory[0] > vtab_tree_min_width ? tree_size_memory[0] < tree_sum ? tree_size_memory[0] : tree_sum * 15 / 100 : vtab_tree_min_width;
 	////		h_record_sizes[1] = tree_sum - h_record_sizes[0] > 0 ? tree_sum - h_record_sizes[0] : tree_sum * 85 / 100;
@@ -468,7 +461,7 @@ void rs_t::setup_actions(void){
 	//////	    _tree_hide->setText(_hide_tree_text);
 	////////	    emit _tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
 	//	});
-	if(_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen")) emit gl_paras.h_record_splitter()->splitterMoved(gl_paras.h_record_splitter()->sizes()[0], 1);
+	if(_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen")) emit gl_paras->h_record_splitter()->splitterMoved(gl_paras->h_record_splitter()->sizes()[0], 1);
 // emit _tree_hide->triggered();
 
 //	// _save_in_new_branch = new QAction(tr("Save in new branch"), this);
@@ -576,22 +569,22 @@ void rs_t::setup_actions(void){
 
 	// едактирование записи
 	// _edit_field = new QAction(tr("Edit properties (pin, name, author, url, tags...)"), this);
-	_edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
+	_edit_field->setStatusTip(tr("Edit note properties")); // (pin, name, author, url, tags...)
 	_edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
 	connect(_edit_field, &QAction::triggered, _record_controller, &rctrl_t::on_edit_fieldcontext); // _tabmanager
 // &browser::TabWidget::on_edit_fieldcontext
 
 #ifdef USE_BUTTON_CLOSE
 	// Удаление записи
-	// _delete = new QAction(tr("Delete note(s)"), this);
-	_close->setStatusTip(tr("Close note(s)"));
+	// _delete = new QAction(tr("Delete note"), this);
+	_close->setStatusTip(tr("Close note"));
 	_close->setIcon(QIcon(":/resource/pic/note_close.svg"));
 	_close->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_W));
 	connect(_close, &QAction::triggered, _record_controller, &rctl_t::close_context); // _tabmanager
 // &browser::TabWidget::close_context
 #endif
 
-	_delete->setStatusTip(tr("Delete note(s) for ever"));
+	_delete->setStatusTip(tr("Delete note for ever"));
 	_delete->setIcon(QIcon(":/resource/pic/note_delete.svg"));
 	connect(_delete, &QAction::triggered, _tree_screen, [&](bool checked = false) mutable -> void {
 			Q_UNUSED(checked);
@@ -626,14 +619,14 @@ void rs_t::setup_actions(void){
 
 #endif
 	// auto _editor = new QAction(tr("Editor"), this);
-	_editor->setStatusTip(tr("Switch editor open / close"));
+	_editor->setStatusTip(tr("Editor open/close"));
 	_editor->setIcon(QIcon(":/resource/pic/attach_switch_to_editor.svg"));
 	_editor->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E));
 	connect(_editor, &QAction::triggered, _editor_dock, &EditorDock::editor_switch);
 
 	// Настройка внешнего вида таблицы конечных записей
-	// _settings = new QAction(tr("&View settings"), this);
-	_settings->setStatusTip(tr("Setup table view settins"));
+	// _settings = new QAction(tr("&Settings"), this);
+	_settings->setStatusTip(tr("Table view settins"));
 	_settings->setIcon(QIcon(":/resource/pic/cogwheel.svg"));
 	connect(_settings, &QAction::triggered, _record_controller, &rctrl_t::settings); // &browser::TabWidget::settings
 
@@ -659,7 +652,7 @@ void rs_t::setup_actions(void){
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)
-			gl_paras.tree_screen()->view()->know_model_save();
+			gl_paras->tree_screen()->view()->know_model_save();
 		}); // _record_controller, &RecordController::move_up
 
 	assert(_record_controller);
@@ -684,7 +677,7 @@ void rs_t::setup_actions(void){
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)
-			gl_paras.tree_screen()->view()->know_model_save();
+			gl_paras->tree_screen()->view()->know_model_save();
 		}); // _record_controller, &RecordController::move_up
 	// connect(_action_move_up, &QAction::triggered, _tabmanager, &browser::TabWidget::move_up);
 
@@ -709,7 +702,7 @@ void rs_t::setup_actions(void){
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)
-			gl_paras.tree_screen()->view()->know_model_save();
+			gl_paras->tree_screen()->view()->know_model_save();
 		}); // _record_controller, &RecordController::move_dn
 	// connect(_action_move_dn, &QAction::triggered, _tabmanager, &browser::TabWidget::move_dn);
 
@@ -720,7 +713,7 @@ void rs_t::setup_actions(void){
 
 	// Синхронизация
 	// _action_syncro = new QAction(tr("Synchronization"), this);
-	_action_syncro->setStatusTip(tr("Run synchronization"));
+	_action_syncro->setStatusTip(tr("Synchronization"));
 	_action_syncro->setIcon(QIcon(":/resource/pic/synchronization.svg"));
 	connect(_action_syncro, &QAction::triggered, this, &rs_t::on_syncro_click);
 
@@ -777,7 +770,7 @@ void rs_t::setup_ui(void){
 	//    QSize toolBarIconSize(16, 16);
 	//    toolsLine->setIconSize(toolBarIconSize);
 	//    setStyleSheet("border : 0px;");
-	if(appconfig.interface_mode() == "mobile"){
+	if(appconfig->interface_mode() == "mobile"){
 		add_action<QToolButton>(_toolsline, _back);
 		_toolsline->addSeparator();
 	}
@@ -790,7 +783,7 @@ void rs_t::setup_ui(void){
 #ifdef USE_BLANK_ITEM
 	append_action_as_button<QToolButton>(_toolsline, _addnew_to_end);
 #endif
-	if(appconfig.interface_mode() == "desktop"){
+	if(appconfig->interface_mode() == "desktop"){
 		add_action<QToolButton>(_toolsline, _edit_field);
 #ifdef USE_BUTTON_CLOSE
 		append_action_as_button<QToolButton>(_toolsline, _close);
@@ -816,14 +809,16 @@ void rs_t::setup_ui(void){
 	add_action<QToolButton>(_toolsline, _print);
 	add_action<QToolButton>(_toolsline, _settings);
 	// _extra_toolsline = new QToolBar(this);
-	if(appconfig.interface_mode() == "desktop"){
+	if(appconfig->interface_mode() == "desktop"){
 		add_action<QToolButton>(_extra_toolsline, _action_syncro);
 		// insertActionAsButton(extraToolsLine, actionWalkHistoryPrevious);
 		// insertActionAsButton(extraToolsLine, actionWalkHistoryNext);
 	}
 	add_action<QToolButton>(_extra_toolsline, _find_in_base);
-
+#ifdef USE_MAIN_MENU_IN_BUTTON
 	add_action<QToolButton>(_extra_toolsline, _tree_screen->_actionlist[action_main_menu]);
+#endif // USE_MAIN_MENU_IN_BUTTON
+
 	// _treepathlabel = new QLabel(this);
 
 	// _treepath_button = new FlatToolButton(this);
@@ -835,7 +830,7 @@ void rs_t::setup_ui(void){
 	// int width = recordTableController->getView()->contentsRect().width();
 	// treePathLabel->setMaximumWidth(contentsRect().width());
 	// treePathLabel->setMinimumWidth(contentsRect().width());
-	if(appconfig.interface_mode() == "desktop") _treepathlabel->hide();
+	if(appconfig->interface_mode() == "desktop") _treepathlabel->hide();
 	// _vertical_scrollarea = new VerticalScrollArea(
 	// std::make_shared<sd::_interface<sd::meta_info<void *>, void, QResizeEvent *>>("", &RecordView::resizeEvent, _record_controller->view())
 	// , this
@@ -858,7 +853,7 @@ void rs_t::setup_signals(void){
 
 	// }
 	// );
-	connect(this->_find_in_base, &QAction::triggered, gl_paras.window_switcher(), &WindowSwitcher::find_in_base_click);
+	connect(this->_find_in_base, &QAction::triggered, gl_paras->window_switcher(), &WindowSwitcher::find_in_base_click);
 }
 
 void rs_t::assembly(void){
@@ -891,7 +886,7 @@ void rs_t::assembly(void){
 		////    _treepath_button_layout->setSpacing(0);
 		//////    _treepath_button_layout->setSizeConstraint();
 
-		////    if(appconfig.getInterfaceMode() == "mobile") {
+		////    if(appconfig->getInterfaceMode() == "mobile") {
 		// _recordtable_screenlayout->addWidget(
 		////        _treepath_button_layout    //
 		// _treepath_button
@@ -1090,7 +1085,7 @@ void rs_t::tools_update(){
 	  || 0 == _view->model()->rowCount()){
 		const QMimeData *mime_data = QApplication::clipboard()->mimeData();
 		if(mime_data != nullptr)
-			if(mime_data->hasFormat(gl_paras.application_name() + "/records")) _paste->setEnabled(true);
+			if(mime_data->hasFormat(gl_paras->application_name() + "/records")) _paste->setEnabled(true);
 	}
 #endif
 	// Перемещение записи вверх
@@ -1155,7 +1150,7 @@ void rs_t::tools_update(){
 // Действия при нажатии кнопки синхронизации
 void rs_t::on_syncro_click(void){
 	// find_object<MainWindow>("mainwindow")
-	gl_paras.main_window()->synchronization();
+	gl_paras->main_window()->synchronization();
 }
 
 void rs_t::on_walkhistory_previous_click(void){
@@ -1170,7 +1165,7 @@ void rs_t::on_walkhistory_next_click(void){
 
 // Возвращение к дереву разделов в мобильном интерфейсе
 void rs_t::on_back_click(void){
-	gl_paras.window_switcher()->recordtable_to_tree();
+	gl_paras->window_switcher()->recordtable_to_tree();
 }
 
 void rs_t::tree_path(QString path){

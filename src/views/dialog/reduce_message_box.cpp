@@ -11,7 +11,7 @@
 #include "reduce_message_box.h"
 #include "views/main_window/main_window.h"
 
-extern gl_para gl_paras;
+extern std::shared_ptr<gl_para> gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(ReduceMessageBox)
@@ -28,9 +28,9 @@ ReduceMessageBox::ReduceMessageBox(QWidget* parent)
 void ReduceMessageBox::setupUI(void)
 {
     int w = // find_object<MainWindow>("mainwindow")
-        gl_paras.main_window()->width();
+        gl_paras->main_window()->width();
     int h = // find_object<MainWindow>("mainwindow")
-        gl_paras.main_window()->height();
+        gl_paras->main_window()->height();
 
     this->resize(w * 2 / 3, h / 3);
 }

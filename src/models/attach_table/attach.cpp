@@ -12,7 +12,7 @@
 #include "libraries/global_parameters.h"
 #include "models/record_table/record.h"
 
-extern gl_para gl_paras;
+extern std::shared_ptr<gl_para> gl_paras;
 
 // Конструктор прикрепляемого файла
 Attach::Attach(AttachTableData* iParentTable)
@@ -146,7 +146,7 @@ QString Attach::getField(QString name) const
     if (fieldCryptedList().contains(name))
         if (_fields.contains(boost::mpl::c_str<crypt_type>::value))
             if (_fields[boost::mpl::c_str<crypt_type>::value] == "1")
-                if (gl_paras.crypt_key().length() == 0)
+                if (gl_paras->crypt_key().length() == 0)
                     return QString();
     bool isCrypt = false;
     // Если имя поля принадлежит списку полей, которые могут шифроваться
@@ -162,7 +162,7 @@ QString Attach::getField(QString name) const
     if (isCrypt == false)
         return _fields[name]; // Возвращается значение поля
     else
-        return CryptService::decryptString(gl_paras.crypt_key(), _fields[name]); // Поле расшифровывается
+        return CryptService::decryptString(gl_paras->crypt_key(), _fields[name]); // Поле расшифровывается
 }
 
 // Установка значения поля
@@ -209,14 +209,14 @@ void Attach::setField(QString name, QString value)
         if (_fields.contains(boost::mpl::c_str<crypt_type>::value))
             if (_fields[boost::mpl::c_str<crypt_type>::value] == "1")
                 if (value.length() > 0) {
-                    if (gl_paras.crypt_key().length() > 0)
+                    if (gl_paras->crypt_key().length() > 0)
                         isCrypt = true;
                     else
                         critical_error("In Attach::setField() can not set data to crypt field " + name + ". Password not setted");
                 }
     // Если нужно шифровать, значение поля шифруется
     if (isCrypt == true)
-        value = CryptService::encryptString(gl_paras.crypt_key(), value);
+        value = CryptService::encryptString(gl_paras->crypt_key(), value);
     // Устанавливается значение поля
     _fields.insert(name, value);
 }
@@ -389,11 +389,11 @@ void Attach::encrypt(unsigned int area)
     // Шифруется файл
     if (area & areaFile)
         if (getField("type") == "file")
-            CryptService::encryptFile(gl_paras.crypt_key(), getFullInnerFileName());
+            CryptService::encryptFile(gl_paras->crypt_key(), getFullInnerFileName());
     // Шифруется содержимое файла в памяти, если таковое есть
     if (area & areaMemory)
         if (_lite_flag == false && _file_content.length() > 0)
-            _file_content = CryptService::encryptByteArray(gl_paras.crypt_key(), _file_content);
+            _file_content = CryptService::encryptByteArray(gl_paras->crypt_key(), _file_content);
     // Шифруются поля, которые подлежат шифрованию
     foreach (QString fieldName, fieldCryptedList()) {
         // У аттача с типом file не должно быть обращений к полю link (оно не должно использоваться)
@@ -401,7 +401,7 @@ void Attach::encrypt(unsigned int area)
             continue;
         // Если поле с указанным именем существует
         if (getField(fieldName).length() > 0)
-            setFieldSource(fieldName, CryptService::encryptString(gl_paras.crypt_key(), getField(fieldName)));
+            setFieldSource(fieldName, CryptService::encryptString(gl_paras->crypt_key(), getField(fieldName)));
     }
 
     // Устанавливается флаг, что запись зашифрована
@@ -417,11 +417,11 @@ void Attach::decrypt(unsigned int area)
     // Расшифровывается файл
     if (area & areaFile)
         if (getField("type") == "file")
-            CryptService::decryptFile(gl_paras.crypt_key(), getFullInnerFileName());
+            CryptService::decryptFile(gl_paras->crypt_key(), getFullInnerFileName());
     // Расшифровывается содержимое файла в памяти, если таковое есть
     if (area & areaMemory)
         if (_lite_flag == false && _file_content.length() > 0)
-            _file_content = CryptService::decryptByteArray(gl_paras.crypt_key(), _file_content);
+            _file_content = CryptService::decryptByteArray(gl_paras->crypt_key(), _file_content);
     // Расшифровываются поля, которые подлежат шифрованию
     foreach (QString fieldName, fieldCryptedList()) {
         // У аттача с типом file не должно быть обращений к полю link (оно не должно использоваться)
@@ -429,7 +429,7 @@ void Attach::decrypt(unsigned int area)
             continue;
         // Если поле с указанным именем существует и содержит данные, оно расшифровывается из исходных зашифрованных данных
         if (getField(fieldName).length() > 0)
-            setFieldSource(fieldName, CryptService::decryptString(gl_paras.crypt_key(), _fields[fieldName]));
+            setFieldSource(fieldName, CryptService::decryptString(gl_paras->crypt_key(), _fields[fieldName]));
     }
 
     // Устанавливается флаг, что запись не зашифрована

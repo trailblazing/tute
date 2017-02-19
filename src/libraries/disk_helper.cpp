@@ -7,8 +7,8 @@
 #include "main.h"
 #include "models/app_config/app_config.h"
 
-extern AppConfig appconfig;
-extern gl_para gl_paras;
+extern std::shared_ptr<AppConfig> appconfig;
+extern std::shared_ptr<gl_para> gl_paras;
 extern TrashMonitoring trashmonitoring;
 extern const char* index_xml_file_name;
 
@@ -22,7 +22,7 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom)
     QDir dirfrom(nameDirFrom);
     QStringList fileList = dirfrom.entryList();
 
-    QString nameDirTo = gl_paras.root_path() + "/" + QDir(appconfig.trash_dir()).dirName();
+    QString nameDirTo = gl_paras->root_path() + "/" + QDir(appconfig->trash_dir()).dirName();
     // Перебор всех файлов в удаляемой директории
     for (int i = 0; i < fileList.size(); i++) {
         // Директории с именами "." и ".." обрабатывать не нужно
@@ -79,7 +79,7 @@ void DiskHelper::remove_file_to_trash(QString file_name_from)
 
     // Получение имени файла для сохранения в корзине
     QString file_name_to_short = get_unical_id() + "_" + file_name_from_short;
-    QString file_name_to = gl_paras.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + file_name_to_short;
+    QString file_name_to = gl_paras->root_path() + "/" + QDir(appconfig->trash_dir()).dirName() + "/" + file_name_to_short;
 
     qDebug() << "Move file from " << file_name_from << " to " << file_name_to;
     if (QFile::exists(file_name_from)) {
@@ -103,10 +103,10 @@ std::shared_ptr<QFileInfo> DiskHelper::copy_file_to_data_folder(const QString& f
 
     //	// Получение имени файла для сохранения в корзине
     //	//    QString file_name_to_short = file_name_from_short.remove(0, file_name_from_short.lastIndexOf('_') + 1);
-    //    QString file_name_to = appconfig.tetra_dir()	//
+    //    QString file_name_to = appconfig->tetra_dir()	//
     //	+ "/"
     //	+ index_xml_file_name	// "index.xml"// + globalparameters.main_program_file() + ".xml"
-    //    ;				// appconfig.datadir() + "/" + file_name_to_short;
+    //    ;				// appconfig->datadir() + "/" + file_name_to_short;
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;
     QFileInfo fileInfoFrom(file_name_from);
@@ -142,7 +142,7 @@ QString DiskHelper::copy_file_to_trash(QString file_name_from)
 
     // Получение имени файла для сохранения в корзине
     QString file_name_to_short = get_unical_id() + "_" + file_name_from_short;
-    QString file_name_to = gl_paras.root_path() + "/" + QDir(appconfig.trash_dir()).dirName() + "/" + file_name_to_short;
+    QString file_name_to = gl_paras->root_path() + "/" + QDir(appconfig->trash_dir()).dirName() + "/" + file_name_to_short;
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;
     if (QFile::exists(file_name_from)) {
@@ -167,10 +167,9 @@ QString DiskHelper::create_directory(QString path_name, QString dir_name)
 
     // Создается директория
     dir.setPath(path_name);
-    dir.mkdir(dir_name);
-
     QString createTempDirName = path_name + "/" + dir_name;
-
+    if (!dir.mkdir(dir_name))
+        critical_error("Can\'t create path \"" + createTempDirName + "\"");
     qDebug() << "Create directory " + createTempDirName;
 
     return createTempDirName;
@@ -182,14 +181,13 @@ QString DiskHelper::create_temp_directory(void)
     QDir dir;
     QString systemTempDirName = dir.tempPath();
 
-    QString temp_dir_name = gl_paras.application_name() + get_unical_id();
+    QString temp_dir_name = gl_paras->application_name() + get_unical_id();
 
     // Создается директория
     dir.setPath(systemTempDirName);
-    dir.mkdir(temp_dir_name);
-
     QString createTempDirName = systemTempDirName + "/" + temp_dir_name;
-
+    if (!dir.mkdir(temp_dir_name))
+        critical_error("Can\'t create path \"" + createTempDirName + "\"");
     qDebug() << "Create temporary directory " + createTempDirName;
 
     return createTempDirName;
@@ -337,4 +335,24 @@ bool DiskHelper::save_files_to_directory(QString dirName, QMap<QString, QByteArr
 
         return false;
     }
+}
+
+bool DiskHelper::copy_file_force(QString source, QString target)
+{
+    bool result = false;
+    QFileInfo traget_info(target);
+    if (!QDir(traget_info.path()).exists())
+        QDir::root().mkpath(traget_info.path());
+    if (QFile(target).exists())
+        if (!QFile::remove(target))
+            critical_error("Can\'t remove file \"" + target + "\"");
+    if (!QFile::copy(source, target))
+        critical_error("Can\'t copy \"" + source + "\" to " + target + "\"");
+    if ((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(target) & (QFile::ReadUser | QFile::WriteUser))) {
+        if (!QFile::setPermissions(target, QFile::ReadUser | QFile::WriteUser))
+            critical_error("Can\'t set permissions to file \"" + target + "\"");
+        else
+            result = true;
+    }
+    return result;
 }

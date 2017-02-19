@@ -11,7 +11,7 @@
 #include <QWidget>
 
 #include "libraries/clipboard_records.h"
-//#include "models/tree/TreeModel.h"
+// #include "models/tree/TreeModel.h"
 
 #if QT_VERSION == 0x050600
 #include <QObject>

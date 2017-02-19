@@ -13,8 +13,8 @@
 #include "main.h"
 #include "models/app_config/app_config.h"
 
-extern AppConfig appconfig;
-extern gl_para gl_paras;
+extern std::shared_ptr<AppConfig> appconfig;
+extern std::shared_ptr<gl_para> gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorConfig)
@@ -27,20 +27,20 @@ EditorConfig::EditorConfig(const QString& config_file_name, QWidget* parent)
     Q_UNUSED(parent);
     assert(config_file_name != "");
 
-    QString full_current_path = gl_paras.root_path();
+    QString full_current_path = gl_paras->root_path();
     // Информация о файле настроек редактора
     std::shared_ptr<QFileInfo> conf_fileinfo = std::make_shared<QFileInfo>(config_file_name);
     // Проверяется, есть ли файл конфигурации
     if (!conf_fileinfo->exists()) {
         // critical_error("Editor config file " + config_file_name + " not found.");
-        auto editor_conf_location = full_current_path + "/" + gl_paras.target_os();
+        auto editor_conf_location = full_current_path + "/" + gl_paras->target_os();
         auto editor_conf_file = editor_conf_location + "/editorconf.ini";
         if (!QDir(editor_conf_location).exists())
             if (!QDir::root().mkpath(editor_conf_location))
                 critical_error("EditorConfig::EditorConfig(const QString &config_file_name, QWidget *parent) can not make path \"" + editor_conf_location + "\"");
         QFileInfo editor_conf(editor_conf_file);
         if (!editor_conf.exists()) // if(editor_conf.exists() && editor_conf.isFile()) QFile::remove(editor_conf_file);
-            if (!QFile::copy(QString(":/resource/standardconfig/") + gl_paras.target_os() + "/editorconf.ini", editor_conf_file))
+            if (!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/editorconf.ini", editor_conf_file))
                 throw std::runtime_error("Can not copy editorconf.ini");
         QFile::setPermissions(editor_conf_file, QFile::ReadUser | QFile::WriteUser);
         //	bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.editorconf());//editorconf.ini

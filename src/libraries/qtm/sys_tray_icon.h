@@ -54,113 +54,102 @@ class HidableTabWidget;
 
 #ifdef Q_OS_MAC
 #if QT_VERSION >= 0x050000 // This function is in QMenu in Qt 5.2
-void qt_mac_set_dock_menu(QMenu *);
+void qt_mac_set_dock_menu(QMenu*);
 #endif
 #endif
 
 class SysTrayIcon : public STI_SUPERCLASS {
-Q_OBJECT
+    Q_OBJECT
 
 public:
-	SysTrayIcon(ts_t *tree_screen
-		   , browser::BrowserDock *browser_dock
-		   , HidableTabWidget *vtab_record
-		   , FindScreen *find_screen
-		   , EditorDock *editor_dock
-		   , wn_t *main_window
-		   , browser::Profile *profile
-		   , QString style_source
-		   , bool noWindow = false
-		   , Qt::WindowFlags flags = Qt::Widget
-		   , QObject *parent = 0);
-	~SysTrayIcon();
-	void setDoubleClickFunction(int);
-	bool dontStart(){return _dontStart;}
-	QStringList templates();
-	QStringList templateTitles();
-	void quickpostFromDBus(QString &, QString &);
+    SysTrayIcon(ts_t* tree_screen, browser::BrowserDock* browser_dock, HidableTabWidget* vtab_record, FindScreen* find_screen, EditorDock* editor_dock, wn_t* main_window, browser::Profile* profile, QString style_source, bool noWindow = false, Qt::WindowFlags flags = Qt::Widget, QObject* parent = 0);
+    ~SysTrayIcon();
+    void setDoubleClickFunction(int);
+    bool dontStart() { return _dontStart; }
+    QStringList templates();
+    QStringList templateTitles();
+    void quickpostFromDBus(QString&, QString&);
 
 public slots:
-	void configureQuickpostTemplates(QWidget *parent = 0);
-	void setCopyTitle(bool);
-	void newDoc();
-	void openRecentFile();
-	void choose(QString fname = QString());
-	void chooseRecentFile();
-	void quickpost(QClipboard::Mode mode = QClipboard::Clipboard);
-	void chooseQuickpostTemplate();
-	bool handleArguments();
-	void doQuit();
-	void saveAll();
-	void set_recent_files(const QList<sapp_t::RecentFile> &);
+    void configureQuickpostTemplates(QWidget* parent = 0);
+    void setCopyTitle(bool);
+    void newDoc();
+    void openRecentFile();
+    void choose(QString fname = QString());
+    void chooseRecentFile();
+    void quickpost(QClipboard::Mode mode = QClipboard::Clipboard);
+    void chooseQuickpostTemplate();
+    bool handleArguments();
+    void doQuit();
+    void saveAll();
+    void set_recent_files(const QList<sapp_t::RecentFile>&);
 
 private slots:
-	void iconActivated(QSystemTrayIcon::ActivationReason);
-	void quickpostFromTemplate(int, QString, QString t = QString());
-	void setNewWindowAtStartup(bool);
-	void handleDone(QNetworkReply *);
-	void abortQP();
-	void openRecentFileFromDialog(QListWidgetItem *);
-	void actOnChooseQuickpostTemplate(QListWidgetItem *);
+    void iconActivated(QSystemTrayIcon::ActivationReason);
+    void quickpostFromTemplate(int, QString, QString t = QString());
+    void setNewWindowAtStartup(bool);
+    void handleDone(QNetworkReply*);
+    void abortQP();
+    void openRecentFileFromDialog(QListWidgetItem*);
+    void actOnChooseQuickpostTemplate(QListWidgetItem*);
 
 signals:
-	void quickpostTemplateTitlesUpdated(QStringList);
-	void quickpostTemplatesUpdated(QStringList);
+    void quickpostTemplateTitlesUpdated(QStringList);
+    void quickpostTemplatesUpdated(QStringList);
 
 private:
-	sapp_t *_app;
-	// enum _cbtextIsURL { No, Yes, Untested };
-	// enum _cbtextIsURL cbtextIsURL;
-	bool _copyTitle;
-	int activeTemplate;
-	QAction *newWindowAtStartup;
-	QAction *abortAction;
-	QAction *configureTemplates;
+    sapp_t* _app;
+    // enum _cbtextIsURL { No, Yes, Untested };
+    // enum _cbtextIsURL cbtextIsURL;
+    bool _copyTitle;
+    int activeTemplate;
+    QAction* newWindowAtStartup;
+    QAction* abortAction;
+    QAction* configureTemplates;
 #ifndef SUPERMENU
-//	QAction *quitAction;
-	QAction *_action_tray_quit;
+    //	QAction *quitAction;
+    QAction* _action_tray_quit;
 #endif
-	QList<QuickpostTemplate *> quickpostTemplateActions;
+    QList<QuickpostTemplate*> quickpostTemplateActions;
 
-	QAction *_action_tray_restore;
-	QAction *_action_tray_maximize;
-	QAction *_action_tray_minimize;
+    QAction* _action_tray_restore;
+    QAction* _action_tray_maximize;
+    QAction* _action_tray_minimize;
 
+    QMenu* menu;
+    QMenu* templateMenu;
+    bool _newWindowAtStartup;
+    QNetworkAccessManager* netmgr;
+    QNetworkReply* currentReply;
+    QByteArray responseData;
+    QString cbtext;
+    // bool cbtextIsURL;
+    int doubleClickFunction;
+    bool httpBusy;
+    bool templateQPActive;
+    bool _dontStart;
+    QStringList templateTitleList, templateList;
+    QList<int> defaultPublishStatusList;
+    QList<bool> copyTitleStatusList;
+    QList<QStringList> assocHostLists;
+    QList<sapp_t::RecentFile> recentFiles;
+    QAction* recentFileActions[10];
+    QAction* openRecent;
+    QAction* noRecentFilesAction;
+    QMenu* recentFilesMenu;
+    QByteArray userAgentString;
 
-	QMenu *menu;
-	QMenu *templateMenu;
-	bool _newWindowAtStartup;
-	QNetworkAccessManager *netmgr;
-	QNetworkReply *currentReply;
-	QByteArray responseData;
-	QString cbtext;
-	// bool cbtextIsURL;
-	int doubleClickFunction;
-	bool httpBusy;
-	bool templateQPActive;
-	bool _dontStart;
-	QStringList templateTitleList, templateList;
-	QList<int> defaultPublishStatusList;
-	QList<bool> copyTitleStatusList;
-	QList<QStringList> assocHostLists;
-	QList<sapp_t::RecentFile> recentFiles;
-	QAction *recentFileActions[10];
-	QAction *openRecent;
-	QAction *noRecentFilesAction;
-	QMenu *recentFilesMenu;
-	QByteArray userAgentString;
+    ts_t* _tree_screen;
+    browser::BrowserDock* _browser_dock;
+    HidableTabWidget* _vtab_record;
 
-	ts_t *_tree_screen;
-	browser::BrowserDock *_browser_dock;
-	HidableTabWidget *_vtab_record;
+    wn_t* _main_window;
+    browser::Profile* _profile;
+    Qt::WindowFlags _flags;
+    QString _style_source;
 
-	wn_t *_main_window;
-	browser::Profile *_profile;
-	Qt::WindowFlags _flags;
-	QString _style_source;
-
-	FindScreen *_find_screen;
-	EditorDock *_editor_dock;
+    FindScreen* _find_screen;
+    EditorDock* _editor_dock;
 
 //		QSplitter *_splitter;
 //		std::shared_ptr<QSettings>  _splitter_config;
@@ -171,11 +160,11 @@ private:
 // QDBusConnection *dbus;
 #endif
 
-	void setupQuickpostTemplates();
-	void doQP(QString);
-	QDomElement templateElement(QDomDocument &, QString &, QString &, int &, bool &, QStringList &);
-	void updateRecentFileMenu();
-	void setup_main_window_icon_actions();
+    void setupQuickpostTemplates();
+    void doQP(QString);
+    QDomElement templateElement(QDomDocument&, QString&, QString&, int&, bool&, QStringList&);
+    void updateRecentFileMenu();
+    void setup_main_window_icon_actions();
 };
 
 // #endif

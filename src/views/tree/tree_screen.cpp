@@ -43,8 +43,8 @@
 
 #include "tree_screen.h"
 
-extern AppConfig appconfig;
-extern gl_para gl_paras;
+extern std::shared_ptr<AppConfig> appconfig;
+extern std::shared_ptr<gl_para> gl_paras;
 extern const char *index_xml_file_name;
 extern const char *clipboard_items_root;
 extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
@@ -76,12 +76,12 @@ const char *action_main_menu = "main_menu";
 
 const char *tree_screen_viewer_name = "TreeScreenViewer";
 
-// know_root_holder::know_root_holder(const AppConfig &_appconfig, TreeScreen *_this)
+// know_root_holder::know_root_holder(const AppConfig &appconfig, TreeScreen *_this)
 // : _know_root(new KnowModel(_this))
 // {
 //// Загрузка данных
 //// auto xml =
-// _know_root->init_from_xml(_appconfig.tetra_dir() + "/" + globalparameters.main_program_file() + ".xml");
+// _know_root->init_from_xml(appconfig->tetra_dir() + "/" + globalparameters.main_program_file() + ".xml");
 // int all_count = _know_root->count_records_all();
 // assert(all_count > 0);
 
@@ -93,15 +93,18 @@ const char *tree_screen_viewer_name = "TreeScreenViewer";
 W_OBJECT_IMPL(ts_t)
 #endif
 
-ts_t::ts_t(QString object_name, const AppConfig &_appconfig, QMenu *_filemenu, QMenu *_toolsmenu, wn_t *_main_window)
+ts_t::ts_t(QString object_name//	   , std::shared_ptr<AppConfig> appconfig_
+	  , QMenu *_filemenu, QMenu *_toolsmenu, wn_t *_main_window)
 	: QWidget(_main_window)
 	  , _main_window(_main_window)
-	  // , know_root_holder(_appconfig, this)
+	  // , know_root_holder(appconfig, this)
 	  // , ui(new Ui::MainWindow)
 	  // , _menubar(new QMenuBar(this))
 	  // , _tree_controller(new TreeController())
 	  , _tools_line(new QToolBar(this))
+#ifdef USE_MAIN_MENU_IN_BUTTON
 	  , _extra_tools_line(new QToolBar(this))
+#endif // USE_MAIN_MENU_IN_BUTTON
 	  // , _main_menu_bar(new QToolBar(this))
 	  // , _main_menu_button(new QPushButton("", _main_menu_bar))
 	  // , _main_menu_action(new QWidgetAction(_main_menu_button))
@@ -113,20 +116,20 @@ ts_t::ts_t(QString object_name, const AppConfig &_appconfig, QMenu *_filemenu, Q
 	  // , _recordtree_search(new browser::ToolbarSearch(this))
 	  // , _recordtree_searchlayout(new QHBoxLayout())
 	  , _adjustingscrollarea(new AdjustingScrollArea(_tree_view, this))
-	  , _treescreenlayout(new QVBoxLayout())
-	  , _appconfig(_appconfig){
+	  , _treescreenlayout(new QVBoxLayout()){
+	//	  , _appconfig(appconfig_)
 	// , _shadow_branch(new TreeModelKnow(this))
-	// _know_model_board->init_from_xml(_appconfig.tetra_dir() + "/" + index_xml_file_name);  // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
+	// _know_model_board->init_from_xml(appconfig->tetra_dir() + "/" + index_xml_file_name);  // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
 	// int all_count = _know_model_board->count_records_all();
 	// assert(all_count > 0);
 
 	// _know_model_board->synchronized(true);
 
-	////    _selected_branch->init_from_xml(_appconfig.datadir() + "/candidate.xml");
+	////    _selected_branch->init_from_xml(appconfig->datadir() + "/candidate.xml");
 	////    _selected_branch->_root_item->field("id", get_unical_id());   // come from _root
 	////    _selected_branch->_root_item->field("name", "Candidate");     // come from _root
 
-	////    _shadow_branch->init_from_xml(_appconfig.datadir() + "/default_page.xml");
+	////    _shadow_branch->init_from_xml(appconfig->datadir() + "/default_page.xml");
 	////    _shadow_branch->_root_item->field("id", "0");  // get_unical_id()   // ?
 
 	////    _shadow_branch->_root_item->field("name", "Current Session");
@@ -147,7 +150,7 @@ ts_t::ts_t(QString object_name, const AppConfig &_appconfig, QMenu *_filemenu, Q
 }
 
 ts_t::~ts_t(){
-	// appconfig.treescreensize(QSize(this->width(), this->height()));
+	// appconfig->treescreensize(QSize(this->width(), this->height()));
 	// QToolBar        *_menubar; // QMenuBar *_menubar;
 	// QPushButton     *_menubutton;
 	// QWidgetAction   *_menuaction;
@@ -175,10 +178,12 @@ ts_t::~ts_t(){
 		_tools_line->deleteLater();
 		_tools_line = nullptr;
 	}
+#ifdef USE_MAIN_MENU_IN_BUTTON
 	if(_extra_tools_line){
 		_extra_tools_line->deleteLater();
 		_extra_tools_line = nullptr;
 	}
+#endif // USE_MAIN_MENU_IN_BUTTON
 	// delete _treescreenlayout;
 	// delete _toolslayout;
 	if(_tree_view){
@@ -239,7 +244,7 @@ void ts_t::setup_actions(void){
 
 	//		//	    if(0 != pos){
 	//	    auto tree_sizes = h_record_splitter->sizes();
-	//	    if(tree_sizes != appconfig.h_record_splitter_sizelist())appconfig.h_record_splitter_sizelist(tree_sizes);
+	//	    if(tree_sizes != appconfig->h_record_splitter_sizelist())appconfig->h_record_splitter_sizelist(tree_sizes);
 	//		//	    }
 	//	});
 
@@ -262,7 +267,7 @@ void ts_t::setup_actions(void){
 			////		// auto h = h_right_splitter->handle(1);
 			////		// h->move(lr + shw, h->rect().top());
 
-			////		auto record_size_memory = appconfig.h_record_splitter_sizelist();
+			////		auto record_size_memory = appconfig->h_record_splitter_sizelist();
 			////		h_record_sizes[0] = record_size_memory[0] > vtab_record_min_width ? record_size_memory[0] : vtab_record_min_width;
 			////		auto record_sum = record_size_memory[0] + record_size_memory[1];
 			////		auto pre_size_1 = record_sum - h_record_sizes[0];
@@ -275,7 +280,7 @@ void ts_t::setup_actions(void){
 			//////		text = tr("Hide record screen");
 			////////            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
 			//		auto vtab_tree_min_width = std::max(vtab_tree->minimumSizeHint().width(), vtab_tree->tabBar()->geometry().width());
-			//		auto tree_size_memory = appconfig.h_tree_splitter_sizelist();
+			//		auto tree_size_memory = appconfig->h_tree_splitter_sizelist();
 			//		auto tree_sum = tree_size_memory[0] + tree_size_memory[1];
 			//		h_tree_sizes[0] = tree_size_memory[0] > vtab_tree_min_width ? tree_size_memory[0] < tree_sum ? tree_size_memory[0] : tree_sum * 15 / 100 : vtab_tree_min_width;
 			//		h_tree_sizes[1] = tree_sum - h_tree_sizes[0] > 0 ? tree_sum - h_tree_sizes[0] : tree_sum * 85 / 100;
@@ -551,7 +556,7 @@ void ts_t::setup_actions(void){
 	// QAction             *_addnew_before = (new QAction(tr("Add note before"), this));
 	// QAction             *_addnew_after = (new QAction(tr("Add note after"), this));
 
-	QAction *_edit_field = (new QAction(tr("Edit properties (name, url, tags...)"), this));
+	QAction *_edit_field = (new QAction(tr("Edit properties"), this));// (name, url, tags...)
 	_edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
 	_edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
 	connect(_edit_field, &QAction::triggered, this, [&](bool checked = false) mutable {
@@ -564,7 +569,7 @@ void ts_t::setup_actions(void){
 	_editor_switch->setStatusTip(tr("Open/Close editor"));
 	_editor_switch->setIcon(QIcon(":/resource/pic/expand_console.svg"));
 	connect(_editor_switch, &QAction::triggered, [](){
-			gl_paras.editor_dock()->editor_switch();
+			gl_paras->editor_dock()->editor_switch();
 		});
 	// insert_action_as_button<QToolButton>(_toolsline, _settings);
 	_actionlist[action_editor_switch] = _editor_switch;
@@ -576,7 +581,7 @@ void ts_t::setup_actions(void){
 	////    , _sort(new QAction(tr("Toggle sorting"), this))
 	// QAction             *_print = (new QAction(tr("Print table"), this));
 
-	// , _delete(new QAction(tr("Delete note(s)"), this))
+	// , _delete(new QAction(tr("Delete note"), this))
 	// , _cut(new QAction(tr("&Cut note(s)"), this))
 	// , _copy(new QAction(tr("&Copy note(s)"), this))
 	// , _paste(new QAction(tr("&Paste note(s)"), this))
@@ -590,22 +595,20 @@ void ts_t::setup_actions(void){
 	main_menu_action_->setToolTip(tr("Main Menu"));
 	main_menu_action_->setMenu(_main_menu_in_button);
 	_actionlist[action_main_menu] = main_menu_action_;
+	//	connect(main_menu_action_, &QAction::triggered, [&](bool){
+	////			auto _main_menu_in_button = std::make_unique<QMenu>();
+	//			_main_menu_in_button->clear();
+	//			for(auto menu : _main_menu_map)	_main_menu_in_button->addMenu(menu.second);
+	//			main_menu_action_->setMenu(_main_menu_in_button);
+	//		});
 }
 
 // Действия при нажатии кнопки редактирования записи
 void ts_t::edit_field_context(QModelIndex index_current){
 	// Функция сохранения отредактированных полей записи в таблицу конечных записей
 	auto edit_field
-		= [&](boost::intrusive_ptr<TreeItem> item
-		     , rctrl_t *_record_controller
-		     , QString pin
-		     , QString name
-		     , QString author
-		     , QString home
-		     , QString url
-		     , QString tags){
+		= [&](boost::intrusive_ptr<TreeItem> item, rctrl_t *_record_controller, QString pin, QString name, QString author, QString home, QString url, QString tags){
 			  qDebug() << "In edit_field()";
-
 
 			  // Выясняется ссылка на таблицу конечных данных
 			  // auto pages = _source_model->browser_pages();
@@ -621,10 +624,10 @@ void ts_t::edit_field_context(QModelIndex index_current){
 
 			  auto editing_window = _record_controller->editing_window();
 			  // Обновление новых данных в таблице конечных записей
-//			  auto item = _tree_view->current_item();
+			  //			  auto item = _tree_view->current_item();
 			  for(auto i = edit_data.begin(); i != edit_data.end(); i++) item->_field_data[i.key()] = i.value(); // field(i.key(), i.value());
 			  // Обновление инфополей в области редактирования записи
-//			  auto *editing_window = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
+			  //			  auto *editing_window = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
 			  editing_window->pin(pin);
 			  editing_window->name(name);
 			  editing_window->author(author);
@@ -662,12 +665,12 @@ void ts_t::edit_field_context(QModelIndex index_current){
 	edit_field(item, _record_controller, edit_record_dialog.getField("pin"), edit_record_dialog.getField("name"), edit_record_dialog.getField("author"), edit_record_dialog.getField("home"), edit_record_dialog.getField("url"), edit_record_dialog.getField("tags"));
 }
 
-
-
 // void TreeScreen::restore_menubar(){
 // if(_tools_layout->indexOf(_main_menu_bar) == -1) {_tools_layout->addWidget(_main_menu_bar); }
 // }
-
+std::map<std::string, QMenu *> &ts_t::main_menu_map(){
+	return _main_menu_map;
+}
 QMenu *ts_t::menus_in_button(){
 	return _main_menu_in_button;
 }
@@ -692,7 +695,7 @@ void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 
 	add_action<QToolButton>(_tools_line, _actionlist[action_insert_branch]);
 	add_action<QToolButton>(_tools_line, _actionlist[action_insert_sub_branch]);
-	if(appconfig.interface_mode() == "desktop"){
+	if(appconfig->interface_mode() == "desktop"){
 		add_action<QToolButton>(_tools_line, _actionlist[action_edit_branch]);
 		add_action<QToolButton>(_tools_line, _actionlist[action_delete_branch]);
 	}
@@ -705,15 +708,15 @@ void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 
 	add_action<QToolButton>(_tools_line, _actionlist[action_move_up_branch]);
 	add_action<QToolButton>(_tools_line, _actionlist[action_move_dn_branch]);
-	if(appconfig.interface_mode() == "mobile"){
+	if(appconfig->interface_mode() == "mobile"){
 		_tools_line->addSeparator();
 		//		add_action<QToolButton>(_tools_line, _actionlist[action_freeze_browser_view]);
 		add_action<QToolButton>(_tools_line, _actionlist[action_find_in_base]); // Клик по этой кнопке связывается с действием в MainWindow
 	}
-	//    _tools_line->addSeparator();
-
+//    _tools_line->addSeparator();
+#ifdef USE_MAIN_MENU_IN_BUTTON
 	add_action<QToolButton>(_extra_tools_line, _actionlist[action_main_menu]);
-
+#endif // USE_MAIN_MENU_IN_BUTTON
 	assembly_menubar(_filemenu, _toolsmenu);
 
 	// _knowtreeview = new KnowTreeView(this);
@@ -748,7 +751,7 @@ void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 	//// Представление не должно позволять редактировать элементы обычным путем
 	// _tree_view->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-	// QSize size = appconfig.treescreensize();
+	// QSize size = appconfig->treescreensize();
 	// resize(size);
 }
 
@@ -763,7 +766,7 @@ void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 //// knowTreeModel->setHeaders(headers);
 
 ////    // Загрузка данных
-////    _treemodelknow->init_from_xml(_appconfig.datadir() + "/" + index_xml_file_name);
+////    _treemodelknow->init_from_xml(appconfig->datadir() + "/" + index_xml_file_name);
 // _tree_view->reset();
 //// Модель подключется к виду
 // _tree_view->setModel(treemodel);
@@ -851,9 +854,11 @@ void ts_t::assembly_menubar(QMenu *_filemenu, QMenu *_toolsmenu){
 	// ac->setIcon(QIcon(":/resource/pic/note_delete.svg"));
 	// connect(ac, SIGNAL(triggered()), this, SLOT(del_branch()));
 
-	_main_menu_in_button->addMenu(_filemenu); // globalparameters.mainwindow()->filemenu()
+	//	_main_menu_in_button->addMenu(_filemenu); // globalparameters.mainwindow()->filemenu()
+	_main_menu_map["file_menu"] = _filemenu;
 	_filemenu->setContentsMargins(0, 0, 0, 0);
-	_main_menu_in_button->addMenu(_toolsmenu); // globalparameters.mainwindow()->toolsmenu()
+	//	_main_menu_in_button->addMenu(_toolsmenu); // globalparameters.mainwindow()->toolsmenu()
+	_main_menu_map["tools_menu"] = _toolsmenu;
 	_toolsmenu->setContentsMargins(0, 0, 0, 0);
 	_main_menu_in_button->setContentsMargins(0, 0, 0, 0);
 	// _buttonmenu->addAction(_menuaction);
@@ -926,7 +931,8 @@ void ts_t::assembly_context_menu(){
 	{
 		// auto main_menu_action = _context_menu->addSection("main menu");
 		// main_menu_action->setMenu(_main_menu_in_button);            // _context_menu->addAction(_main_menu_action);
-		_context_menu->addAction(_actionlist[action_main_menu]);
+		//		_context_menu->addAction(_actionlist[action_main_menu]);
+		for(auto menu : _main_menu_map) _context_menu->addMenu(menu.second);
 	}
 }
 
@@ -943,9 +949,9 @@ void ts_t::assembly(){
 	_tools_layout->setSpacing(0);
 	_tools_layout->setMargin(0);
 	_tools_layout->setContentsMargins(0, 1, 0, 1);
-
+#ifdef USE_MAIN_MENU_IN_BUTTON
 	_tools_layout->addWidget(_extra_tools_line);
-
+#endif // USE_MAIN_MENU_IN_BUTTON
 	// _treescreenlayout = new QVBoxLayout();
 	_treescreenlayout->setObjectName("treescreen_QVBoxLayout");
 
@@ -1243,7 +1249,7 @@ bool ts_t::move_checkenable(void){
 ////    controller->init();
 
 ////    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
-////    if(appconfig.getInterfaceMode() == "mobile") {
+////    if(appconfig->getInterfaceMode() == "mobile") {
 
 ////        QStringList path = item->getPathAsName();
 
@@ -1430,7 +1436,7 @@ bool ts_t::move_checkenable(void){
 // text = tr("Are you sure you wish to cut item <b>") + branches_name.join(", ") + tr("</b> and all sub items?");
 // del_button = tr("Cut");
 
-// if(appconfig.cut_branch_confirm() && _cut_branch_confirm) enable_question = true;
+// if(appconfig->cut_branch_confirm() && _cut_branch_confirm) enable_question = true;
 // else enable_question = false;
 // }
 
@@ -2039,7 +2045,7 @@ void ts_t::on_custom_contextmenu_requested(const QPoint &_position){
 		QString parentCryptFlag = _parent ? _parent->field<crypt_type>() : "0";
 		// Если ветка не зашифрована
 		// Или ветка зашифрована, но пароль успешно введен
-		if(cryptFlag != "1" || (cryptFlag == "1" && gl_paras.crypt_key().length() > 0)){
+		if(cryptFlag != "1" || (cryptFlag == "1" && gl_paras->crypt_key().length() > 0)){
 			//		// If there is a branch, by appropriate points become active in the buffer  // Если в буфере есть ветки, соответсвующие пункты становятся активными
 			//	    bool		is_branch	= false;
 			//	    const QMimeData	*mimeData	= QApplication::clipboard()->mimeData();
@@ -2235,7 +2241,7 @@ void ts_t::on_custom_contextmenu_requested(const QPoint &_position){
 //// Метод clicked() публичный начиная с Qt5 (мобильный интерфейс возможен только в Qt5)
 // #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
 
-// if(_appconfig.getInterfaceMode() == "mobile")
+// if(appconfig->getInterfaceMode() == "mobile")
 // emit _tree_view->clicked(_index);
 
 // #endif
@@ -2312,7 +2318,9 @@ void ts_t::resizeEvent(QResizeEvent *e){
 }
 
 #ifdef USE_TREE_SCREEN_VIEW
-tsv_t *ts_t::viewer() const {return _viewer;}
+tsv_t *ts_t::viewer() const {
+	return _viewer;
+}
 
 void ts_t::viewer(tsv_t *v){_viewer = v;}
 #endif // USE_TREE_SCREEN_VIEW
@@ -2416,8 +2424,9 @@ void AdjustingScrollArea::setWidget(tv_t *view){
 
 #ifdef USE_TREE_SCREEN_VIEW
 
-
-tsv_t::~tsv_t(){_tree_screen->viewer(nullptr);}
+tsv_t::~tsv_t(){
+	_tree_screen->viewer(nullptr);
+}
 
 tsv_t::tsv_t(wn_t *main_window, ts_t *tree_screen, QWidget *widget_right)
 	: _main_window(main_window)
@@ -2453,4 +2462,4 @@ void tsv_t::widget_right(QWidget *rs){
 
 QWidget *tsv_t::widget_right() const {return _widget_right;}
 
-#endif// USE_TREE_SCREEN_VIEW
+#endif // USE_TREE_SCREEN_VIEW

@@ -20,7 +20,7 @@
 // #include "models/record_table/Record.h"
 // #include "models/record_table/ItemsFlat.h"
 
-extern gl_para gl_paras;
+extern std::shared_ptr<gl_para> gl_paras;
 
 #ifdef _with_record_table
 
@@ -502,8 +502,8 @@ QString TreeItem::field<dynamic_name_type>() const
     // и поле является зашифрованным
     if (_field_data.contains(boost::mpl::c_str<crypt_type>::value)) {
         if (_field_data[boost::mpl::c_str<crypt_type>::value] == "1") {
-            if (gl_paras.crypt_key().length() > 0) {
-                _field_content = CryptService::decryptString(gl_paras.crypt_key(), _field_content);
+            if (gl_paras->crypt_key().length() > 0) {
+                _field_content = CryptService::decryptString(gl_paras->crypt_key(), _field_content);
                 // field_found = true;
             } else {
                 _field_content = QString(QObject::tr("Closed"));
@@ -1917,7 +1917,7 @@ void TreeItem::to_encrypt(void)
     _field_data[boost::mpl::c_str<crypt_type>::value] = "1";
 
     // Шифруется имя ветки
-    _field_data["name"] = CryptService::encryptString(gl_paras.crypt_key(), _field_data["name"]);
+    _field_data["name"] = CryptService::encryptString(gl_paras->crypt_key(), _field_data["name"]);
 
     // Шифрация конечных записей для этой ветки
     // _record_table->
@@ -1947,7 +1947,7 @@ void TreeItem::to_decrypt(void)
     _field_data[boost::mpl::c_str<crypt_type>::value] = "0";
 
     // асшифровка имени ветки
-    _field_data["name"] = CryptService::decryptString(gl_paras.crypt_key(), _field_data["name"]);
+    _field_data["name"] = CryptService::decryptString(gl_paras->crypt_key(), _field_data["name"]);
 
     // Дешифрация конечных записей для этой ветки
     // _record_table->
@@ -2513,7 +2513,7 @@ browser::WebView* TreeItem::bind()
             || !_binder->host()) {
             if (!_binder->host())
                 _binder->host(this);
-	    auto _browser = gl_paras.main_window()->activated_browser();
+            auto _browser = gl_paras->main_window()->activated_browser();
             auto record_index = RecordIndex::instance([&] { return _browser->record_screen()->record_controller()->source_model(); }, this);
             //	    if(! _binder->page())
             view = _browser->bind(record_index)->page()->view();

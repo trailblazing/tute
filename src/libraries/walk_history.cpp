@@ -12,7 +12,7 @@
 #include "views/tree/tree_view.h"
 #include "walk_history.h"
 
-extern gl_para gl_paras;
+extern std::shared_ptr<gl_para> gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(WalkHistory)
@@ -402,7 +402,7 @@ void WalkHistory::check_id(const id_value& id)
 {
     // Выясняется ссылка на модель дерева данных
     tkm_t* dataModel = static_cast<tkm_t*>( // find_object<TreeKnowView>("knowTreeView")
-        gl_paras.tree_screen()->view()->model());
+        gl_paras->tree_screen()->view()->model());
     // Если запись с указанным идентификатором существует
     if (dataModel->path_list(id).length() > 0)
         return; // Ничего делать не нужно

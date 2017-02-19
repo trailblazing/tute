@@ -1,9 +1,6 @@
 #ifndef _EDITORCONFIGFONT_H_
 #define _EDITORCONFIGFONT_H_
 
-
-
-#include <memory>
 #include <QCheckBox>
 #include <QFontComboBox>
 #include <QLabel>
@@ -11,6 +8,7 @@
 #include <QPushButton>
 #include <QSpinBox>
 #include <QWidget>
+#include <memory>
 
 #if QT_VERSION == 0x050600
 #include <QObject>

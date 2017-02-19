@@ -18,9 +18,9 @@
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
 
-extern AppConfig appconfig;
+extern std::shared_ptr<AppConfig> appconfig;
 extern FixedParameters fixedparameters;
-extern gl_para gl_paras;
+extern std::shared_ptr<gl_para> gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfigPageTable)
@@ -37,7 +37,7 @@ AppConfigPageTable::AppConfigPageTable(rctrl_t* _record_controller, QWidget* par
     QMap<QString, QString> description_fields = fixedparameters.record_field_description(all_field_names);
 
     // description_fields["close"] = tr("Close item");
-    QStringList showFields = appconfig.record_table_show_fields();
+    QStringList showFields = appconfig->record_table_show_fields();
     // Создаются чекбоксы для каждого поля, хранимого в записи
     for (int i = 0; i < all_field_names.size(); i++) {
         QString name = all_field_names[i];
@@ -50,11 +50,11 @@ AppConfigPageTable::AppConfigPageTable(rctrl_t* _record_controller, QWidget* par
     // Область настройки видимости заголовков
     _show_horizontal_header = new QCheckBox(this);
     _show_horizontal_header->setText(tr("Show horisontal header"));
-    if (appconfig.record_table_show_horizontal_headers())
+    if (appconfig->record_table_show_horizontal_headers())
         _show_horizontal_header->setCheckState(Qt::Checked);
     _show_vertical_header = new QCheckBox(this);
     _show_vertical_header->setText(tr("Show row number"));
-    if (appconfig.record_table_show_vertical_headers())
+    if (appconfig->record_table_show_vertical_headers())
         _show_vertical_header->setCheckState(Qt::Checked);
     QVBoxLayout* vboxVisibleHeaders = new QVBoxLayout;
     vboxVisibleHeaders->addWidget(_show_horizontal_header);
@@ -133,16 +133,16 @@ int AppConfigPageTable::apply_changes(void)
     // Запоминается ширина полей
     // Это надо сделать в первую очередь, потому что в дальнейшем после перечитывания модели и
     // установки заголовков таблицы конечных записей слетают ширины полей (устанавливаюся в 100 px самим Qt)
-    QStringList show_fields = appconfig.record_table_show_fields();
-    QStringList fields_width = appconfig.record_table_fields_width();
+    QStringList show_fields = appconfig->record_table_show_fields();
+    QStringList fields_width = appconfig->record_table_fields_width();
     qDebug() << "showFields" << show_fields;
     qDebug() << "fieldsWidth" << fields_width;
     // Запоминание в конфигурацию отображения горизонтальных заголовков
-    if (appconfig.record_table_show_horizontal_headers() != _show_horizontal_header->isChecked())
-        appconfig.record_table_show_horizontal_headers(_show_horizontal_header->isChecked());
+    if (appconfig->record_table_show_horizontal_headers() != _show_horizontal_header->isChecked())
+        appconfig->record_table_show_horizontal_headers(_show_horizontal_header->isChecked());
     // Запоминание в конфигурацию отображения нумерации строк
-    if (appconfig.record_table_show_vertical_headers() != _show_vertical_header->isChecked())
-        appconfig.record_table_show_vertical_headers(_show_vertical_header->isChecked());
+    if (appconfig->record_table_show_vertical_headers() != _show_vertical_header->isChecked())
+        appconfig->record_table_show_vertical_headers(_show_vertical_header->isChecked());
     QStringList add_fields_list; // Список полей, которые добавились в результате настройки
     QStringList remove_fields_list; // Список полей, которые должны удалиться в результате настройки
 
@@ -157,7 +157,7 @@ int AppConfigPageTable::apply_changes(void)
         if (show_fields.contains(i.key()) && !i.value()->isChecked())
             remove_fields_list << i.key();
     }
-    //    if(appconfig.record_table_show_vertical_headers() && ! add_fields_list.contains("row number"))add_fields_list << "row number";
+    //    if(appconfig->record_table_show_vertical_headers() && ! add_fields_list.contains("row number"))add_fields_list << "row number";
     qDebug() << "add_fields_list : " << add_fields_list;
     qDebug() << "remove_fields_list : " << remove_fields_list;
 
@@ -174,7 +174,7 @@ int AppConfigPageTable::apply_changes(void)
     qDebug() << "new_show_fields : " << new_show_fields;
 
     // Установка имен полей в конфигурацию
-    appconfig.record_table_show_fields(new_show_fields);
+    appconfig->record_table_show_fields(new_show_fields);
     // Если полей становится больше чем было
     if (new_show_fields.size() > show_fields.size()) {
         qDebug() << "Add fields width process...";
@@ -205,7 +205,7 @@ int AppConfigPageTable::apply_changes(void)
         qDebug() << "new_fields_width" << new_fields_width;
 
         // Новые ширины полей запомниаются в конфигурацию
-        appconfig.record_table_fields_width(new_fields_width);
+        appconfig->record_table_fields_width(new_fields_width);
     }
     // Если полей становится меньше чем было
     if (new_show_fields.size() < show_fields.size()) {
@@ -219,7 +219,7 @@ int AppConfigPageTable::apply_changes(void)
         qDebug() << "newFieldsWidth in result" << new_fields_width;
 
         // Установка новых ширин полей в конфигурацию
-        appconfig.record_table_fields_width(new_fields_width);
+        appconfig->record_table_fields_width(new_fields_width);
     }
     // Если полей столько же сколько и было
     if (new_show_fields.size() == show_fields.size()) {
@@ -227,7 +227,7 @@ int AppConfigPageTable::apply_changes(void)
 
         // Установка запомненных ширин полей в конфигурацию
         // Так как это значение в конфигурации было искажено в момент переподключения модели
-        appconfig.record_table_fields_width(fields_width);
+        appconfig->record_table_fields_width(fields_width);
     }
     emit record_table_config_change();
 

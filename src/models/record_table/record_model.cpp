@@ -32,8 +32,8 @@
 #include "views/tree/tree_view.h"
 
 extern FixedParameters fixedparameters;
-extern AppConfig appconfig;
-extern gl_para gl_paras;
+extern std::shared_ptr<AppConfig> appconfig;
+extern std::shared_ptr<gl_para> gl_paras;
 
 // pages_container::pages_container(browser::TabWidget *_tabmanager)
 //    : _tabmanager(_tabmanager)	// new browser::TabWidget(_browser, _record_controller)
@@ -258,7 +258,7 @@ RecordModel::RecordModel(rctrl_t* _record_controller) // TreeScreen *_tree_scree
       ,
       _record_controller(_record_controller)
 {
-    // _browser_pages->init_from_xml(_appconfig.datadir() + "/default_page.xml");
+    // _browser_pages->init_from_xml(appconfig->datadir() + "/default_page.xml");
     // _browser_pages->root_item()->field("id", "0");  // get_unical_id()
     // _browser_pages->root_item()->field("name", "_shadow_branch");
 
@@ -298,7 +298,7 @@ QVariant RecordModel::data(const QModelIndex& index, int role) const
     // qDebug() << "RecordTableModel::data(), row:" << index.row() << " column " << index.column();
     // Если запрашивается текст строки для отрисовки или для редактирования
     if (role == Qt::DisplayRole || role == Qt::EditRole || role == SORT_ROLE || role == Qt::UserRole) {
-        QStringList show_fields = appconfig.record_table_show_fields();
+        QStringList show_fields = appconfig->record_table_show_fields();
 
         auto pos = pos_source(index.row());
         auto it = item(pos);
@@ -312,10 +312,10 @@ QVariant RecordModel::data(const QModelIndex& index, int role) const
             if (role == Qt::DisplayRole && field_name == boost::mpl::c_str<ctime_type>::value) {
                 // Преобразование временного штампа в дату и время
                 //		QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
-                if (appconfig.enable_custom_datetime_format() == false)
+                if (appconfig->enable_custom_datetime_format() == false)
                     return field; // fieldDateTime.toString(Qt::SystemLocaleDate);
                 else
-                    return field; // fieldDateTime.toString(appconfig.custom_datetime_format());
+                    return field; // fieldDateTime.toString(appconfig->custom_datetime_format());
             } // else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < name_type >::value)return "<b>" + it->field<name_type>() + "</b>";
             else if (role == Qt::DisplayRole && field_name == boost::mpl::c_str<has_attach_type>::value) { // "hasAttach"   // Наличие аттачей
                 if (field == "0")
@@ -371,7 +371,7 @@ bool RecordModel::setData(const QModelIndex& index, const QVariant& value, int r
     // Если происходит редактирование
     if (role == Qt::EditRole) {
         // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
-        QStringList showFields = appconfig.record_table_show_fields();
+        QStringList showFields = appconfig->record_table_show_fields();
         // Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
         if (index.column() < showFields.size()) {
             QString field_name = showFields.value(index.column());
@@ -421,7 +421,7 @@ bool RecordModel::setData(const QModelIndex& index, const QVariant& value, int r
 QVariant RecordModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
-    QStringList showFields = appconfig.record_table_show_fields();
+    QStringList showFields = appconfig->record_table_show_fields();
 
     QMap<QString, QString> descriptionFields = fixedparameters.record_field_description(showFields);
     // Если ни один столбец не показывается (чего, впринципе не может быть)
@@ -460,7 +460,7 @@ int RecordModel::columnCount(const QModelIndex& parent) const
 
     static int previousColumnCount = 0;
 
-    int currentColumnCount = appconfig.record_table_show_fields().size();
+    int currentColumnCount = appconfig->record_table_show_fields().size();
     if (currentColumnCount != previousColumnCount) {
         qDebug() << "Column count change. New column count: " << currentColumnCount;
         previousColumnCount = currentColumnCount;
@@ -606,7 +606,7 @@ browser::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
         if (_target_item->binder()) {
             //            if(_item->binder()->page()){
             //            view = _item->binder()->page()->view();	// activate();
-	    auto v = gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal(b->host()->field<home_type>().toStdString(), _target_item->field<home_type>().toStdString()) && b->host()->field<id_type>() == _target_item->field<id_type>(); });
+            auto v = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal(b->host()->field<home_type>().toStdString(), _target_item->field<home_type>().toStdString()) && b->host()->field<id_type>() == _target_item->field<id_type>(); });
             if (v) {
                 if (v->tabmanager() != _record_controller->tabmanager()) {
                     v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
@@ -628,7 +628,7 @@ browser::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
             assert(returned_position != -1);
             assert(view);
         } else {
-            auto _tree_view = gl_paras.tree_screen()->view(); //			auto	this_index		= TreeIndex::instance([&] {return _tree_view->source_model();}, brother);
+            auto _tree_view = gl_paras->tree_screen()->view(); //			auto	this_index		= TreeIndex::instance([&] {return _tree_view->source_model();}, brother);
             auto target_url = _target_item->field<url_type>();
             auto _target_item = // this_index->
                 TreeIndex::create_treeitem_from_url(target_url, std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {

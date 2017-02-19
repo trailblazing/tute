@@ -12,7 +12,7 @@
 #include "models/app_config/app_config.h"
 #include "views/browser/tabwidget.h"
 
-extern AppConfig appconfig;
+extern std::shared_ptr<AppConfig> appconfig;
 
 QMap<Qt::CheckState, QString> _string_from_check_state{
     {
@@ -96,7 +96,7 @@ void InfoFieldEnter::setup_ui(void)
     expandInfo->setMinimumSize(x, x);
     expandInfo->setMaximumSize(x, x);
     expandInfo->resize(x, x);
-    if (appconfig.add_new_record_expand_info() == "0") {
+    if (appconfig->add_new_record_expand_info() == "0") {
         expandInfo->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
         // expandInfo->setIcon(this->style()->standardIcon(QStyle::SP_ArrowDown));
     } else {
@@ -141,7 +141,7 @@ void InfoFieldEnter::assembly(void)
     infoFieldLayout->addWidget(recordTags, y, 1);
 
     // Устанавливается видимость или невидимость полей author, url, tags...
-    expandInfoOnDisplay(appconfig.add_new_record_expand_info());
+    expandInfoOnDisplay(appconfig->add_new_record_expand_info());
 
     // Полученый набор элементов устанавливается для текущего виджета
     setLayout(infoFieldLayout);
@@ -181,18 +181,18 @@ void InfoFieldEnter::expandInfoOnDisplay(QString expand)
 void InfoFieldEnter::expandInfoClick(void)
 {
     // Если в данный момент информация "свернута"
-    if (appconfig.add_new_record_expand_info() == "0") {
+    if (appconfig->add_new_record_expand_info() == "0") {
         // Надо информацию развернуть
         expandInfoOnDisplay("1");
 
-        appconfig.add_new_record_expand_info("1");
+        appconfig->add_new_record_expand_info("1");
 
         expandInfo->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
     } else {
         // Надо информацию свернуть
         expandInfoOnDisplay("0");
 
-        appconfig.add_new_record_expand_info("0");
+        appconfig->add_new_record_expand_info("0");
 
         expandInfo->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
     }

@@ -13,7 +13,7 @@
 #include "libraries/global_parameters.h"
 #include "main.h"
 
-extern gl_para gl_paras;
+extern std::shared_ptr<gl_para> gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AttachTableView)
@@ -116,7 +116,7 @@ void AttachTableView::tapAndHoldGestureTriggered(QTapAndHoldGesture* gesture)
 {
     qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
     if (gesture->state() == Qt::GestureFinished)
-        if (gl_paras.target_os() == "android")
+        if (gl_paras->target_os() == "android")
             emit tapAndHoldGestureFinished(mapFromGlobal(gesture->position().toPoint()));
 }
 

@@ -26,6 +26,7 @@ public:
     static QMap<QString, QByteArray> get_files_from_directory(QString dirName, QString fileMask);
     static bool save_strings_to_directory(QString dirName, QMap<QString, QString> fileList);
     static bool save_files_to_directory(QString dirName, QMap<QString, QByteArray> fileList);
+    static bool copy_file_force(QString source, QString target);
 };
 
 #endif // DISKHELPER_H

@@ -13,7 +13,7 @@
 #include "models/app_config/app_config.h"
 #include "views/find_in_base_screen/find_screen.h"
 
-extern AppConfig appconfig;
+extern std::shared_ptr<AppConfig> appconfig;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(ConsoleEmulator)
@@ -53,7 +53,7 @@ void ConsoleEmulator::setupUI(void)
     consoleOutput = new QTextEdit(this);
     consoleOutput->setReadOnly(true);
     consoleOutput->setFontFamily("monospace");
-    if (appconfig.synchro_console_details() == false)
+    if (appconfig->synchro_console_details() == false)
         consoleOutput->hide();
     waitClock = new WaitClock(this);
 
@@ -134,10 +134,10 @@ void ConsoleEmulator::onDetailsClick(void)
 {
     if (consoleOutput->isHidden()) {
         consoleOutput->show();
-        appconfig.synchro_console_details(true);
+        appconfig->synchro_console_details(true);
     } else {
         consoleOutput->hide();
-        appconfig.synchro_console_details(false);
+        appconfig->synchro_console_details(false);
     }
     this->adjustSize();
 }

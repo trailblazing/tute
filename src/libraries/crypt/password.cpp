@@ -22,9 +22,9 @@
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
 
-extern AppConfig appconfig;
-extern gl_para gl_paras;
-extern DataBaseConfig databaseconfig;
+extern std::shared_ptr<AppConfig> appconfig;
+extern std::shared_ptr<gl_para> gl_paras;
+extern std::shared_ptr<DataBaseConfig> databaseconfig;
 extern const char* knowtreeview_singleton_name;
 
 #if QT_VERSION == 0x050600
@@ -46,9 +46,9 @@ Password::~Password(void)
 bool Password::retrievePassword()
 {
     // Если пароль в данной сессии не вводился
-    if (gl_paras.crypt_key().size() == 0) {
+    if (gl_paras->crypt_key().size() == 0) {
         // Если в хранилище данных вообще не задан пароль
-        if (databaseconfig.get_crypt_mode() == 0) {
+        if (databaseconfig->get_crypt_mode() == 0) {
             // Запрашивается пароль
             EnterPassword enterPwd(ENTER_PASSWORD_MODE_DOUBLE);
             int i = enterPwd.exec();
@@ -71,7 +71,7 @@ bool Password::retrievePassword()
             // И нужно либо запросить пароль,
             // Либо воспользоваться промежуточным хешем если пароль был запомнен
             // Проверяется, запомнен ли пароль (точнее, промежуточный хеш)
-            if (appconfig.password_save_flag() && appconfig.password_middle_hash().length() > 0) {
+            if (appconfig->password_save_flag() && appconfig->password_middle_hash().length() > 0) {
                 // Пароль хранится в системе
                 // Если хранимый пароль (точнее, промежуточный хеш) правильный
                 if (checkMiddleHash() == true) {
@@ -80,7 +80,7 @@ bool Password::retrievePassword()
                     // И пароль у пользователя запрашивать ненужно
                     return true;
                 } else
-                    appconfig.password_middle_hash(""); // хранимый пароль сбрасывается
+                    appconfig->password_middle_hash(""); // хранимый пароль сбрасывается
             }
             // Запрос пароля у пользователя
             bool passwordEnterResult = enterExistsPassword();
@@ -100,7 +100,7 @@ bool Password::replacePassword(void)
 {
     // Если в хранилище данных вообще не задан пароль
     // Замена пароля невозможна
-    if (databaseconfig.get_crypt_mode() == 0)
+    if (databaseconfig->get_crypt_mode() == 0)
         return false;
     // Запрашивается пароль
     EnterPassword enterPwd(ENTER_PASSWORD_MODE_WITH_PREVIOUS);
@@ -121,7 +121,7 @@ bool Password::replacePassword(void)
         msgBox.exec();
 
         // В памяти сбрасывается возможно вводимый ранее правильно пароль
-        gl_paras.crypt_key(QByteArray());
+        gl_paras->crypt_key(QByteArray());
 
         return false;
     }
@@ -131,7 +131,7 @@ bool Password::replacePassword(void)
 
     // Выясняется ссылка на модель дерева данных
     tkm_t* dataModel = static_cast<tkm_t*>( // find_object<TreeKnowView>(knowtreeview_singleton_name)
-        gl_paras.tree_screen()->view()->model());
+        gl_paras->tree_screen()->view()->model());
 
     // Перешифрация
     dataModel->re_encrypt(previousPassword, password);
@@ -161,25 +161,25 @@ void Password::setCryptKeyToMemory(QString password)
     // qDebug() << "Password::setCryptKeyToMemory() : Set crypt key to:" << key.toHex();
 
     // Ключ запоминается в память
-    gl_paras.crypt_key(key);
+    gl_paras->crypt_key(key);
 }
 void Password::setCryptKeyToMemoryFromMiddleHash(void)
 {
     // Из общего конфига считывается промежуточный хеш
-    QByteArray middleHash = QByteArray::fromBase64(appconfig.password_middle_hash().toLatin1());
+    QByteArray middleHash = QByteArray::fromBase64(appconfig->password_middle_hash().toLatin1());
 
     // Ключ в виде MD5
     QByteArray key = QCryptographicHash::hash(middleHash, QCryptographicHash::Md5);
     // qDebug() << "Set crypt key from middle hash to:" << key.toHex();
 
     // Ключ запоминается в память
-    gl_paras.crypt_key(key);
+    gl_paras->crypt_key(key);
 }
 // Проверка правильности хранимого пароля (точнее промежуточного хеша)
 bool Password::checkMiddleHash(void)
 {
     // Из общего конфига считывается промежуточный хеш
-    QByteArray middleHash = QByteArray::fromBase64(appconfig.password_middle_hash().toLatin1());
+    QByteArray middleHash = QByteArray::fromBase64(appconfig->password_middle_hash().toLatin1());
     // qDebug() << "Password::checkMiddleHash() : middleHash :" << middleHash.toHex();
 
     // Промежуточный хеш преобразуется в ключ (MD5 сумма)
@@ -187,7 +187,7 @@ bool Password::checkMiddleHash(void)
     // qDebug() << "Password::checkMiddleHash() : Crypt key :" << key.toHex();
 
     // Из конфига базы данных считываются проверочные данные
-    QByteArray checkData = QByteArray::fromBase64(databaseconfig.get_middle_hash_check_data().toLatin1());
+    QByteArray checkData = QByteArray::fromBase64(databaseconfig->get_middle_hash_check_data().toLatin1());
 
     // Проверочные данные расшифровыватся с помощью ключа
     QString line = CryptService::decryptStringFromByteArray(key, checkData);
@@ -220,12 +220,12 @@ void Password::smartSaveMiddleHash(QString password)
 {
     // Если стоит настройка, что надо хранить пароль локально,
     // и пароль (точнее промежуточный хеш) еще не запомнен
-    if (appconfig.password_save_flag() && appconfig.password_middle_hash().length() == 0) {
+    if (appconfig->password_save_flag() && appconfig->password_middle_hash().length() == 0) {
         QByteArray middleHash = calculateMiddleHash(password);
         // qDebug() << "Password::smartSaveMiddleHash() : middleHash " << middleHash.toHex();
 
         // В общий конфиг запоминается промежуточный хеш
-        appconfig.password_middle_hash(QString(middleHash.toBase64().data()));
+        appconfig->password_middle_hash(QString(middleHash.toBase64().data()));
 
         // В конфиг базы данных запоминаются проверочные данные
         // Эти данные нужны для последующей проверки промежуточного хеша
@@ -239,7 +239,7 @@ void Password::smartSaveMiddleHash(QString password)
         msgBox.exec();
     } else {
         // В общем конфиге сбрасывается промежуточный хеш
-        appconfig.password_middle_hash("");
+        appconfig->password_middle_hash("");
     }
 }
 void Password::saveMiddleHashCheckData(QByteArray middleHash)
@@ -249,7 +249,7 @@ void Password::saveMiddleHashCheckData(QByteArray middleHash)
     // qDebug() << "Password::saveMiddleHashCheckData() : checkData " << checkData.toHex();
 
     // Проверочные данные запоминаются в конфиг базы данных
-    databaseconfig.set_middle_hash_check_data(QString(checkData.toBase64().data()));
+    databaseconfig->set_middle_hash_check_data(QString(checkData.toBase64().data()));
 }
 QByteArray Password::calculateMiddleHashCheckData(QByteArray middleHash)
 {
@@ -280,9 +280,9 @@ void Password::saveCheckPasswordKey(QString password)
         CRYPT_CHECK_ROUNDS,
         CRYPT_CHECK_HASH_LEN);
 
-    databaseconfig.set_crypt_check_hash(QString(hash.toBase64().data()));
-    databaseconfig.set_crypt_check_salt(QString(salt.toBase64().data()));
-    databaseconfig.set_crypt_mode(1);
+    databaseconfig->set_crypt_check_hash(QString(hash.toBase64().data()));
+    databaseconfig->set_crypt_check_salt(QString(salt.toBase64().data()));
+    databaseconfig->set_crypt_mode(1);
 
     smartSaveMiddleHash(password);
 }
@@ -294,8 +294,8 @@ bool Password::enterExistsPassword(void)
 
     // Запрашивается пароль
     EnterPassword enterPwd(ENTER_PASSWORD_MODE_SINGLE);
-    if (appconfig.auto_close_password_enable())
-        enterPwd.setCancelDelay(appconfig.auto_close_password_delay());
+    if (appconfig->auto_close_password_enable())
+        enterPwd.setCancelDelay(appconfig->auto_close_password_delay());
     int i = enterPwd.exec();
     if (i == QDialog::Rejected)
         return false; // Была нажата отмена, ничего ненужно делать
@@ -309,7 +309,7 @@ bool Password::enterExistsPassword(void)
         // Дополнительно, если в общих настройках указано,
         // что пароль нужно запоминать, и он (точнее промежуточный хеш )
         // еще не запомнен
-        if (appconfig.password_save_flag() && appconfig.password_middle_hash().length() == 0)
+        if (appconfig->password_save_flag() && appconfig->password_middle_hash().length() == 0)
             smartSaveMiddleHash(password);
         return true;
     } else {
@@ -326,7 +326,7 @@ bool Password::enterExistsPassword(void)
 void Password::resetPassword(void)
 {
     // Если пароль небыл установлен, сбрасывать нечего
-    if (databaseconfig.get_crypt_mode() == 0)
+    if (databaseconfig->get_crypt_mode() == 0)
         return;
     // Задается вопрос, не нужно ли сбросить (обнулить) пароль
     QMessageBox messageBox;
@@ -337,23 +337,23 @@ void Password::resetPassword(void)
     messageBox.exec();
     // Если пользователь подтвердил
     if (messageBox.clickedButton() == resetButton) {
-        databaseconfig.set_crypt_mode(0);
-        databaseconfig.set_crypt_check_salt("");
-        databaseconfig.set_crypt_check_hash("");
+        databaseconfig->set_crypt_mode(0);
+        databaseconfig->set_crypt_check_salt("");
+        databaseconfig->set_crypt_check_hash("");
 
-        appconfig.password_middle_hash("");
-        databaseconfig.set_middle_hash_check_data("");
+        appconfig->password_middle_hash("");
+        databaseconfig->set_middle_hash_check_data("");
 
         // Ключ в памяти удаляется
-        gl_paras.crypt_key(QByteArray());
+        gl_paras->crypt_key(QByteArray());
     }
 }
 // Проверка переданного пароля на соответсвие запомненному хешу
 bool Password::checkPasswordWithExists(QString password)
 {
     // Из конфига хранилища даннных считывается соль и хеш пароля
-    QByteArray hash = QByteArray::fromBase64(databaseconfig.get_crypt_check_hash().toLatin1());
-    QByteArray salt = QByteArray::fromBase64(databaseconfig.get_crypt_check_salt().toLatin1());
+    QByteArray hash = QByteArray::fromBase64(databaseconfig->get_crypt_check_hash().toLatin1());
+    QByteArray salt = QByteArray::fromBase64(databaseconfig->get_crypt_check_salt().toLatin1());
 
     // Вычисляется хеш пароля с использованием считанной соли
     QByteArray passwordHash;

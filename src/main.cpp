@@ -64,13 +64,13 @@ using namespace std;
 FixedParameters fixedparameters;
 
 // Глобальные параметры программы (вычислимые на этапе инициализации, иногда меняющиеся в процессе выполнения программы)
-gl_para gl_paras;
+std::shared_ptr<gl_para> gl_paras;
 
 // Конфигурация программы (считанная из файла конфигурации)
-AppConfig appconfig;
+std::shared_ptr<AppConfig> appconfig; // (gl_paras);
 
 // Конфигурация данных
-DataBaseConfig databaseconfig;
+std::shared_ptr<DataBaseConfig> databaseconfig; // (gl_paras, appconfig);
 
 // Объект слежения за состоянием корзины
 TrashMonitoring trashmonitoring;
@@ -149,8 +149,8 @@ void critical_error(QString message){
 	qDebug() << "---------------";
 	qDebug() << " ";
 
-	QMessageBox::critical(qobject_cast<QWidget *>(mainwindow), "Critical error", message + "\n\nProgramm was closed.", QMessageBox::Ok);
-	//    throw std::runtime_error(message.toStdString());
+//    QMessageBox::critical(qobject_cast<QWidget*>(mainwindow), "Critical error", message + "\n\nProgramm was closed.", QMessageBox::Ok);
+	throw std::runtime_error(message.toStdString());
 	exit(1);
 }
 
@@ -181,18 +181,18 @@ QString xml_node_to_qstring(QDomNode xmlData){
 // Преобразование из QString в обычный char
 char *qstring_to_char(const QString &str){
 	/*
-	       char *tmpC=new char [str.size() + 1];
-	       QVariant var;
+		   char *tmpC=new char [str.size() + 1];
+		   QVariant var;
 
-	       for(int i=0;i<str.length();i++)
-	       {
-	       var=str.at(i);
-	       tmpC[i] = var.toChar().toAscii();
-	       }
+		   for(int i=0;i<str.length();i++)
+		   {
+		   var=str.at(i);
+		   tmpC[i] = var.toChar().toAscii();
+		   }
 
-	       tmpC[str.size()] = 0;
+		   tmpC[str.size()] = 0;
 
-	       return tmpC;
+		   return tmpC;
 	 */
 
 	return str.toLocal8Bit().data();
@@ -271,7 +271,7 @@ QString get_qtime(){
 }
 
 void smart_print_debug_message(QString msg){
-	if(gl_paras.target_os() == "any" || gl_paras.target_os() == "meego"){
+	if(gl_paras->target_os() == "any" || gl_paras->target_os() == "meego"){
 		////	QTime	currTime	= QTime::currentTime();
 		////	QString timeText	= currTime.toString("hh:mm:ss");
 		//	QDateTime	ctime_dt	= QDateTime::currentDateTime();
@@ -324,13 +324,13 @@ void my_message_output(QtMsgType type, const QMessageLogContext &context, const 
 #if QT_VERSION < 0x050000
 	QString msgText(QString::fromUtf8(msg));
 #endif
-	if(!appconfig.is_init()){
+	if(!appconfig->is_init()){
 		smart_print_debug_message("[INF] " + msgText + "\n");
 
 		return;
 	}
 	// Если в конфигурации запрещен вывод отладочных сообщений
-	if(!appconfig.print_debug_messages()) return;
+	if(!appconfig->print_debug_messages()) return;
 	switch(type){
 		case QtInfoMsg:
 			smart_print_debug_message("[INF] " + msgText + "\n");
@@ -356,10 +356,10 @@ void my_message_output(QtMsgType type, const QMessageLogContext &context, const 
 }
 
 void set_debug_message_handler(){
-	qDebug() << "Debug message before set message handler for target OS: " << gl_paras.target_os();
+	qDebug() << "Debug message before set message handler for target OS: " << gl_paras->target_os();
 	// Для десктопных операционок можно переустановить обработчик qDebug()
 	// Для Андроида переустановка qDebug() приводит к невозможности получения отладочных сообщений в удаленном отладчике
-	if(gl_paras.target_os() == "any" || gl_paras.target_os() == "meego"){
+	if(gl_paras->target_os() == "any" || gl_paras->target_os() == "meego"){
 		qDebug() << "Set alternative handler my_message_output() for debug message";
 
 #if QT_VERSION < 0x050000
@@ -437,8 +437,8 @@ QString replace_css_meta_iconsize(QString styleText){
 QString set_css_style(){
 	QString style;
 
-	QString root_path_ = gl_paras.root_path();
-	auto target_os	= gl_paras.target_os();
+	QString root_path_ = gl_paras->root_path();
+	auto target_os	= gl_paras->target_os();
 	auto location	= root_path_ + "/" + target_os;
 	if(!QDir(location).exists())
 		if(!QDir::root().mkpath(location)) critical_error("QString set_css_style() can not make path \"" + location + "\"");
@@ -495,7 +495,7 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
 
 #else
 	if(object == nullptr) return;
-	if(gl_paras.target_os() == "android"){
+	if(gl_paras->target_os() == "android"){
 		// Настройка жестов прокрутки
 		QScroller *scroller = QScroller::scroller(object);
 
@@ -868,8 +868,15 @@ int main(int argc, char * *argv){
 
 	Q_INIT_RESOURCE(data); // added by hughvonyoung@gmail.com
 	Q_INIT_RESOURCE(tute);
-
-	return sapp_t(argc, argv, gl_paras, appconfig, databaseconfig).exec(); // application.exec();
+	//	gl_paras	= std::make_shared<gl_para>();
+	//	appconfig	= std::make_shared<AppConfig>(gl_paras);
+	//	databaseconfig = std::make_shared<DataBaseConfig>(gl_paras, appconfig);
+	return sapp_t(argc, argv
+		      //		      , gl_paras
+		      //		      , appconfig
+		      //		      , databaseconfig
+		     )
+	       .exec(); // application.exec();
 }
 
 std::ifstream::pos_type filesize(const char *filename){

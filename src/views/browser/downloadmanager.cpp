@@ -97,7 +97,7 @@ DownloadWidget::DownloadWidget(QWebEngineDownloadItem* _download, TabWidget* _ta
     if (_download) {
         assert(_download->state() == QWebEngineDownloadItem::DownloadRequested || _download->state() == QWebEngineDownloadItem::DownloadInProgress);
         if (_download->state() == QWebEngineDownloadItem::DownloadRequested || _download->state() == QWebEngineDownloadItem::DownloadInProgress) {
-            QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+            QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
             settings.beginGroup(QLatin1String("downloadmanager"));
             QString download_directory = settings.value(QLatin1String("downloadDirectory")).toString();
             settings.endGroup();
@@ -150,7 +150,7 @@ void DownloadWidget::init()
 bool DownloadWidget::getFileName(bool prompt_for_filename)
 {
     (void)prompt_for_filename;
-    QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+    QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("downloadmanager"));
     QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     //
@@ -370,8 +370,8 @@ DownloadManager::DownloadManager(QString object_name, HidableTabWidget* vtab_rec
     connect(cleanupButton, &FlatToolButton::clicked, this, &DownloadManager::cleanup);
     if (_vtab_record->indexOf(this) == -1)
         _vtab_record->addTab(static_cast<QWidget*>(this), QIcon(":/resource/pic/apple.svg"), "Download");
-    if (gl_paras.download_manager() != this)
-        gl_paras.download_manager(this);
+    if (gl_paras->download_manager() != this)
+        gl_paras->download_manager(this);
     load();
 }
 
@@ -388,8 +388,8 @@ DownloadManager::~DownloadManager()
         _vtab_record->removeTab(index_);
         //	    if(_vtab_record->tabText(index_) == download_manager_singleton_name)
     }
-    if (gl_paras.download_manager() == this)
-        gl_paras.download_manager(nullptr);
+    if (gl_paras->download_manager() == this)
+        gl_paras->download_manager(nullptr);
 }
 
 int DownloadManager::activeDownloads() const
@@ -405,7 +405,7 @@ void DownloadManager::download(TabWidget* _tab_manager, QWebEngineDownloadItem* 
 {
     assert(download->state() == QWebEngineDownloadItem::DownloadRequested || download->state() == QWebEngineDownloadItem::DownloadInProgress);
     if (download->state() == QWebEngineDownloadItem::DownloadRequested) {
-        QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+        QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
         settings.beginGroup(QLatin1String("downloadmanager"));
         QString download_directory = settings.value(QLatin1String("downloadDirectory")).toString();
         settings.endGroup();
@@ -483,7 +483,7 @@ void DownloadManager::setRemovePolicy(RemovePolicy policy)
 
 void DownloadManager::save() const
 {
-    QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+    QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("downloadmanager"));
     QMetaEnum removePolicyEnum = staticMetaObject.enumerator(staticMetaObject.indexOfEnumerator("RemovePolicy"));
     settings.setValue(QLatin1String("removeDownloadsPolicy"), QLatin1String(removePolicyEnum.valueToKey(_removepolicy)));
@@ -510,7 +510,7 @@ void DownloadManager::save() const
 
 void DownloadManager::load()
 {
-    QSettings settings(gl_paras.root_path() + "/" + gl_paras.target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+    QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("downloadmanager"));
     QSize size = settings.value(QLatin1String("size")).toSize();
     if (size.isValid())

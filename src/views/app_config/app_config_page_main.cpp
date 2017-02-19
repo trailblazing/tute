@@ -20,8 +20,8 @@
 #include "libraries/global_parameters.h"
 #include "models/app_config/app_config.h"
 
-extern AppConfig appconfig;
-extern gl_para gl_paras;
+extern std::shared_ptr<AppConfig> appconfig;
+extern std::shared_ptr<gl_para> gl_paras;
 const char *standardItem	= "Standard";
 const char *portableItem	= "Portable";
 
@@ -31,7 +31,7 @@ W_OBJECT_IMPL(AppConfigPageMain)
 
 AppConfigPageMain::AppConfigPageMain(QWidget *parent)
 	: ConfigPage(parent)
-	  , _original_root_state(std::make_tuple(true, gl_paras.root_path())){
+	  , _original_root_state(std::make_tuple(true, gl_paras->root_path())){
 	setup_ui();
 	setup_signals();
 	assembly();
@@ -62,14 +62,14 @@ void AppConfigPageMain::setup_ui(void){
 
 	_rootdir_input = new QLineEdit(this);
 	_rootdir_input->setMinimumWidth(50);
-	_rootdir_input->setText(gl_paras.root_path());
+	_rootdir_input->setText(gl_paras->root_path());
 
 	_rootdir_button = new FlatToolButton("", this);
 	_rootdir_button->setText(tr("..."));
 
 	_datadir_input = new QLineEdit(this);
 	_datadir_input->setMinimumWidth(50);
-	_datadir_input->setText(appconfig.data_dir());
+	_datadir_input->setText(appconfig->data_dir());
 
 	_datadir_button = new FlatToolButton("", this);
 	_datadir_button->setText(tr("..."));
@@ -80,7 +80,7 @@ void AppConfigPageMain::setup_ui(void){
 
 	_trashdir_input = new QLineEdit(this);
 	_trashdir_input->setMinimumWidth(50);
-	_trashdir_input->setText(appconfig.trash_dir());
+	_trashdir_input->setText(appconfig->trash_dir());
 
 	_trashdir_button = new FlatToolButton("", this);
 	_trashdir_button->setText(tr("..."));
@@ -91,7 +91,7 @@ void AppConfigPageMain::setup_ui(void){
 
 	_trashsize_input = new QSpinBox(this);
 	_trashsize_input->setRange(1, 1000);
-	_trashsize_input->setValue(appconfig.trash_size());
+	_trashsize_input->setValue(appconfig->trash_size());
 
 	_trashsize_flexion = new QLabel(this);
 	_trashsize_flexion->setText(tr("Mb"));
@@ -102,7 +102,7 @@ void AppConfigPageMain::setup_ui(void){
 
 	_trashmaxfilecount_input = new QSpinBox(this);
 	_trashmaxfilecount_input->setRange(1, 3000);
-	_trashmaxfilecount_input->setValue(appconfig.trash_max_file_count());
+	_trashmaxfilecount_input->setValue(appconfig->trash_max_file_count());
 
 	_trashmaxfilecount_flexion = new QLabel(this);
 	_trashmaxfilecount_flexion->setText(tr("files"));
@@ -115,7 +115,7 @@ void AppConfigPageMain::setup_ui(void){
 	_interface_language->setMinimumContentsLength(2);
 	_interface_language->addItem("en");
 	_interface_language->addItem("ru");
-	_interface_language->setCurrentIndex(_interface_language->findText(appconfig.interface_language(), Qt::MatchCaseSensitive));
+	_interface_language->setCurrentIndex(_interface_language->findText(appconfig->interface_language(), Qt::MatchCaseSensitive));
 
 	// Блок работы с отображением даты и времени
 	_datetime_format_box = new QGroupBox(this);
@@ -128,7 +128,7 @@ void AppConfigPageMain::setup_ui(void){
 	QCommonStyle styleHelp;
 	_datetime_format_help_button->setIcon(styleHelp.standardIcon(QStyle::SP_MessageBoxQuestion));
 	// Точка устанавливается возле того пункта, который настроен в конфиге
-	if(appconfig.enable_custom_datetime_format() == false){
+	if(appconfig->enable_custom_datetime_format() == false){
 		_disable_custom_datetime_format->setChecked(true);
 		_enable_custom_datetime_format->setChecked(false);
 		custom_datetime_format->setEnabled(false);
@@ -137,7 +137,7 @@ void AppConfigPageMain::setup_ui(void){
 		_disable_custom_datetime_format->setChecked(false);
 		_enable_custom_datetime_format->setChecked(true);
 		custom_datetime_format->setEnabled(true);
-		custom_datetime_format->setText(appconfig.custom_datetime_format());
+		custom_datetime_format->setText(appconfig->custom_datetime_format());
 	}
 }
 
@@ -350,13 +350,16 @@ int AppConfigPageMain::apply_changes(void){
 
 	int difficult_changes = 0;
 
-	QString root_path_ = gl_paras.root_path();
-	std::tuple<bool, QString> result;
+	QString root_path_ = gl_paras->root_path();
+	std::tuple<bool, QString> result = _original_root_state;
 	auto write_root = [&](){
 				  auto root_path_ = _rootdir_input->text();
 				  QDir dir(root_path_);
 				  // Проверяется, допустимо ли имя директории
-				  if(!dir.isReadable()) QMessageBox::warning(this, tr("Warning"), tr("The root directory does not exists or unavailable for reading."), QMessageBox::Ok);
+				  if(!dir.isReadable()){
+					  QMessageBox::warning(this, tr("Warning"), tr("The root directory does not exists or unavailable for reading."), QMessageBox::Ok);
+					  return;
+				  }
 				  // else
 				  if(!dir.exists()) DiskHelper::create_directory(QDir::rootPath(), root_path_);
 				  //	    else{
@@ -366,17 +369,17 @@ int AppConfigPageMain::apply_changes(void){
 				  //	    }
 				  if(dir.exists() && dir.isReadable()){
 					  // Новое имя запоминается в конфиг
-//					  gl_paras.permanent_root_path_to_standard_path(dir.path());
-					  result = gl_paras.permanent_coordinate_root(_rootdir_input->text()); // is_standard,
+					  //					  gl_paras->permanent_root_path_to_standard_path(dir.path());
+					  result = gl_paras->permanent_coordinate_root(_rootdir_input->text(), true); // is_standard,
 					  difficult_changes = 1;
 					  if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
 					  _application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
 					  _application_current_path_label->update();
-					  assert(QDir(gl_paras.root_path()) == dir);
+					  assert(QDir(gl_paras->root_path()) == dir);
 					  assert(dir.absolutePath() == QDir::currentPath());
 				  }
 			  };
-	if(gl_paras.root_path() != _rootdir_input->text()) write_root();
+	if(gl_paras->root_path() != _rootdir_input->text()) write_root();
 	auto write_data = [&](){
 				  auto data_path = _datadir_input->text();
 				  QDir dir(data_path);
@@ -389,12 +392,12 @@ int AppConfigPageMain::apply_changes(void){
 				  }
 				  if(dir.exists() && dir.isReadable()){
 					  // Новое имя запоминается в конфиг
-					  appconfig.data_dir(dir.path());
+					  appconfig->data_dir(dir.path());
 					  difficult_changes = 1;
 				  }
 			  };
 	// Если был изменен путь к базе, он запоминается в конфигфайл
-	if(appconfig.data_dir() != _datadir_input->text()) write_data();
+	if(appconfig->data_dir() != _datadir_input->text()) write_data();
 	auto write_trash = [&](){
 				   auto trash_path = _trashdir_input->text();
 				   QDir dir(trash_path);
@@ -404,38 +407,39 @@ int AppConfigPageMain::apply_changes(void){
 				   if(dir.exists() == false) DiskHelper::create_directory(root_path_, dir.dirName());
 				   if(dir.exists() && dir.isReadable()){
 					   // Новое имя запоминается в конфиг
-					   appconfig.trash_dir(dir.path());
+					   appconfig->trash_dir(dir.path());
 				   }
 			   };
 	// Если был изменен путь к корзине, он запоминается в конфигфайл
-	if(appconfig.trash_dir() != _trashdir_input->text()) write_trash();
+	if(appconfig->trash_dir() != _trashdir_input->text()) write_trash();
 	// Если был изменен размер корзины
-	if((int) appconfig.trash_size() != (int) _trashsize_input->text().toInt()) appconfig.trash_size(_trashsize_input->text().toInt());
+	if((int) appconfig->trash_size() != (int) _trashsize_input->text().toInt()) appconfig->trash_size(_trashsize_input->text().toInt());
 	// Если было изменено максимально возможное количество файлов в корзине
-	if(appconfig.trash_max_file_count() != _trashmaxfilecount_input->text().toInt()) appconfig.trash_max_file_count(_trashmaxfilecount_input->text().toInt());
+	if(appconfig->trash_max_file_count() != _trashmaxfilecount_input->text().toInt()) appconfig->trash_max_file_count(_trashmaxfilecount_input->text().toInt());
 	// Если было изменено использование пользовательского формата даты и времени
-	if(appconfig.enable_custom_datetime_format() != _enable_custom_datetime_format->isChecked()) appconfig.enable_custom_datetime_format(_enable_custom_datetime_format->isChecked());
+	if(appconfig->enable_custom_datetime_format() != _enable_custom_datetime_format->isChecked()) appconfig->enable_custom_datetime_format(_enable_custom_datetime_format->isChecked());
 	// Если было изменен пользовательский формат даты и времени
-	if(appconfig.custom_datetime_format() != custom_datetime_format->text()) appconfig.custom_datetime_format(custom_datetime_format->text());
+	if(appconfig->custom_datetime_format() != custom_datetime_format->text()) appconfig->custom_datetime_format(custom_datetime_format->text());
 	// Если был изменен язык
-	if(appconfig.interface_language() != _interface_language->currentText()){
-		appconfig.interface_language(_interface_language->currentText());
+	if(appconfig->interface_language() != _interface_language->currentText()){
+		appconfig->interface_language(_interface_language->currentText());
 		difficult_changes = 1;
 	}
 	if(_original_root_state != result){
 		//	if(std::get<1>(result) != is_standard) _application_mode_option->setCurrentText(is_standard ?  standardItem : portableItem);
 		//	if(std::get<2>(result) != _rootdir_input->text()){
 		_rootdir_input->setText(std::get<1>(result));
-		write_root();
+//		write_root();
+
 		_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
 		_application_current_path_label->update();
 		_datadir_input->setText(QDir::cleanPath((std::get<1>(result) + "/" + QDir(_datadir_input->text()).dirName())));
-		write_data();
+//		write_data();
 		_trashdir_input->setText(QDir::cleanPath((std::get<1>(result) + "/" + QDir(_trashdir_input->text()).dirName())));
-		write_trash();
+//		write_trash();
 		//	}
 		difficult_changes = 1;
-		assert(QDir(gl_paras.root_path()) == QDir(std::get<1>(result)));
+		assert(QDir(gl_paras->root_path()) == QDir(std::get<1>(result)));
 		assert(QDir(std::get<1>(result)).absolutePath() == QDir::currentPath());
 		//	if(std::get<0>(result)){
 		QMessageBox message;

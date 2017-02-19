@@ -25,8 +25,8 @@
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
 
-extern AppConfig appconfig;
-extern gl_para gl_paras;
+extern std::shared_ptr<AppConfig> appconfig;
+extern std::shared_ptr<gl_para> gl_paras;
 extern WalkHistory walkhistory;
 
 const int add_new_record_to_end = 0;
@@ -455,7 +455,7 @@ void ItemsFlat::editor_load_callback(QObject* editor, QString& loadText)
     bool workWithCrypt = false;
     if (currEditor->misc_field(boost::mpl::c_str<crypt_type>::value) == "1") {
         // Если не установлено ключа шифрации
-        if (gl_paras.crypt_key().length() == 0) {
+        if (gl_paras->crypt_key().length() == 0) {
             loadText = "";
 
             return;
@@ -476,7 +476,7 @@ void ItemsFlat::editor_load_callback(QObject* editor, QString& loadText)
     if (workWithCrypt == false)
         loadText = QString::fromUtf8(f.readAll());
     else
-        loadText = CryptService::decryptStringFromByteArray(gl_paras.crypt_key(), f.readAll()); // Если зашифровано
+        loadText = CryptService::decryptStringFromByteArray(gl_paras->crypt_key(), f.readAll()); // Если зашифровано
 }
 
 // Функция, которая заменяет стандартную функцию редактора по записыванию
@@ -501,7 +501,7 @@ void ItemsFlat::editor_save_callback(QObject* editor, QString saveText)
     bool workWithCrypt = false;
     if (currEditor->misc_field(boost::mpl::c_str<crypt_type>::value) == "1") {
         // Если не установлено ключа шифрации
-        if (gl_paras.crypt_key().length() == 0)
+        if (gl_paras->crypt_key().length() == 0)
             return;
         workWithCrypt = true;
     }
@@ -517,7 +517,7 @@ void ItemsFlat::editor_save_callback(QObject* editor, QString saveText)
         out << saveText;
     } else {
         // Текст шифруется
-        QByteArray encryptData = CryptService::encryptStringToByteArray(gl_paras.crypt_key(), saveText);
+        QByteArray encryptData = CryptService::encryptStringToByteArray(gl_paras->crypt_key(), saveText);
 
         // В файл сохраняются зашифрованные данные
         QFile wfile(fileName);
@@ -562,7 +562,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_fat(int pos)
     result->text_to_fat(text(pos));
 
     // Добавление бинарных образов файлов картинок
-    QString directory = gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + result->field<dir_type>();
+    QString directory = gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/base/" + result->field<dir_type>();
     result->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
     return result;
@@ -782,7 +782,7 @@ void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields)
 //// Нельзя удалять с недопустимым индексом
 //    if(i >= _child_items.size()) return result;
 //// Удаление директории и файлов внутри, с сохранением в резервной директории
-//    QString dirForDelete = appconfig.tetra_dir() + "/base/" + field(i, "dir");
+//    QString dirForDelete = appconfig->tetra_dir() + "/base/" + field(i, "dir");
 //    qDebug() << "Remove dir " << dirForDelete;
 //    DiskHelper::remove_directory_to_trash(dirForDelete);
 
@@ -885,7 +885,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent(const std::function<b
         auto it = il->host();
         if (_equal(il)) {
             // Удаление директории и файлов внутри, с сохранением в резервной директории
-            QString dir_for_delete = gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + it->field<dir_type>(); // field(i, "dir")
+            QString dir_for_delete = gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/base/" + it->field<dir_type>(); // field(i, "dir")
 
             qDebug() << "Remove dir " << dir_for_delete;
 
@@ -906,7 +906,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent(const std::function<b
             ////		it->binder()->page()->on_close_requested();			// it->binder()->break_page();  // it->page_break();
             //	    }
             browser::WebView* web_view = nullptr;
-	    if ((web_view = gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id(); }))) {
+            if ((web_view = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id(); }))) {
                 if (it->binder()) {
                     assert(web_view->page() == it->page());
                     it->page()->record_controller()->remove(it->id());
@@ -1039,7 +1039,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent_recursive(boost::intr
                     for (auto& link : it->_child_linkers)
                         it->delete_permanent_recursive(link, condition);
                 // Удаление директории и файлов внутри, с сохранением в резервной директории
-                QString dir_for_delete = gl_paras.root_path() + "/" + QDir(appconfig.data_dir()).dirName() + "/base/" + it->field<dir_type>(); // field(i, "dir")
+                QString dir_for_delete = gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/base/" + it->field<dir_type>(); // field(i, "dir")
 
                 qDebug() << "Remove dir " << dir_for_delete;
 
@@ -1061,7 +1061,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent_recursive(boost::intr
                 _child_linkers.removeOne(il); // removeAt(i); // Было takeAt
 
                 browser::WebView* web_view = nullptr;
-		if ((web_view = gl_paras.main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id(); }))) {
+                if ((web_view = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id(); }))) {
                     if (it->binder()) {
                         assert(web_view->page() == it->page());
                         it->page()->record_controller()->remove(it->id());
@@ -1112,7 +1112,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent_recursive(boost::intr
 
     // if(target) {
     //// Удаление директории и файлов внутри, с сохранением в резервной директории
-    // QString dirForDelete = appconfig.tetra_dir() + "/base/" +
+    // QString dirForDelete = appconfig->tetra_dir() + "/base/" +
     // target->field("dir") // field(i, "dir")
     // ;
     // qDebug() << "Remove dir " << dirForDelete;

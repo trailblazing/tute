@@ -14,8 +14,8 @@
 #include "models/app_config/app_config.h"
 #include "models/app_config/app_config_updater.h"
 
-extern AppConfig appconfig;
-extern gl_para gl_paras;
+extern std::shared_ptr<AppConfig> appconfig;
+extern std::shared_ptr<gl_para> gl_paras;
 
 // Объект для работы с конфигурацией (с настройками) базы данных
 // Конфигурация базы данных хранится в файле database.ini
@@ -28,27 +28,14 @@ W_OBJECT_IMPL(DataBaseConfig)
 #endif
 
 // Конструктор объекта настройки БД
-DataBaseConfig::DataBaseConfig(QObject* pobj)
+DataBaseConfig::DataBaseConfig(std::shared_ptr<gl_para> gl_paras_, std::shared_ptr<AppConfig> appconfig_, QObject* pobj)
 {
     Q_UNUSED(pobj);
 
-    is_init_flag = false;
-}
-
-// Деструктор объекта настройки БД
-DataBaseConfig::~DataBaseConfig()
-{
-    if (is_init_flag) {
-        //	qDebug() << "Save database config file";
-        //	conf->sync();
-    }
-}
-
-void DataBaseConfig::init(const gl_para &gl_paras_, const AppConfig &appconfig_)
-{
+    //    is_init_flag = false;
     // Создается имя файла конфигурации
-    // QString configFileName=globalParameters.getWorkDirectory()+"/"+appconfig.datadir()+"/database.ini";
-    QString configFileName = gl_paras_.root_path() + "/" + QDir(appconfig_.data_dir()).dirName() + "/" + "/database.ini";
+    // QString configFileName=globalParameters.getWorkDirectory()+"/"+appconfig->datadir()+"/database.ini";
+    QString configFileName = gl_paras_->root_path() + "/" + QDir(appconfig_->data_dir()).dirName() + "/" + "/database.ini";
 
     // Проверяется, есть ли файл конфигурации
     QFile confFile(configFileName);
@@ -71,6 +58,18 @@ void DataBaseConfig::init(const gl_para &gl_paras_, const AppConfig &appconfig_)
 
     is_init_flag = true;
 }
+
+// Деструктор объекта настройки БД
+DataBaseConfig::~DataBaseConfig()
+{
+    if (is_init_flag) {
+        //	qDebug() << "Save database config file";
+        //	conf->sync();
+    }
+}
+
+//void DataBaseConfig::init(const gl_para &gl_paras_, const AppConfig &appconfig_)
+//{}
 
 bool DataBaseConfig::is_init(void)
 {

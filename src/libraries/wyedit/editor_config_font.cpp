@@ -19,7 +19,8 @@
 #include "libraries/global_parameters.h"
 
 #include "main.h"
-extern gl_para gl_paras;
+
+extern std::shared_ptr<gl_para> gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorConfigFont)
@@ -31,7 +32,7 @@ EditorConfigFont::EditorConfigFont(QWidget* parent)
     qDebug() << "Create editor config font widget";
 
     // Устанавливается указатель на объект работы с конфигфайлом
-    conf = gl_paras.editor_config(); // find_object<EditorConfig>("editorconfig");
+    conf = gl_paras->editor_config(); // find_object<EditorConfig>("editorconfig");
 
     setup_ui();
     setup_signals();

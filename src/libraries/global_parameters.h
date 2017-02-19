@@ -1,10 +1,13 @@
 #ifndef __GLOBALPARAMETERS_H__
 #define __GLOBALPARAMETERS_H__
 
-
-#include <memory>
-#include <functional>
+#include <QDir>
+#include <QStandardPaths>
 #include <QStatusBar>
+#include <functional>
+#include <memory>
+#include <set>
+// #include <QCoreApplication>
 
 #if QT_VERSION == 0x050600
 #include <QObject>
@@ -61,16 +64,16 @@ public:
 	QString main_program_full_file(void) const;
 	//	QString main_program_dir() const;
 
-	void init(const QString &app_name);
+	//	void init();// const QString &app_name
 
 	//	QString app_mode() const;
 	//	void app_mode(const QString &mode);
 
 	QString root_path(void) const;
-//	bool permanent_root_path_to_standard_path(QString path_name);
+	//	bool permanent_root_path_to_standard_path(QString path_name);
 
 	//	QString root_path(void) const;
-	QString config_filename(void) const;
+	//	QString config_filename(void) const;
 
 	QString target_os(void) const;
 	QString application_name(void) const;
@@ -103,7 +106,7 @@ public:
 	void browser_dock(browser::BrowserDock * &b);
 
 	void push_record_screen(rs_t *point);
-	std::vector<rs_t *> record_screens() const;
+	std::set<rs_t *> record_screens() const;
 
 	//    void page_screen(RecordScreen *page);
 	//    RecordScreen *page_screen();
@@ -147,6 +150,7 @@ public:
 	//	QMap<QString, QString>	config_ini() const;
 	//	QMap<QString, QString>	index_xml() const;
 	//	QMap<QString, QString>	editorconf() const;
+	static constexpr char _program_instance_name[] = "tute"; // QCoreApplication::applicationName();// won't work
 	static constexpr char _mode_filename[]	= "mode.ini";
 	static constexpr char _conf_filename[]	= "conf.ini";
 	static constexpr char _browser_conf_filename[] = "browser.conf";
@@ -157,10 +161,11 @@ public:
 	//	static constexpr char _document_config_name[] = "document.ini";
 	SysTrayIcon *tray_icon();
 	void tray_icon(SysTrayIcon *ti);
+
 private:
 #define STANDARD_MODE	true
 #define PORTABLE_MODE	false
-	std::tuple<const bool, const QString> permanent_coordinate_root(const QString &root_path_ = "");
+	std::tuple<const bool, const QString> permanent_coordinate_root(const QString &recommend_root_path_ = "", bool force = false);
 	//	bool check_workdirectory(bool enablePortable);
 
 	//	void create_root_standard(void);
@@ -187,15 +192,18 @@ private:
 	QByteArray _password_hash;
 	QString _style_source = "";
 	QString _main_program_full_file = "";
-	QString _application_name = "";
+	//	QString _program_instance_name = "";
 	//	QString _main_program_path	= "";
 	//	QString	_root_path				= "./";
 
-	QString _standard_path = ".";
-	std::pair<QString, QString> _standard_paths = {".", "."};
+	QString _root_path_given_by_system = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation); // QDir::homePath() + "/.config/" + gl_para::_program_instance_name;
+#ifdef USE_ALTERNATIVE_PATH
+	std::pair<QString, QString> _candidate_mode_paths_by_system = {QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + gl_para::_program_instance_name, QDir::homePath() + "/." + gl_para::_program_instance_name};
+#endif // USE_ALTERNATIVE_PATH
 	std::vector<rs_t *> _table_screens;
 	SysTrayIcon *_tray_icon;
-	std::function<QString()> mode_file_location;
+	std::function<QString()> mode_file_full_name_by_system;
+	std::function<std::tuple<const bool, const QString>()> init;
 	friend class AppConfigPageMain;
 };
 
