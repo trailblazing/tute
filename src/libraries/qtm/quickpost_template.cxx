@@ -25,41 +25,36 @@
 
 #include "quickpost_template.h"
 
-QuickpostTemplate::QuickpostTemplate(int id, QString t, QString pt, QObject* parent)
-    : QAction(t, parent)
-{
-    _postTemplate = pt;
-    _identifier = id;
+QuickpostTemplate::QuickpostTemplate(int id, QString t, QString pt, QObject *parent)
+	: QAction(t, parent){
+	_postTemplate = pt;
+	_identifier = id;
 
-    connect(this, SIGNAL(triggered(bool)), this, SLOT(emitRequestedSignal()));
+	connect(this, SIGNAL(triggered(bool)), this, SLOT(emitRequestedSignal()));
 }
 
-QuickpostTemplate::~QuickpostTemplate()
-{
-    deleteLater();
+QuickpostTemplate::~QuickpostTemplate(){
+	deleteLater();
 }
 
-void QuickpostTemplate::setIdentifier(int i)
-{
-    _identifier = i;
+void QuickpostTemplate::setIdentifier(int i){
+	_identifier = i;
 }
 
-void QuickpostTemplate::setPostTemplate(QString newTemplate)
-{
-    _postTemplate = newTemplate;
+void QuickpostTemplate::setPostTemplate(QString newTemplate){
+	_postTemplate = newTemplate;
 }
 
-void QuickpostTemplate::emitRequestedSignal()
-{
-    emit quickpostRequested(_identifier, _postTemplate);
+void QuickpostTemplate::emitRequestedSignal(){
+	emit quickpostRequested(_identifier, _postTemplate);
 }
 
 /* inline int QuickpostTemplate::identifier()
-{
-  return _identifier;
-}
+   {
+   return _identifier;
+   }
 
-QString QuickpostTemplate::postTemplate()
-{
-  return _postTemplate;
-} */
+   QString QuickpostTemplate::postTemplate()
+   {
+   return _postTemplate;
+   } */

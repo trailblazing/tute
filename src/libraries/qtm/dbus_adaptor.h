@@ -27,40 +27,40 @@
 #include "SysTrayIcon.h"
 
 class DBusAdaptor : public QDBusAbstractAdaptor {
-    Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "uk.co.blogistan.catkin")
-    Q_PROPERTY(QString organizationName READ organizationName)
-    Q_PROPERTY(QString organizationDomain READ organizationDomain)
-    Q_PROPERTY(QString applicationVersion READ applicationVersion)
+Q_OBJECT
+Q_CLASSINFO("D-Bus Interface", "uk.co.blogistan.catkin")
+Q_PROPERTY(QString organizationName READ organizationName)
+Q_PROPERTY(QString organizationDomain READ organizationDomain)
+Q_PROPERTY(QString applicationVersion READ applicationVersion)
 
 public:
-    DBusAdaptor(SysTrayIcon* sti);
-    QString organizationName() { return QCoreApplication::organizationName(); }
-    QString organizationDomain() { return QCoreApplication::organizationDomain(); }
-    QString applicationVersion();
+	DBusAdaptor(SysTrayIcon *sti);
+	QString organizationName(){return QCoreApplication::organizationName();}
+	QString organizationDomain(){return QCoreApplication::organizationDomain();}
+	QString applicationVersion();
 
 public slots:
-    Q_NOREPLY void quit();
-    Q_NOREPLY void saveAll();
-    QStringList getQuickpostTemplates();
-    QStringList getQuickpostTemplateTitles();
-    Q_NOREPLY void newDocument();
-    Q_NOREPLY void newDocumentWithTitleAndText(QString, QString);
-    Q_NOREPLY void quickpost(QString, QString);
-    Q_NOREPLY void quickpostFromLauncher();
-    Q_NOREPLY void choose();
-    Q_NOREPLY void chooseRecentFile();
-    Q_NOREPLY void chooseQuickpostTemplate();
-    bool open(QString);
+	Q_NOREPLY void quit();
+	Q_NOREPLY void saveAll();
+	QStringList getQuickpostTemplates();
+	QStringList getQuickpostTemplateTitles();
+	Q_NOREPLY void newDocument();
+	Q_NOREPLY void newDocumentWithTitleAndText(QString, QString);
+	Q_NOREPLY void quickpost(QString, QString);
+	Q_NOREPLY void quickpostFromLauncher();
+	Q_NOREPLY void choose();
+	Q_NOREPLY void chooseRecentFile();
+	Q_NOREPLY void chooseQuickpostTemplate();
+	bool open(QString);
 
 signals:
-    void aboutToQuit();
-    void allSaved();
-    void quickpostTemplatesUpdated(QStringList);
-    void quickpostTemplateTitlesUpdated(QStringList);
+	void aboutToQuit();
+	void allSaved();
+	void quickpostTemplatesUpdated(QStringList);
+	void quickpostTemplateTitlesUpdated(QStringList);
 
 private:
-    SysTrayIcon* _sti;
+	SysTrayIcon *_sti;
 };
 
 #endif

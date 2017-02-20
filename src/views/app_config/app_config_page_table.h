@@ -17,37 +17,37 @@ class rctrl_t;
 
 class AppConfigPageTable : public ConfigPage {
 #if QT_VERSION == 0x050600
-    W_OBJECT(AppConfigPageTable)
+W_OBJECT(AppConfigPageTable)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
 public:
-    AppConfigPageTable(rctrl_t* _record_controller, QWidget* parent = 0);
-    int apply_changes(void);
+	AppConfigPageTable(rctrl_t *_record_controller, QWidget *parent = 0);
+	int apply_changes(void);
 
 signals:
-    void record_table_config_change(void)
+	void record_table_config_change(void)
 #if QT_VERSION == 0x050600
-        W_SIGNAL(record_table_config_change) // ;	// Сигнал, испускающийся когда изменились настройки таблицы конечных записей
+	W_SIGNAL(record_table_config_change) // ;	// Сигнал, испускающийся когда изменились настройки таблицы конечных записей
 #else
-        ;
+	;
 #endif
-        private slots : void on_field_toggle(bool);
+private slots: void on_field_toggle(bool);
 
 protected:
-    QMap<QString, QCheckBox*> _fields;
+	QMap<QString, QCheckBox *> _fields;
 
-    QCheckBox* _show_horizontal_header;
-    QCheckBox* _show_vertical_header;
+	QCheckBox *_show_horizontal_header;
+	QCheckBox *_show_vertical_header;
 
-    // Объединяющая рамка
-    QGroupBox* _show_fields_box;
-    QGroupBox* _show_headers_box;
+	// Объединяющая рамка
+	QGroupBox *_show_fields_box;
+	QGroupBox *_show_headers_box;
 
-    void setupSignals(void);
+	void setupSignals(void);
 
-    rctrl_t* _record_controller;
+	rctrl_t *_record_controller;
 };
 
 #endif // APPCONFIGPAGE_RECORDTABLE_H

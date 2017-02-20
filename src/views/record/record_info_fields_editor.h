@@ -18,36 +18,36 @@ class InfoFieldEnter;
 
 class InfoFieldsEditor : public QDialog {
 #if QT_VERSION == 0x050600
-    W_OBJECT(InfoFieldsEditor)
+W_OBJECT(InfoFieldsEditor)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
 public:
 #if QT_VERSION < 0x050000
-    RecordInfoFieldsEditor(QWidget* parent = 0, Qt::WFlags f = 0);
+	RecordInfoFieldsEditor(QWidget * parent = 0, Qt::WFlags f = 0);
 #else
-    InfoFieldsEditor(QWidget* parent = 0, Qt::WindowFlags f = 0);
+	InfoFieldsEditor(QWidget *parent = 0, Qt::WindowFlags f = 0);
 #endif
 
-    ~InfoFieldsEditor();
+	~InfoFieldsEditor();
 
-    QString getField(QString name);
-    void setField(QString name, QString value);
+	QString getField(QString name);
+	void setField(QString name, QString value);
 
 private slots:
 
-    void okClick(void);
+	void okClick(void);
 
 private:
-    // Widget input information field recording // Виджет ввода инфополей записи
-    InfoFieldEnter* infoField;
+	// Widget input information field recording // Виджет ввода инфополей записи
+	InfoFieldEnter *infoField;
 
-    QDialogButtonBox* buttonBox;
+	QDialogButtonBox *buttonBox;
 
-    void setupUI(void);
-    void setupSignals(void);
-    void assembly(void);
+	void setupUI(void);
+	void setupSignals(void);
+	void assembly(void);
 };
 
 #endif // __RECORDINFOFIELDSEDITOR_H__

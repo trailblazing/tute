@@ -14,29 +14,29 @@ class QDialogButtonBox;
 
 class EditorAddTableForm : public QDialog {
 #if QT_VERSION == 0x050600
-    W_OBJECT(EditorAddTableForm)
+W_OBJECT(EditorAddTableForm)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
 public:
-    EditorAddTableForm();
+	EditorAddTableForm();
 
-    int get_columns(void);
-    int get_rows(void);
-    int get_width(void);
+	int get_columns(void);
+	int get_rows(void);
+	int get_width(void);
 
 private:
-    QLabel* labelColumns;
-    QLabel* labelRows;
-    QLabel* labelWidth;
-    QLabel* labelPercent;
+	QLabel *labelColumns;
+	QLabel *labelRows;
+	QLabel *labelWidth;
+	QLabel *labelPercent;
 
-    QSpinBox* spinColumns;
-    QSpinBox* spinRows;
-    QSpinBox* spinWidth;
+	QSpinBox *spinColumns;
+	QSpinBox *spinRows;
+	QSpinBox *spinWidth;
 
-    QDialogButtonBox* buttonBox;
+	QDialogButtonBox *buttonBox;
 };
 
 #endif // _EDITORADDTABLEFORM_H_

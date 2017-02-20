@@ -147,5 +147,7 @@
         <file>resource/pic/flip.svg</file>
         <file>resource/pic/more.svg</file>
         <file>resource/pic/preview.svg</file>
+        <file>resource/pic/back_to_top.svg</file>
+        <file>resource/pic/pull.svg</file>
     </qresource>
 </RCC>

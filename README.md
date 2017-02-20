@@ -158,7 +158,8 @@ For Tute:
 * develop           - branch to develop.
 * code beautifier   - uncrustify (recommended)
 ```
-        https://github.com/beimprovised/tute/blob/master/src/uncrustify.cfg
+        find . -iname "*.h" -or -iname "*.cpp" -or -iname "*.cxx" > files.txt
+        uncrustify -c src/uncrustify.cfg  -l CPP --replace --no-backup -F ./files.txt
 ```
 * code beautifier   - clang-format::WebKit (to save time)
 ```

@@ -15,20 +15,20 @@ class FlatToolButton;
 
 class OverTextToolButton : public FlatToolButton {
 #if QT_VERSION == 0x050600
-    W_OBJECT(OverTextToolButton)
+W_OBJECT(OverTextToolButton)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
 public:
-    OverTextToolButton(QWidget* parent = 0);
+	OverTextToolButton(QWidget *parent = 0);
 
-    void setOverText(QString iText);
+	void setOverText(QString iText);
 
 protected:
-    void paintEvent(QPaintEvent* event);
+	void paintEvent(QPaintEvent *event);
 
-    QString overText;
+	QString overText;
 };
 
 #endif // __OVERTEXTTOOLBUTTON_H__

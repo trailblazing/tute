@@ -107,11 +107,12 @@ extern const char *program_title;
 // #include "libraries/flat_control.h"
 #include "editing_window.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
-#include "views/main_window/hidable_tabwidget.h"
+#include "views/main_window/hidable_tab.h"
 #include "views/main_window/main_window.h"
 #include "views/print_preview/print_preview.h"
 #include "views/record/editor_dock.h"
 #include "views/record_table/record_screen.h"
+#include "views/attach_table/attach_table_screen.h"
 
 extern const std::string editor_prefix;
 
@@ -181,27 +182,28 @@ extern const std::string editor_prefix;
 
 #define editor_object _editor
 
-EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_dock, HidableTabWidget *vtab_record, browser::Profile *profile, FindScreen *find_screen, EditorDock *editor_dock, QString style_source, QStringList hide_editor_tools_, QString new_post_topic, QString new_post_content // , QWidget *parent
-			    , Qt::WindowFlags flags)
+EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_dock, HidableTab *vtab_record, browser::Profile *profile, FindScreen *find_screen, EditorDock *editor_dock, QString style_source, QStringList hide_editor_tools_, QString new_post_topic, QString new_post_content // , QWidget *parent
+                            , Qt::WindowFlags flags)
 	: QMainWindow(nullptr, flags)
-	  , _app(qobject_cast<sapp_t *>(qApp))
-	  , _editors_shared_directory(
+//	  , _app(sapp_t::instance())//qobject_cast<sapp_t *>(qApp)
+	  , _editors_shared_full_path_name(
 		  [&]() -> QString {
-			  QString path = QString(_app->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog").arg(gl_paras->root_path()); // + "/" + globalparameters.target_os());
+			  QString path = QString(sapp_t::instance()->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog").arg(gl_paras->root_path()); // + "/" + globalparameters.target_os());
 			  if(!QDir(path).exists())
 				  if(!QDir::root().mkpath(path)) critical_error("Can not create directory: \"" + path + "\"");
 			  return path;
 		  } ())
-	  , _current_topic_folder_name([&]() -> QString {auto fn = _editors_shared_directory + "/" + tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str());  return fn;} ())
-	  , _current_topic_config_name(_current_topic_folder_name + "/" + gl_para::_editor_conf_filename)
+	  , _current_topic_name(tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()))
+	  , _current_topic_full_folder_name([&]() -> QString {auto fn = _editors_shared_full_path_name + "/" + _current_topic_name; return fn;} ())
+	  , _current_topic_full_config_name(_current_topic_full_folder_name + "/" + gl_para::_editor_conf_filename)
 	  , _topic_editor_config(
 		  [&]() -> std::unique_ptr<QSettings> {
-			  if(!QDir(_current_topic_folder_name).exists())
-				  if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
-			  if(!QFile(_current_topic_config_name).exists())
-				  if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
-			  if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
-			  return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
+			  if(!QDir(_current_topic_full_folder_name).exists())
+				  if(!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
+			  if(!QFile(_current_topic_full_config_name).exists())
+				  if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_full_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+			  if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_full_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_full_config_name, QFile::ReadUser | QFile::WriteUser);
+			  return std::make_unique<QSettings>(_current_topic_full_config_name, QSettings::IniFormat);
 		  } ())
 	  , _local_storage_file_extension(_topic_editor_config->value("local_storage_file_ext", "cqt").toString())
 	  , _current_reply(nullptr)
@@ -214,25 +216,40 @@ EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_do
 	  , _editor_dock(editor_dock)
 	  , _find_screen(find_screen)
 	  , _super_menu(editor_dock->super_menu())
-	  , _central_widget(new QWidget(this))
-	  , _splitter(new QSplitter(Qt::Horizontal, _central_widget))
-	  , _main_stack(new QStackedWidget(_central_widget))
-	  , _control_tab([&]() -> SideTabWidget * {auto st = new SideTabWidget(tree_screen, find_screen, browser_dock, this, profile, style_source, _splitter, _central_widget); auto _topic = tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()); st->topic(_topic); st->title(_topic); return st;} ())
-	  , _console(new TEXTEDIT_FOR_READ(_main_stack))
+	  , _central_widget([&]() -> QWidget *{_central_widget = nullptr; auto cw = new QWidget(this); return cw;} ())
+	  , _splitter([&]() -> QSplitter *{_splitter = nullptr; auto sp = new QSplitter(Qt::Horizontal, _central_widget); return sp;} ())
+	  , _main_stack([&]() -> QStackedWidget *{_main_stack = nullptr; auto ms = new QStackedWidget(_central_widget); return ms;} ())
+	  , _control_tab([&]() -> SideTabWidget * {_control_tab = nullptr; auto st = new SideTabWidget(tree_screen, find_screen, browser_dock, this, profile, style_source, _splitter, _central_widget); st->topic(_current_topic_name); st->title(_current_topic_name); return st;} ())
+	  , _console([&]() -> TEXTEDIT_FOR_READ *{_console = nullptr; auto e = new TEXTEDIT_FOR_READ(_main_stack); return e;} ())
 // Set up editor widget
 #ifdef USE_WYEDIT
-	  , _editor(new TEXTEDIT(find_screen, this, hide_editor_tools_, _main_stack, ""))
+
+	  , _editor([&]() -> TEXTEDIT *{
+			    _editor = nullptr; auto e = new TEXTEDIT(
+	#ifdef USE_EDITOR_WRAP
+				    find_screen, this, hide_editor_tools_, _main_stack, ""
+	#else
+				    _main_stack, this, (appconfig->interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, true, true
+	#endif //USE_EDITOR_WRAP
+			                                            ); return e;
+		    } ())
+
+
+
 #else
-	  , _editor(new TEXTEDIT(mainStack))
+	  , _editor([&]() -> TEXTEDIT *{_editor = nullptr; auto e = new TEXTEDIT(_main_stack); return e;} ())
 #endif
-	  , _record_screen(new rs_t(tree_screen, find_screen, editor_dock, this, browser_dock, vtab_record, style_source, profile)){
+	  , _record_screen([&]() -> rs_t *{_record_screen = nullptr; auto rs = new rs_t(tree_screen, find_screen, editor_dock, this, browser_dock, vtab_record, style_source, profile); return rs;} ()){
 	//
 
 	QDomElement detailElem, attribElem, nameElem, serverElem, locElem, loginElem, pwdElem;
-	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 
 	_splitter->setHandleWidth(0);
 	_splitter->addWidget(_control_tab);
+
+
+	QMainWindow::setWindowFlags(Qt::FramelessWindowHint);
 	auto stack_layout = new QVBoxLayout();
 	stack_layout->setMargin(0);
 	stack_layout->setContentsMargins(0, 0, 0, 0);
@@ -263,7 +280,7 @@ EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_do
 	//
 	setAttribute(Qt::WA_DeleteOnClose);
 
-	_app = qobject_cast<sapp_t *>(qApp);
+//	_app = sapp_t::instance();//qobject_cast<sapp_t *>(qApp);
 
 #ifdef Q_OS_MAC
 	SuperMenu *thisSM;
@@ -296,13 +313,13 @@ EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_do
 	handleEnableCategories();
 
 	QFile accountsXmlFile(
-		PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_directory)));
+		PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_full_path_name)));
 	if(_accounts_dom.setContent(&accountsXmlFile)){
 		accountsXmlFile.close();
 		setInitialAccount();
 	}else{
 		accountsXmlFile.close();
-		accountsXmlFile.setFileName(PROPERSEPS(QString("%1/qtmaccounts.xml").arg(_editors_shared_directory)));
+		accountsXmlFile.setFileName(PROPERSEPS(QString("%1/qtmaccounts.xml").arg(_editors_shared_full_path_name)));
 		accountsXmlFile.open(QIODevice::ReadOnly | QIODevice::Text);
 		if(_accounts_dom.setContent(&accountsXmlFile)){
 			accountsXmlFile.close();
@@ -365,7 +382,7 @@ EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_do
 			_accounts_dom.insertBefore(
 				_accounts_dom.createProcessingInstruction(
 					"xml", "version=\"1.0\"")
-						  , _accounts_dom.firstChild());
+				                  , _accounts_dom.firstChild());
 			QHostInfo::lookupHost(server, this, SLOT(handleInitialLookup(QHostInfo)));
 		}
 	}
@@ -376,8 +393,8 @@ EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_do
 #else
 	editor_object->setPlainText(new_post_content);
 #endif
-	//	_control_tab->title(new_post_topic);
-	//	_control_tab->topic(new_post_topic);
+	// _control_tab->title(new_post_topic);
+	// _control_tab->topic(new_post_topic);
 	//
 	_main_stack->setCurrentIndex(_editor_id);
 
@@ -388,9 +405,9 @@ EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_do
 	_editor_dock->setWidget(this);
 	setParent(_editor_dock);
 	emit _editor_dock->editing_activated(this);
-	//	_editor_dock->add_blog_editor(this);
+	// _editor_dock->add_blog_editor(this);
 
-	//    _blog_editor = new EditingWindow();
+	// _blog_editor = new EditingWindow();
 	setSTI(0); // No STI
 	setWindowTitle(QObject::tr((program_title_string + " - new entry [*]").c_str()));
 	if(handleArguments()){
@@ -399,29 +416,29 @@ EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_do
 	}else close();
 	connect(_editor_dock, &EditorDock::editing_activated, _super_menu, &SuperMenu::editing_window);
 	connect(_editor_dock, &EditorDock::editing_activated, [&](EditingWindow *){adjustSize();});
-	connect(_vtab_record, &HidableTabWidget::currentChanged, [&](int index){
+	connect(_vtab_record, &HidableTab::currentChanged, [&](int index){
 			auto cw = _vtab_record->widget(index);
 			auto crs = dynamic_cast<rs_t *>(cw);
 			if(crs){
-				for(int i = 0; i < _vtab_record->count(); i++){
-					auto w = _vtab_record->widget(i);
+			        for(int i = 0; i < _vtab_record->count(); i++){
+			                auto w = _vtab_record->widget(i);
 
-					auto rs = dynamic_cast<rs_t *>(w);
-					if(rs == crs){
-						auto editing_window = rs->editing_window();
-						if(editing_window){
-							editing_window->show();
-							editing_window->activateWindow();
-							if(!editing_window->isTopLevel()) editing_window->raise();
-							_editor_dock->setWidget(editing_window);
-							editing_window->setParent(_editor_dock);
-							editing_window->adjustSize();
+			                auto rs = dynamic_cast<rs_t *>(w);
+			                if(rs == crs){
+			                        auto editing_window = rs->editing_window();
+			                        if(editing_window){
+			                                editing_window->show();
+			                                editing_window->activateWindow();
+			                                if(!editing_window->isTopLevel()) editing_window->raise();
+			                                _editor_dock->setWidget(editing_window);
+			                                editing_window->setParent(_editor_dock);
+			                                editing_window->adjustSize();
 						}
 					}else{
-						auto editing_window = rs->editing_window();
-						if(editing_window){
-							editing_window->hide();
-							if(editing_window->isTopLevel()) editing_window->lower();
+			                        auto editing_window = rs->editing_window();
+			                        if(editing_window){
+			                                editing_window->hide();
+			                                if(editing_window->isTopLevel()) editing_window->lower();
 						}
 					}
 				}
@@ -438,7 +455,7 @@ EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_do
 		if(ch == 0) ch = _central_widget->sizeHint().height();
 		auto cw = _central_widget->geometry().width();
 		if(cw == 0) cw = _central_widget->sizeHint().width();
-		//		_central_widget->resize(edw, edh);
+		// _central_widget->resize(edw, edh);
 		////    QSettings   qtm_settings(_config_file_name,
 		/// QSettings::IniFormat);
 		// auto    barwidth_geometry   =
@@ -488,21 +505,21 @@ EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_do
 		if(!found){
 			_vtab_record->setUpdatesEnabled(false);
 			_vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
-			//		bool found = false;
-			//		for(int i = 0; i < _vtab_record->count(); i++){
-			//			auto r = _vtab_record->widget(i);
-			//			if(r == _record_screen){
+			// bool found = false;
+			// for(int i = 0; i < _vtab_record->count(); i++){
+			// auto r = _vtab_record->widget(i);
+			// if(r == _record_screen){
 			auto _browser = _record_screen->browser();
 			if(_browser){
 				_browser->activateWindow();
 				_browser->setVisible(true);
 				_browser->adjustSize();
 				_vtab_record->setCurrentWidget(_record_screen);
-				//			found = true;
+				// found = true;
 			}
-			//			}
-			//		}
-			//		assert(found);
+			// }
+			// }
+			// assert(found);
 			////    bool found = false;
 			////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
 			////	if(*i == rs){
@@ -514,13 +531,13 @@ EditingWindow::EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_do
 			// _record_screens.insert(rs);
 			this->adjustSize();
 			_vtab_record->setUpdatesEnabled(true);
-			//		_record_screen->adjustSize();
+			// _record_screen->adjustSize();
 		}
 	} ();
 }
 
 EditingWindow::~EditingWindow(){
-	//	if(_editor_dock->_editing_list.contains(this)) _editor_dock->_editing_list.removeOne(this);
+	// if(_editor_dock->_editing_list.contains(this)) _editor_dock->_editing_list.removeOne(this);
 	deleteLater();
 }
 
@@ -565,7 +582,7 @@ void EditingWindow::doUiSetup(){
 	// QCoreApplication::setApplicationVersion(QTM_VERSION);
 
 	qtmaccounts_xml << "qtmaccounts2.xml"
-			<< "qtmaccounts.xml";
+	                << "qtmaccounts.xml";
 
 	// ui.setupUi( this );
 	_current_http_business = None;
@@ -589,7 +606,7 @@ void EditingWindow::doUiSetup(){
 	// toolsLine1Layout->addWidget(_close_button);
 
 	// Actions related to Technorati tags
-	auto di = qobject_cast<sapp_t *>(qApp)->defaultIcon();
+	auto default_icon = qobject_cast<sapp_t *>(qApp)->defaultIcon();
 	addTechTagAction = add_action<QListWidget, QAction, SideTabWidget>(
 		_control_tab->lwTags, _control_tab, tr("Add Technorati tag"), tr("Add technorati tag"), tr(""), QIcon(QPixmap(addtag_xpm)), [&](bool){
 			addTechTag();
@@ -609,15 +626,15 @@ void EditingWindow::doUiSetup(){
 	// Actions related to Trackback pings
 
 	addTBPingAction = add_action<QListWidget, QAction, SideTabWidget>(
-		_control_tab->lwTBPings, _control_tab, tr("Add trackback ping"), tr("Add trackback ping"), tr(""), di, [&](bool){
+		_control_tab->lwTBPings, _control_tab, tr("Add trackback ping"), tr("Add trackback ping"), tr(""), default_icon, [&](bool){
 			addTBPing();
 		});
 	addClipPingAction = add_action<QListWidget, QAction, SideTabWidget>(
-		_control_tab->lwTBPings, _control_tab, tr("Add ping from clipboard"), tr("Add ping from clipboard"), tr(""), di, [&](bool){
+		_control_tab->lwTBPings, _control_tab, tr("Add ping from clipboard"), tr("Add ping from clipboard"), tr(""), default_icon, [&](bool){
 			addClipTBPing();
 		});
 	removeTBPingAction = add_action<QListWidget, QAction, SideTabWidget>(
-		_control_tab->lwTBPings, _control_tab, tr("Remove trackback ping"), tr("Remove trackback ping"), tr(""), di, [&](bool){
+		_control_tab->lwTBPings, _control_tab, tr("Remove trackback ping"), tr("Remove trackback ping"), tr(""), default_icon, [&](bool){
 			removeTBPing();
 		});
 
@@ -627,9 +644,11 @@ void EditingWindow::doUiSetup(){
 
 	// leftWidget        = new QWidget(cWidget);
 	_main_layout = new QHBoxLayout;
-	// mainWindowLayout->setMargin(0);
-	// mainWindowLayout->setMargin(5);
+	// _main_layout->setMargin(0);
+	// _main_layout->setMargin(5);
 	// cw->setupUi(leftWidget);
+	_main_layout->setSpacing(0);
+	_main_layout->setMargin(0);
 
 	connect(_control_tab->lwOtherCats, &QListWidget::itemSelectionChanged, this, &EditingWindow::changeOtherCatsHeading);
 	_control_tab->cbBlogSelector->setMaxVisibleItems(10);
@@ -642,15 +661,15 @@ void EditingWindow::doUiSetup(){
 	// _control_panel->lwTBPings->addAction(removeTBPingAction);
 
 	addKeywordTag_forList = add_action<QListWidget, QAction, QWidget>(
-		_control_tab->lwAvailKeywordTags, nullptr, tr("Add this tag"), tr("Add this tag"), tr(""), di, [&](bool){
+		_control_tab->lwAvailKeywordTags, nullptr, tr("Add this tag"), tr("Add this tag"), tr(""), default_icon, [&](bool){
 			addKeywordTagFromAvailTags();
 		});
 	removeKeywordTag_forList = add_action<QListWidget, QAction, QWidget>(
-		_control_tab->lwKeywordTags, nullptr, tr("Remove this tag"), tr("Remove this tag"), tr(""), di, [&](bool){
+		_control_tab->lwKeywordTags, nullptr, tr("Remove this tag"), tr("Remove this tag"), tr(""), default_icon, [&](bool){
 			removeKeywordTag();
 		});
 	_refreshKeywordTags = add_action<QListWidget, QAction, QWidget>(
-		_control_tab->lwAvailKeywordTags, nullptr, tr("Refresh"), tr("Refresh"), tr(""), di, [&](bool){
+		_control_tab->lwAvailKeywordTags, nullptr, tr("Refresh"), tr("Refresh"), tr(""), default_icon, [&](bool){
 			refreshKeywordTags();
 		});
 	// connect(addKeywordTag_forList, SIGNAL(triggered(bool)), this,
@@ -670,7 +689,7 @@ void EditingWindow::doUiSetup(){
 	_control_tab->tbRemoveKeywordTag->setIcon(QIcon(":/images/previous.png"));
 
 	_child_category_here_action = add_action<QListWidget, QAction, QListWidget>(
-		_control_tab->lwOtherCats, _control_tab->lwOtherCats, tr("Add child category"), tr("Add child category"), tr(""), di, [&](bool){
+		_control_tab->lwOtherCats, _control_tab->lwOtherCats, tr("Add child category"), tr("Add child category"), tr(""), default_icon, [&](bool){
 			newChildCategory();
 		});
 // connect(childCategoryHereAction, SIGNAL(triggered(bool)), this,
@@ -755,9 +774,9 @@ void EditingWindow::doUiSetup(){
 		connect(actionSelectAll, SIGNAL(triggered(bool)), editor_object_, SLOT(selectAll()));
 		actionSelectAll->setShortcut(QKeySequence::fromString("Ctrl+A"));
 		editorActions	<< _super_menu->getUndoAction() << _super_menu->getRedoAction()
-				<< sep1;
+		                << sep1;
 		editorActions	<< _super_menu->getCutAction() << _super_menu->getCopyAction()
-				<< _super_menu->getPasteAction() << sep2;
+		                << _super_menu->getPasteAction() << sep2;
 		editorActions << actionSelectAll;
 		editor_object_->addActions(editorActions);
 		editor_object_->installEventFilter(this);
@@ -841,58 +860,58 @@ void EditingWindow::doUiSetup(){
 	connect(this->_editor->_close_button, &FlatToolButton::clicked, _editor_dock, &EditorDock::editor_switch);
 
 	////	moved to HidableTabWidget
-	//	connect(_splitter, &QSplitter::splitterMoved, [&](int pos, int index){
-	//			// save sizes
-	//			(void) pos;
-	//			(void) index;
-	//			auto result =
-	//				_control_panel->inner_rebuild_on_splitter_moved(pos, index);
+	// connect(_splitter, &QSplitter::splitterMoved, [&](int pos, int index){
+	//// save sizes
+	// (void) pos;
+	// (void) index;
+	// auto result =
+	// _control_panel->inner_rebuild_on_splitter_moved(pos, index);
 
-	//			auto sizes = std::get<1>(result);
-	//			//            auto sizes_ = _splitter->sizes();// 50, 50
-	//			//            assert(sizes == sizes_);
-	//			//
-	//			if(sizes[0] <= 0) sizes[0] =
-	//					_control_panel->tabBar()->sizeHint().width();
-	//			if((sizes[1] > width() - sizes[0]) || (sizes[1] <= 0)) sizes[1]
-	//				        = width() - sizes[0];
-	//			assert(sizes[1] >= 0);
-	//			auto msw = _main_stack->width();// 50
-	//			if(msw < sizes[1]) _main_stack->resize(sizes[1], height());
-	//			//            assert(msw == sizes[1]);
-	//			auto ew = _editor->width(); // 0
-	//			//            assert(ew == sizes[1]);
-	//			if(ew < sizes[1]) _editor->resize(sizes[1], height());
-	//			//
+	// auto sizes = std::get<1>(result);
+	////            auto sizes_ = _splitter->sizes();// 50, 50
+	////            assert(sizes == sizes_);
+	////
+	// if(sizes[0] <= 0) sizes[0] =
+	// _control_panel->tabBar()->sizeHint().width();
+	// if((sizes[1] > width() - sizes[0]) || (sizes[1] <= 0)) sizes[1]
+	// = width() - sizes[0];
+	// assert(sizes[1] >= 0);
+	// auto msw = _main_stack->width();// 50
+	// if(msw < sizes[1]) _main_stack->resize(sizes[1], height());
+	////            assert(msw == sizes[1]);
+	// auto ew = _editor->width(); // 0
+	////            assert(ew == sizes[1]);
+	// if(ew < sizes[1]) _editor->resize(sizes[1], height());
+	////
 
-	//			QSettings qtm_settings(_config_file_name
-	//			                      , QSettings::IniFormat);
-	//			QStringList line_list_;
-	//			QList<int>  list_;
-	//			qtm_settings.beginGroup("geometry");
-	//			line_list_ = (qtm_settings.value("splitter_sizelist"
-	//			                                , "100,100")).toString().split(",");
-	//			for(int i = 0; i < line_list_.size(); ++i) list_.append(line_list_.at(i).toInt());
-	//			if(sizes != list_){
-	//			        QStringList line_list;
-	//			        for(int i = 0; i < sizes.size(); ++i) line_list.append(QString::number(sizes.at(i)));
-	//			        qtm_settings.setValue("splitter_sizelist"
-	//			                             , line_list.join(","));
-	//			}
-	//			qtm_settings.endGroup();
-	//		});
+	// QSettings qtm_settings(_config_file_name
+	// , QSettings::IniFormat);
+	// QStringList line_list_;
+	// QList<int>  list_;
+	// qtm_settings.beginGroup("geometry");
+	// line_list_ = (qtm_settings.value("splitter_sizelist"
+	// , "100,100")).toString().split(",");
+	// for(int i = 0; i < line_list_.size(); ++i) list_.append(line_list_.at(i).toInt());
+	// if(sizes != list_){
+	// QStringList line_list;
+	// for(int i = 0; i < sizes.size(); ++i) line_list.append(QString::number(sizes.at(i)));
+	// qtm_settings.setValue("splitter_sizelist"
+	// , line_list.join(","));
+	// }
+	// qtm_settings.endGroup();
+	// });
 }
 
 //// QAction *
 // FlatToolButton *EditingWindow::new_action(QWidget *parent, QString title, QString
-//                                          toolTip, QString whatsThis, QObject *receiver, const char *slot){
+// toolTip, QString whatsThis, QObject *receiver, const char *slot){
 ////    QAction *
-//	FlatToolButton *return_value = new FlatToolButton(title, parent); // new
-//	QAction(title, parent);   // parent = this by default
-//	return_value->setToolTip(toolTip);
-//	return_value->setWhatsThis(whatsThis);
-//	if(receiver) connect(return_value, SIGNAL(triggered(bool)), receiver, slot);
-//	return return_value;
+// FlatToolButton *return_value = new FlatToolButton(title, parent); // new
+// QAction(title, parent);   // parent = this by default
+// return_value->setToolTip(toolTip);
+// return_value->setWhatsThis(whatsThis);
+// if(receiver) connect(return_value, SIGNAL(triggered(bool)), receiver, slot);
+// return return_value;
 // }
 
 bool EditingWindow::handleArguments(){
@@ -904,7 +923,7 @@ bool EditingWindow::handleArguments(){
 	QStringList args = QApplication::arguments();
 	if(args.size() > 1){
 		for(i = 1; i < args.size(); i++){
-			if(c)                                                    // if there is a current new window
+			if(c)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // if there is a current new window
 				d = c;
 			c = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
 #ifdef Q_OS_MAC
@@ -914,7 +933,7 @@ bool EditingWindow::handleArguments(){
 #ifdef USE_SYSTRAYICON
 				c->setSTI(sti);
 #endif
-				if(d)                                                                // if there's an old window
+				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     // if there's an old window
 					positionWidget(c, d);
 				c->show();
 				rv = false;
@@ -924,14 +943,14 @@ bool EditingWindow::handleArguments(){
 					QMessageBox::information(
 						this, tr("Error"), tr("Could not load the following:\n\n%1")
 						.arg(failedFiles.join("\n"))
-								, QMessageBox::Ok);
+						                , QMessageBox::Ok);
 					rv = false;
 				}else{
 					if(QMessageBox::question(
 						   0, tr("Error"), tr("Could not load the "
-								      "following:\n\n%1")
+						                      "following:\n\n%1")
 						   .arg(failedFiles.join("\n"))
-								, tr("&Open blank window"), tr("E&xit"), 0)) QApplication::exit();
+						                , tr("&Open blank window"), tr("E&xit"), 0)) QApplication::exit();
 					else rv = false;
 				}
 			}
@@ -951,7 +970,7 @@ void EditingWindow::positionWidget(
 	}
 }
 
-EditorWrap *EditingWindow::editor(){
+TEXTEDIT *EditingWindow::editor(){
 	return _editor;
 }
 
@@ -961,7 +980,7 @@ void EditingWindow::changeCaptionAfterTitleChanged(){
 }
 
 void EditingWindow::closeEvent(QCloseEvent *event){
-//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 
 #ifndef NO_DEBUG_OUTPUT
 // qDebug( "close event" );
@@ -984,7 +1003,7 @@ void EditingWindow::closeEvent(QCloseEvent *event){
 void EditingWindow::showEvent(QShowEvent *event){
 	// If the document is empty, the window unedited and the entry never saved,
 	// chances are it's new
-	if(editor_object->document()->isEmpty() && !dirtyIndicator->isVisible() && !event->spontaneous() && !_entry_ever_saved) _control_tab->leTitle->setFocus(Qt::ActiveWindowFocusReason);
+	if(editor_object->document()->isEmpty() && !dirtyIndicator->isVisible() && !event->spontaneous() && !_entry_ever_saved)	_control_tab->leTitle->setFocus(Qt::ActiveWindowFocusReason);
 	QMainWindow::showEvent(event);
 }
 
@@ -1006,13 +1025,13 @@ void EditingWindow::doQuit(){
 
 void EditingWindow::checkForEmptySettings(){
 	// Check if this is a brand new user
-	if(_editors_shared_directory.isEmpty() || server.isEmpty()){
+	if(_editors_shared_full_path_name.isEmpty() || server.isEmpty()){
 		if(QMessageBox::question(
 			   0, tr("Welcome to QTM"), tr("You do not have any preferences set, and QTM "
-						       "needs to know where to find your blog, and where "
-						       "to store your data.\n\n"
-						       "Set these preferences now?")
-					, QMessageBox::Yes | QMessageBox::Default, QMessageBox::No)
+			                               "needs to know where to find your blog, and where "
+			                               "to store your data.\n\n"
+			                               "Set these preferences now?")
+			                , QMessageBox::Yes | QMessageBox::Default, QMessageBox::No)
 		   == QMessageBox::Yes){
 			getPreferences(tr("Stage 1 of 2: Preferences"));
 			getAccounts(tr("Stage 2 of 2: Accounts"));
@@ -1101,7 +1120,7 @@ void EditingWindow::setInitialAccount(){
 	int i;
 
 	// qDebug() << "server is empty";
-	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	lastAccountID = _topic_editor_config->value("account/lastAccountID", "").toString();
 	QDomNodeList accountsList = _accounts_dom.documentElement().elementsByTagName("account");
 	QDomElement thisTitleElem;
@@ -1136,9 +1155,9 @@ void EditingWindow::setInitialAccount(){
 	}
 	for(i = 0; i < accountsList.count(); i++){
 		thisTitleElem = accountsList.at(i)
-				.toElement()
-				.firstChildElement("details")
-				.firstChildElement("title");
+		                .toElement()
+		                .firstChildElement("details")
+		                .firstChildElement("title");
 		if(!thisTitleElem.isNull()) _control_tab->cbAccountSelector->addItem(
 				decodeXmlEntities(thisTitleElem.text()), accountsList.at(i).toElement().attribute("id"));
 		else
@@ -1192,7 +1211,7 @@ void EditingWindow::readSettings(){
 #else
 #ifdef Q_OS_WIN32
 	defaultMarkdownPath = QString("%1/Markdown.pl")
-			      .arg(QString(MARKDOWN_LOCATION).replace("%APPDIRPATH%", qApp->applicationDirPath()));
+	                      .arg(QString(MARKDOWN_LOCATION).replace("%APPDIRPATH%", qApp->applicationDirPath()));
 	defaultUseMarkdown	= false;
 	defaultMarkdownPath	= PROPERSEPS(defaultMarkdownPath);
 	defaultPerlLocation	= "C:\\Perl\\bin\\perl.exe";
@@ -1214,7 +1233,7 @@ void EditingWindow::readSettings(){
 	// globalparameters.target_os());
 	// #endif
 
-	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	applicationVersion = _topic_editor_config->value("application/version", "").toString();
 
 	_topic_editor_config->beginGroup("geometry");
@@ -1226,8 +1245,8 @@ void EditingWindow::readSettings(){
 		QList<int> list;
 
 		line_list = (_topic_editor_config->value("splitter_sizelist", "100,100"))
-			    .toString()
-			    .split(",");
+		            .toString()
+		            .split(",");
 		for(int i = 0; i < line_list.size(); ++i) list.append(line_list.at(i).toInt());
 		_splitter->setSizes(list);
 	}
@@ -1241,9 +1260,9 @@ void EditingWindow::readSettings(){
 	// _local_storage_directory).toString()) :
 	// qtm_settings.value("editors_shared_directory",
 	// _local_storage_directory).toString();
-	if(_editors_shared_directory.contains("~/")){
-		_editors_shared_directory.replace("~", QDir::homePath());
-		_topic_editor_config->setValue("editors_shared_directory", _editors_shared_directory);
+	if(_editors_shared_full_path_name.contains("~/")){
+		_editors_shared_full_path_name.replace("~", QDir::homePath());
+		_topic_editor_config->setValue("editors_shared_directory", _editors_shared_full_path_name);
 	}
 	_local_storage_file_extension = _topic_editor_config->value("local_storage_file_ext", "cqt").toString();
 	useMarkdown = _topic_editor_config->value("useMarkdown", defaultUseMarkdown).toBool();
@@ -1317,7 +1336,7 @@ void EditingWindow::readSettings(){
 
 void EditingWindow::readServerSettings(){
 	// qDebug() << "getting server settings";
-	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	_topic_editor_config->beginGroup("account");
 	server = _topic_editor_config->value("server", "").toString();
 	location = _topic_editor_config->value("location", "").toString();
@@ -1327,7 +1346,7 @@ void EditingWindow::readServerSettings(){
 
 void EditingWindow::handleEnableCategories(){
 	_control_tab->gbCategory->setEnabled(categoriesEnabled);
-	if(_super_menu) _super_menu->setCategoriesEnabled(categoriesEnabled);
+	if(_super_menu)	_super_menu->setCategoriesEnabled(categoriesEnabled);
 }
 
 void EditingWindow::openRecentFile(){
@@ -1335,99 +1354,10 @@ void EditingWindow::openRecentFile(){
 	if(action) choose(action->data().toString());
 }
 
-void EditingWindow::save_impl(const QString &full_path_file_name, bool exp){
-	//    save_impl = [&](const QString &fname, bool exp = false){
-	if(!_entry_ever_saved){
-		int count, tags;
-#ifdef LOAD_TEXT_BY_WYEDITOR
-#else
-		QString text = editor_object->document()->toPlainText();
-#endif // LOAD_TEXT_BY_WYEDITOR
-		auto file_exists = find(full_path_file_name);
-		if(file_exists != "") if(!QFile::remove(file_exists)) critical_error("Can\'t remove file \"" + file_exists + "\"");
-//		if("" == file_exists){
-		//			// Rename the old file to a back-up file
-		//			if(QFile::exists(full_path_file_name)){
-		////				QFile::rename(full_path_file_name, QString(QString("%1_") + get_unical_id()).arg(full_path_file_name));
-		//				if(QFile::remove(full_path_file_name)) critical_error("Can\'t remove file \"" + full_path_file_name + "\"");
-		//			}
-		QFile f(full_path_file_name);
-		if(!f.open(QIODevice::WriteOnly)){
-			_status_widget->showMessage(tr("Could not write to %1").arg(full_path_file_name), 2000);
-			return;
-		}
-		QTextStream out(&f);
-		if(useUtf8) out.setCodec(QTextCodec::codecForName("UTF-8"));
-		out << (exp ? (program_title_string + " saved blog entry v2.0\n").c_str() : (program_title_string + " saved blog entry v3.0\n").c_str());
-		out << QString("Title:%1\n").arg(_control_tab->leTitle->text());
-		out << QString("Publish:%1\n")
-			.arg(QString::number(_control_tab->cbStatus->currentIndex()));
-		if(entryBlogged) out << QString("EntryNumber:%1\n").arg(entryNumber);
-		out << QString("Comments:%1\n")
-			.arg(_control_tab->chAllowComments->isChecked() ? "1" : "0");
-		out << QString("TB:%1\n").arg(_control_tab->chAllowTB->isChecked() ? "1" : "0");
-		// out << QString( "Sticky:%1\n" ).arg( cw->chSticky->isChecked() ? "1" : "0" );
-		if(_control_tab->lePassword->text().length()) out << QString("PWD:%1\n").arg(_control_tab->lePassword->text());
-		if(exp){
-			out << QString("Server:%1\n").arg(server);
-			out << QString("Location:%1\n").arg(location);
-			out << QString("Login:%1\n").arg(login);
-			out << QString("Password:%1\n").arg(password);
-			out << QString("Blog:%1\n")
-				.arg(_control_tab->cbBlogSelector->currentIndex());
-		}else{
-			out << QString("AcctBlog:%1@%2 (%3)\n") // Include the blog name so it can be relayed to the user later
-				.arg(currentBlogid)
-				.arg(currentAccountId)
-				.arg(_control_tab->cbBlogSelector->itemText(_control_tab->cbBlogSelector->currentIndex()));
-		}
-		tags = _control_tab->lwTags->count();
-		if(tags){
-			out << "Tags:";
-			for(count = 0; count < tags; count++) out << QString(count ? ";%1" : "%1").arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'));
-			out << "\n";
-		}
-		tags = _control_tab->lwKeywordTags->count();
-		if(tags){
-			out << "Keywords:";
-			for(count = 0; count < tags; count++) out << QString(count ? ",%1" : "%1").arg(_control_tab->lwKeywordTags->item(count)->text());
-			out << "\n";
-		}
-		if(!_control_tab->chNoCats->isChecked()){
-			QDomNodeList catNodeList = currentBlogElement.firstChildElement("categories")
-						   .elementsByTagName("category");
-			out << QString("PrimaryID:%1\n").arg(_control_tab->cbMainCat->itemData(_control_tab->cbMainCat->currentIndex()).toString());
-			QString catsList;
-			int cats = 0;
-			for(int a = 0; a < _control_tab->lwOtherCats->count(); a++){
-				if(_control_tab->lwOtherCats->isItemSelected(
-					   _control_tab->lwOtherCats->item(a))){
-					if(cats) catsList.append(QString(";%1").arg(_control_tab->cbMainCat->itemData(a).toString()));
-					else catsList.append(_control_tab->cbMainCat->itemData(a).toString());
-					cats++;
-				}
-			}
-			out << QString("CatIDs:%1\n").arg(catsList);
-		}else out << "PrimaryID:none\n";
-		if(_control_tab->teExcerpt->toPlainText().length() > 0) out << QString("Excerpt:%1\n").arg(_control_tab->teExcerpt->toPlainText().replace(QChar('\n'), "\\n"));
-#ifdef LOAD_TEXT_BY_WYEDITOR
-		editor_object->save_textarea();
-#else
-		out << QString("Text:\n%1").arg(text);
-#endif // LOAD_TEXT_BY_WYEDITOR
-		f.close();
 
-		dirtyIndicator->hide();
-		setWindowModified(false);
-		setDirtySignals(true);
-
-		_entry_ever_saved = true;
-//		}else critical_error("file \"" + full_path_file_name + "\" already exists");
-	}
-}
 
 void EditingWindow::writeSettings(){
-	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 
 	_topic_editor_config->beginGroup("geometry");
 	_topic_editor_config->setValue("size", size());
@@ -1448,9 +1378,9 @@ void EditingWindow::callRefreshCategories(){
 			statusWidget->showMessage(
 				tr("changeBlog: All HTTP requests are blocked"), 2000);
 			addToConsole(QString("changeBlog %1 failed - HTTP job of type %2 "
-					     "ongoing")
-				     .arg(b)
-				     .arg((int) currentHttpBusiness));
+			                     "ongoing")
+			             .arg(b)
+			             .arg((int) currentHttpBusiness));
 		}
 #else
 		if(_current_http_business != _mt_getCategoryList) _status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
@@ -1510,11 +1440,11 @@ QString EditingWindow::processWithMarkdown(const QString &text){
 	}else return QString();
 	QStringList markdownPaths;
 	markdownPaths	<< markdownPath
-			<< QString("%1/Markdown/Markdown.pl")
-		.arg(QCoreApplication::applicationDirPath())
-			<< QString("%1/../Markdown/Markdown.pl")
-		.arg(QCoreApplication::applicationDirPath())
-			<< "nofile";
+	                << QString("%1/Markdown/Markdown.pl")
+	        .arg(QCoreApplication::applicationDirPath())
+	                << QString("%1/../Markdown/Markdown.pl")
+	        .arg(QCoreApplication::applicationDirPath())
+	                << "nofile";
 	Q_FOREACH(QString mdp, markdownPaths){
 		if(mdp == "nofile") return QString();
 		else if(QFile::exists(mdp)){
@@ -1569,13 +1499,13 @@ void EditingWindow::getAccounts(const QString &title){
 	accountsList = _accounts_dom.elementsByTagName("account");
 	for(i = 0; i < accountsList.count(); i++){
 		thisAccountsAttribs = accountsList.at(i)
-				      .toElement()
-				      .firstChildElement("details")
-				      .firstChildElement("attributes")
-				      .elementsByTagName("attribute");
+		                      .toElement()
+		                      .firstChildElement("details")
+		                      .firstChildElement("attributes")
+		                      .elementsByTagName("attribute");
 		thisAccountsAttribStrings = QStringList();
 		for(j = 0; j < thisAccountsAttribs.count(); j++) thisAccountsAttribStrings
-				<< thisAccountsAttribs.at(j).toElement().attribute("name");
+			        << thisAccountsAttribs.at(j).toElement().attribute("name");
 		acct = AccountsDialog::Account();
 		acct.id = accountsList.at(i).toElement().attribute("id");
 		detailElement = accountsList.at(i).firstChildElement("details");
@@ -1583,10 +1513,10 @@ void EditingWindow::getAccounts(const QString &title){
 
 		acct.name = detailElement.firstChildElement("title").text();
 		acct.endpoint = QString("%1://%2%3/%4")
-				.arg(thisAccountsAttribStrings.contains("useHTTPS") ? "https" : "http")
-				.arg(detailElement.firstChildElement("server").text())
-				.arg(currentPort.isEmpty() ? "" : QString(":%1").arg(currentPort))
-				.arg(detailElement.firstChildElement("location").text().remove(QRegExp("^/")));
+		                .arg(thisAccountsAttribStrings.contains("useHTTPS") ? "https" : "http")
+		                .arg(detailElement.firstChildElement("server").text())
+		                .arg(currentPort.isEmpty() ? "" : QString(":%1").arg(currentPort))
+		                .arg(detailElement.firstChildElement("location").text().remove(QRegExp("^/")));
 		acct.login = detailElement.firstChildElement("login").text();
 		acct.password = detailElement.firstChildElement("password").text();
 
@@ -1606,11 +1536,11 @@ void EditingWindow::getAccounts(const QString &title){
 		acctsList.append(acct);
 	}
 	oldCurrentAccountId = _control_tab->cbAccountSelector
-			      ->itemData(_control_tab->cbAccountSelector->currentIndex())
-			      .toString();
+	                      ->itemData(_control_tab->cbAccountSelector->currentIndex())
+	                      .toString();
 	oldBlogid = _control_tab->cbBlogSelector
-		    ->itemData(_control_tab->cbBlogSelector->currentIndex())
-		    .toString();
+	            ->itemData(_control_tab->cbBlogSelector->currentIndex())
+	            .toString();
 	int oldCurrentBlog = _control_tab->cbAccountSelector->currentIndex();
 	// accountsList = accountsDom.documentElement().elementsByTagName( "account" );
 
@@ -1690,8 +1620,8 @@ void EditingWindow::getAccounts(const QString &title){
 			for(j = 0; j < accountsList.count(); j++){
 				if(accountsList.at(j).toElement().attribute("id") == returnedAccountsList.at(i).id){
 					blogsElement = accountsList.at(j)
-						       .toElement()
-						       .firstChildElement("blogs");
+					               .toElement()
+					               .firstChildElement("blogs");
 					if(!blogsElement.isNull())
 						newAccount.appendChild(
 							newAccountsDom.importNode(
@@ -1728,9 +1658,9 @@ void EditingWindow::getAccounts(const QString &title){
 				QStringList accountStringNames(accountStrings.keys());
 				Q_FOREACH(QString s, accountStringNames){
 					*(accountStrings[s]) = currentAccountElement
-							       .firstChildElement("details")
-							       .firstChildElement(s)
-							       .text();
+					                       .firstChildElement("details")
+					                       .firstChildElement(s)
+					                       .text();
 				}
 				// Now check if the current account has any blogs
 				if(!currentAccountElement.firstChildElement("blogs")
@@ -1764,22 +1694,22 @@ void EditingWindow::getPreferences(){
 }
 
 void EditingWindow::getPreferences(const QString &title){
-	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	QPalette palette, widgetPalette;
 
 	PrefsDialog prefs_dialog(this);
-	if(_editors_shared_directory.isEmpty()){
+	if(_editors_shared_full_path_name.isEmpty()){
 #ifdef Q_OS_WIN32
 		QString lsd = QString(qtm->isSandbox() ? "%1\\QTMsandbox" : "%1\\QTM blog")
-			      .arg(globalparameters.root_path() + "/" + globalparameters.target_os()) // QDir::homePath()
-			      .replace("/", "\\");
+		              .arg(globalparameters.root_path() + "/" + globalparameters.target_os()) // QDir::homePath()
+		              .replace("/", "\\");
 #else
-		QString lsd = QString(_app->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog")
-			      .arg(gl_paras->root_path() + "/" + gl_paras->target_os()); // QDir::homePath()
+		QString lsd = QString(sapp_t::instance()->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog")
+		              .arg(gl_paras->root_path() + "/" + gl_paras->target_os()); // QDir::homePath()
 
 #endif
 		prefs_dialog.leLocalDir->setText(lsd);
-	}else prefs_dialog.leLocalDir->setText(_editors_shared_directory);
+	}else prefs_dialog.leLocalDir->setText(_editors_shared_full_path_name);
 	prefs_dialog.leFileExtn->setText(_local_storage_file_extension);
 	prefs_dialog.chUseNewWindows->setCheckState(useNewWindows ? Qt::Checked : Qt::Unchecked);
 	prefs_dialog.chPostAsSave->setCheckState(postAsSave ? Qt::Checked : Qt::Unchecked);
@@ -1885,8 +1815,8 @@ void EditingWindow::getPreferences(const QString &title){
 #ifndef NO_DEBUG_OUTPUT
 // qDebug( "Setting account variables" );
 #endif
-		_editors_shared_directory = PROPERSEPS(prefs_dialog.leLocalDir->text());
-		_local_storage_file_extension = prefs_dialog.leFileExtn->text();
+		_editors_shared_full_path_name	= PROPERSEPS(prefs_dialog.leLocalDir->text());
+		_local_storage_file_extension	= prefs_dialog.leFileExtn->text();
 		useNewWindows = prefs_dialog.chUseNewWindows->isChecked();
 		postAsSave = prefs_dialog.chPostAsSave->isChecked();
 		allowComments = prefs_dialog.chAllowComments->isChecked();
@@ -1964,23 +1894,23 @@ void EditingWindow::getPreferences(const QString &title){
 		}
 #endif
 		// Handle local directory settings; a default is used if none is specified
-		if(_editors_shared_directory.isEmpty()){
+		if(_editors_shared_full_path_name.isEmpty()){
 #ifdef Q_OS_WIN32
 			localStorageDirectory = QString(qtm->isSandbox() ? "%1\\QTMsandbox" : "%1\\QTM blog")
-						.arg(globalparameters.root_path() + "/" + globalparameters.target_os()); // QDir::homePath()
+			                        .arg(globalparameters.root_path() + "/" + globalparameters.target_os()); // QDir::homePath()
 #else
-			_editors_shared_directory = QString(_app->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog")
-						    .arg(gl_paras->root_path() + "/" + gl_paras->target_os()); // QDir::homePath()
+			_editors_shared_full_path_name = QString(sapp_t::instance()->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog")
+			                                 .arg(gl_paras->root_path() + "/" + gl_paras->target_os()); // QDir::homePath()
 #endif
 		}
-		QDir qd(_editors_shared_directory);
+		QDir qd(_editors_shared_full_path_name);
 		if(!qd.exists()){
-			addToConsole(tr("Making directory %1").arg(_editors_shared_directory));
-			if(!qd.mkpath(_editors_shared_directory)) _status_widget->showMessage(tr("Could not create QTM directory."), 2000);
+			addToConsole(tr("Making directory %1").arg(_editors_shared_full_path_name));
+			if(!qd.mkpath(_editors_shared_full_path_name)) _status_widget->showMessage(tr("Could not create QTM directory."), 2000);
 			if(!_no_auto_save) saveAccountsDom();
 		}
 		/*setDirtySignals( false );
-			    setDirtySignals( true ); */
+		                                    setDirtySignals( true ); */
 		// Now check to see if this is an old-style Blogger account, which does not
 		// support categories.
 		if(server.contains("blogger.com")){
@@ -1996,7 +1926,7 @@ void EditingWindow::getPreferences(const QString &title){
 
 		_topic_editor_config->setValue("application/version", app_version); // QTM_VERSION
 		_topic_editor_config->beginGroup("account");
-		_topic_editor_config->setValue("editors_shared_directory", _editors_shared_directory.replace("~", QDir::homePath()));
+		_topic_editor_config->setValue("editors_shared_directory", _editors_shared_full_path_name.replace("~", QDir::homePath()));
 		_topic_editor_config->setValue("local_storage_file_ext", _local_storage_file_extension);
 		_topic_editor_config->setValue("useNewWindows", useNewWindows);
 		_topic_editor_config->setValue("postAsSave", postAsSave);
@@ -2056,7 +1986,7 @@ void EditingWindow::getPreferences(const QString &title){
 	}
 }
 void EditingWindow::setHighlighting(bool hl){
-	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 
 	enableHighlighting = hl;
 	disconnect(editor_object->document(), 0, this, SLOT(dirtify()));
@@ -2073,32 +2003,7 @@ void EditingWindow::reenableDirty(){
 	connect(editor_object->document(), SIGNAL(contentsChanged()), this, SLOT(dirtify()));
 }
 
-void EditingWindow::saveAccountsDom(){
-	purgeBlankAccounts();
 
-	QFile domOut(
-		PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_directory)));
-	if(domOut.open(QIODevice::WriteOnly)){
-		QTextStream domFileStream(&domOut);
-		_accounts_dom.save(domFileStream, 2);
-		domOut.close();
-	}else{
-		QDir dir(_editors_shared_directory);
-		if(!dir.exists()){
-			if(QMessageBox::question(0, tr("Cannot find storage directory"), tr((program_title_string + " cannot find the directory you specified to " + "store your account data and files.\n\n" + "Create it?").c_str()), QMessageBox::Yes | QMessageBox::Default, QMessageBox::No)
-			   == QMessageBox::Yes){
-				if(dir.mkpath(_editors_shared_directory)){
-					domOut.setFileName(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_directory)));
-					if(domOut.open(QIODevice::WriteOnly)){
-						QTextStream dfs(&domOut);
-						_accounts_dom.save(dfs, 2);
-						domOut.close();
-					}else _status_widget->showMessage(tr("Could not write to accounts file."), 2000);
-				}else _status_widget->showMessage(tr("Could not create the directory."), 2000);
-			}
-		}
-	}
-}
 
 void EditingWindow::purgeBlankAccounts(){
 	int i, j;
@@ -2162,9 +2067,9 @@ void EditingWindow::populateBlogList(){ // slot
 			_control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogNodeList.at(i).firstChildElement("blogName").text()), QVariant(blogNodeList.at(i).firstChildElement("blogid").text()));
 			currentBlog = i;
 			currentBlogElement = currentAccountElement.firstChildElement("blogs")
-					     .elementsByTagName("blog")
-					     .at(currentBlog)
-					     .toElement();
+			                     .elementsByTagName("blog")
+			                     .at(currentBlog)
+			                     .toElement();
 			currentBlogid = currentBlogElement.firstChildElement("blogid").text();
 		}
 		currentBlog = _control_tab->cbBlogSelector->currentIndex();
@@ -2182,8 +2087,8 @@ void EditingWindow::populateBlogList(){ // slot
 						.firstChildElement("categoryName")
 						.text());
 					catId = catNodeList.at(j)
-						.firstChildElement("categoryId")
-						.text();
+					        .firstChildElement("categoryId")
+					        .text();
 					_control_tab->cbMainCat->addItem(
 						catName, QVariant(catNodeList.at(j).firstChildElement("categoryId").text()));
 					_control_tab->lwOtherCats->addItem(catName);
@@ -2262,9 +2167,9 @@ void EditingWindow::placeNetworkRequest(HttpBusinessType hbtype, QByteArray &arr
 	int p = port.toInt(&ok);
 	(void) p;
 #ifdef DONT_USE_SSL
-	if(!ok) p = ":80";
+	if(!ok)	p = ":80";
 #else
-	if(!ok) p = 0;
+	if(!ok)	p = 0;
 #endif
 	QUrl url(QString("%1://%2%3%4").arg(useHTTPS ? "https" : "http").arg(server).arg(ok ? QString(":%1").arg(port) : "").arg(location));
 
@@ -2275,7 +2180,7 @@ void EditingWindow::placeNetworkRequest(HttpBusinessType hbtype, QByteArray &arr
 
 	addToConsole(request.url().toString());
 	addToConsole(QString(array));
-	if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+	if(QApplication::overrideCursor() == 0)	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	_current_http_business = hbtype;
 	connect(_net_acess_manager.get(), SIGNAL(finished(QNetworkReply *)), this, SLOT(handleDone(QNetworkReply *)));
 #ifndef DONT_USE_SSL
@@ -2284,29 +2189,29 @@ void EditingWindow::placeNetworkRequest(HttpBusinessType hbtype, QByteArray &arr
 }
 
 // void EditingWindow::setHost(QHttp *h, QString &serv, QString &pt, bool cm){
-//	int p;
-//	bool ok;
+// int p;
+// bool ok;
 
-//	p = pt.toInt(&ok);
+// p = pt.toInt(&ok);
 // #ifdef DONT_USE_SSL
-//	if(!ok) p = 80;
-//	h->setHost(serv, QHttp::ConnectionModeHttp, p);
+// if(!ok) p = 80;
+// h->setHost(serv, QHttp::ConnectionModeHttp, p);
 // #else
-//	if(!ok) p = 0;
-//	h->setHost(serv, useHTTPS ? QHttp::ConnectionModeHttps : QHttp::ConnectionModeHttp, p);
+// if(!ok) p = 0;
+// h->setHost(serv, useHTTPS ? QHttp::ConnectionModeHttps : QHttp::ConnectionModeHttp, p);
 // #endif
 // }
 
 // void EditingWindow::handleResponseHeader(const QHttpResponseHeader &header){// slot
-//	if(header.statusCode() == 404){
-//		QMessageBox::warning(this, tr("Error 404")
-//		                    , tr("There is no web service at the location you\n"
-//		                         "specified.  Please change it in the Preferences\n"
-//		                         "window."));
-//		http->disconnect();
-//		http->abort();
-//		setNetworkActionsEnabled(false);
-//	}else responseData.append(http->readAll());
+// if(header.statusCode() == 404){
+// QMessageBox::warning(this, tr("Error 404")
+// , tr("There is no web service at the location you\n"
+// "specified.  Please change it in the Preferences\n"
+// "window."));
+// http->disconnect();
+// http->abort();
+// setNetworkActionsEnabled(false);
+// }else responseData.append(http->readAll());
 // }
 
 void EditingWindow::stopThisJob(){
@@ -2337,7 +2242,7 @@ void EditingWindow::handleDone(QNetworkReply *reply){
 		_status_widget->showMessage(
 			QString(tr("The request succeeded; %1 bytes received"))
 			.arg(responseData.size())
-					   , 2000);
+			                   , 2000);
 		switch(_current_http_business){
 			case _blogger_getUsersBlogs:
 				blogger_getUsersBlogs(responseData);
@@ -2423,20 +2328,20 @@ void EditingWindow::changeAccount(int a){ // slot
 		_control_tab->lwKeywordTags->clear();
 
 		currentAccountElement = _accounts_dom.documentElement()
-					.elementsByTagName("account")
-					.at(a)
-					.toElement();
+		                        .elementsByTagName("account")
+		                        .at(a)
+		                        .toElement();
 		currentAccountId = currentAccountElement.toElement().attribute("id");
 		extractAccountDetails();
 		/*qDebug() << "Current account: " <<
-			       currentAccountElement.firstChildElement( "details" )
-			      .firstChildElement( "title" ).text();
+		                                       currentAccountElement.firstChildElement( "details" )
+		                                      .firstChildElement( "title" ).text();
 		 */
 		QStringList accountStringNames(accountStrings.keys());
 		Q_FOREACH(QString s, accountStringNames)
 			*(accountStrings[s]) = currentAccountElement.firstChildElement("details")
-					       .firstChildElement(s)
-					       .text();
+			                       .firstChildElement(s)
+			                       .text();
 		extractAccountAttributes();
 
 		QDomElement blogsElement = currentAccountElement.firstChildElement("blogs");
@@ -2479,7 +2384,7 @@ void EditingWindow::extractAccountAttributes(){
 
 	QList<QWidget *> wordpressOnlyWidgets;
 	wordpressOnlyWidgets	<< _control_tab->lPassword << _control_tab->lePassword
-				<< _control_tab->wBlankWidget << _control_tab->chShowPassword;
+	                        << _control_tab->wBlankWidget << _control_tab->chShowPassword;
 	Q_FOREACH(QString t, accountAttribNames){
 		*(accountAttributes[t]) = false;
 		for(int i = 0; i < attribNodes.count(); i++){
@@ -2495,7 +2400,7 @@ void EditingWindow::extractAccountAttributes(){
 	// cw->chSticky->setEnabled( useWordpressAPI );
 	_control_tab->chSticky->setVisible(false /*useWordpressAPI */);
 	Q_FOREACH(QWidget *w, wordpressOnlyWidgets) w->setVisible(useWordpressAPI);
-	if(_super_menu) _super_menu->addCatAction->setEnabled(useWordpressAPI);
+	if(_super_menu)	_super_menu->addCatAction->setEnabled(useWordpressAPI);
 }
 
 void EditingWindow::changeBlog(int b, bool fromChangeAccount){ // slot
@@ -2537,7 +2442,7 @@ void EditingWindow::changeBlog(int b, bool fromChangeAccount){ // slot
 					currentCatId = catsList.at(i).firstChildElement("categoryId").text();
 					_control_tab->cbMainCat->addItem(currentCategoryText, QVariant(currentCatId));
 					_control_tab->lwOtherCats->addItem(currentCategoryText);
-					if(currentCatId == "1") uncategorized = i;
+					if(currentCatId == "1")	uncategorized = i;
 					_control_tab->chNoCats->setEnabled(true);
 					_control_tab->cbMainCat->setEnabled(true);
 					_control_tab->lwOtherCats->setEnabled(true);
@@ -2586,7 +2491,7 @@ void EditingWindow::clearConsole(){
 }
 
 // void EditingWindow::setToolBarVisible(bool vis){
-//	_editor->tool_bar()->setVisible(vis);
+// _editor->tool_bar()->setVisible(vis);
 // }
 
 void EditingWindow::makeBold(){
@@ -2679,8 +2584,8 @@ void EditingWindow::insertAutoLink(){
 	QString titleString, targetString;
 	QList<QString> targets;
 	targets << "_top"
-		<< "_blank"
-		<< "view_window";
+	        << "_blank"
+	        << "view_window";
 	if(autoLinkDictionary.contains(selectedTextLC)){
 		titleString = QString(" title=\"%1\"").arg(autoLinkTitleDictionary.value(selectedTextLC));
 		if(autoLinkTargetDictionary.contains(selectedTextLC)) targetString = QString(" target=\"%1\"").arg(targets.value(autoLinkTargetDictionary.value(selectedTextLC)));
@@ -2692,9 +2597,9 @@ void EditingWindow::insertImage(){
 	QString insertionString, styleString;
 	QStringList borderStyles;
 	borderStyles	<< "dotted"
-			<< "dashed"
-			<< "solid"
-			<< "double";
+	                << "dashed"
+	                << "solid"
+	                << "double";
 
 	QDialog image_entry(this);
 	Ui::ImageEntry ieui;
@@ -2733,7 +2638,7 @@ void EditingWindow::insertImageFromClipboard(){
 }
 
 // void EditingWindow::cut(){
-//	editor_object->cut();
+// editor_object->cut();
 // }
 
 void EditingWindow::copy(){
@@ -2780,11 +2685,11 @@ void EditingWindow::tidyPaste(){
 }
 
 // void EditingWindow::undo(){
-//	editor_object->document()->undo();
+// editor_object->document()->undo();
 // }
 
 // void EditingWindow::redo(){
-//	editor_object->document()->redo();
+// editor_object->document()->redo();
 // }
 
 void EditingWindow::makeUnorderedList(){
@@ -2904,7 +2809,7 @@ void EditingWindow::doPreview(bool isChecked, bool markdownFailed){
 			do {
 				line = a.readLine();
 				if(!line.isEmpty()){
-					if(re.exactMatch(line)) conversionStringB += line;
+					if(re.exactMatch(line))	conversionStringB += line;
 					else{
 						if(line.startsWith("<pre>")){
 							isPre = true;
@@ -2952,12 +2857,12 @@ void EditingWindow::doPreview(bool isChecked, bool markdownFailed){
 }
 
 void EditingWindow::setEditActionsEnabled(bool state){
-	if(_super_menu) _super_menu->setEditActionsEnabled(state);
+	if(_super_menu)	_super_menu->setEditActionsEnabled(state);
 	QList<FlatToolButton *> edit_actions;
 
 	edit_actions	<< _editor->_bold << _editor->_italic << _editor->_underline
-			<< _editor->_code << _editor->_action_link << _editor->_action_image
-			<< _editor->_action_more;
+	                << _editor->_code << _editor->_action_link << _editor->_action_image
+	                << _editor->_action_more;
 	Q_FOREACH(FlatToolButton *a, edit_actions) a->setEnabled(state);
 #ifndef Q_OS_MAC
 	if(_super_menu){
@@ -3001,17 +2906,17 @@ void EditingWindow::newMTPost(){
 				convertedString = processWithMarkdown(description);
 				if(!convertedString.isNull())
 					/* description = stripParaTags ?
-								   convertedString.remove( "<p>"
-								   ).remove( "</p>" ) : convertedString; */
+					                                                                                       convertedString.remove( "<p>"
+					                                                                                       ).remove( "</p>" ) : convertedString; */
 					description = convertedString;
 				else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
 				if(!extEntry.isEmpty()){
 					convertedString = processWithMarkdown(extEntry);
 					if(!convertedString.isNull())
 						/*extEntry = stripParaTags ?
-									      convertedString.remove(
-									       "<p>" ).remove( "</p>" ) :
-									       convertedString; */
+						                                                                                                      convertedString.remove(
+						                                                                                                       "<p>" ).remove( "</p>" ) :
+						                                                                                                       convertedString; */
 						extEntry = convertedString;
 					else _status_widget->showMessage(tr("Markdown conversion failed; posting extension as is."), 2000);
 				}
@@ -3026,10 +2931,10 @@ void EditingWindow::newMTPost(){
 				else description.append(techTagString);
 			}
 			QString blogid = _control_tab->cbBlogSelector
-					 ->itemData(_control_tab->cbBlogSelector->currentIndex())
-					 .toString();
+			                 ->itemData(_control_tab->cbBlogSelector->currentIndex())
+			                 .toString();
 			/*      QRegExp blogidRegExp( "^[0-9]+$" );
-					blogidIsInt = blogidRegExp.exactMatch( blogid ); */
+			                                                    blogidIsInt = blogidRegExp.exactMatch( blogid ); */
 
 			methodCall = doc.createElement("methodCall");
 			methodCall.appendChild(XmlMethodName(doc, "metaWeblog.newPost"));
@@ -3077,7 +2982,7 @@ void EditingWindow::newMTPost(){
 			responseData = "";
 			_doing_new_post = true;
 			placeNetworkRequest(_metaWeblog_newPost, requestArray);
-			if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+			if(QApplication::overrideCursor() == 0)	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 			if(postAsSave && !_entry_ever_saved){
 				_clean_save = true;
 				setDirtySignals(true);
@@ -3099,7 +3004,7 @@ void EditingWindow::newMTPost(){
 			// cw->cbPageSelector->setCurrentIndex(0);
 			_control_tab->setCurrentIndex(0);
 			/*#ifndef Q_OS_MAC
-					progressBarAction->setVisible( true );
+			                                                    progressBarAction->setVisible( true );
 			 #endif */
 		}else submitMTEdit();
 	}else{
@@ -3127,8 +3032,8 @@ void EditingWindow::newWPPost(){
 			convertedString = processWithMarkdown(entryText);
 			if(!convertedString.isNull())
 				/* description = stripParaTags ?
-						       convertedString.remove( "<p>" ).remove(
-						       "</p>" ) : convertedString; */
+				                                                                       convertedString.remove( "<p>" ).remove(
+				                                                                       "</p>" ) : convertedString; */
 				entryText = convertedString;
 			else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
 		}
@@ -3138,7 +3043,7 @@ void EditingWindow::newWPPost(){
 		if(_control_tab->lwTags->count()){
 			tags = _control_tab->lwTags->count();
 			techTagString = "<p style=\"text-align:right;font-size:10px;\">Technorati "
-					"Tags: ";
+			                "Tags: ";
 			for(count = 0; count < tags; count++) techTagString.append(QString("<a href=\"http://technorati.com/tag/%1\" rel=\"tag\">%2</a>%3").arg(_control_tab->lwTags->item(count)->text().replace(' ', '+')).arg(_control_tab->lwTags->item(count)->text().replace("+", " ")).arg((count == tags - 1) ? "</p>\n\n" : ", "));
 			// Whether to put the Technorati tags at beginning or end
 			if(_control_tab->rbStartOfMainEntry->isChecked()) entryText.insert(0, techTagString);
@@ -3147,12 +3052,12 @@ void EditingWindow::newWPPost(){
 		// Make a list of the selected categories (WP API has no "primary category")
 		if(_control_tab->chAllowComments->isChecked()){
 			/*primCatElem = currentBlogElement.firstChildElement( "categories" )
-					  .childNodes().at( cw->cbMainCat->currentIndex()
-					   ).toElement(); */
+			                                                      .childNodes().at( cw->cbMainCat->currentIndex()
+			                                                       ).toElement(); */
 			catList << _control_tab->cbMainCat
-				->itemData(
+			        ->itemData(
 				_control_tab->cbMainCat->currentIndex())
-				.toString();
+			        .toString();
 			for(int a = 0; a < _control_tab->lwOtherCats->count(); a++){
 				if(_control_tab->lwOtherCats->isItemSelected(
 					   _control_tab->lwOtherCats->item(a))){
@@ -3194,8 +3099,8 @@ void EditingWindow::newWPPost(){
 		rpcstruct.appendChild(XmlMember(doc, "ping_status", "string", takeTB ? "open" : "closed"));
 		if(!_control_tab->lePassword->text().isEmpty()) rpcstruct.appendChild(XmlMember(doc, "post_password", "string", _control_tab->lePassword->text()));
 		/* if( cw->chSticky->isChecked() )
-			      rpcstruct.appendChild( XmlMember( doc, "sticky", "bool", "true" )
-			       ); */
+		                                      rpcstruct.appendChild( XmlMember( doc, "sticky", "bool", "true" )
+		                                       ); */
 		if(catList.count()){
 			taxMember = doc.createElement("member");
 			taxMemberName = doc.createElement("name");
@@ -3259,16 +3164,16 @@ void EditingWindow::submitMTEdit(){
 		convertedString = processWithMarkdown(description);
 		if(!convertedString.isNull())
 			/* description = stripParaTags ?
-					  convertedString.remove( "<p>" ).remove( "</p>" ) :
-					   convertedString; */
+			                                                      convertedString.remove( "<p>" ).remove( "</p>" ) :
+			                                                       convertedString; */
 			description = convertedString;
 		else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
 		if(!extEntry.isEmpty()){
 			convertedString = processWithMarkdown(extEntry);
 			if(!convertedString.isNull())
 				/* extEntry = stripParaTags ?
-						      convertedString.remove( "<p>" ).remove( "</p>"
-						       ) : convertedString; */
+				                                                                      convertedString.remove( "<p>" ).remove( "</p>"
+				                                                                       ) : convertedString; */
 				extEntry = convertedString;
 			else _status_widget->showMessage(tr("Markdown conversion failed; posting extension as is."), 2000);
 		}
@@ -3278,9 +3183,9 @@ void EditingWindow::submitMTEdit(){
 		techTagString = "<p style=\"text-align:right;font-size:10px;\">Technorati Tags: ";
 		for(count = 0; count < tags; count++){
 			techTagString.append(QString("<a href=\"http://technorati.com/tag/%1\" rel=\"tag\">%2</a>%3")
-					     .arg(_control_tab->lwTags->item(count)->text())
-					     .arg(_control_tab->lwTags->item(count)->text().replace("+", " "))
-					     .arg((count == tags - 1) ? "</p>" : ", "));
+			                     .arg(_control_tab->lwTags->item(count)->text())
+			                     .arg(_control_tab->lwTags->item(count)->text().replace("+", " "))
+			                     .arg((count == tags - 1) ? "</p>" : ", "));
 		}
 		if(_control_tab->rbStartOfMainEntry->isChecked()) description.insert(0, techTagString);
 		else description.append(techTagString);
@@ -3328,7 +3233,7 @@ void EditingWindow::submitMTEdit(){
 	QByteArray requestArray(doc.toByteArray());
 	responseData = "";
 	placeNetworkRequest(_metaWeblog_editPost, requestArray);
-	if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+	if(QApplication::overrideCursor() == 0)	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	if(postAsSave && !_entry_ever_saved){
 		_clean_save = true;
 		setDirtySignals(true);
@@ -3365,8 +3270,8 @@ void EditingWindow::submitWPEdit(){
 			convertedString = processWithMarkdown(entryText);
 			if(!convertedString.isNull())
 				/* description = stripParaTags ?
-						       convertedString.remove( "<p>" ).remove(
-						       "</p>" ) : convertedString; */
+				                                                                       convertedString.remove( "<p>" ).remove(
+				                                                                       "</p>" ) : convertedString; */
 				entryText = convertedString;
 			else _status_widget->showMessage(tr("Markdown conversion failed; posting main entry as is."), 2000);
 		}
@@ -3378,9 +3283,9 @@ void EditingWindow::submitWPEdit(){
 			techTagString = "<p style=\"text-align:right;font-size:10px;\">Technorati Tags: ";
 			for(count = 0; count < tags; count++){
 				techTagString.append(QString("<a href=\"http://technorati.com/tag/%1\" rel=\"tag\">%2</a>%3")
-						     .arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'))
-						     .arg(_control_tab->lwTags->item(count)->text().replace("+", " "))
-						     .arg((count == tags - 1) ? "</p>\n\n" : ", "));
+				                     .arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'))
+				                     .arg(_control_tab->lwTags->item(count)->text().replace("+", " "))
+				                     .arg((count == tags - 1) ? "</p>\n\n" : ", "));
 			}
 			// Whether to put the Technorati tags at beginning or end
 			if(_control_tab->rbStartOfMainEntry->isChecked()) entryText.insert(0, techTagString);
@@ -3389,12 +3294,12 @@ void EditingWindow::submitWPEdit(){
 		// Make a list of the selected categories (WP API has no "primary category")
 		if(_control_tab->chAllowComments->isChecked()){
 			/*primCatElem = currentBlogElement.firstChildElement( "categories" )
-					  .childNodes().at( cw->cbMainCat->currentIndex()
-					   ).toElement(); */
+			                                                      .childNodes().at( cw->cbMainCat->currentIndex()
+			                                                       ).toElement(); */
 			catList << _control_tab->cbMainCat
-				->itemData(
+			        ->itemData(
 				_control_tab->cbMainCat->currentIndex())
-				.toString();
+			        .toString();
 			for(int a = 0; a < _control_tab->lwOtherCats->count(); a++){
 				if(_control_tab->lwOtherCats->isItemSelected(_control_tab->lwOtherCats->item(a))){
 					// cat = currentBlogElement.firstChildElement(
@@ -3436,7 +3341,7 @@ void EditingWindow::submitWPEdit(){
 		rpcstruct.appendChild(XmlMember(doc, "ping_status", "string", takeTB ? "open" : "closed"));
 		rpcstruct.appendChild(XmlMember(doc, "post_password", "string", _control_tab->lePassword->text()));
 		/*rpcstruct.appendChild( XmlMember( doc, "sticky", "bool",
-			      cw->chSticky->isChecked() ? "true" : "false" ) ); */
+		                                      cw->chSticky->isChecked() ? "true" : "false" ) ); */
 		if(catList.count()){
 			taxMember = doc.createElement("member");
 			taxMemberName = doc.createElement("name");
@@ -3519,8 +3424,8 @@ void EditingWindow::setPostCategories(){
 				      .at(_control_tab->cbMainCat->currentIndex())
 				      .toElement();
 				QString primCat = _control_tab->cbMainCat
-						  ->itemData(_control_tab->cbMainCat->currentIndex())
-						  .toString();
+				                  ->itemData(_control_tab->cbMainCat->currentIndex())
+				                  .toString();
 #ifndef NO_DEBUG_OUTPUT
 // qDebug() << "posted prim cat";
 #endif
@@ -3538,7 +3443,7 @@ void EditingWindow::setPostCategories(){
 						      .at(a)
 						      .toElement();
 						secCatId = _control_tab->cbMainCat->itemData(a)
-							   .toString();
+						           .toString();
 						secCatName	= _control_tab->cbMainCat->itemText(a);
 						arrayValue	= doc.createElement("value");
 						arrayStruct	= doc.createElement("struct");
@@ -3566,7 +3471,7 @@ void EditingWindow::setPostCategories(){
 #ifdef WIN_QTV
 			if(taskbarProgress->isVisible()) taskbarProgress->setValue(taskbarProgress->value() + 1);
 #endif
-			if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+			if(QApplication::overrideCursor() == 0)	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 		}else{
 #ifdef QTM_DEBUG
 			statusWidget->showMessage(
@@ -3614,46 +3519,247 @@ void EditingWindow::exportEntry(){
 	saveAs(true);
 }
 
+void EditingWindow::on_topic_changed(QLineEdit *lineedit_topic, const QString &tp){
+	auto topic = tp;
+	// deal with folder name change
+	auto original_topic_name = _current_topic_name;
+	QString original_topic_folder = _current_topic_full_folder_name;
+	QString new_topic = tr(topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).trimmed().toStdString().c_str());
+	QString dest_topic_folder = _editors_shared_full_path_name + "/" + new_topic;
+	auto point_to_new_folder
+	        = [&]() -> void {
+			  _current_topic_name = topic;
+			  _current_topic_full_folder_name	= dest_topic_folder;
+			  _current_topic_full_config_name	= _current_topic_full_folder_name + "/" + gl_para::_editor_conf_filename;
+			  _topic_editor_config
+			          = [&]() -> std::unique_ptr<QSettings> {
+					    if(!QDir(_current_topic_full_folder_name).exists())
+						    if(!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
+					    if(!QFile(_current_topic_full_config_name).exists())
+						    if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_full_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+					    if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_full_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_full_config_name, QFile::ReadUser | QFile::WriteUser);
+					    return std::make_unique<QSettings>(_current_topic_full_config_name, QSettings::IniFormat);
+				    } ();
+			  _local_storage_file_extension = _topic_editor_config->value("local_storage_file_ext", "cqt").toString();
+			  if(new_topic != _control_tab->topic()) _control_tab->topic(new_topic);
+			  editor_object->work_directory(_current_topic_full_folder_name);
+
+			  _filename = _current_topic_full_folder_name + "/" + _default_filename + "." + _local_storage_file_extension;
+
+			  _entry_ever_saved = false;
+		  };
+	if(original_topic_folder != dest_topic_folder){
+		if(original_topic_folder == _editors_shared_full_path_name + "/undefined"){
+			point_to_new_folder();
+			if(QDir(original_topic_folder).exists())
+				if(!QDir(original_topic_folder).removeRecursively()) critical_error("Can\'t remove folder \"" + original_topic_folder + "\"");
+		}else{
+			QDir dir;
+			if(!QDir(dest_topic_folder).exists()){
+				if(!dir.rename(original_topic_folder, dest_topic_folder)) critical_error("Move folder \"" + original_topic_folder + "\" to folder \"" + dest_topic_folder + "\" failed");
+				else{
+					point_to_new_folder();
+					if(_record_screen){
+						auto brs = _record_screen->browser();
+						if(brs){
+							auto original_config_name = original_topic_folder + "/" + gl_para::_browser_conf_filename;
+							brs->configuration_full_name(original_config_name);
+							brs->configuration( // std::make_unique<QSettings>(_current_topic_folder_name + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat)
+								[&]() -> std::unique_ptr<QSettings> {
+									if(!QDir(_current_topic_full_folder_name).exists())
+										if(!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
+									auto _current_topic_config_name = _current_topic_full_folder_name + "/" + gl_para::_browser_conf_filename;
+									if(!QFile(_current_topic_config_name).exists()){
+									        if(QFile(original_config_name).exists()){
+									                //
+									                if(!QFile::copy(original_config_name, _current_topic_config_name)) critical_error(QString("Can not copy \"") + original_config_name + "\"");
+										}else{
+									                //
+									                if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+										}
+									}
+									if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
+									return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
+								} ());
+							brs->save_state();
+						}
+					}
+					// load(_filename);
+					assert(!QDir(original_topic_folder).exists());
+				}
+			}else{
+				lineedit_topic->setText(original_topic_name);
+//				auto new_dest = dest_topic_folder + "_backup";//+ get_unical_id()
+//				if(QDir(new_dest).exists()) QDir(new_dest).removeRecursively();
+//				if(!dir.rename(dest_topic_folder, new_dest)) critical_error("Move folder \"" + dest_topic_folder + "\" to folder \"" + new_dest + "\" failed");
+			}
+		}
+	}
+}
+
+void EditingWindow::save_impl(const QString &file_name_with_full_path, bool exp){
+	// save_impl = [&](const QString &fname, bool exp = false){
+	if(!_entry_ever_saved){
+		int count, tags;
+#ifdef LOAD_TEXT_BY_WYEDITOR
+#else
+		QString text = editor_object->document()->toPlainText();
+#endif // LOAD_TEXT_BY_WYEDITOR
+//		auto file_exists = find_folder_recursively(file_name_with_full_path);
+//		if(file_exists != "")
+//			if(!QFile::remove(file_exists))	critical_error("Can\'t remove file \"" + file_exists + "\"");
+		if("" != file_name_with_full_path){
+			// Rename the old file to a back-up file
+			if(QFile::exists(file_name_with_full_path)){
+				auto backup_file_name = QString("%1.backup").arg(file_name_with_full_path);
+				QFile backup(backup_file_name);
+				if(backup.exists()) if(!QFile::remove(backup_file_name)) critical_error("Can\'t remove file \"" + backup_file_name + "\"");
+				if(!QFile::rename(file_name_with_full_path, backup_file_name)) critical_error("Rename file \"" + file_name_with_full_path + "\" to \"" + backup_file_name + "\" failed");
+//				if(QFile::remove(file_name_with_full_path)) critical_error("Can\'t remove file \"" + file_name_with_full_path + "\"");
+			}
+		}
+		QFile f(file_name_with_full_path);
+		if(!f.open(QIODevice::WriteOnly)){
+			_status_widget->showMessage(tr("Could not write to %1").arg(file_name_with_full_path), 2000);
+			return;
+		}
+		QTextStream out(&f);
+		if(useUtf8) out.setCodec(QTextCodec::codecForName("UTF-8"));
+		out << (exp ? (program_title_string + " saved blog entry v2.0\n").c_str() : (program_title_string + " saved blog entry v3.0\n").c_str());
+		out << QString("Title:%1\n").arg(_control_tab->leTitle->text());
+		out << QString("Publish:%1\n")
+		        .arg(QString::number(_control_tab->cbStatus->currentIndex()));
+		if(entryBlogged) out << QString("EntryNumber:%1\n").arg(entryNumber);
+		out << QString("Comments:%1\n")
+		        .arg(_control_tab->chAllowComments->isChecked() ? "1" : "0");
+		out << QString("TB:%1\n").arg(_control_tab->chAllowTB->isChecked() ? "1" : "0");
+		// out << QString( "Sticky:%1\n" ).arg( cw->chSticky->isChecked() ? "1" : "0" );
+		if(_control_tab->lePassword->text().length()) out << QString("PWD:%1\n").arg(_control_tab->lePassword->text());
+		if(exp){
+			out << QString("Server:%1\n").arg(server);
+			out << QString("Location:%1\n").arg(location);
+			out << QString("Login:%1\n").arg(login);
+			out << QString("Password:%1\n").arg(password);
+			out << QString("Blog:%1\n")
+			        .arg(_control_tab->cbBlogSelector->currentIndex());
+		}else{
+			out << QString("AcctBlog:%1@%2 (%3)\n") // Include the blog name so it can be relayed to the user later
+			        .arg(currentBlogid)
+			        .arg(currentAccountId)
+			        .arg(_control_tab->cbBlogSelector->itemText(_control_tab->cbBlogSelector->currentIndex()));
+		}
+		tags = _control_tab->lwTags->count();
+		if(tags){
+			out << "Tags:";
+			for(count = 0; count < tags; count++) out << QString(count ? ";%1" : "%1").arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'));
+			out << "\n";
+		}
+		tags = _control_tab->lwKeywordTags->count();
+		if(tags){
+			out << "Keywords:";
+			for(count = 0; count < tags; count++) out << QString(count ? ",%1" : "%1").arg(_control_tab->lwKeywordTags->item(count)->text());
+			out << "\n";
+		}
+		if(!_control_tab->chNoCats->isChecked()){
+			QDomNodeList catNodeList = currentBlogElement.firstChildElement("categories")
+			                           .elementsByTagName("category");
+			out << QString("PrimaryID:%1\n").arg(_control_tab->cbMainCat->itemData(_control_tab->cbMainCat->currentIndex()).toString());
+			QString catsList;
+			int cats = 0;
+			for(int a = 0; a < _control_tab->lwOtherCats->count(); a++){
+				if(_control_tab->lwOtherCats->isItemSelected(
+					   _control_tab->lwOtherCats->item(a))){
+					if(cats) catsList.append(QString(";%1").arg(_control_tab->cbMainCat->itemData(a).toString()));
+					else catsList.append(_control_tab->cbMainCat->itemData(a).toString());
+					cats++;
+				}
+			}
+			out << QString("CatIDs:%1\n").arg(catsList);
+		}else out << "PrimaryID:none\n";
+		if(_control_tab->teExcerpt->toPlainText().length() > 0) out << QString("Excerpt:%1\n").arg(_control_tab->teExcerpt->toPlainText().replace(QChar('\n'), "\\n"));
+#ifdef LOAD_TEXT_BY_WYEDITOR
+		editor_object->save_textarea();
+#else
+		out << QString("Text:\n%1").arg(text);
+#endif // LOAD_TEXT_BY_WYEDITOR
+		f.close();
+
+		dirtyIndicator->hide();
+		setWindowModified(false);
+		setDirtySignals(true);
+
+		_entry_ever_saved = true;
+		// }else critical_error("file \"" + full_path_file_name + "\" already exists");
+	}
+}
+
+void EditingWindow::saveAccountsDom(){
+	purgeBlankAccounts();
+
+	QFile domOut(
+		PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_full_path_name)));
+	if(domOut.open(QIODevice::WriteOnly)){
+		QTextStream domFileStream(&domOut);
+		_accounts_dom.save(domFileStream, 2);
+		domOut.close();
+	}else{
+		QDir dir(_editors_shared_full_path_name);
+		if(!dir.exists()){
+			if(QMessageBox::question(0, tr("Cannot find storage directory"), tr((program_title_string + " cannot find the directory you specified to " + "store your account data and files.\n\n" + "Create it?").c_str()), QMessageBox::Yes | QMessageBox::Default, QMessageBox::No)
+			   == QMessageBox::Yes){
+				if(dir.mkpath(_editors_shared_full_path_name)){
+					domOut.setFileName(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_full_path_name)));
+					if(domOut.open(QIODevice::WriteOnly)){
+						QTextStream dfs(&domOut);
+						_accounts_dom.save(dfs, 2);
+						domOut.close();
+					}else _status_widget->showMessage(tr("Could not write to accounts file."), 2000);
+				}else _status_widget->showMessage(tr("Could not create the directory."), 2000);
+			}
+		}
+	}
+}
+
 void EditingWindow::saveAll(){
-	_app->saveAll();
+	sapp_t::instance()->saveAll();
 }
 
 void EditingWindow::saveAs(bool exp){
 	QString suggestedFilename;
-	if(_control_tab->leTitle->text().isEmpty()) suggestedFilename = _editors_shared_directory;
+	if(_control_tab->leTitle->text().isEmpty()) suggestedFilename = _editors_shared_full_path_name;
 	else{
 		suggestedFilename = QString("%1/%2")
-				    .arg(_editors_shared_directory)
-				    .arg(_control_tab->leTitle->text().remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")));
+		                    .arg(_editors_shared_full_path_name)
+		                    .arg(_control_tab->leTitle->text().remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")));
 	}
 	QString extn = QString("%1 (*.%2)")
-		       .arg(tr("Blog entries"))
-		       .arg(_local_storage_file_extension);
+	               .arg(tr("Blog entries"))
+	               .arg(_local_storage_file_extension);
 	QString fn = QFileDialog::getSaveFileName(this, tr("Choose a filename"), suggestedFilename, extn);
 	if(!fn.isEmpty()){
 		if(!_local_storage_file_extension.isEmpty())
 			if(!fn.endsWith(QString(".%1").arg(_local_storage_file_extension))) fn.append(QString(".%1").arg(_local_storage_file_extension));
 		_filename = fn;
-		//		       This section has been commented out as unnecessary; the
-		//		       getSaveFileName function
-		//		       already checks for the existence of a file.  Keeping in code
-		//		       until tested on other platforms.
-		//		if(QFile::exists(fn)){
-		//			if(!QMessageBox::warning(0, tr("File exists")
-		//						, tr("A file by this name already exists. Continue?")
-		//						, QMessageBox::Yes, QMessageBox::No | QMessageBox::Default)){
-		//				QFile::remove(fn);
-		//				save(fn);
-		//			}
-		//		}else
+		// This section has been commented out as unnecessary; the
+		// getSaveFileName function
+		// already checks for the existence of a file.  Keeping in code
+		// until tested on other platforms.
+		// if(QFile::exists(fn)){
+		// if(!QMessageBox::warning(0, tr("File exists")
+		// , tr("A file by this name already exists. Continue?")
+		// , QMessageBox::Yes, QMessageBox::No | QMessageBox::Default)){
+		// QFile::remove(fn);
+		// save(fn);
+		// }
+		// }else
 		save_impl(fn, exp);
-		_app->add_recent_file(_control_tab->leTitle->text(), fn);
+		sapp_t::instance()->add_recent_file(_control_tab->leTitle->text(), fn);
 	}else _status_widget->showMessage(tr("Saving aborted"), 2000);
 }
 
 void EditingWindow::save(){
-	auto full_path_file_name = this->_current_topic_folder_name + "/" + _default_filename + "." + _local_storage_file_extension;
-	if(!_no_auto_save) save_impl(full_path_file_name);
+	auto file_name_with_full_path = this->_current_topic_full_folder_name + "/" + _default_filename + "." + _local_storage_file_extension;
+	if(!_no_auto_save) save_impl(file_name_with_full_path);
 	else{
 		if(_filename.isEmpty()){
 			saveAs();
@@ -3663,33 +3769,33 @@ void EditingWindow::save(){
 	}
 }
 
-QString EditingWindow::find(const QString &file_name_){
-	//	bool found	= false;
-	//	QString id = global_root_id;
-	QString result = "";
-	QDirIterator it(_editors_shared_directory, QStringList() << "*." + _topic_editor_config->value("local_storage_file_ext").toString(), QDir::Files, QDirIterator::Subdirectories);
-	while(it.hasNext()){
-		auto item = it.next();
-		if(item.contains(file_name_)){
-			//			found = true;
-			result = item;
-			break;
-		}
-	}
-	return result;
-}
+//QString EditingWindow::find_file_name_in_current_folder(const QString &file_name_with_full_path){
+//	// bool found	= false;
+//	// QString id = global_root_id;
+//	QString result = "";
+//	QDirIterator it(_editors_shared_directory, QStringList() << "*." + _topic_editor_config->value("local_storage_file_ext").toString(), QDir::Files, QDirIterator::Subdirectories);
+//	while(it.hasNext()){
+//		auto item = it.next();
+//		if(item.contains(file_name_with_full_path)){
+//			// found = true;
+//			result = item;
+//			break;
+//		}
+//	}
+//	return result;
+//}
 
 void EditingWindow::choose(QString fname){
 	QString fn;
 	QString extn(QString("%1 (*.%2)").arg(tr("Blog entries")).arg(_local_storage_file_extension));
-	if(fname.isEmpty()) fn = QFileDialog::getOpenFileName(this, tr("Choose a file to open"), _editors_shared_directory, extn);
+	if(fname.isEmpty()) fn = QFileDialog::getOpenFileName(this, tr("Choose a file to open"), _editors_shared_full_path_name, extn);
 	else fn = fname;
 	if(!fn.isEmpty()){
 		if(!useNewWindows){
 			if(saveCheck(true)){
 				if(!load(fn)) _status_widget->showMessage(tr("File could not be loaded."), 2000);
 				else{
-					_app->add_recent_file(_control_tab->leTitle->text(), fn);
+					sapp_t::instance()->add_recent_file(_control_tab->leTitle->text(), fn);
 
 					dirtyIndicator->hide();
 					setWindowModified(false);
@@ -3704,7 +3810,7 @@ void EditingWindow::choose(QString fname){
 #endif
 
 				positionWidget(e, this);
-				_app->add_recent_file(e->postTitle(), fn);
+				sapp_t::instance()->add_recent_file(e->postTitle(), fn);
 
 				e->show();
 			}else{
@@ -3783,9 +3889,9 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 		entryBlogged	= true;
 	}
 	if(emap.contains("Comments")) _control_tab->chAllowComments->setChecked(emap.value("Comments") == "1" ? true : false);
-	if(emap.contains("TB")) _control_tab->chAllowTB->setChecked(emap.value("TB") == "1" ? true : false);
+	if(emap.contains("TB"))	_control_tab->chAllowTB->setChecked(emap.value("TB") == "1" ? true : false);
 	/* if( emap.contains( "Sticky" ) )
-	       cw->chSticky->setChecked( emap.value( "Sticky" ) == "1" ? true : false ); */
+	                   cw->chSticky->setChecked( emap.value( "Sticky" ) == "1" ? true : false ); */
 	if(emap.contains("PWD")) _control_tab->lePassword->setText(emap.value("PWD"));
 	else _control_tab->lePassword->clear();
 	if(emap.contains("Server")){
@@ -3820,7 +3926,7 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 		tags = emap.value("Tags");
 		d = tags.count(QChar(';'));
 		if(d)
-			for(c = 0; c <= d; c++) _control_tab->lwTags->addItem(tags.section(QChar(';'), c, c));
+			for(c = 0; c <= d; c++)	_control_tab->lwTags->addItem(tags.section(QChar(';'), c, c));
 		else _control_tab->lwTags->addItem(tags);
 	}
 	_control_tab->lwKeywordTags->clear();
@@ -3828,7 +3934,7 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 		keywords = emap.value("Keywords");
 		d = keywords.count(QChar(','));
 		if(d)
-			for(c = 0; c <= d; c++) _control_tab->lwKeywordTags->addItem(keywords.section(QChar(','), c, c));
+			for(c = 0; c <= d; c++)	_control_tab->lwKeywordTags->addItem(keywords.section(QChar(','), c, c));
 		else _control_tab->lwKeywordTags->addItem(keywords);
 	}
 	if(emap.contains("Blog")){
@@ -3902,13 +4008,13 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 				// i.e. if it gets to the end of the accounts tree without
 				// finding the account
 				QMessageBox::information(0, tr((program_title_string + " - No such account").c_str()), tr((program_title_string + " could not find this account (perhaps it was "
-																		  "deleted).\n\n"
-																		  "Will set up a blank default account; you will "
-																		  "need to fill in the access "
-																		  "details by choosing Accounts from the File "
-																		  "menu.")
-															  .c_str())
-							, QMessageBox::Ok);
+				                                                                                                                  "deleted).\n\n"
+				                                                                                                                  "Will set up a blank default account; you will "
+				                                                                                                                  "need to fill in the access "
+				                                                                                                                  "details by choosing Accounts from the File "
+				                                                                                                                  "menu.")
+				                                                                                          .c_str())
+				                        , QMessageBox::Ok);
 				QDomElement newDefaultAccount = _accounts_dom.createElement("account");
 				newDefaultAccount.setAttribute("id", QString("newAccount_%1").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
 				QDomElement newDetailElement = _accounts_dom.createElement("details");
@@ -3948,13 +4054,13 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 				_control_tab->cbBlogSelector->clear();
 				for(hh = 0; hh < blogNodeList.count(); hh++){
 					_control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogNodeList.at(hh)
-												.toElement()
-												.firstChildElement("blogName")
-												.text())
-									     , blogNodeList.at(hh)
-									      .toElement()
-									      .firstChildElement("blogid")
-									      .text());
+					                                                        .toElement()
+					                                                        .firstChildElement("blogName")
+					                                                        .text())
+					                                     , blogNodeList.at(hh)
+					                                      .toElement()
+					                                      .firstChildElement("blogid")
+					                                      .text());
 					if(blogNodeList.at(hh).firstChildElement("blogid").text()
 					   == currentBlogid) currentBlogElement = blogNodeList.at(hh).toElement();
 				}
@@ -3990,8 +4096,8 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 						_control_tab->lwOtherCats->clear();
 						for(int j = 0; j < b; j++){
 							catName = decodeXmlEntities(catNodeList.at(j)
-										    .firstChildElement("categoryName")
-										    .text());
+							                            .firstChildElement("categoryName")
+							                            .text());
 							_control_tab->cbMainCat->addItem(catName, QVariant(catNodeList.at(j).firstChildElement("categoryId").text()));
 							_control_tab->lwOtherCats->addItem(catName);
 						}
@@ -4072,9 +4178,9 @@ bool EditingWindow::load(const QString &fname, bool fromSTI){
 		if(pwd.exec()) password = pui.lePassword->text();
 		else
 			QMessageBox::warning(0, tr("No password"), tr("This entry was saved without a password.\n"
-								      "You will need to set one, using the\n"
-								      "Preferences window.")
-					    , QMessageBox::Ok, QMessageBox::NoButton);
+			                                              "You will need to set one, using the\n"
+			                                              "Preferences window.")
+			                    , QMessageBox::Ok, QMessageBox::NoButton);
 	}
 	// This is an old-style account which isn't in the database
 	// qDebug() << "old-style, not found";
@@ -4201,10 +4307,10 @@ void EditingWindow::uploadFile(){
 
 							QString blogid = currentBlogElement.firstChildElement("blogid").text();
 							/*              QRegExp
-											   blogidRegExp( "^[0-9]+$" );
-											bool blogidIsInt =
-											   blogidRegExp.exactMatch( blogid
-											   ); */
+							                                                                                                                       blogidRegExp( "^[0-9]+$" );
+							                                                                                                                    bool blogidIsInt =
+							                                                                                                                       blogidRegExp.exactMatch( blogid
+							                                                                                                                       ); */
 
 							params.appendChild(XmlValue(doc, "string", blogid));
 							params.appendChild(XmlValue(doc, "string", login));
@@ -4228,7 +4334,7 @@ void EditingWindow::uploadFile(){
 							QByteArray requestArray(doc.toByteArray());
 							responseData = "";
 							placeNetworkRequest(_metaWeblog_newMediaObject, requestArray);
-							if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+							if(QApplication::overrideCursor() == 0)	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 						}else _status_widget->showMessage(tr("Upload was cancelled."), 2000);
 					}
 					inFile.close();
@@ -4282,7 +4388,7 @@ void EditingWindow::handleSideWidgetPageSwitch(int index){
 	if(index == 1){
 		if(_control_tab->cbMainCat->count() == 0 && _network_actions_enabled && categoriesEnabled){
 			/*if( currentBlogElement.isNull() )
-					  qDebug() << "currentBlogElement is null"; */
+			                                                      qDebug() << "currentBlogElement is null"; */
 			cl = currentBlogElement.firstChildElement("categories")
 			     .elementsByTagName("category");
 			if(cl.count() == 0){
@@ -4295,7 +4401,7 @@ void EditingWindow::handleSideWidgetPageSwitch(int index){
 					currentCatName = cl.at(i).firstChildElement("categoryName").text();
 					currentCatId = cl.at(i).firstChildElement("categoryId").text();
 					_control_tab->cbMainCat->addItem(currentCatName, currentCatId);
-					if(currentCatId == "1") uncategorized = i;
+					if(currentCatId == "1")	uncategorized = i;
 					_control_tab->lwOtherCats->addItem(currentCatName);
 				}
 				if(uncategorized) _control_tab->cbMainCat->setCurrentIndex(uncategorized);
@@ -4424,7 +4530,7 @@ void EditingWindow::refreshKeywordTags(){
 			QByteArray requestArray(doc.toByteArray(2));
 			responseData = "";
 			placeNetworkRequest(_wp_getTags, requestArray);
-			if(QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+			if(QApplication::overrideCursor() == 0)	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 		}else _status_widget->showMessage(tr("This feature only works on Wordpress."), 2000);
 	}else{
 #ifdef QTM_DEBUG
@@ -4481,7 +4587,7 @@ void EditingWindow::addTechTagFromAddButton(){
 			_status_widget->showMessage(tr("This tag validates."), 2000);
 			_control_tab->lwTags->addItem(_control_tab->leAddTag->text());
 			_control_tab->leAddTag->clear();
-			if(!isWindowModified()) dirtify();
+			if(!isWindowModified())	dirtify();
 		}else _status_widget->showMessage(tr("This is not a valid tag."), 2000);
 	}
 }
@@ -4497,7 +4603,7 @@ void EditingWindow::addClipTBPing(){
 		if(QUrl(clipboardText).isValid()){
 			_status_widget->showMessage(tr("This URL validates."));
 			_control_tab->lwTBPings->addItem(clipboardText);
-			if(!isWindowModified()) dirtify();
+			if(!isWindowModified())	dirtify();
 		}else _status_widget->showMessage(tr("This is not a valid URL."), 2000);
 	}
 }
@@ -4509,7 +4615,7 @@ void EditingWindow::addTBPingFromLineEdit(){
 			_status_widget->showMessage(tr("This URL validates."), 2000);
 			_control_tab->lwTBPings->addItem(lineEditText);
 			_control_tab->leTBPingURL->clear();
-			if(!isWindowModified()) dirtify();
+			if(!isWindowModified())	dirtify();
 		}else _status_widget->showMessage(tr("This is not a valid URL."), 2000);
 	}
 }
@@ -4517,7 +4623,7 @@ void EditingWindow::addTBPingFromLineEdit(){
 void EditingWindow::removeTechTag(){
 	int c = _control_tab->lwTags->currentRow();
 	_control_tab->lwTags->takeItem(c);
-	if(!isWindowModified()) dirtify();
+	if(!isWindowModified())	dirtify();
 }
 
 void EditingWindow::addTBPingFromAddButton(){
@@ -4527,7 +4633,7 @@ void EditingWindow::addTBPingFromAddButton(){
 			_status_widget->showMessage(tr("This URL validates."), 2000);
 			_control_tab->lwTBPings->addItem(_control_tab->leTBPingURL->text());
 			_control_tab->leTBPingURL->clear();
-			if(!isWindowModified()) dirtify();
+			if(!isWindowModified())	dirtify();
 		}else _status_widget->showMessage(tr("This is not a valid URL."), 2000);
 	}
 }
@@ -4535,7 +4641,7 @@ void EditingWindow::addTBPingFromAddButton(){
 void EditingWindow::removeTBPing(){
 	int c = _control_tab->lwTBPings->currentRow();
 	_control_tab->lwTBPings->takeItem(c);
-	if(!isWindowModified()) dirtify();
+	if(!isWindowModified())	dirtify();
 }
 
 void EditingWindow::showPassword(bool showIt){
@@ -4561,10 +4667,10 @@ void EditingWindow::dirtifyIfText(){
 void EditingWindow::setDirtySignals(bool d){
 	QList<QWidget *> widgetList;
 	widgetList	<< editor_object << _control_tab->cbAccountSelector
-			<< _control_tab->cbBlogSelector << _control_tab->cbStatus
-			<< _control_tab->chAllowComments << _control_tab->chAllowTB
-			<< _control_tab->cbMainCat << _control_tab->lwOtherCats
-			<< _control_tab->teExcerpt;
+	                << _control_tab->cbBlogSelector << _control_tab->cbStatus
+	                << _control_tab->chAllowComments << _control_tab->chAllowTB
+	                << _control_tab->cbMainCat << _control_tab->lwOtherCats
+	                << _control_tab->teExcerpt;
 	if(d){
 		connect(editor_object->document(), SIGNAL(contentsChanged()), this, SLOT(dirtify()));
 		connect(_control_tab->leTitle, SIGNAL(textEdited(const QString&)), this, SLOT(dirtifyIfText()));
@@ -4599,7 +4705,7 @@ void EditingWindow::showStatusBarMessage(const QString &msg){
 
 bool EditingWindow::saveCheck(bool){
 	bool return_value;
-	if(!isWindowModified()) return_value = true;
+	if(!isWindowModified())	return_value = true;
 	else return_value = saveCheck();
 	return return_value;
 }
@@ -4633,9 +4739,9 @@ void EditingWindow::doInitialChangeBlog(){
 		loadedEntryBlog = 999;
 		_control_tab->cbBlogSelector->setCurrentIndex(currentBlog);
 		currentBlogElement = currentAccountElement.firstChildElement("blogs")
-				     .elementsByTagName("blog")
-				     .at(currentBlog)
-				     .toElement();
+		                     .elementsByTagName("blog")
+		                     .at(currentBlog)
+		                     .toElement();
 		currentBlogid = currentBlogElement.firstChildElement("blogid").text();
 #ifndef NO_DEBUG_OUTPUT
 // qDebug() << currentBlogid;
@@ -4767,7 +4873,7 @@ void EditingWindow::handleInitialLookup(const QHostInfo &hostInfo){
 
 void EditingWindow::configureQuickpostTemplates(){
 #if defined USE_SYSTRAYICON
-	if(sti) sti->configureQuickpostTemplates(this);
+	if(sti)	sti->configureQuickpostTemplates(this);
 #endif
 }
 
@@ -4817,10 +4923,10 @@ void EditingWindow::saveAutoLinkDictionary(){
 	doc.appendChild(autoLinkDictionaryElement);
 	doc.insertBefore(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""), doc.firstChild());
 
-	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	_topic_editor_config->beginGroup("account");
 	QString dictionaryFileName = QString("%1/qtmautolinkdict.xml")
-				     .arg(_topic_editor_config->value("editors_shared_directory", "").toString());
+	                             .arg(_topic_editor_config->value("editors_shared_directory", "").toString());
 	_topic_editor_config->endGroup();
 	QFile dictionaryFile(dictionaryFileName);
 	if(dictionaryFile.open(QIODevice::WriteOnly)){
@@ -4834,22 +4940,22 @@ void EditingWindow::loadAutoLinkDictionary(){
 	QString dictionaryFileName, errorString, currentKey, currentURL;
 	int currentTarget;
 	QDomElement currentKeyElement, currentURLElement, currentTitleElement, currentTargetElement;
-	//	QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
+	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 	int errorLine, errorCol;
 	bool ok;
 
 	_topic_editor_config->beginGroup("account");
 	dictionaryFileName = QString("%1/qtmautolinkdict.xml")
-			     .arg(_topic_editor_config->value("editors_shared_directory", "").toString());
+	                     .arg(_topic_editor_config->value("editors_shared_directory", "").toString());
 	_topic_editor_config->endGroup();
 	if(QFile::exists(dictionaryFileName)){
 		QDomDocument dictDoc("autoLinkDictionary");
 		QFile file(dictionaryFileName);
 		if(!dictDoc.setContent(&file, true, &errorString, &errorLine, &errorCol))
 			QMessageBox::warning(0, tr("Failed to read templates"), QString(tr("Error: %1\nLine %2, col %3"))
-					     .arg(errorString)
-					     .arg(errorLine)
-					     .arg(errorCol));
+			                     .arg(errorString)
+			                     .arg(errorLine)
+			                     .arg(errorCol));
 		else{
 			QDomNodeList entryList = dictDoc.elementsByTagName("entry");
 			for(int i = 0; i < entryList.count(); i++){
@@ -4882,13 +4988,13 @@ QByteArray EditingWindow::toBase64(QByteArray &qbarray){
 	pdialog.setWindowTitle(program_title);
 
 	const char alphabet[] = "ABCDEFGH"
-				"IJKLMNOP"
-				"QRSTUVWX"
-				"YZabcdef"
-				"ghijklmn"
-				"opqrstuv"
-				"wxyz0123"
-				"456789+/";
+	                        "IJKLMNOP"
+	                        "QRSTUVWX"
+	                        "YZabcdef"
+	                        "ghijklmn"
+	                        "opqrstuv"
+	                        "wxyz0123"
+	                        "456789+/";
 	const char padchar = '=';
 	int padlen = 0;
 
@@ -4944,13 +5050,13 @@ void EditingWindow::addToConsole(const QString &t){
 	_console->setTextCursor(cursor);
 	if(text.contains("<base64>"))
 		_console->insertPlainText(text.section("<base64>", 0, 0, QString::SectionIncludeTrailingSep)
-					  .append(tr(" ... base64 encoded file omitted ... "))
-					  .append(text.section("</base64>", 1, 1, QString::SectionIncludeLeadingSep)));
+		                          .append(tr(" ... base64 encoded file omitted ... "))
+		                          .append(text.section("</base64>", 1, 1, QString::SectionIncludeLeadingSep)));
 	else _console->insertPlainText(text);
 }
 
 void EditingWindow::hideProgressBarIfMaximum(int val){
-	if(val == _control_tab->progressBar->maximum()) QTimer::singleShot(1000, this, SLOT(hideProgressBar()));
+	if(val == _control_tab->progressBar->maximum())	QTimer::singleShot(1000, this, SLOT(hideProgressBar()));
 }
 
 void EditingWindow::hideProgressBar(){
@@ -4961,7 +5067,7 @@ void EditingWindow::hideProgressBar(){
 	taskbarProgress->setVisible(false);
 	taskbarProgress->reset();
 #endif
-	if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+	if(QApplication::overrideCursor() != 0)	QApplication::restoreOverrideCursor();
 }
 
 QString EditingWindow::checkBoxName(QString source){
@@ -4984,7 +5090,7 @@ QString EditingWindow::decodeXmlEntities(QString source){
 	QRegExp rx1("&(\\S+);"); // Detects named entities
 	QRegExp rx2("&#(\\d{1-3});"); // Detects only numerically-defined characters
 	int index = rx1.indexIn(source);
-	if(index == -1) return source;
+	if(index == -1)	return source;
 	else{
 		lst = source.split(rx1);
 		while((pos = rx1.indexIn(source, pos)) != -1){
@@ -5023,7 +5129,7 @@ bool EditingWindow::event(QEvent *event){
 #ifdef Q_OS_MAC
 		_super_menu->editing_win(this);
 #endif
-		_app->editing_window(this);
+		sapp_t::instance()->editing_window(this);
 	}
 	return QMainWindow::event(event);
 }
@@ -5059,29 +5165,29 @@ bool EditingWindow::eventFilter(
 // void EditingWindow::assembly_closebutton(void){
 //// Вертикальная область с кнопкой закрытия и распоркой
 //// чтобы кнопка была вверху
-//	_toolsarea_of_close_button = new QVBoxLayout();
-//	_toolsarea_of_close_button->setContentsMargins(0, 0, 0, 0);
-//	_toolsarea_of_close_button->addWidget(_close_button);
-//	_toolsarea_of_close_button->addStretch();
+// _toolsarea_of_close_button = new QVBoxLayout();
+// _toolsarea_of_close_button->setContentsMargins(0, 0, 0, 0);
+// _toolsarea_of_close_button->addWidget(_close_button);
+// _toolsarea_of_close_button->addStretch();
 // }
 
 // void EditingWindow::setup_closebutton(void){
 //// Кнопка закрытия виджета
-//	_close_button = new FlatToolButton(this);
-//	_close_button->setVisible(true);
-//	_close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton));//
-//	SP_TitleBarCloseButton SP_DialogCloseButton
-//	_close_button->setAutoRaise(true);
-//	if(appconfig->interface_mode() == "desktop"){
-//		int w	= _close_button->geometry().width();
-//		int h	= _close_button->geometry().height();
-//		int x	= std::min(w, h) / 2;   // imin(w, h) / 2;
-//		_close_button->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed
-//		                                        , QSizePolicy::ToolButton));
-//		_close_button->setMinimumSize(x, x);
-//		_close_button->setMaximumSize(x, x);
-//		_close_button->resize(x, x);
-//	}
+// _close_button = new FlatToolButton(this);
+// _close_button->setVisible(true);
+// _close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton));//
+// SP_TitleBarCloseButton SP_DialogCloseButton
+// _close_button->setAutoRaise(true);
+// if(appconfig->interface_mode() == "desktop"){
+// int w	= _close_button->geometry().width();
+// int h	= _close_button->geometry().height();
+// int x	= std::min(w, h) / 2;   // imin(w, h) / 2;
+// _close_button->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed
+// , QSizePolicy::ToolButton));
+// _close_button->setMinimumSize(x, x);
+// _close_button->setMaximumSize(x, x);
+// _close_button->resize(x, x);
+// }
 // }
 
 QStackedWidget *EditingWindow::main_stack(){
@@ -5091,11 +5197,11 @@ QStackedWidget *EditingWindow::main_stack(){
 rs_t *EditingWindow::record_screen(){return _record_screen;}
 
 EditorDock *EditingWindow::editor_dock(){return _editor_dock;}
-
+#ifdef USE_EDITOR_WRAP
 void EditingWindow::name(const QString &nm){_editor->name(nm);}
 
 // void Editentry::tree_path(const QString &path){
-//	_editor->tree_path(path);
+// _editor->tree_path(path);
 // }
 void EditingWindow::pin(const QString &pin_){_editor->pin(pin_);}
 
@@ -5111,6 +5217,7 @@ void EditingWindow::tags(const QString &tags_){_editor->tags(tags_);}
 boost::intrusive_ptr<TreeItem> EditingWindow::item(){return _editor->item();}
 
 void EditingWindow::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){_editor->bind(item_to_be_bound);}
+#endif //USE_EDITOR_WRAP
 
 const std::function<void (QObject *editor, QString saveString)> EditingWindow::save_callback() const {return _editor->save_callback();}
 
@@ -5121,10 +5228,10 @@ std::function<void (QObject *editor, QString &String)> EditingWindow::load_callb
 void EditingWindow::load_callback(const std::function<void (QObject *editor, QString &String)> &func){_editor->load_callback(func);}
 
 // void Editentry::editor_load_callback(QObject *editor, QString &load_text){
-//	Editor::editor_load_callback(editor, load_text);
+// Editor::editor_load_callback(editor, load_text);
 // }
 // void Editentry::editor_save_callback(QObject *editor, const QString &save_text){
-//	Editor::editor_save_callback(editor, save_text);
+// Editor::editor_save_callback(editor, save_text);
 // }
 #ifdef USE_FILE_PER_TREEITEM
 bool EditingWindow::work_directory(QString dir_name){
@@ -5184,9 +5291,21 @@ QVBoxLayout *EditingWindow::textformat_buttons_layout() const {return _editor->_
 
 EditorTextArea *EditingWindow::text_area() const {return _editor->_text_area;}
 
-void EditingWindow::to_editor_layout(){_editor->to_editor_layout();}
+void EditingWindow::to_editor_layout(){
+#ifdef USE_EDITOR_WRAP
+	_editor->to_editor_layout();
+#else
+	_control_tab->setCurrentWidget(_control_tab->_basics);
+#endif //USE_EDITOR_WRAP
+}
 
-void EditingWindow::to_attach_layout(){_editor->to_attach_layout();}
+void EditingWindow::to_attach_layout(){
+#ifdef USE_EDITOR_WRAP
+	_editor->to_attach_layout();
+#else
+	_control_tab->setCurrentWidget(_control_tab->_attachtable_screen);
+#endif //USE_EDITOR_WRAP
+}
 
 // Предпросмотр печати текущей статьи
 void EditingWindow::file_print_preview(void){
@@ -5233,17 +5352,17 @@ void EditingWindow::file_print_pdf(void){
 // текст редактируемой записи
 void EditingWindow::save_text_context(void){
 	id_value id = // static_cast<id_value>(_control_tab->topic());//
-		      id_value(misc_field("id")); // _editor_screen->misc_field("id")
+	              id_value(misc_field("id")); // _editor_screen->misc_field("id")
 
 	qDebug() << "MainWindow::saveTextarea() : id :" << id;
-	save(); //	save_textarea();
+	save(); // save_textarea();
 	// _editor_screen->save_textarea();
 
 	walkhistory.add<WALK_HISTORY_GO_NONE>(static_cast<id_value>(_control_tab->topic()) // id
-					     ,
-					      cursor_position() // _editor_screen->cursor_position()
-					     ,
-					      scrollbar_position()); // _editor_screen->scrollbar_position());
+	                                     ,
+	                                      cursor_position() // _editor_screen->cursor_position()
+	                                     ,
+	                                      scrollbar_position()); // _editor_screen->scrollbar_position());
 }
 
 void EditingWindow::save_editor_cursor_position(void){
@@ -5262,12 +5381,12 @@ void EditingWindow::go_walk_history_previous(void){
 	// _editor_screen->save_textarea();
 	save_textarea();
 	id_value id = // static_cast<id_value>(_control_tab->topic()); //
-		      id_value(misc_field("id")); // _editor_screen->misc_field("id")
+	              id_value(misc_field("id")); // _editor_screen->misc_field("id")
 
 	walkhistory.add<WALK_HISTORY_GO_PREVIOUS>(id, cursor_position() // _editor_screen->cursor_position()
-						 ,
-						  scrollbar_position() // _editor_screen->scrollbar_position()
-						 );
+	                                         ,
+	                                          scrollbar_position() // _editor_screen->scrollbar_position()
+	                                         );
 	walkhistory.set_drop(true);
 
 	go_walk_history();
@@ -5277,12 +5396,12 @@ void EditingWindow::go_walk_history_next(void){
 	// _editor_screen->save_textarea();
 	save_textarea();
 	id_value id = // static_cast<id_value>(_control_tab->topic());//
-		      id_value(misc_field("id")); // _editor_screen->misc_field("id")
+	              id_value(misc_field("id")); // _editor_screen->misc_field("id")
 
 	walkhistory.add<WALK_HISTORY_GO_NEXT>(id, cursor_position() // _editor_screen->cursor_position()
-					     ,
-					      scrollbar_position() // _editor_screen->scrollbar_position()
-					     );
+	                                     ,
+	                                      scrollbar_position() // _editor_screen->scrollbar_position()
+	                                     );
 	walkhistory.set_drop(true);
 
 	go_walk_history();
@@ -5362,70 +5481,7 @@ void EditingWindow::topic(const QString &topic_){
 
 QString EditingWindow::topic() const {return _control_tab->topic();}
 
-void EditingWindow::on_topic_changed(const QString &tp){
-	auto topic = tp;
-	// deal with folder name change
-	QString original_topic_folder = _current_topic_folder_name;
-	QString new_topic = tr(topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).trimmed().toStdString().c_str());
-	QString dest_topic_folder = _editors_shared_directory + "/" + new_topic;
-	auto update_folder = [&](bool is_initializing) -> void {
-				     _current_topic_folder_name = dest_topic_folder;
-				     _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_editor_conf_filename;
-				     _topic_editor_config = [&]() -> std::unique_ptr<QSettings> {
-								    if(!QDir(_current_topic_folder_name).exists())
-									    if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
-								    if(!QFile(_current_topic_config_name).exists())
-									    if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
-								    if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
-								    return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
-							    } ();
-				     _local_storage_file_extension = _topic_editor_config->value("local_storage_file_ext", "cqt").toString();
-				     if(new_topic != _control_tab->topic()) _control_tab->topic(new_topic);
-				     editor_object->work_directory(_current_topic_folder_name);
 
-				     _filename = _current_topic_folder_name + "/" + _default_filename + "." + _local_storage_file_extension;
-				     if(!is_initializing){
-					     if(_record_screen){
-						     auto brs = _record_screen->browser();
-						     if(brs){
-							     auto original_config_name = original_topic_folder + "/" + gl_para::_browser_conf_filename;
-							     brs->configuration_full_name(original_config_name);
-							     brs->configuration( // std::make_unique<QSettings>(_current_topic_folder_name + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat)
-								     [&]() -> std::unique_ptr<QSettings> {
-									     if(!QDir(_current_topic_folder_name).exists())
-										     if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
-									     auto _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_browser_conf_filename;
-									     if(!QFile(_current_topic_config_name).exists()){
-										     if(QFile(original_config_name).exists()){
-											     //
-											     if(!QFile::copy(original_config_name, _current_topic_config_name)) critical_error(QString("Can not copy \"") + original_config_name + "\"");
-										     }else{
-											     //
-											     if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
-										     }
-									     }
-									     if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
-									     return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
-								     } ());
-							     brs->save_state();
-						     }
-					     }
-					     //					     load(_filename);
-				     }
-				     _entry_ever_saved = false;
-			     };
-	if(original_topic_folder != dest_topic_folder){
-		if(original_topic_folder == _editors_shared_directory + "/undefined") update_folder(true);
-		else{
-			QDir dir;
-			if(QDir(dest_topic_folder).exists()){
-				auto new_dest = dest_topic_folder + "_" + get_unical_id();
-				if(!dir.rename(dest_topic_folder, new_dest)) critical_error("Move folder \"" + dest_topic_folder + "\" to folder \"" + new_dest + "\" failed");
-			}
-			if(!dir.rename(original_topic_folder, dest_topic_folder)) critical_error("Move folder \"" + original_topic_folder + "\" to folder \"" + dest_topic_folder + "\" failed");
-			else update_folder(false);
-		}
-	}
-}
 
-QString EditingWindow::current_topic_folder_name() const {return _current_topic_folder_name;}
+QString EditingWindow::current_topic_folder_name() const {return _current_topic_full_folder_name;}
+

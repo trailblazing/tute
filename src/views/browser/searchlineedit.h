@@ -56,67 +56,67 @@ QT_BEGIN_NAMESPACE
 class QMenu;
 QT_END_NAMESPACE
 
-//    QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
 namespace browser {
-class SearchButton;
+	class SearchButton;
 
 /*
-	    Clear button on the right hand side of the search widget.
-	    Hidden by default
-	    "A circle with an X in it"
-	 */
-class ClearButton : public QAbstractButton {
+            Clear button on the right hand side of the search widget.
+            Hidden by default
+            "A circle with an X in it"
+ */
+	class ClearButton : public QAbstractButton {
 #if QT_VERSION == 0x050600
-    W_OBJECT(ClearButton)
+	W_OBJECT(ClearButton)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    ClearButton(QWidget* parent = 0);
-    void paintEvent(QPaintEvent* event);
+	public:
+		ClearButton(QWidget *parent = 0);
+		void paintEvent(QPaintEvent *event);
 
-public slots:
-    void textChanged(const QString& text);
-};
+	public slots:
+		void textChanged(const QString &text);
+	};
 
-class SearchLineEdit : public ExLineEdit {
+	class SearchLineEdit : public ExLineEdit {
 #if QT_VERSION == 0x050600
-    W_OBJECT(SearchLineEdit)
+	W_OBJECT(SearchLineEdit)
 #else
-    Q_OBJECT Q_PROPERTY(QString inactiveText READ inactiveText WRITE setInactiveText)
+	Q_OBJECT Q_PROPERTY(QString inactiveText READ inactiveText WRITE setInactiveText)
 #endif
 
-signals:
-    void textChanged(const QString& text)
+	signals:
+		void textChanged(const QString &text)
 #if QT_VERSION == 0x050600
-        W_SIGNAL(textChanged, (const QString&), text) //
+		W_SIGNAL(textChanged, (const QString &), text) //
 #else
-                      ;
+		;
 #endif
 
-        public : SearchLineEdit(QWidget* parent = 0);
+	public: SearchLineEdit(QWidget *parent = 0);
 
-    QString inactiveText() const;
-    void setInactiveText(const QString& text);
+		QString inactiveText() const;
+		void setInactiveText(const QString &text);
 
-    QMenu* menu() const;
-    void setMenu(QMenu* menu);
+		QMenu *menu() const;
+		void setMenu(QMenu *menu);
 
-protected:
-    void resizeEvent(QResizeEvent* event);
-    void paintEvent(QPaintEvent* event);
+	protected:
+		void resizeEvent(QResizeEvent *event);
+		void paintEvent(QPaintEvent *event);
 
-private:
-    void updateGeometries();
+	private:
+		void updateGeometries();
 
-    SearchButton* _searchbutton;
-    QString _inactivetext;
+		SearchButton *_searchbutton;
+		QString _inactivetext;
 #if QT_VERSION == 0x050600
-    W_PROPERTY(QString, inactiveText, &SearchLineEdit::inactiveText, &SearchLineEdit::setInactiveText)
+		W_PROPERTY(QString, inactiveText, &SearchLineEdit::inactiveText, &SearchLineEdit::setInactiveText)
 #endif
-};
+	};
 }
 
 // QT_END_NAMESPACE

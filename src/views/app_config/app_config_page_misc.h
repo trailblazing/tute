@@ -14,27 +14,27 @@
 
 class AppConfigPageMisc : public ConfigPage {
 #if QT_VERSION == 0x050600
-    W_OBJECT(AppConfigPageMisc)
+W_OBJECT(AppConfigPageMisc)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
 public:
-    AppConfigPageMisc(QWidget* parent = 0);
-    int apply_changes(void);
+	AppConfigPageMisc(QWidget *parent = 0);
+	int apply_changes(void);
 
 private slots:
 
 protected:
-    QCheckBox* cutBranchConfirm;
-    QCheckBox* printDebugMessages;
-    QCheckBox* runInMinimizedWindow;
+	QCheckBox *cutBranchConfirm;
+	QCheckBox *printDebugMessages;
+	QCheckBox *runInMinimizedWindow;
 
-    // Объединяющая рамка
-    QGroupBox* historyBox;
+	// Объединяющая рамка
+	QGroupBox *historyBox;
 
-    QCheckBox* rememberAtHistoryNavigationCheckBox;
-    QCheckBox* rememberAtOrdinarySelectionCheckBox;
+	QCheckBox *rememberAtHistoryNavigationCheckBox;
+	QCheckBox *rememberAtOrdinarySelectionCheckBox;
 };
 
 #endif // _CONFIGPAGE_MISC_H_

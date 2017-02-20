@@ -149,16 +149,15 @@ browser--QTabWidget::pane {
     border: 0 px;
 }
 
-
 browser--QTabBar::tab {
     /*left 3 px;*/
     /*alignment: bottom;*/
-    height: 10px;
+    height: 10 px;
     width: 16 px;
-    max-width: 16px;
+    max-width: 16 px;
     /* qproperty-alignment: AlignBottom;  AlignCenter | AlignVCenter;*/
     qproperty-wordWrap: false;
-    padding-bottom: 0px;
+    padding-bottom: 0 px;
     padding: 0 px;
     margin-left: 2 px;
     margin-right: 0 px;
@@ -166,13 +165,13 @@ browser--QTabBar::tab {
 
 browser--QTabWidget::tab-bar {
     /*alignment: bottom;*/
-    height: 10px;
-    width: 10px;
-    max-width: 10 px;
+    height: 10 px;
+    width: 16 px;
+    max-width: 16 px;
     text-align: left;
     /*qproperty-alignment: AlignBottom;*/
     qproperty-wordWrap: false;
-    padding-bottom: 0px;
+    padding-bottom: 0 px;
     margin-left: 2 px;
     padding: 0 px;
     margin-right: 0 px;

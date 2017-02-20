@@ -33,58 +33,58 @@ class QWidget;
 class QAction;
 
 class QuickpostTemplateDialog : public QDialog, public Ui::QuickpostTemplateForm {
-    Q_OBJECT
+Q_OBJECT
 
 public:
-    QuickpostTemplateDialog(QStringList&, QStringList&, QList<int>&, QList<bool>&, QList<QStringList>&, bool, QWidget* parent = 0);
-    QStringList templateTitles() { return _templateTitles; }
-    QStringList templateStrings() { return _templateStrings; }
-    QList<int> defaultPublishStates() { return _defaultPublishStates; }
-    QList<bool> copyTitleStates() { return _copyTitleStates; }
-    QList<QStringList> compileAssocHostLists(QStringList&);
-    QStringList compileAssocHostStrings(QList<QStringList>&);
-    QList<QStringList> assocHostLists();
+	QuickpostTemplateDialog(QStringList &, QStringList &, QList<int> &, QList<bool> &, QList<QStringList> &, bool, QWidget *parent = 0);
+	QStringList templateTitles(){return _templateTitles;}
+	QStringList templateStrings(){return _templateStrings;}
+	QList<int> defaultPublishStates(){return _defaultPublishStates;}
+	QList<bool> copyTitleStates(){return _copyTitleStates;}
+	QList<QStringList> compileAssocHostLists(QStringList &);
+	QStringList compileAssocHostStrings(QList<QStringList> &);
+	QList<QStringList> assocHostLists();
 
 private:
-    void acceptTemplate();
-    QStringList _templateTitles, originalTitles;
-    QStringList _templateStrings, originalStrings;
-    QList<int> _defaultPublishStates, originalPublishStates;
-    QList<bool> _copyTitleStates, originalCopyTitleStates;
-    QList<QStringList> _assocHostLists, originalAssocHostLists;
-    QStringList _assocHostStrings;
-    // QStringListModel *titlesModel;
-    bool doingNewTemplate;
-    bool dirty;
-    // QModelIndex currentListIndex;
-    int currentRow;
-    // int lowestNumber; // lowest number of templates in the list in the session
-    QAction* addTemplate;
-    QAction* removeTemplate;
-    QAction* insertTabIntoTemplate;
-    QString currentTemplateTitle, currentTemplateString;
-    bool defaultCPStatus;
+	void acceptTemplate();
+	QStringList _templateTitles, originalTitles;
+	QStringList _templateStrings, originalStrings;
+	QList<int> _defaultPublishStates, originalPublishStates;
+	QList<bool> _copyTitleStates, originalCopyTitleStates;
+	QList<QStringList> _assocHostLists, originalAssocHostLists;
+	QStringList _assocHostStrings;
+	// QStringListModel *titlesModel;
+	bool doingNewTemplate;
+	bool dirty;
+	// QModelIndex currentListIndex;
+	int currentRow;
+	// int lowestNumber; // lowest number of templates in the list in the session
+	QAction *addTemplate;
+	QAction *removeTemplate;
+	QAction *insertTabIntoTemplate;
+	QString currentTemplateTitle, currentTemplateString;
+	bool defaultCPStatus;
 
 private slots:
-    void changeListIndex(int);
-    void doNewTemplate();
-    void setDirty();
-    void setClean();
-    void on_pbNewTemplate_clicked() { doNewTemplate(); }
-    void removeThisTemplate();
-    void doInsertTabIntoTemplate();
-    // void on_pbAccept_clicked() { acceptTemplate(); }
-    void on_pbWhatsThis_clicked();
-    // void on_pbReset_clicked();
-    // void on_buttonBox_accepted();
-    void on_pbOK_clicked();
-    void on_pbCancel_clicked() { reject(); }
-    // void on_lwTemplates_clicked( const QModelIndex & );
-    void on_leName_textEdited(const QString&);
-    void on_teTemplateText_textChanged();
-    void on_teAssocHosts_textChanged();
-    void on_cbDefaultPublishStatus_currentIndexChanged(int);
-    void on_chCopyTitle_stateChanged(int);
+	void changeListIndex(int);
+	void doNewTemplate();
+	void setDirty();
+	void setClean();
+	void on_pbNewTemplate_clicked(){doNewTemplate();}
+	void removeThisTemplate();
+	void doInsertTabIntoTemplate();
+	// void on_pbAccept_clicked() { acceptTemplate(); }
+	void on_pbWhatsThis_clicked();
+	// void on_pbReset_clicked();
+	// void on_buttonBox_accepted();
+	void on_pbOK_clicked();
+	void on_pbCancel_clicked(){reject();}
+	// void on_lwTemplates_clicked( const QModelIndex & );
+	void on_leName_textEdited(const QString &);
+	void on_teTemplateText_textChanged();
+	void on_teAssocHosts_textChanged();
+	void on_cbDefaultPublishStatus_currentIndexChanged(int);
+	void on_chCopyTitle_stateChanged(int);
 };
 
 #endif

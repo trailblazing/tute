@@ -22,24 +22,24 @@
 #include <QAction>
 
 class QuickpostTemplate : public QAction {
-    Q_OBJECT
+Q_OBJECT
 
 public:
-    QuickpostTemplate(int, QString, QString, QObject* parent = 0);
-    ~QuickpostTemplate();
+	QuickpostTemplate(int, QString, QString, QObject *parent = 0);
+	~QuickpostTemplate();
 
-    void setIdentifier(int);
-    void setPostTemplate(QString);
-    int identifier() { return _identifier; }
-    QString postTemplate() { return _postTemplate; }
+	void setIdentifier(int);
+	void setPostTemplate(QString);
+	int identifier(){return _identifier;}
+	QString postTemplate(){return _postTemplate;}
 
 signals:
-    void quickpostRequested(int, QString);
+	void quickpostRequested(int, QString);
 
 private:
-    int _identifier;
-    QString _postTemplate;
+	int _identifier;
+	QString _postTemplate;
 
 private slots:
-    void emitRequestedSignal();
+	void emitRequestedSignal();
 };

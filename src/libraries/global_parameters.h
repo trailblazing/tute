@@ -38,7 +38,7 @@ class QSplitter;
 class EditorConfigDialog;
 class EditorConfig;
 class AttachTableController;
-class HidableTabWidget;
+class HidableTab;
 class EditorDock;
 class SysTrayIcon;
 
@@ -60,20 +60,20 @@ public:
 	gl_para(QObject *pobj = 0);
 	virtual ~gl_para();
 
-	//	void main_program_full_file(QString file);
+	// void main_program_full_file(QString file);
 	QString main_program_full_file(void) const;
-	//	QString main_program_dir() const;
+	// QString main_program_dir() const;
 
-	//	void init();// const QString &app_name
+	// void init();// const QString &app_name
 
-	//	QString app_mode() const;
-	//	void app_mode(const QString &mode);
+	// QString app_mode() const;
+	// void app_mode(const QString &mode);
 
 	QString root_path(void) const;
-	//	bool permanent_root_path_to_standard_path(QString path_name);
+	// bool permanent_root_path_to_standard_path(QString path_name);
 
-	//	QString root_path(void) const;
-	//	QString config_filename(void) const;
+	// QString root_path(void) const;
+	// QString config_filename(void) const;
 
 	QString target_os(void) const;
 	QString application_name(void) const;
@@ -93,11 +93,11 @@ public:
 	void v_right_splitter(QSplitter *vrightsplitter);
 	QSplitter *v_right_splitter() const;
 
-	void vtab_record(HidableTabWidget *point);
-	HidableTabWidget *vtab_record() const;
+	void vtab_record(HidableTab *point);
+	HidableTab *vtab_record() const;
 
-	//	void		vtab_tree(QTabWidget *point);
-	//	QTabWidget	*vtab_tree();
+	// void		vtab_tree(QTabWidget *point);
+	// QTabWidget	*vtab_tree();
 
 	void tree_screen(ts_t *point);
 	ts_t *tree_screen() const;
@@ -108,8 +108,8 @@ public:
 	void push_record_screen(rs_t *point);
 	std::set<rs_t *> record_screens() const;
 
-	//    void page_screen(RecordScreen *page);
-	//    RecordScreen *page_screen();
+	// void page_screen(RecordScreen *page);
+	// RecordScreen *page_screen();
 
 	void find_screen(FindScreen *point);
 	FindScreen *find_screen() const;
@@ -129,9 +129,9 @@ public:
 	void crypt_key(QByteArray hash);
 	QByteArray crypt_key(void) const;
 
-	//	// Файл стилей может создаваться и после развертывания начальных файлов
-	//	// Так как в более старых версиях его еще небыло
-	//	void create_stylesheet_file(QString config_dir);
+	//// Файл стилей может создаваться и после развертывания начальных файлов
+	//// Так как в более старых версиях его еще небыло
+	// void create_stylesheet_file(QString config_dir);
 
 	void style_source(const QString &source);
 	QString style_source() const;
@@ -146,10 +146,10 @@ public:
 
 	AttachTableController *attachtable_controller() const;
 	void attachtable_controller(AttachTableController *_attachtable_controller);
-	//	bool is_ini_config_exist(const QString &filename) const;
-	//	QMap<QString, QString>	config_ini() const;
-	//	QMap<QString, QString>	index_xml() const;
-	//	QMap<QString, QString>	editorconf() const;
+	// bool is_ini_config_exist(const QString &filename) const;
+	// QMap<QString, QString>	config_ini() const;
+	// QMap<QString, QString>	index_xml() const;
+	// QMap<QString, QString>	editorconf() const;
 	static constexpr char _program_instance_name[] = "tute"; // QCoreApplication::applicationName();// won't work
 	static constexpr char _mode_filename[]	= "mode.ini";
 	static constexpr char _conf_filename[]	= "conf.ini";
@@ -158,7 +158,7 @@ public:
 	static constexpr char _editor_conf_filename[] = "editorconf.ini";
 	static constexpr char _entrance_conf_filename[] = "entrance.ini";
 	static constexpr char _stylesheet_filename[] = "stylesheet.css";
-	//	static constexpr char _document_config_name[] = "document.ini";
+	// static constexpr char _document_config_name[] = "document.ini";
 	SysTrayIcon *tray_icon();
 	void tray_icon(SysTrayIcon *ti);
 
@@ -166,11 +166,11 @@ private:
 #define STANDARD_MODE	true
 #define PORTABLE_MODE	false
 	std::tuple<const bool, const QString> permanent_coordinate_root(const QString &recommend_root_path_ = "", bool force = false);
-	//	bool check_workdirectory(bool enablePortable);
+	// bool check_workdirectory(bool enablePortable);
 
-	//	void create_root_standard(void);
-	//	void create_root_portable(void);
-	//	void initialize_root_impl(const QString &root_dir);
+	// void create_root_standard(void);
+	// void create_root_portable(void);
+	// void initialize_root_impl(const QString &root_dir);
 
 	browser::Profile *_profile = nullptr;
 	ts_t *_tree_screen = nullptr;
@@ -184,7 +184,7 @@ private:
 	QSplitter *_v_left_splitter = nullptr;
 	QSplitter *_h_record_splitter	= nullptr;
 	QSplitter *_v_right_splitter	= nullptr;
-	HidableTabWidget *_vtab_record	= nullptr; //	HidableTabWidget			*_vtab_tree		= nullptr;
+	HidableTab *_vtab_record = nullptr; // HidableTabWidget			*_vtab_tree		= nullptr;
 	wn_t *_mainwindow = nullptr;
 	browser::DownloadManager *_download_manager = nullptr;
 	AttachTableController *_attachtable_controller = nullptr;
@@ -192,9 +192,9 @@ private:
 	QByteArray _password_hash;
 	QString _style_source = "";
 	QString _main_program_full_file = "";
-	//	QString _program_instance_name = "";
-	//	QString _main_program_path	= "";
-	//	QString	_root_path				= "./";
+	// QString _program_instance_name = "";
+	// QString _main_program_path	= "";
+	// QString	_root_path				= "./";
 
 	QString _root_path_given_by_system = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation); // QDir::homePath() + "/.config/" + gl_para::_program_instance_name;
 #ifdef USE_ALTERNATIVE_PATH

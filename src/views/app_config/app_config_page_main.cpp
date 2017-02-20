@@ -40,18 +40,18 @@ AppConfigPageMain::AppConfigPageMain(QWidget *parent)
 void AppConfigPageMain::setup_ui(void){
 	qDebug() << "Create main config page";
 
-	//    QString	standardItem	= tr("Standard");
-	//    QString	portableItem	= tr("Portable");
+	// QString	standardItem	= tr("Standard");
+	// QString	portableItem	= tr("Portable");
 
-	//	// Блок работы с выбором языка интерфейса
+	//// Блок работы с выбором языка интерфейса
 	_application_current_path_label = new QLabel(this);
 	_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
 
-	//    _application_mode_option = new MtComboBox(this);
-	//    _application_mode_option->setMinimumContentsLength(2);
-	//    _application_mode_option->addItem(standardItem);
-	//    _application_mode_option->addItem(portableItem);
-	//    _application_mode_option->setCurrentIndex(_application_mode_option->findText(globalparameters.app_mode(), Qt::MatchCaseSensitive));
+	// _application_mode_option = new MtComboBox(this);
+	// _application_mode_option->setMinimumContentsLength(2);
+	// _application_mode_option->addItem(standardItem);
+	// _application_mode_option->addItem(portableItem);
+	// _application_mode_option->setCurrentIndex(_application_mode_option->findText(globalparameters.app_mode(), Qt::MatchCaseSensitive));
 
 	_rootdir_label = new QLabel(this);
 	_rootdir_label->setText(tr("Root directory"));
@@ -142,16 +142,16 @@ void AppConfigPageMain::setup_ui(void){
 }
 
 AppConfigPageMain::~AppConfigPageMain(void){
-	//    delete datadirInput;
-	//    delete trashdirInput;
-	//    delete trashsizeInput;
-	//    delete trashmaxfilecountInput;
-	//    delete interfaceLanguage;
+	// delete datadirInput;
+	// delete trashdirInput;
+	// delete trashsizeInput;
+	// delete trashmaxfilecountInput;
+	// delete interfaceLanguage;
 
-	//    delete dateTimeFormatBox;
-	//    delete disableCustomDateTimeFormat;
-	//    delete enableCustomDateTimeFormat;
-	//    delete customDateTimeFormat;
+	// delete dateTimeFormatBox;
+	// delete disableCustomDateTimeFormat;
+	// delete enableCustomDateTimeFormat;
+	// delete customDateTimeFormat;
 }
 
 void AppConfigPageMain::setup_signals(void){
@@ -169,7 +169,7 @@ void AppConfigPageMain::assembly(void){
 	QHBoxLayout *application_current_path_layout = new QHBoxLayout();
 
 	application_current_path_layout->addWidget(_application_current_path_label);
-	//    application_mode_layout->addWidget(_application_mode_option);
+	// application_mode_layout->addWidget(_application_mode_option);
 
 	QHBoxLayout *rootdirLayout = new QHBoxLayout();
 	rootdirLayout->addWidget(_rootdir_input);
@@ -255,27 +255,27 @@ void AppConfigPageMain::open_rootdir_select_dialog(void){
 	auto root_path_ = rootdirSelectDialog.directory().absolutePath();
 	_rootdir_input->setText(root_path_);
 
-	//    _datadir_input->setText(root_path_ + "/" + QDir(_datadir_input->text()).dirName());
-	//    _trashdir_input->setText(root_path_ + "/" + QDir(_trashdir_input->text()).dirName());
+	// _datadir_input->setText(root_path_ + "/" + QDir(_datadir_input->text()).dirName());
+	// _trashdir_input->setText(root_path_ + "/" + QDir(_trashdir_input->text()).dirName());
 
-	//    QDir dir(root_path_);
-	//	// Проверяется, допустимо ли имя директории
-	//    if(! dir.isReadable()){
-	//	QMessageBox::warning(this, tr("Warning")
-	//			    , tr("The root directory does not exists or unavailable for reading.")
-	//			    , QMessageBox::Ok);
-	//    }	// else
-	//    if(! dir.exists()) DiskHelper::create_directory(QDir::rootPath(), root_path_);
-	//    if(dir.exists() && dir.isReadable()){
-	//	// Новое имя запоминается в конфиг
-	//	globalparameters.root_path(root_path_);
+	// QDir dir(root_path_);
+	//// Проверяется, допустимо ли имя директории
+	// if(! dir.isReadable()){
+	// QMessageBox::warning(this, tr("Warning")
+	// , tr("The root directory does not exists or unavailable for reading.")
+	// , QMessageBox::Ok);
+	// }	// else
+	// if(! dir.exists()) DiskHelper::create_directory(QDir::rootPath(), root_path_);
+	// if(dir.exists() && dir.isReadable()){
+	//// Новое имя запоминается в конфиг
+	// globalparameters.root_path(root_path_);
 	////	difficult_changes = 1;
-	//	if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
-	//	_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
-	//	_application_current_path_label->update();
-	//	assert(QDir(globalparameters.root_path()) == dir);
-	//	assert(dir.absolutePath() == QDir::currentPath());
-	//    }
+	// if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
+	// _application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
+	// _application_current_path_label->update();
+	// assert(QDir(globalparameters.root_path()) == dir);
+	// assert(dir.absolutePath() == QDir::currentPath());
+	// }
 }
 
 // Действия при нажатии кнопки выбора директории данных
@@ -345,8 +345,8 @@ Sample: dd.MM.yyyy - hh:mm:ss";
 int AppConfigPageMain::apply_changes(void){
 	qDebug() << "Apply changes main";
 
-	//    if((globalparameters.application_mode() != _application_mode_option->currentText()) || (_rootdir_input->text() != globalparameters.root_path())){
-	//    const auto	is_standard	= (_application_mode_option->currentText() == standardItem);
+	// if((globalparameters.application_mode() != _application_mode_option->currentText()) || (_rootdir_input->text() != globalparameters.root_path())){
+	// const auto	is_standard	= (_application_mode_option->currentText() == standardItem);
 
 	int difficult_changes = 0;
 
@@ -362,14 +362,14 @@ int AppConfigPageMain::apply_changes(void){
 				  }
 				  // else
 				  if(!dir.exists()) DiskHelper::create_directory(QDir::rootPath(), root_path_);
-				  //	    else{
-				  //		// Новое имя запоминается в конфиг
-				  //		globalparameters.root_path(root_path_l);
-				  //		difficult_changes = 1;
-				  //	    }
+				  // else{
+				  //// Новое имя запоминается в конфиг
+				  // globalparameters.root_path(root_path_l);
+				  // difficult_changes = 1;
+				  // }
 				  if(dir.exists() && dir.isReadable()){
 					  // Новое имя запоминается в конфиг
-					  //					  gl_paras->permanent_root_path_to_standard_path(dir.path());
+					  // gl_paras->permanent_root_path_to_standard_path(dir.path());
 					  result = gl_paras->permanent_coordinate_root(_rootdir_input->text(), true); // is_standard,
 					  difficult_changes = 1;
 					  if(QDir::currentPath() != dir.absolutePath()) QDir::setCurrent(dir.absolutePath());
@@ -426,28 +426,28 @@ int AppConfigPageMain::apply_changes(void){
 		difficult_changes = 1;
 	}
 	if(_original_root_state != result){
-		//	if(std::get<1>(result) != is_standard) _application_mode_option->setCurrentText(is_standard ?  standardItem : portableItem);
-		//	if(std::get<2>(result) != _rootdir_input->text()){
+		// if(std::get<1>(result) != is_standard) _application_mode_option->setCurrentText(is_standard ?  standardItem : portableItem);
+		// if(std::get<2>(result) != _rootdir_input->text()){
 		_rootdir_input->setText(std::get<1>(result));
-//		write_root();
+// write_root();
 
 		_application_current_path_label->setText(tr("Application current path: \"%1\".").arg(QDir::currentPath()));
 		_application_current_path_label->update();
 		_datadir_input->setText(QDir::cleanPath((std::get<1>(result) + "/" + QDir(_datadir_input->text()).dirName())));
-//		write_data();
+// write_data();
 		_trashdir_input->setText(QDir::cleanPath((std::get<1>(result) + "/" + QDir(_trashdir_input->text()).dirName())));
-//		write_trash();
-		//	}
+// write_trash();
+		// }
 		difficult_changes = 1;
 		assert(QDir(gl_paras->root_path()) == QDir(std::get<1>(result)));
 		assert(QDir(std::get<1>(result)).absolutePath() == QDir::currentPath());
-		//	if(std::get<0>(result)){
+		// if(std::get<0>(result)){
 		QMessageBox message;
 		message.setText("The changes of application mode will take effect after restart the application."); // You have to restart Mytetra for the configuration changes to take effect.
 		message.exec();
 		exit(0);
-		//	}
+		// }
 	} // else difficult_changes = 0;
-	  //    }
+	  // }
 	return difficult_changes;
 }

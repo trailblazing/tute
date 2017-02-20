@@ -49,7 +49,7 @@ private slots:
 
 private:
 	QLabel *_application_current_path_label;
-	//        MtComboBox	*_application_mode_option;
+	// MtComboBox	*_application_mode_option;
 
 	QLabel *_rootdir_label;
 	QLineEdit *_rootdir_input;

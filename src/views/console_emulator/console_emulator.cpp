@@ -19,143 +19,129 @@ extern std::shared_ptr<AppConfig> appconfig;
 W_OBJECT_IMPL(ConsoleEmulator)
 #endif
 
-ConsoleEmulator::ConsoleEmulator(QWidget* parent)
-    : QDialog(parent)
-{
-    isError = false;
+ConsoleEmulator::ConsoleEmulator(QWidget *parent)
+	: QDialog(parent){
+	isError = false;
 
-    setupUI();
-    setupSignals();
-    assembly();
+	setupUI();
+	setupSignals();
+	assembly();
 }
 
-ConsoleEmulator::~ConsoleEmulator()
-{
-    delete waitClock;
-    delete messageLabel;
-    delete buttonCancel;
-    delete buttonDetails;
-    delete consoleOutput;
-    delete escShortcut;
+ConsoleEmulator::~ConsoleEmulator(){
+	delete waitClock;
+	delete messageLabel;
+	delete buttonCancel;
+	delete buttonDetails;
+	delete consoleOutput;
+	delete escShortcut;
 }
 
-void ConsoleEmulator::setupUI(void)
-{
-    messageLabel = new QLabel(this);
+void ConsoleEmulator::setupUI(void){
+	messageLabel = new QLabel(this);
 
-    buttonDetails = new FlatToolButton("", this);
-    buttonDetails->setIcon(QIcon(":/resource/pic/expand_console.svg"));
+	buttonDetails = new FlatToolButton("", this);
+	buttonDetails->setIcon(QIcon(":/resource/pic/expand_console.svg"));
 
-    buttonCancel = new QPushButton(this);
-    buttonCancel->setText(tr("Cancel"));
-    buttonCancel->setDefault(true);
+	buttonCancel = new QPushButton(this);
+	buttonCancel->setText(tr("Cancel"));
+	buttonCancel->setDefault(true);
 
-    consoleOutput = new QTextEdit(this);
-    consoleOutput->setReadOnly(true);
-    consoleOutput->setFontFamily("monospace");
-    if (appconfig->synchro_console_details() == false)
-        consoleOutput->hide();
-    waitClock = new WaitClock(this);
+	consoleOutput = new QTextEdit(this);
+	consoleOutput->setReadOnly(true);
+	consoleOutput->setFontFamily("monospace");
+	if(appconfig->synchro_console_details() == false) consoleOutput->hide();
+	waitClock = new WaitClock(this);
 
-    escShortcut = new QShortcut(QKeySequence("Esc"), this);
+	escShortcut = new QShortcut(QKeySequence("Esc"), this);
 }
 
-void ConsoleEmulator::setupSignals(void)
-{
-    connect(buttonCancel, &QPushButton::clicked, this, &ConsoleEmulator::onCancelClick);
-    connect(buttonDetails, &FlatToolButton::clicked, this, &ConsoleEmulator::onDetailsClick);
+void ConsoleEmulator::setupSignals(void){
+	connect(buttonCancel, &QPushButton::clicked, this, &ConsoleEmulator::onCancelClick);
+	connect(buttonDetails, &FlatToolButton::clicked, this, &ConsoleEmulator::onDetailsClick);
 
-    connect(escShortcut, &QShortcut::activated, this, &ConsoleEmulator::onCancelClick);
+	connect(escShortcut, &QShortcut::activated, this, &ConsoleEmulator::onCancelClick);
 }
 
-void ConsoleEmulator::assembly(void)
-{
-    upToolbar = new QHBoxLayout;
-    upToolbar->addWidget(waitClock);
-    upToolbar->addWidget(messageLabel);
-    upToolbar->addStretch();
-    upToolbar->addWidget(buttonDetails);
-    upToolbar->addWidget(buttonCancel);
+void ConsoleEmulator::assembly(void){
+	upToolbar = new QHBoxLayout;
+	upToolbar->addWidget(waitClock);
+	upToolbar->addWidget(messageLabel);
+	upToolbar->addStretch();
+	upToolbar->addWidget(buttonDetails);
+	upToolbar->addWidget(buttonCancel);
 
-    QVBoxLayout* vLayout = new QVBoxLayout;
-    vLayout->addLayout(upToolbar);
-    vLayout->addWidget(consoleOutput);
+	QVBoxLayout *vLayout = new QVBoxLayout;
+	vLayout->addLayout(upToolbar);
+	vLayout->addWidget(consoleOutput);
 
-    buttonCancel->setFocus();
+	buttonCancel->setFocus();
 
-    setLayout(vLayout);
+	setLayout(vLayout);
 }
 
-void ConsoleEmulator::setMessageText(QString text)
-{
-    messageLabel->setText(text);
+void ConsoleEmulator::setMessageText(QString text){
+	messageLabel->setText(text);
 }
 
-void ConsoleEmulator::setConsoleOutput(QString text)
-{
-    consoleOutput->setPlainText(text);
-    consoleOutput->moveCursor(QTextCursor::End);
+void ConsoleEmulator::setConsoleOutput(QString text){
+	consoleOutput->setPlainText(text);
+	consoleOutput->moveCursor(QTextCursor::End);
 
-    QScrollBar* v = consoleOutput->verticalScrollBar();
-    v->setValue(v->maximum());
+	QScrollBar *v = consoleOutput->verticalScrollBar();
+	v->setValue(v->maximum());
 }
 
-void ConsoleEmulator::clearConsoleOutput(void)
-{
-    consoleOutput->setPlainText("");
+void ConsoleEmulator::clearConsoleOutput(void){
+	consoleOutput->setPlainText("");
 }
 
-void ConsoleEmulator::addConsoleOutput(QString text)
-{
-    consoleOutput->setPlainText(consoleOutput->toPlainText() + text);
-    consoleOutput->moveCursor(QTextCursor::End);
+void ConsoleEmulator::addConsoleOutput(QString text){
+	consoleOutput->setPlainText(consoleOutput->toPlainText() + text);
+	consoleOutput->moveCursor(QTextCursor::End);
 
-    QScrollBar* v = consoleOutput->verticalScrollBar();
-    v->setValue(v->maximum());
+	QScrollBar *v = consoleOutput->verticalScrollBar();
+	v->setValue(v->maximum());
 }
 
-void ConsoleEmulator::onCancelClick(void)
-{
-    qDebug() << "ConsoleEmulator::onCancelClick() : Click cancel";
+void ConsoleEmulator::onCancelClick(void){
+	qDebug() << "ConsoleEmulator::onCancelClick() : Click cancel";
 
-    this->close(); // Будет сгенерировано событие closeEvent
+	this->close(); // Будет сгенерировано событие closeEvent
 }
 
-void ConsoleEmulator::closeEvent(QCloseEvent* event)
-{
-    qDebug() << "ConsoleEmulator::closeEvent() : Detect close event";
+void ConsoleEmulator::closeEvent(QCloseEvent *event){
+	qDebug() << "ConsoleEmulator::closeEvent() : Detect close event";
 
-    emit cancelConsole();
+	emit cancelConsole();
 
-    event->accept();
+	event->accept();
 }
 
-void ConsoleEmulator::onDetailsClick(void)
-{
-    if (consoleOutput->isHidden()) {
-        consoleOutput->show();
-        appconfig->synchro_console_details(true);
-    } else {
-        consoleOutput->hide();
-        appconfig->synchro_console_details(false);
-    }
-    this->adjustSize();
+void ConsoleEmulator::onDetailsClick(void){
+	if(consoleOutput->isHidden()){
+		consoleOutput->show();
+		appconfig->synchro_console_details(true);
+	}else{
+		consoleOutput->hide();
+		appconfig->synchro_console_details(false);
+	}
+	this->adjustSize();
 }
 
-void ConsoleEmulator::switchToErrorView(void)
-{
-    qDebug() << "ConsoleEmulator::switchToErrorView() : Detect error!";
+void ConsoleEmulator::switchToErrorView(void){
+	qDebug() << "ConsoleEmulator::switchToErrorView() : Detect error!";
 
-    isError = true;
+	isError = true;
 
-    // Верхняя строка скрывается
-    // QLayoutItem *child;
-    // while ((child = upToolbar->takeAt(0)) != 0)
-    //   child->widget()->hide();
+	// Верхняя строка скрывается
+	// QLayoutItem *child;
+	// while ((child = upToolbar->takeAt(0)) != 0)
+	// child->widget()->hide();
 
-    // Сообщение об обнаруженной ошибке
-    messageLabel->setText("<b>" + tr("Commands running error") + "</b>");
+	// Сообщение об обнаруженной ошибке
+	messageLabel->setText("<b>" + tr("Commands running error") + "</b>");
 
-    // Консольный вывод показывается, так как он возможно не был открыт, если не был выбран развернутый вид
-    consoleOutput->show();
+	// Консольный вывод показывается, так как он возможно не был открыт, если не был выбран развернутый вид
+	consoleOutput->show();
 }

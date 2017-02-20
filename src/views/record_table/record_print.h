@@ -18,37 +18,37 @@ class rs_t;
 
 class RecordPrint : public QDialog {
 #if QT_VERSION == 0x050600
-    W_OBJECT(RecordPrint)
+W_OBJECT(RecordPrint)
 #else
-    Q_OBJECT
+Q_OBJECT
 #endif
 
 public:
-    RecordPrint(rs_t* _record_screen = 0);
-    virtual ~RecordPrint();
+	RecordPrint(rs_t *record_screen = 0);
+	virtual ~RecordPrint();
 
-    void setModel(RecordProxyModel* iModel);
-    void generateHtmlTableFromModel(void);
-    void setTitleToHtml(QString title);
+	void setModel(RecordProxyModel *iModel);
+	void generateHtmlTableFromModel(void);
+	void setTitleToHtml(QString title);
 
 protected slots:
 
-    void print(void);
-    void save(void);
+	void print(void);
+	void save(void);
 
 private:
-    QTextEdit* textArea; // Отображение текста с таблицей, выводимой на печать
-    QDialogButtonBox* buttonBox; // Линейка с кнопками
+	QTextEdit *textArea; // Отображение текста с таблицей, выводимой на печать
+	QDialogButtonBox *buttonBox; // Линейка с кнопками
 
-    QPushButton* printButton;
-    QPushButton* saveButton;
-    QPushButton* cancelButton;
+	QPushButton *printButton;
+	QPushButton *saveButton;
+	QPushButton *cancelButton;
 
-    RecordProxyModel* model;
+	RecordProxyModel *model;
 
-    void setup_ui(void);
-    void setup_signals(void);
-    void assembly(void);
+	void setup_ui(void);
+	void setup_signals(void);
+	void assembly(void);
 };
 
 #endif /* _RECORD_TABLE_PRINT_H_ */

@@ -75,6 +75,7 @@ DEFINES += USE_WYEDIT
 DEFINES += USE_QTM
 DEFINES += LOAD_TEXT_BY_WYEDITOR
 DEFINES += USE_MAIN_MENU_IN_BUTTON
+#DEFINES += USE_EDITOR_WRAP
 
 # http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
 
@@ -301,7 +302,6 @@ HEADERS     =   \
     src/views/enter_password/enter_password.h \
     src/views/find_in_base_screen/find_screen.h \
     src/views/main_window/main_window.h \
-    src/views/main_window/hidable_tabwidget.h \
     src/views/print_preview/print_preview.h \
     src/views/print_preview/view_preview.h \
     src/views/record/add_new_record.h \
@@ -336,7 +336,8 @@ HEADERS     =   \
     src/views/record/editor_wrap.h \
     src/views/browser/browser_dock.h \
     src/views/record/editor_dock.h \
-    src/views/browser/toolbar_search.h
+    src/views/browser/toolbar_search.h \
+    src/views/main_window/hidable_tab.h
 
 
 
@@ -444,7 +445,6 @@ SOURCES     =   src/main.cpp \
     src/views/dialog/reduce_message_box.cpp \
     src/views/enter_password/enter_password.cpp \
     src/views/find_in_base_screen/find_screen.cpp \
-    src/views/main_window/hidable_tabwidget.cpp \
     src/views/main_window/main_window.cpp \
     src/views/print_preview/view_preview.cpp \
     src/views/print_preview/print_preview.cpp \
@@ -481,7 +481,8 @@ SOURCES     =   src/main.cpp \
     src/views/record/editor_wrap.cpp \
     src/views/browser/browser_dock.cpp \
     src/views/record/editor_dock.cpp \
-    src/views/browser/toolbar_search.cpp
+    src/views/browser/toolbar_search.cpp \
+    src/views/main_window/hidable_tab.cpp
 
 
 lessThan(QT_MAJOR_VERSION,5) {
