@@ -119,8 +119,8 @@ _______________________________________________________________________
 
 
 * If a staitc polymorphism is feasible, escape dynamic one.
-* Keep class abstraction as possible ad you could.
-* If a function you use it just once, use a lambda;
+* Keep class abstraction as possible as you could.
+* If a function you used it just once, use a lambda;
 
 
 * The name of the file with the implementation of the class is based on the principle ClassName.cpp/classname.cxx (prefer: class_name.cxx);
@@ -148,7 +148,7 @@ _______________________________________________________________________
 
 
 * Tab prohibited padding spaces are made (use folling code beautifiers);
-* Margin - 0 spaces (use folling code beautifiers);
+* Margin - 0 spaces (use style sheet);
 * Comments must have the same indentation that of the code (use folling code beautifiers);
 
 
