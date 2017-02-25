@@ -95,7 +95,7 @@ QDataStream &operator >>(QDataStream &stream, QList<QNetworkCookie> &list){
 
 QT_END_NAMESPACE
 
-namespace browser {
+namespace web {
 	CookieJar::CookieJar(QObject *parent)
 		: QNetworkCookieJar(parent)
 		  , _loaded(false)

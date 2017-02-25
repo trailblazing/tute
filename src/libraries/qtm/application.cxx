@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 #include "application.h"
-#include "editing_window.h"
+#include "blogger.h"
 #include <QMenuBar>
 #include <QtCore>
 
@@ -175,15 +175,15 @@ void Application::add_recent_file(const QString &title, const QString &filename)
 }
 
 void Application::saveAll(){
-	EditingWindow *e;
+	Blogger *e;
 	QWidgetList tlw = QApplication::topLevelWidgets();
 	Q_FOREACH(QWidget *w, tlw){
-		e = qobject_cast<EditingWindow *>(w);
+		e = qobject_cast<Blogger *>(w);
 		if(e) e->save();
 	}
 }
 
-void Application::setMainWindow(EditingWindow *ew){
+void Application::setMainWindow(Blogger *ew){
 #ifdef Q_OS_MAC
 	emit mainWindowChanged(ew);
 #endif

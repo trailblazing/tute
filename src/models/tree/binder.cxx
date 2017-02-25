@@ -1,6 +1,6 @@
 #include "binder.hxx"
 #include "models/tree/tree_item.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/webview.h"
 #include "views/main_window/hidable_tab.h"
 #include "views/main_window/main_window.h"
@@ -59,11 +59,11 @@ Binder::Binder(
 			  ////    }
 			  // std::get<6>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host->binder();};    // std::make_shared<item_binder_exist>([&](boost::intrusive_ptr<TreeItem> host) {return host->binder();});
 
-			  // std::get<7>(_state) = [&](browser::WebPage * page) {return page->binder();};;               // std::make_shared<page_binder_exist>([&](browser::WebPage * page) {return page->binder();});
+			  // std::get<7>(_state) = [&](web::WebPage * page) {return page->binder();};;               // std::make_shared<page_binder_exist>([&](web::WebPage * page) {return page->binder();});
 
 			  // std::get<8>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();};   // std::make_shared<item_link_coincident>([&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();});
 
-			  // std::get<9>(_state) = [&](browser::WebPage * page) {return page == page_link();};               // std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page = page_link();});
+			  // std::get<9>(_state) = [&](web::WebPage * page) {return page == page_link();};               // std::make_shared<page_link_coincident>([&](web::WebPage * page) {return page = page_link();});
 
 			  return result; // integrity_internal();
 		  };
@@ -112,7 +112,7 @@ Binder::~Binder(){
 	// std::function<void (boost::intrusive_ptr<TreeItem>)>
 	// close_tab_recursive
 	// = [&](boost::intrusive_ptr<TreeItem> it) -> void {
-	// browser::WebView *v = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return b->host() == it;});
+	// web::WebView *v = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return b->host() == it;});
 	// if(v){
 	// v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
 	// }
@@ -121,8 +121,8 @@ Binder::~Binder(){
 	// }
 	// };
 	////    //
-	////    browser::WebView *view = bounded_page()->view();    //_page->view();
-	////    browser::TabWidget *tabmanager = nullptr;
+	////    web::WebView *view = bounded_page()->view();    //_page->view();
+	////    web::TabWidget *tabmanager = nullptr;
 	////    if(view) {
 	////        tabmanager = view->tabmanager();
 	////    }
@@ -142,7 +142,7 @@ Binder::~Binder(){
 
 	////        if(view && tabmanager // && is_holder
 	////          ) {
-	//// && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
+	//// && check_register_record(QUrl(web::DockedWindow::_defaulthome)) != this
 
 	////                assert(_record_binder->bounded_page() == _record_binder->bounded_item()->unique_page());   // _page->rebind_record() make sure of this statement
 
@@ -165,23 +165,19 @@ bool Binder::make_integrity(){
 	if(!std::get<0>(_status)()) result = false;
 	if(!std::get<1>(_status)()) result = false;
 	////    if(il() && pl()) {
-
 	// auto ilb = [&]() {return item_link()->binder();};   // 2
 	// auto plb = [&]() {return page_link()->binder();};   // 3
-
 	// assert(!(*_item_linker)()->binder());
 	// assert(!item_link()->binder());
 	////    if(!std::get<2>(_state)()) {
 	// (*_item_linker)()->binder(std::move(boost::intrusive_ptr<coupler>(const_cast<coupler *>(this))));
-
-	_host_linker()->binder(std::forward<boost::intrusive_ptr<Binder> >(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
+	if(_host_linker()->binder() != this) _host_linker()->binder(std::forward<boost::intrusive_ptr<Binder> >(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
 	////    }; // std::make_shared<binder_exist>([&]() {return item_link()->binder();});
 	// assert(item_link()->binder());
 	if(!std::get<2>(_status)()) result = false;
 	////    if(!std::get<3>(_state)()) {
 	// (*_page_linker)()->binder(std::move(boost::intrusive_ptr<coupler>(const_cast<coupler *>(this))));
-
-	_page_linker()->binder(std::forward<boost::intrusive_ptr<Binder> >(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
+	if(_page_linker()->binder() != this) _page_linker()->binder(std::forward<boost::intrusive_ptr<Binder> >(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
 	////    };  // std::make_shared<binder_exist>([&]() {return page_link()->binder();});
 	// assert(page_link()->binder());
 	if(!std::get<3>(_status)()) result = false;
@@ -196,11 +192,11 @@ bool Binder::make_integrity(){
 	////    }
 	// std::get<6>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host->binder();};    // std::make_shared<item_binder_exist>([&](boost::intrusive_ptr<TreeItem> host) {return host->binder();});
 
-	// std::get<7>(_state) = [&](browser::WebPage * page) {return page->binder();};;               // std::make_shared<page_binder_exist>([&](browser::WebPage * page) {return page->binder();});
+	// std::get<7>(_state) = [&](web::WebPage * page) {return page->binder();};;               // std::make_shared<page_binder_exist>([&](web::WebPage * page) {return page->binder();});
 
 	// std::get<8>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();};   // std::make_shared<item_link_coincident>([&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();});
 
-	// std::get<9>(_state) = [&](browser::WebPage * page) {return page == page_link();};               // std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page = page_link();});
+	// std::get<9>(_state) = [&](web::WebPage * page) {return page == page_link();};               // std::make_shared<page_link_coincident>([&](web::WebPage * page) {return page = page_link();});
 
 	return result; // integrity_internal();
 }
@@ -252,18 +248,18 @@ Binder::status_type Binder::state_impl(){
 
 	// std::get<6>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host->binder();};    //
 	////    std::get<6>(*_state) = std::make_shared<item_binder_exist>([&](boost::intrusive_ptr<TreeItem> host) {return host->binder();});
-	// std::get<7>(_state) = [&](browser::WebPage * page) {return page->binder();};               //
-	////    std::get<7>(*_state) = std::make_shared<page_binder_exist>([&](browser::WebPage * page) {return page->binder();});
+	// std::get<7>(_state) = [&](web::WebPage * page) {return page->binder();};               //
+	////    std::get<7>(*_state) = std::make_shared<page_binder_exist>([&](web::WebPage * page) {return page->binder();});
 
 	// std::get<8>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();};   //
 	////    std::get<8>(*_state) = std::make_shared<item_link_coincident>([&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();});
-	// std::get<9>(_state) = [&](browser::WebPage * page) {return page == page_link();};               //
-	////    std::get<9>(*_state) = std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page == page_link();});
+	// std::get<9>(_state) = [&](web::WebPage * page) {return page == page_link();};               //
+	////    std::get<9>(*_state) = std::make_shared<page_link_coincident>([&](web::WebPage * page) {return page == page_link();});
 
 	std::get<6>(status) = [&](boost::intrusive_ptr<const TreeItem> host_){return host_ == _host_linker();}; //
 	// std::get<6>(*_state) = std::make_shared<item_link_coincident>([&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();});
-	std::get<7>(status) = [&](const browser::WebPage *page_){return page_ == _page_linker();}; //
-	// std::get<7>(*_state) = std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page == page_link();});
+	std::get<7>(status) = [&](const web::WebPage *page_){return page_ == _page_linker();}; //
+	// std::get<7>(*_state) = std::make_shared<page_link_coincident>([&](web::WebPage * page) {return page == page_link();});
 
 	return status;
 }
@@ -274,7 +270,7 @@ bool Binder::integrity_internal() const {
 	// (*std::get<0>(*_state))() && (*std::get<1>(*_state))() && (*std::get<2>(*_state))() && (*std::get<3>(*_state))() && (*std::get<4>(*_state))() && (*std::get<5>(*_state))();
 }
 
-bool Binder::integrity_external(boost::intrusive_ptr<const TreeItem> host, const browser::WebPage *page) const {
+bool Binder::integrity_external(boost::intrusive_ptr<const TreeItem> host, const web::WebPage *page) const {
 	return std::get<0>(_status)() && std::get<1>(_status)() && std::get<2>(_status)() && std::get<3>(_status)() && std::get<4>(_status)() && std::get<5>(_status)() && std::get<6>(_status)(host) && std::get<7>(_status)(page); // && std::get<8>(_state)(host) && std::get<9>(_state)(page);  //
 	// (*std::get<0>(_state))() && (*std::get<1>(_state))() && (*std::get<2>(_state))() && (*std::get<3>(_state))() && (*std::get<4>(_state))() && (*std::get<5>(_state))() && (*std::get<6>(_state))(host) && (*std::get<7>(_state))(page) && (*std::get<8>(_state))(host) && (*std::get<9>(_state))(page);
 	// (*std::get<0>(*_state))() && (*std::get<1>(*_state))() && (*std::get<2>(*_state))() && (*std::get<3>(*_state))() && (*std::get<4>(*_state))() && (*std::get<5>(*_state))() && (*std::get<6>(*_state))(host) && (*std::get<7>(*_state))(page) && (*std::get<8>(*_state))(host) && (*std::get<9>(*_state))(page);
@@ -292,35 +288,37 @@ bool Binder::integrity_external(boost::intrusive_ptr<const TreeItem> host, const
 
 void Binder::host(boost::intrusive_ptr<TreeItem> &&it){_item_linker_set(std::forward<boost::intrusive_ptr<TreeItem> >(it));}
 
-void Binder::page(browser::WebPage *page){return _page_linker_set(std::forward<browser::WebPage *>(page));}
+void Binder::page(web::WebPage *page){return _page_linker_set(std::forward<web::WebPage *>(page));}
 
 boost::intrusive_ptr<TreeItem> Binder::host() const {return _host_linker();}
 
-browser::WebPage *Binder::page() const {
-	browser::WebPage *_page = _page_linker();
-	auto _host = _host_linker();
-	if(!integrity_external(_host, _page) && _host){
-		browser::WebView *v = nullptr;
-		auto browser = gl_paras->main_window()->activated_browser();
+web::WebPage *Binder::page() const {
+	web::WebPage *_page = _page_linker();
+//	auto _host = _host_linker();
+//	if(!integrity_external(_host, _page) && _host){
+//		web::WebView *v = nullptr;
+//		auto browser = _page->browser();//gl_paras->main_window()->browser(_host->field<name_type>());
 
-		// boost::intrusive_ptr<TreeItem> record_previous_item = browser->tabmanager()->currentWebView()->page()->binder()->host();
+//		// boost::intrusive_ptr<TreeItem> record_previous_item = browser->tabmanager()->currentWebView()->page()->binder()->host();
 
-		////	record_previous_item = browser->record_screen()->record_controller()->source_model()->item(pos_source(browser->record_screen()->record_controller()->view()->previous_index().row()));
-		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, _host); // , record_previous_item
+//		////	record_previous_item = browser->record_screen()->record_controller()->source_model()->item(pos_source(browser->record_screen()->record_controller()->view()->previous_index().row()));
+//		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->tabmanager()->record_controller()->source_model();}, _host); // , record_previous_item
 
-		auto browser_bind_activate = [&](boost::intrusive_ptr<RecordIndex> _record_index) -> browser::WebView * {
-						     return browser->bind(_record_index)->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1)); // item_bind_();
-					     };
+//		auto browser_bind_activate
+//			= [&](boost::intrusive_ptr<RecordIndex> _record_index) -> web::WebView * {
+//				  return browser->bind(_record_index)->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1)); // item_bind_();
+//			  };
 
-		v = browser_bind_activate(record_index);
-		_page = v->page();
-		assert(integrity_external(_host, _page));
-	}
+//		v = browser_bind_activate(record_index);
+//		_page = v->page();
+//		assert(integrity_external(_host, _page));
+//		page(_page);
+//	}
 	return _page;
 }
 
-browser::WebView *Binder::bind(){return _bind_helper();}
+web::WebView *Binder::bind(){return _bind_helper();}
 
-browser::WebView *Binder::activate(){return _activate_helper();}
+web::WebView *Binder::activate(){return _activate_helper();}
 
 Binder::status_type Binder::state() const {return _status;}

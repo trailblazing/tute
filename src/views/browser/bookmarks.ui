@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>browser::BookmarksDialog</class>
- <widget class="QDialog" name="browser::BookmarksDialog">
+ <class>web::BookmarksDialog</class>
+ <widget class="QDialog" name="web::BookmarksDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -108,7 +108,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>browser::BookmarksDialog</receiver>
+   <receiver>web::BookmarksDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -28,14 +28,14 @@
 #include <QtCore>
 #include <QtXml>
 
-#include "editing_window.h"
+#include "blogger.h"
 
 class XmlRpcHandler : public QXmlDefaultHandler {
 public:
-	XmlRpcHandler(EditingWindow::HttpBusinessType x);
+	XmlRpcHandler(Blogger::HttpBusinessType x);
 	XmlRpcHandler();
 
-	void setProtocol(EditingWindow::HttpBusinessType x);
+	void setProtocol(Blogger::HttpBusinessType x);
 
 	bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &attr);
 	bool endElement(const QString &nu, const QString &localName, const QString &qName);
@@ -49,7 +49,7 @@ public:
 	QDomDocumentFragment returnXml();
 
 private:
-	EditingWindow::HttpBusinessType reqType;
+	Blogger::HttpBusinessType reqType;
 	QString currentString;
 	QString currentRpcArgumentName;
 	QString _faultString;

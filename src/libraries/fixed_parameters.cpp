@@ -28,6 +28,11 @@
 W_OBJECT_IMPL(FixedParameters)
 #endif
 
+
+//constexpr const natural_field_type FixedParameters::_record_natural_field_static = natural_field_type();
+
+constexpr const natural_field_tuple FixedParameters::_record_natural_field_tuple;// = natural_field_tuple();
+
 // Получение описаний набора полей
 QMap<QString, QString> FixedParameters::record_field_description(QStringList list) const {
 	QMap<QString, QString> description;
@@ -180,14 +185,15 @@ bool FixedParameters::is_record_field_available(QString name) const {
 	return _record_field.contains(name);
 }
 
-bool FixedParameters::is_record_field_natural(QString name) const {
-	// if(_record_natural_field.contains(name))
-	// return true;
-	// else
-	// return false;
-
-	return _record_natural_field.contains(name);
-}
+//template<typename concrete>
+//bool FixedParameters::is_record_field_natural() const {//QString name
+//	// if(_record_natural_field.contains(name))
+//	// return true;
+//	// else
+//	// return false;
+//	return boost::mpl::contains<natural_field_type, concrete>::type::value;
+////	return _record_natural_field.contains(name);
+//}
 
 bool FixedParameters::is_record_field_calculable(QString name) const {
 	// if(_record_calculable_field.contains(name))

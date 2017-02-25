@@ -26,7 +26,7 @@
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_know_model.h"
 #include "views/app_config/app_config_dialog.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/console_emulator/execute_command.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/print_preview/print_preview.h"
@@ -35,14 +35,14 @@
 #include "views/tree/tree_screen.h"
 
 #include "libraries/qt_single_application5/qtsingleapplication.h"
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #include "libraries/qtm/sys_tray_icon.h"
 #include "libraries/wyedit/editor_text_area.h"
 #include "views/browser/bookmarks.h"
 #include "views/browser/browser.h"
 #include "views/browser/downloadmanager.h"
 #include "views/browser/history.h"
-#include "views/record/editor_dock.h"
+
 #include "views/tree/tree_view.h"
 
 extern std::shared_ptr<AppConfig> appconfig;
@@ -58,8 +58,9 @@ const char *record_screen_multi_instance_name = "record_screen";
 const char *tree_screen_singleton_name	= "tree_screen";
 const char *find_screen_singleton_name	= "find_screen";
 const char *download_manager_singleton_name = "download_manager";
-const char *windowswitcher_singleton_name = "window_switcher";
-const char *browser_dock_singleton_name = "entrance";
+const char *windowswitcher_singleton_name	= "window_switcher";
+const char *browser_docker_singleton_name	= "browser_docker";
+const char *editor_docker_singleton_name	= "editor_docker";
 const char *record_controller_multi_instance_name = "record_controller"; // std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
 const char *record_view_multi_instance_name = "record_view";
 
@@ -70,12 +71,7 @@ extern const char *action_find_in_base;
 W_OBJECT_IMPL(wn_t)
 #endif
 
-wn_t::wn_t(
-	// std::shared_ptr<gl_para> gl_paras
-	// , std::shared_ptr<AppConfig> appconfig_
-	// , std::shared_ptr<DataBaseConfig> databaseconfig_
-	// ,
-	browser::Profile *profile, QString style_source)
+wn_t::wn_t(web::Profile *profile, QString style_source)// std::shared_ptr<gl_para> gl_paras	// , std::shared_ptr<AppConfig> appconfig_	// , std::shared_ptr<DataBaseConfig> databaseconfig_	// ,
 	: QMainWindow()
 	  // , _gl_paras([&]() -> std::shared_ptr<gl_para>  {gl_paras->main_window(this); return gl_paras;} ())
 	  // , _appconfig(appconfig_)
@@ -89,23 +85,23 @@ wn_t::wn_t(
 	  , _h_record_splitter([&]() -> QSplitter * {auto hrs = new QSplitter(Qt::Horizontal); hrs->setSizes(appconfig->h_record_splitter_sizelist()); gl_paras->h_record_splitter(hrs); return hrs;} ())
 	  , _h_tree_splitter([&]() -> QSplitter * {auto hls = new QSplitter(Qt::Horizontal); hls->setSizes(appconfig->h_tree_splitter_sizelist()); gl_paras->h_tree_splitter(hls); return hls;} ()) // Qt::Vertical
 	  // , _h_splitter(new QSplitter(Qt::Horizontal))
-	  , _filemenu(new QMenu(tr("&File"), this))
-	  , _editmenu(new QMenu(tr("&Edit"), this))
-	  , _viewmenu(new QMenu(tr("&View"), this))
-	  , _histrymenu(new browser::HistoryMenu(this))
-	  , _bookmarkmenu(new browser::BookmarksMenu(this))
-	  , _windowmenu(new QMenu(tr("&Window"), this))
-	  , _toolsmenu(new QMenu(tr("&Tools"), this))
-	  , _helpmenu(new QMenu(tr("&Help"), this))
-	  , _tree_screen([&]() -> ts_t * {_tree_screen = nullptr; auto ts = new ts_t(tree_screen_singleton_name, _filemenu, _toolsmenu, this); gl_paras->tree_screen(ts); return ts;} ()) // _vtabwidget
+	  , _filemenu([&]() -> QMenu *{auto fm = new QMenu(tr("&File"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_file_menu_name] = fm; return fm;} ())
+	  , _editmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Edit"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_edit_menu_name] = fm; return fm;} ())
+	  , _viewmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&View"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_view_menu_name] = fm; return fm;} ())
+	  , _histrymenu([&]() -> web::HistoryMenu *{auto fm = new web::HistoryMenu(this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_history_menu_name] = fm; return fm;} ())
+	  , _bookmarkmenu([&]() -> web::BookmarksMenu *{auto fm = new web::BookmarksMenu(this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_bookmark_menu_name] = fm; return fm;} ())
+	  , _windowmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Window"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_window_menu_name] = fm; return fm;} ())
+	  , _toolsmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Tools"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_tools_menu_name] = fm; return fm;} ())
+	  , _helpmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Help"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_help_menu_name] = fm; return fm;} ())
+	  , _browser_docker([&]() -> web::Docker * {_browser_docker = nullptr; auto bd = new web::Docker(browser_docker_singleton_name, this, Qt::Widget); gl_paras->browser_docker(bd); return bd;} ()) // Qt::MaximizeUsingFullscreenGeometryHint
+	  , _vtab_record([&]() -> HidableTab *{_vtab_record = nullptr; auto vr = new HidableTab(this, _h_record_splitter, std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_record_splitter_sizelist", "collapsed", this); gl_paras->vtab_record(vr); return vr;} ())
+	  , _editor_docker([&]() -> web::Docker * {_editor_docker = nullptr; auto ed = new web::Docker(editor_docker_singleton_name, this, Qt::Widget); gl_paras->editor_docker(ed); return ed;} ())
+	  , _tree_screen([&]() -> ts_t * {_tree_screen = nullptr; auto ts = new ts_t(tree_screen_singleton_name, _editor_docker, this); gl_paras->tree_screen(ts); return ts;} ()) // _vtabwidget
 	  , _find_screen([&]() -> FindScreen * {_find_screen = nullptr; auto fs = new FindScreen(find_screen_singleton_name, _tree_screen, this); gl_paras->find_screen(fs); return fs;} ())
-	  , _browser_dock([&]() -> browser::BrowserDock * {_browser_dock = nullptr; auto bd = new browser::BrowserDock(browser_dock_singleton_name, _tree_screen, _find_screen, this, style_source, profile, Qt::Widget); gl_paras->browser_dock(bd); return bd;} ()) // Qt::MaximizeUsingFullscreenGeometryHint
-	  , _vtab_record([&] {_vtab_record = nullptr; auto vr = new HidableTab(_tree_screen, _find_screen, _browser_dock, this, profile, style_source, _h_record_splitter, std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_record_splitter_sizelist", "collapsed", this); gl_paras->vtab_record(vr); return vr;} ())
-	  , _editor_dock([&] {_editor_dock = nullptr; auto ed = new EditorDock("", _tree_screen, _find_screen, _vtab_record, _browser_dock, this, style_source, profile, Qt::Widget); gl_paras->editor_dock(ed); return ed;} ())
-	  // , _download(new browser::DownloadManager(download_manager_singleton_name, _vtab_record))
+// , _download(new web::DownloadManager(download_manager_singleton_name, _vtab_record))
 	  , _statusbar([&] {auto st = new QStatusBar(this); gl_paras->status_bar(st); return st;} ())
-	  , _switcher([&] {auto sw = new WindowSwitcher(windowswitcher_singleton_name, _editor_dock, this); gl_paras->window_switcher(sw); return sw;} ())
-	  , _tray_icon([&] {auto ti = new SysTrayIcon(_tree_screen, _browser_dock, _vtab_record, _find_screen, _editor_dock, this, _profile, _style_source, true); gl_paras->tray_icon(ti); return ti;} ())
+	  , _switcher([&] {auto sw = new WindowSwitcher(windowswitcher_singleton_name, this); gl_paras->window_switcher(sw); return sw;} ())
+	  , _tray_icon([&] {auto ti = new SysTrayIcon(_vtab_record, _editor_docker, this, _profile, _style_source, true); gl_paras->tray_icon(ti); return ti;} ())
 	  , _enable_real_close(false){
 	// _page_screen->setVisible(false);
 	// _page_screen->hide();
@@ -155,10 +151,12 @@ wn_t::wn_t(
 	installEventFilter(this);
 
 	{
+		menuBar()->addMenu(_filemenu);
 		init_file_menu();
 		append_quit_menu();
 	}
 	{
+		menuBar()->addMenu(_toolsmenu);
 		init_tools_menu();
 	}
 	// initHelpMenu();
@@ -223,9 +221,9 @@ wn_t::wn_t(
 		_vtab_record->resize(list[0], _vtab_record->parentWidget()->geometry().height());
 		_h_record_splitter->setSizes(list);
 
-		_browser_dock->resize(list[1], this->geometry().height());
+		_browser_docker->resize(list[1], this->geometry().height());
 
-		assert(list[1] == _browser_dock->width());
+		assert(list[1] == _browser_docker->width());
 		emit _h_record_splitter->splitterMoved(list[0], 0);
 	}
 }
@@ -241,15 +239,15 @@ void wn_t::append_quit_menu(){
 wn_t::~wn_t(){
 	save_all_state();
 
-	_browser_dock->deleteLater();
-	_browser_dock = nullptr;
+	_browser_docker->deleteLater();
+	_browser_docker = nullptr;
 	// delete
 	_switcher->deleteLater();
 	// delete
 	_statusbar->deleteLater();
 	// delete
 	// _editor_screen->deleteLater();
-	_editor_dock->deleteLater();
+	_editor_docker->deleteLater();
 	// delete
 	_find_screen->deleteLater();
 	// delete  _download;
@@ -315,7 +313,7 @@ void wn_t::setup_ui(void){
 	//// _page_screen = new TableScreen(this);
 	//// _page_screen->setObjectName("page_screen");
 	//// _globalparameters.page_screen(_page_screen);
-	//// _download = new browser::DownloadManager(this);
+	//// _download = new web::DownloadManager(this);
 	//// _download->setObjectName(download_manager_singleton_name);
 	// _globalparameters.download_manager(_download);
 	// _editor_screen = new MetaEditor();
@@ -328,7 +326,7 @@ void wn_t::setup_ui(void){
 	// findScreenDisp->hide();
 	if(!appconfig->editor_show()){
 		// _editor_screen->hide();
-		_editor_dock->hide();
+		_editor_docker->hide();
 	}
 	// _statusbar = new QStatusBar(this);
 	_statusbar->setObjectName("status_bar"); // "statusBar"
@@ -340,7 +338,7 @@ void wn_t::setup_ui(void){
 	// gl_paras->window_switcher(_switcher);
 	if(!_find_screen->isVisible()) _switcher->find_in_base_click();
 	// if(_table_screen) {
-	// _entrance = new browser::Entrance(
+	// _entrance = new web::Entrance(
 	// _record_ontroller
 	// = _table_screen->getRecordTableController()
 	// , _globalparameters.style_source()
@@ -348,7 +346,7 @@ void wn_t::setup_ui(void){
 	// , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
 	// );
 	////    browsermanager->adjustSize();
-	_browser_dock->set_scrollbars(true);
+	_browser_docker->set_scrollbars(true);
 	// _entrance->setObjectName(entrance_singleton_name);
 	// gl_paras->browser_dock(_browser_dock);
 	// }
@@ -401,9 +399,9 @@ void wn_t::setup_signals(void){
 	//// }
 	//// }
 	// rs_t *record_screen = nullptr;
-	////		browser::DownloadManager *download_manager = nullptr;
+	////		web::DownloadManager *download_manager = nullptr;
 	////		if(current_record_widget->objectName() == download_manager_singleton_name){
-	////		    download_manager = dynamic_cast<browser::DownloadManager *>(current_record_widget);
+	////		    download_manager = dynamic_cast<web::DownloadManager *>(current_record_widget);
 	////		    if(download_manager){
 	////			;
 	////			;
@@ -488,9 +486,9 @@ void wn_t::setup_signals(void){
 	////			    v->layout()->update();	// activate();
 	// }
 	// }
-	////		    browser::DownloadManager *download_manager = nullptr;
+	////		    web::DownloadManager *download_manager = nullptr;
 	////		    if(current_record_widget->objectName() == download_manager_singleton_name){
-	////			download_manager = dynamic_cast<browser::DownloadManager *>(current_record_widget);
+	////			download_manager = dynamic_cast<web::DownloadManager *>(current_record_widget);
 	////			if(download_manager){
 	////			    if(_this->_vtab_record->currentWidget() != download_manager)_this->_vtab_record->setCurrentWidget(download_manager);
 	////			    ;
@@ -711,9 +709,9 @@ void wn_t::setup_signals(void){
 // follow comments above to learn the "assembly function"
 void wn_t::assembly(void){
 	// v_right_splitter = new QSplitter(Qt::Vertical);
-	_v_right_splitter->addWidget(_browser_dock);
+	_v_right_splitter->addWidget(_browser_docker);
 	// _v_right_splitter->addWidget(_editor_screen);			// Text entries // Текст записи
-	_v_right_splitter->addWidget(_editor_dock);
+	_v_right_splitter->addWidget(_editor_docker);
 	_v_right_splitter->setCollapsible(0, true); // if true, make editor can overload it    // The list of final entries can not link up    // Список конечных записей не может смыкаться
 	_v_right_splitter->setCollapsible(1, false); // The contents of the recording can not link up    // Содержимое записи не может смыкаться
 	_v_right_splitter->setObjectName("v_right_splitter");
@@ -807,7 +805,7 @@ void wn_t::assembly(void){
 	// _h_splitter->setCollapsible(1, false);            // Столбец со списком и содержимым записи не может смыкаться
 	// _h_splitter->setObjectName("hsplitter");
 
-	// connect(find_splitter, &QSplitter::splitterMoved, browser_entrance, &browser::Entrance::on_splitter_moved);
+	// connect(find_splitter, &QSplitter::splitterMoved, browser_entrance, &web::Entrance::on_splitter_moved);
 	// connect(find_splitter, &QSplitter::splitterMoved, recordTableScreen, &RecordTableScreen::on_splitter_moved);
 
 	// findSplitter=new QSplitter(Qt::Vertical);
@@ -866,7 +864,7 @@ void wn_t::save_all_state(void){
 		auto wd = _vtab_record->widget(i);
 		auto rs = dynamic_cast<rs_t *>(wd);
 		if(rs){
-			auto ew = rs->editing_window();
+			auto ew = rs->blogger();
 			ew->save_text_context();
 			ew->save_editor_cursor_position();
 			ew->save_editor_scrollbar_position();
@@ -904,11 +902,11 @@ QMenu *wn_t::view_menu() const {
 	return _viewmenu;
 }
 
-browser::HistoryMenu *wn_t::histry_menu() const {
+web::HistoryMenu *wn_t::histry_menu() const {
 	return _histrymenu;
 }
 
-browser::BookmarksMenu *wn_t::bookmark_menu() const {
+web::BookmarksMenu *wn_t::bookmark_menu() const {
 	return _bookmarkmenu;
 }
 
@@ -1222,7 +1220,7 @@ void wn_t::init_file_menu(void){
 	// Создание меню
 	// _filemenu = new QMenu(tr("&File"), this);
 	_filemenu->clear();
-	menuBar()->addMenu(_filemenu);
+//	menuBar()->addMenu(_filemenu);
 
 	//// Создание тулбара
 	/// *
@@ -1291,7 +1289,7 @@ void wn_t::init_tools_menu(void){
 	_toolsmenu->clear();
 	// Создание меню
 	// _toolsmenu = new QMenu(tr("&Tools"), this);
-	menuBar()->addMenu(_toolsmenu);
+//	menuBar()->addMenu(_toolsmenu);
 
 	QAction *a;
 
@@ -1299,8 +1297,24 @@ void wn_t::init_tools_menu(void){
 	connect(a, &QAction::triggered, this, &wn_t::tools_find);
 	_toolsmenu->addAction(a);
 
-	auto b = new QAction(tr("Editor"), this);
-	connect(b, &QAction::triggered, _editor_dock, &EditorDock::editor_switch);
+	auto b = new QAction(tr("Editor open/close"), this);
+	connect(b, &QAction::triggered, [&](bool checked){
+			(void) checked;
+//			if(checked){//
+			if(!(_editor_docker->isVisible())){
+				_editor_docker->show();
+				// emit _app->editing_win_changed(_editenty->blog_editor());
+				// emit this->editing_activated(blog_editor());
+				// _app->sendEvent(_editenty->blog_editor(), new QEvent(QEvent::WindowActivate));
+
+				appconfig->editor_show(true);
+			}else{
+				_editor_docker->hide();
+				// _app->sendEvent(_editenty->blog_editor(), new QEvent(QEvent::WindowActivate));
+
+				appconfig->editor_show(false);
+			}
+		});
 	_toolsmenu->addAction(b);
 
 	_toolsmenu->addSeparator();
@@ -1456,7 +1470,7 @@ void wn_t::tools_find(void){
 
 void wn_t::tools_preferences(void){
 	// Создается окно настроек, после выхода из этой функции окно удалится
-	AppConfigDialog appconfigdialog(gl_paras->main_window()->activated_browser()->record_screen()->record_controller(), "pageMain");
+	AppConfigDialog appconfigdialog("pageMain");//gl_paras->main_window()->browser(QString(gl_para::_what_ever_topic))->tabmanager()->record_controller(),
 
 	appconfigdialog.show();
 }
@@ -1473,7 +1487,7 @@ void wn_t::on_expand_edit_area(bool flag){
 	// static bool _treetable_hidden;     // = globalparameters.getTreeScreen()->isHidden();
 	// static bool recordtable_hidden; // = globalparameters.getRecordTableScreen()->isHidden();
 	if(flag){
-		gl_paras->browser_dock()->hide(); // resize(QSize(0, 0)); //
+		gl_paras->browser_docker()->hide(); // resize(QSize(0, 0)); //
 
 		// if(!globalparameters.getTreeScreen()->isHidden()) {
 		// _treetable_hidden = false;
@@ -1505,7 +1519,7 @@ void wn_t::on_expand_edit_area(bool flag){
 
 		// resize(QSize(0, v_left_splitter->height())); // hide();
 	}else{
-		gl_paras->browser_dock()->show(); // resize(entrance_size); //
+		gl_paras->browser_docker()->show(); // resize(entrance_size); //
 
 		// if(!_treetable_hidden) {
 		// globalparameters.getTreeScreen()->show();    // resize(tree_size); //
@@ -1570,7 +1584,7 @@ void wn_t::synchronization(void){
 		auto wd = _vtab_record->widget(i);
 		auto rs = dynamic_cast<rs_t *>(wd);
 		if(rs){
-			auto ew = rs->editing_window();
+			auto ew = rs->blogger();
 			ew->save_text_context();
 			ew->save_editor_cursor_position();
 			ew->save_editor_scrollbar_position();
@@ -1614,7 +1628,7 @@ void wn_t::synchronization(void){
 		auto wd = _vtab_record->widget(i);
 		auto rs = dynamic_cast<rs_t *>(wd);
 		if(rs){
-			auto ew = rs->editing_window();
+			auto ew = rs->blogger();
 			ew->restore_editor_cursor_position();
 			ew->restore_editor_scrollbar_position();
 		}
@@ -1815,9 +1829,9 @@ std::set<rs_t *> wn_t::record_screens() const {
 	return result; // _record_screens;
 }
 
-browser::WebView *wn_t::find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const {
+web::WebView *wn_t::find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const {
 	// clean();
-	browser::WebView *v = nullptr;
+	web::WebView *v = nullptr;
 	//// new_dockedwindow(record);
 	// for(auto i : _record_screens){
 	// if(i){
@@ -1856,60 +1870,113 @@ browser::WebView *wn_t::find(const std::function<bool (boost::intrusive_ptr<cons
 	return v;
 }
 
-EditingWindow *wn_t::new_editing_window(const QString &topic){
-	return new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source, appconfig->hide_editor_tools(), topic);
+//Blogger *wn_t::editing_window(const QString &topic, const QByteArray &state_){
+//	return new Blogger(_vtab_record, _profile, _editor_docker, _style_source, appconfig->hide_editor_tools(), state_, topic);
+//}
+
+// not sure to succeeded if force is false
+template<> web::Browser *wn_t::browser<boost::intrusive_ptr<TreeItem> >(const boost::intrusive_ptr<TreeItem> &it, bool force){
+	(void) force;
+	boost::intrusive_ptr<TreeItem> item = it;
+	auto view = find([&](boost::intrusive_ptr<const Binder> b){return b->host() == item;});
+	web::Browser *bro = nullptr;
+	QStringList _item_tags_text_list;
+	if(!view){
+		const QString tags_ = item->field<tags_type>();
+		QString _item_tags_text = tags_;
+
+		// Строка с метками разделяется на отдельные меки
+		auto _item_tags_text_list = _item_tags_text.split(QRegExp("[,;]+"), QString::SkipEmptyParts);
+		// В каждой метке убираются лишние пробелы по краям
+		for(int i = 0; i < _item_tags_text_list.size(); ++i){
+			auto topic = _item_tags_text_list[i] = _item_tags_text_list.at(i).trimmed();
+			if((bro = browser(topic, false))) break;
+		}
+	}else bro = view->page()->browser();
+	if(!bro){
+		if(_item_tags_text_list.size() > 0) bro = browser(_item_tags_text_list[0]);
+		else bro = browser(item->field<name_type>());
+	}
+	return bro;
 }
 
-browser::Browser *wn_t::new_browser(){
-	auto editing_window = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
-	rs_t *rs = nullptr;
-	if(editing_window) rs = editing_window->record_screen(); // new rs_t(_tree_screen, _find_screen, _editentry, _dock_web, _vtab_record, _style_source, _profile);
-	return rs->browser();
-
-	// return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+// not sure to succeeded if force is false
+template<> web::Browser *wn_t::browser<QUrl>(const QUrl &url_, bool force){
+	(void) force;
+	auto url_str = url_.toString().toStdString();
+	if(url_.isEmpty() && !url_.isValid()) url_str = web::Browser::_defaulthome;
+	auto it = TreeIndex::require_item(QUrl(QString(url_str.c_str())), std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), url_str) || url_equal(it->field<url_type>().toStdString(), url_str);});
+	web::Browser *v = nullptr;
+	if(it) v = browser(it);
+	return v;
 }
 
-// not sure to succeeded
-browser::Browser *wn_t::activated_browser(){
+// not sure to succeeded if force is false
+template<> web::Browser *wn_t::browser<QByteArray>(const QByteArray &state_, bool force){
+	(void) force;
+//	auto editing_window_ = editing_window(gl_para::_default_topic, state_);
+
+	web::Browser *bs = (new Blogger(gl_para::_default_topic, gl_para::_default_post, appconfig->hide_editor_tools(), state_))->browser();
+
+	return bs;
+}
+
+// not sure to succeeded if force is false
+template<> web::Browser *wn_t::browser<QString>(const QString &topic, bool force){
 	// clean();
 
 	// std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
-	browser::Browser *_browser = nullptr;
-	// if(_mainWindows.isEmpty()) {
-	// dp = new_dockedwindow(
-	// QUrl(DockedWindow::_defaulthome)
-	// );
-	// } else { //
-	// if(count() > 0)
-	int count_browser = 0;
-	for(int i = 0; i < _vtab_record->count(); i++){  // for(auto i : _record_screens){
-		auto rs = _vtab_record->widget(i);
-		if(rs->objectName() == record_screen_multi_instance_name){
-			count_browser++;
-			// auto	rs		= dynamic_cast<rs_t *>(w);
-			auto browser_ = dynamic_cast<rs_t *>(rs)->browser();
-			if(browser_){
-				if(browser_->record_screen() == _vtab_record->currentWidget()){  // browser_->isVisible() || browser_->isActiveWindow()
-					_browser = browser_; // .data();
+	web::Browser *browser_ = nullptr;
+	assert(!((topic == gl_para::_current_browser) && (force)));
+	if(topic == gl_para::_current_browser){
+		auto rs = _vtab_record->currentWidget();
+		if(rs) browser_ = dynamic_cast<rs_t *>(rs)->browser();
+		else{
+			int count_browser = 0;
+			for(int i = 0; i < _vtab_record->count(); i++){  // for(auto i : _record_screens){
+				auto rs = _vtab_record->widget(i);
+				if(rs->objectName() == record_screen_multi_instance_name){
+					// auto	rs		= dynamic_cast<rs_t *>(w);
+					auto bro_ = dynamic_cast<rs_t *>(rs)->browser();
+					if(bro_){
+						if(count_browser == _vtab_record->currentIndex()){//_vtab_record->currentWidget()){  // browser_->isVisible() || browser_->isActiveWindow()
+							browser_ = bro_; // .data();
 
-					break;
+							break;
+						}
+					}
+					count_browser++;
 				}
 			}
 		}
-	}
-	if(!_browser){
-		// _browser = _browsers[0];
-		// }
-		// } else {
-		_browser = new_browser();
-		// assert(_browser);
-		// return _browser;
-		// dp.second = dp.first->tabWidget()->currentWebView();
-	}
-	// assert(dp.first);
-	// assert(dp.second);
-	assert(_browser);
+	}else{
+		int count_browser = 0;
+		for(int i = 0; i < _vtab_record->count(); i++){  // for(auto i : _record_screens){
+			auto rs = _vtab_record->widget(i);
+			if(rs->objectName() == record_screen_multi_instance_name){
+				// auto	rs		= dynamic_cast<rs_t *>(w);
+				auto bro_ = dynamic_cast<rs_t *>(rs)->browser();
+				if(bro_){
+					if(bro_->blogger()->topic() == topic){//|| topic == gl_para::_what_ever_topic//_vtab_record->currentWidget()){  // browser_->isVisible() || browser_->isActiveWindow()
+						browser_ = bro_; // .data();
 
-	return _browser; // qobject_cast<DockedWindow *>(widget()); //
-	// _mainWindows[0];
+						break;
+					}
+				}
+				count_browser++;
+			}
+		}
+	}
+	if(!browser_ && force){
+		auto checked_topic = topic;
+//		if(topic == gl_para::_what_ever_topic) checked_topic = gl_para::_default_topic;
+		browser_ = (new Blogger(checked_topic))->browser();
+	}
+	assert(browser_ || !force);
+
+	return browser_; // qobject_cast<DockedWindow *>(widget()); //
+}
+
+std::map<std::string, QMenu *> &wn_t::main_menu_map(){
+	return _main_menu_map;
 }

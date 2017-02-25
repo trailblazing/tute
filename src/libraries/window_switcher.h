@@ -8,8 +8,11 @@
 #include <QObject>
 #endif
 
+namespace web {
+	class Docker;
+}
 class EditorDock;
-class EditingWindow;
+class Blogger;
 
 class WindowSwitcher : public QObject {
 #if QT_VERSION == 0x050600
@@ -19,7 +22,7 @@ Q_OBJECT
 #endif
 
 public:
-	explicit WindowSwitcher(QString object_name, EditorDock *editor_dock, QObject *parent = 0);
+	explicit WindowSwitcher(QString object_name, QObject *parent = 0);
 
 	void enable(void);
 	void disable(void);

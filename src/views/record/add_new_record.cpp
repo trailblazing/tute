@@ -18,11 +18,11 @@
 #include "info_field_enter.h"
 #include "libraries/disk_helper.h"
 #include "libraries/global_parameters.h"
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #include "libraries/wyedit/editor.h"
 #include "main.h"
 #include "models/app_config/app_config.h"
-#include "views/record/editor_dock.h"
+
 #include "views/record/editor_wrap.h"
 
 extern std::shared_ptr<gl_para> gl_paras;
@@ -58,9 +58,15 @@ void AddNewRecord::setupUI(void){
 	// Ввод инфополей записи
 	infoField = new InfoFieldEnter();
 
-	_editing_window = std::make_unique<EditingWindow>(gl_paras->tree_screen(), gl_paras->browser_dock(), gl_paras->vtab_record(), gl_paras->profile(), gl_paras->find_screen(), gl_paras->editor_dock(), gl_paras->style_source(), appconfig->hide_editor_tools() + (QStringList()	<< "save"
-	                                                                                                                                                                                                                                                                                << "show_text"
-	                                                                                                                                                                                                                                                                                << "attach"));
+	_blogger = new Blogger(gl_para::_default_topic, gl_para::_default_post, appconfig->hide_editor_tools() + (QStringList()	<< "save"
+																<< "show_text"
+																<< "attach"));
+//		(new web::Browser(gl_para::_default_post, gl_para::_default_topic
+//				    , QByteArray()
+//				    , appconfig->hide_editor_tools() + (QStringList()	<< "save"
+//											<< "show_text"
+//											<< "attach")))->blogger();
+
 	//// Редактор текста записи
 	// recordTextEditor = _editing_window->editor();
 	// new Editor(editing_window->main_stack()
@@ -105,7 +111,7 @@ void AddNewRecord::assembly(void){
 
 	// Добавление элементов в размещалку
 	layout->addWidget(infoField);
-	layout->addWidget(_editing_window->editor()); // recordTextEditor
+	layout->addWidget(_blogger->editor()); // recordTextEditor
 	layout->addWidget(buttonBox, 0, Qt::AlignRight);
 
 	setLayout(layout);
@@ -121,13 +127,13 @@ void AddNewRecord::assembly(void){
 void AddNewRecord::setupEventFilter(void){
 	// Для области редактирования задается eventFilter (используется для отлова нажатия на ESC)
 
-	_editing_window->editor()->installEventFilter(this); // recordTextEditor->installEventFilter(this);
+	_blogger->editor()->installEventFilter(this); // recordTextEditor->installEventFilter(this);
 }
 
 bool AddNewRecord::eventFilter(QObject *object, QEvent *event){
 	qDebug() << "Editor::eventFilter()";
 	// Отслеживание нажатия ESC в области редактирования текста
-	if(object == _editing_window->editor()){  // recordTextEditor
+	if(object == _blogger->editor()){  // recordTextEditor
 		if(event->type() == QEvent::KeyPress){
 			QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 			if(keyEvent->key() == Qt::Key_Escape){
@@ -167,8 +173,8 @@ void AddNewRecord::okClick(void){
 
 	// Картинки сохраняются
 	imagesDirName = DiskHelper::create_temp_directory();
-	_editing_window->editor()->work_directory(imagesDirName); // recordTextEditor->work_directory(imagesDirName);
-	_editing_window->editor()->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE); // recordTextEditor->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);
+	_blogger->editor()->work_directory(imagesDirName); // recordTextEditor->work_directory(imagesDirName);
+	_blogger->editor()->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE); // recordTextEditor->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);
 
 	emit(accept());
 }
@@ -185,7 +191,7 @@ QString AddNewRecord::getImagesDirectory(void){
 // Получение полей, заполненных в окне добавления записи
 QString AddNewRecord::getField(QString name){
 	if(name == "pin" || name == "name" || name == "author" || name == "home" || name == "url" || name == "tags") return infoField->getField(name);
-	if(name == "text") return _editing_window->editor()->textarea(); // recordTextEditor->textarea();
+	if(name == "text") return _blogger->editor()->textarea(); // recordTextEditor->textarea();
 	// Если запрашиваемого поля нет, возвращается пустая строка
 	return QString();
 }

@@ -11,7 +11,7 @@
 
 class QToolBar;
 class FlatToolButton;
-class EditingWindow;
+class Blogger;
 
 template <typename bar_type_, typename return_type>
 struct add_widget {
@@ -78,7 +78,7 @@ struct connect_action<FlatComboBox, receiver_type> {
 	}
 };
 
-template <typename bar_type = QToolBar, typename return_type = FlatToolButton, typename parent_type = QWidget, typename receiver_type = EditingWindow>
+template <typename bar_type = QToolBar, typename return_type = FlatToolButton, typename parent_type = QWidget, typename receiver_type = Blogger>
 return_type *add_action(bar_type *bar, parent_type *parent, QString title, QString toolTip, QString whatsThis // What's this help
                        , const QIcon &icon = QIcon (":/resource/pic/trace.svg") // QIcon()
                        , receiver_type *receiver = nullptr, void (receiver_type::*slot)(bool) = nullptr, const QKeySequence &key = QKeySequence (QKeySequence::UnknownKey)){
@@ -100,7 +100,7 @@ return_type *add_action(bar_type *bar, parent_type *parent, QString title, QStri
 }
 
 // for FlatComboBox
-template <typename bar_type = QToolBar, typename parent_type = QWidget, typename receiver_type = EditingWindow>
+template <typename bar_type = QToolBar, typename parent_type = QWidget, typename receiver_type = Blogger>
 FlatComboBox *add_action(bar_type *bar // <bar_type, FlatFontComboBox, parent_type, receiver_type>
                         , parent_type *parent, QString title, QString toolTip, QString whatsThis // What's this help
                         , const QIcon &icon = QIcon (":/resource/pic/trace.svg") // QIcon()
@@ -127,7 +127,7 @@ FlatComboBox *add_action(bar_type *bar // <bar_type, FlatFontComboBox, parent_ty
 }
 
 // for FlatComboBox
-template <typename bar_type = QToolBar, typename parent_type = QWidget, typename receiver_type = EditingWindow>
+template <typename bar_type = QToolBar, typename parent_type = QWidget, typename receiver_type = Blogger>
 FlatComboBox *add_action(bar_type *bar // <bar_type, FlatFontComboBox, parent_type, receiver_type>
                         , parent_type *parent, QString title, QString toolTip, QString whatsThis // What's this help
                         , const QIcon &icon = QIcon (":/resource/pic/trace.svg") // QIcon()
@@ -153,7 +153,7 @@ FlatComboBox *add_action(bar_type *bar // <bar_type, FlatFontComboBox, parent_ty
 	return return_value;
 }
 // for FlatFontComboBox
-template <typename bar_type = QToolBar, typename parent_type = QWidget, typename receiver_type = EditingWindow>
+template <typename bar_type = QToolBar, typename parent_type = QWidget, typename receiver_type = Blogger>
 FlatFontComboBox *add_action(bar_type *bar // <bar_type, FlatFontComboBox, parent_type, receiver_type>
                             , parent_type *parent, QString title, QString toolTip, QString whatsThis // What's this help
                             , const QIcon &icon = QIcon (":/resource/pic/trace.svg") // QIcon()
@@ -180,7 +180,7 @@ FlatFontComboBox *add_action(bar_type *bar // <bar_type, FlatFontComboBox, paren
 }
 
 // for FlatFontComboBox
-template <typename bar_type = QToolBar, typename parent_type = QWidget, typename receiver_type = EditingWindow>
+template <typename bar_type = QToolBar, typename parent_type = QWidget, typename receiver_type = Blogger>
 FlatFontComboBox *add_action(bar_type *bar // <bar_type, FlatFontComboBox, parent_type, receiver_type>
                             , parent_type *parent, QString title, QString toolTip, QString whatsThis // What's this help
                             , const QIcon &icon = QIcon (":/resource/pic/trace.svg") // QIcon()
@@ -206,7 +206,7 @@ FlatFontComboBox *add_action(bar_type *bar // <bar_type, FlatFontComboBox, paren
 	return return_value;
 }
 
-template <typename bar_type = QToolBar, typename return_type = FlatToolButton, typename parent_type = QWidget, typename receiver_type = EditingWindow>
+template <typename bar_type = QToolBar, typename return_type = FlatToolButton, typename parent_type = QWidget, typename receiver_type = Blogger>
 return_type *add_action(bar_type *bar, parent_type *parent, QString title, QString toolTip, QString whatsThis // What's this help
                        , const QIcon &icon = QIcon (":/resource/pic/trace.svg") // QIcon()
                        , const std::function<void (bool)> &func = std::function<void (bool)>(), const QKeySequence &key = QKeySequence (QKeySequence::UnknownKey)){

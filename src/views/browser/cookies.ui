@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>browser::CookiesDialog</class>
- <widget class="QDialog" name="browser::CookiesDialog">
+ <class>web::CookiesDialog</class>
+ <widget class="QDialog" name="web::CookiesDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -112,7 +112,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>browser::CookiesDialog</receiver>
+   <receiver>web::CookiesDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">

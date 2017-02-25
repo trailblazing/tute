@@ -69,7 +69,7 @@
 // extern std::string	url_difference(const std::string &url_compare_stored, const std::string &url_compare_get);
 extern bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
 
-namespace browser {
+namespace web {
 /*!
             DownloadWidget is a widget that is displayed in the download manager list.
             It moves the data from the QWebEngineDownloadItem into the QFile as well

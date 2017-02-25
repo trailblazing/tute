@@ -149,7 +149,7 @@ void TrashMonitoring::update(void){
 	// условие что количество файлов слишком велико или
 	// суммарный размер файлов превышает предельно допустимый размер корзины
 	while(_files_table.size() > appconfig->trash_max_file_count() || _dir_size > appconfig->trash_size() * 1000000){
-		if(_files_table.size() <= 10)                                                                                        // Оставляется последний файл, какого бы размера он не был
+		if(_files_table.size() <= 10)                                                                                                                                       // Оставляется последний файл, какого бы размера он не был
 			break;
 		else remove_oldest_file();
 	}

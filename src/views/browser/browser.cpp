@@ -82,7 +82,7 @@
 
 #include "controllers/record_table/record_controller.h"
 #include "libraries/global_parameters.h"
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #include "main.h"
 #include "models/record_table/items_flat.h"
 #include "models/record_table/linker.hxx"
@@ -92,7 +92,7 @@
 #include "models/record_table/record_model.h"
 #include "models/tree/binder.hxx"
 #include "models/tree/tree_index.hxx"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
@@ -106,7 +106,7 @@ extern std::shared_ptr<gl_para> gl_paras;
 const char *profile_storage_name = "cookie";
 extern const char *program_title;
 
-namespace browser {
+namespace web {
 	template <typename Arg, typename R, typename C>
 	struct InvokeWrapper {
 		R *receiver;
@@ -178,8 +178,13 @@ namespace browser {
 // const char *DockedWindow::_defaulthome = "about:blank";
 
 	Browser::~Browser(){
-		save();
-		for(int i = 0; i < _tabmanager->count(); i++) _tabmanager->webView(i)->close();
+		{
+			save();// move to blogger
+//		for(int i = 0; i < _tabmanager->count(); i++) _tabmanager->webView(i)->close();
+//			_autosaver->changeOccurred();
+//			_autosaver->saveIfNeccessary();
+		}
+
 		// std::set<Browser *> &_browsers = _entrance->browsers();
 		// if(_browsers.find(this) != _browsers.end()){
 		// for(auto &it : _browsers){	// for(auto it = _browsers.begin(); it != _browsers.end(); ++it) {
@@ -191,14 +196,18 @@ namespace browser {
 		//// break;
 		// }
 		// }
-		_autosaver->changeOccurred();
-		// _autosaver->saveIfNeccessary();
-		_autosaver->deleteLater();
-		_bookmarkstoolbar->deleteLater();
+
+//		_autosaver->deleteLater();
+//		_bookmarkstoolbar->deleteLater();
 		// delete _tabmanager;
-		HidableTab *_vtab_record = _main_window->vtab_record();
-		auto index = _vtab_record->indexOf(_record_screen);
-		if(index != -1) _vtab_record->removeTab(index);
+		{
+//			HidableTab *_vtab_record = _main_window->vtab_record();
+//			auto index = _vtab_record->indexOf(_record_screen);
+//			if(index != -1)	emit _vtab_record->tabCloseRequested(index); //_vtab_record->removeTab(index);
+			if(_record_screen) connect(this, &Browser::close_request, _record_screen, &rs_t::on_browser_close_request);
+			if(_blogger) connect(this, &Browser::close_request, _blogger, &Blogger::on_browser_close_request);
+			emit close_request(this);
+		}
 		// HidableTabWidget *vtab_tree = _main_window->vtab_tree();
 		// for(int i = 0; i < vtab_tree->count(); i ++){
 		// auto wg = vtab_tree->widget(i);
@@ -219,14 +228,15 @@ namespace browser {
 		//// _record_screen->deleteLater();
 		//////            delete _record_screen; _record_screen = nullptr;
 		//// }
-
-		_layout->deleteLater();
-		_centralwidget->deleteLater();
+//		_layout->deleteLater();
+//		_centralwidget->deleteLater();
+		if(_record_screen) _record_screen->deleteLater();
+		if(_blogger) _blogger->deleteLater();
 	}
 
 	void Browser::init(){ // QUrl const &url,
-		              // browser->setWidget(this);
-		              // this->setParent(browser);
+		// browser->setWidget(this);
+		// this->setParent(browser);
 		setWebAttribute(QWebEngineSettings::JavascriptEnabled, true);
 		// setWebAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
 		setWebAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
@@ -237,8 +247,8 @@ namespace browser {
 		setAttribute(Qt::WA_DeleteOnClose, true);
 		// statusBar()
 		gl_paras->status_bar()->setSizeGripEnabled(true);
-		append_to_main_menu();
-		setup_tool_bar();
+		reset_main_menu();
+		reset_find_screen_tool_bar();
 
 		// QWidget *_centralwidget = new QWidget(this);
 		// BookmarksModel *bookmarksModel = QtSingleApplication::bookmarksManager()->bookmarksModel();
@@ -269,7 +279,7 @@ namespace browser {
 			});
 		connect(_tabmanager, &TabWidget::setCurrentTitle, this, &Browser::slotUpdateWindowTitle);
 		connect(_tabmanager, &TabWidget::showStatusBarMessage, gl_paras->status_bar(), &QStatusBar::showMessage);
-		connect(_tabmanager, &TabWidget::linkHovered, gl_paras->status_bar(), [this](const QString &link){
+		connect(_tabmanager, &TabWidget::linkHovered, gl_paras->status_bar(), [&](const QString &link){
 				// &QStatusBar::showMessage
 				gl_paras->status_bar()->showMessage(link);
 			});
@@ -288,26 +298,27 @@ namespace browser {
 #else
 		connect(_tabmanager, &TabWidget::lastTabClosed, this, [&]() -> void {
 				// _tabmanager->newTab(request_record(QUrl(DockedWindow::_defaulthome)));
+
+//				// HidableTabWidget *_vtab_tree = _main_window->vtab_tree();
+//				HidableTab *_vtab_record = _main_window->vtab_record();
+//				int index = _vtab_record->indexOf(_record_screen);
+//				if(index != -1){
+//				        emit _vtab_record->tabCloseRequested(index); // removeTab(index);
+//				        // static_cast<Browser *>(globalparameters.vtab()->currentWidget())->append_to_main_menu();
+//				        // for(int i = 0; i < _vtab_tree->count(); i ++){
+//				        // auto wg = _vtab_tree->widget(i);
+//				        // if(wg->objectName() == tree_screen_viewer_name){
+//				        // auto tree_viewer = dynamic_cast<tsv_t *>(wg);
+//				        // if(tree_viewer){
+//				        // if(tree_viewer->widget_right() == _record_screen){
+//				        // if(_main_window->tree_viewers().size() > 1)_vtab_tree->removeTab(i);
+//				        // else assert(dynamic_cast<DownloadManager *>(_main_window->tree_viewers()[0]->widget_right()));
+//				        // }
+//				        // }
+//				        // }
+//				        // }
+//				}
 				this->close();
-				// HidableTabWidget *_vtab_tree = _main_window->vtab_tree();
-				HidableTab *_vtab_record = _main_window->vtab_record();
-				int index = _vtab_record->indexOf(_record_screen);
-				if(index != -1){
-				        emit _vtab_record->tabCloseRequested(index); // removeTab(index);
-				        // static_cast<Browser *>(globalparameters.vtab()->currentWidget())->append_to_main_menu();
-				        // for(int i = 0; i < _vtab_tree->count(); i ++){
-				        // auto wg = _vtab_tree->widget(i);
-				        // if(wg->objectName() == tree_screen_viewer_name){
-				        // auto tree_viewer = dynamic_cast<tsv_t *>(wg);
-				        // if(tree_viewer){
-				        // if(tree_viewer->widget_right() == _record_screen){
-				        // if(_main_window->tree_viewers().size() > 1)_vtab_tree->removeTab(i);
-				        // else assert(dynamic_cast<DownloadManager *>(_main_window->tree_viewers()[0]->widget_right()));
-				        // }
-				        // }
-				        // }
-				        // }
-				}
 			});
 #endif
 
@@ -339,6 +350,7 @@ namespace browser {
 			update_bookmarks_toolbar_action_text(false);
 			_bookmarkstoolbar->close();
 		}
+//		connect(this, &Browser::close_request, _blogger, &Blogger::on_close_request);
 	}
 
 	void Browser::run_script(const QString &style_source){
@@ -348,11 +360,11 @@ namespace browser {
 // boost::intrusive_ptr<TreeItem> Browser::item_bind(boost::intrusive_ptr<TreeItem> item)
 // {
 ////        auto binder = [](boost::shared_ptr<TabWidget::Coupler> ar) {
-////            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>("", &TabWidget::Coupler::binder, ar);   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
+////            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<TreeItem>>>("", &TabWidget::Coupler::binder, ar);   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
 
 ////        };
 ////        auto activator = [](boost::shared_ptr<TabWidget::Coupler> ar) {
-////            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>> ("", &TabWidget::Coupler::activator, ar);
+////            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *>> ("", &TabWidget::Coupler::activator, ar);
 ////        };
 
 //// registered record, but have no generator:
@@ -437,7 +449,7 @@ namespace browser {
 // , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
 // {
 // init();
-////        auto r = request_item(QUrl(Browser::_defaulthome));
+////        auto r = request_item(QUrl(web::Browser::_defaulthome));
 ////        r->activate();
 // run_script(style_source);
 // this->restore_state(state);
@@ -504,11 +516,19 @@ namespace browser {
 	W_OBJECT_IMPL(Browser)
 #endif
 
-	Browser::Browser(ts_t *tree_screen, FindScreen *find_screen, EditingWindow *editing_window, rs_t *record_screen, BrowserDock *entrance // , wn_t *main_window
-	                , const QString &style_source, Profile *profile, Qt::WindowFlags flags)
+	Browser::Browser(Blogger *blogger_
+			, const QByteArray &state_ //= QByteArray()
+//			, QStringList hide_editor_tools_ //= appconfig->hide_editor_tools()
+//			, HidableTab *vtab_record //= gl_paras->vtab_record()
+//			, const QString &style_source //= gl_paras->style_source()
+//			, web::Profile *profile// = gl_paras->profile()
+			, Qt::WindowFlags flags// = Qt::MaximizeUsingFullscreenGeometryHint
+			)
 		: QMainWindow(0, flags) // ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
-		  , _tree_screen(tree_screen)
-		  , _find_screen(find_screen)
+		  , _state(state_)
+		  , _vtab_record(gl_paras->vtab_record())
+		  , _tree_screen(gl_paras->tree_screen())
+		  , _find_screen(gl_paras->find_screen())
 		  , _main_window(gl_paras->main_window())
 		  // , _toolbarsearch(_find_screen->toolbarsearch())
 		  , _bookmarkstoolbar(new BookmarksToolBar(sapp_t::bookmarksManager()->bookmarksModel(), this))
@@ -522,13 +542,14 @@ namespace browser {
 		  , _stopreload(_find_screen->stopreload())
 		  , _centralwidget(new QWidget(this))
 		  , _layout(new QVBoxLayout)
-		  , _record_screen(record_screen)
-		  , _tabmanager([&]() -> browser::TabWidget * {_tabmanager = nullptr; auto t = new browser::TabWidget(tree_screen, find_screen, editing_window, this, record_screen, entrance, _main_window, profile); return t;} ()) // (_record_screen->tabmanager())
-		  , _entrance(entrance->prepend(this))
-		  , _configuration_full_name(record_screen->editing_window()->current_topic_folder_name() + "/" + gl_para::_browser_conf_filename)
+		  , _blogger(blogger_)//new Blogger(vtab_record, this, hide_editor_tools_, new_post_topic, new_post_content)
+		  , _tabmanager([&]() -> web::TabWidget * {_tabmanager = nullptr; auto t = new web::TabWidget(_blogger, this, _main_window, gl_paras->profile()); return t;} ()) // (_record_screen->tabmanager())
+		  , _record_screen([&]() -> rs_t *{_record_screen = nullptr; auto rs = new rs_t(_vtab_record, _blogger, this); _tabmanager->record_controller(rs->record_controller()); return rs;} ())
+		  , _browser_docker(gl_paras->browser_docker()->prepend(this))
+		  , _configuration_full_name(_blogger->current_topic_folder_name() + "/" + gl_para::_browser_conf_filename)
 		  , _configuration(
 			  [&]() -> std::unique_ptr<QSettings> {
-				  auto _current_topic_folder_name = record_screen->editing_window()->current_topic_folder_name();
+				  auto _current_topic_folder_name = _blogger->current_topic_folder_name();
 				  if(!QDir(_current_topic_folder_name).exists())
 					  if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
 				  auto _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_browser_conf_filename;
@@ -539,12 +560,57 @@ namespace browser {
 			  } ()){ // , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
 		init();
 
-		run_script(style_source); // assert(record->linkpage());
+		run_script(gl_paras->style_source()); // assert(record->linkpage());
 
 		QMainWindow::setWindowFlags(Qt::FramelessWindowHint); // Qt::Window |
 
 		QMainWindow::menuBar()->hide();
 		QMainWindow::statusBar()->hide();
+
+		[&] {
+			auto _vtab_record = gl_paras->vtab_record();
+			bool found = false;
+			for(int i = 0; i < _vtab_record->count(); i++){
+				auto w	= _vtab_record->widget(i);
+				auto rs = dynamic_cast<rs_t *>(w);
+				if(rs)
+					if(rs->browser() == this){
+						found = true;
+						break;
+					}
+			}
+			if(!found){
+				_vtab_record->setUpdatesEnabled(false);
+				_vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
+				// bool found = false;
+				// for(int i = 0; i < _vtab_record->count(); i++){
+				// auto r = _vtab_record->widget(i);
+				// if(r == _record_screen){
+//				auto this = _record_screen->browser();
+//				if(this){
+//				this->activateWindow();//recursively call in connect(_vtab_record, &::HidableTab::currentChanged
+
+//				_vtab_record->setCurrentWidget(_record_screen);
+				// found = true;
+//				}
+				// }
+				// }
+				// assert(found);
+				////    bool found = false;
+				////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+				////	if(*i == rs){
+				////	    found = true;
+				////	    break;
+				////	}
+				////    }
+				////    if(! found) _record_screens.insert(rs);
+				// _record_screens.insert(rs);
+//				this->adjustSize();
+				_vtab_record->setUpdatesEnabled(true);
+				// _record_screen->adjustSize();
+			}
+		} ();
+
 		show();
 		_is_under_construction = false;
 	}
@@ -559,7 +625,7 @@ namespace browser {
 // , const QString    &style_source
 // , Qt::WindowFlags  flags
 // )
-// : QMainWindow(0, flags)
+// : gl_paras->editors_shared_full_path_name()(0, flags)
 ////        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
 // , _tree_screen(_tree_screen)
 // , _find_screen(_find_screen)
@@ -597,9 +663,9 @@ namespace browser {
 
 // run_script(style_source);       //        assert(record->linkpage());
 
-// QMainWindow::setWindowFlags(Qt::FramelessWindowHint);    //Qt::Window |
+// gl_paras->editors_shared_full_path_name()::setWindowFlags(Qt::FramelessWindowHint);    //Qt::Window |
 
-// QMainWindow::menuBar()->hide();
+// gl_paras->editors_shared_full_path_name()::menuBar()->hide();
 // QMainWindow::statusBar()->hide();
 // show();
 
@@ -610,35 +676,48 @@ namespace browser {
 	QAction *Browser::historyback(){return _historyback;}
 
 	void Browser::activateWindow(){
-		this->setParent(_entrance);
-		_entrance->setWidget(this);
+		_browser_docker->prepend(this);
+//		this->setParent(_browser_docker);
+//		_browser_docker->setWidget(this);
 
-		_entrance->on_activate_window();
+//		_entrance->on_activate_window();
 
 		_find_screen->toolbarsearch()->lineedits(this->tabWidget()->lineEditStack());
 
-		auto _vtab_record = _record_screen->vtab_record();
+//		auto _vtab_record = _record_screen->vtab_record();
 		int index = _vtab_record->indexOf(_record_screen);
-		if(_vtab_record->currentIndex() != index){
-			auto previous_browser = _vtab_record->currentWidget();
-			if(previous_browser) previous_browser->lower();
-			_vtab_record->setCurrentIndex(index);
-			if(!_tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host()->id() == _tree_screen->view()->current_item()->id();})){
-				auto it = _record_screen->record_controller()->view()->current_item();
-				if(it){
-					_tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] {return _tree_screen->view()->source_model();}, it));
-				}
+		if(index != -1){
+			if(_vtab_record->currentIndex() != index){
+				auto previous_browser = _vtab_record->currentWidget();
+				if(previous_browser) previous_browser->lower();
+				_vtab_record->setCurrentIndex(index);
+				// synchronize tree view and record view
 			}
 		}
+		if(!_tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host()->id() == _tree_screen->view()->current_item()->id();})){
+			auto it = _tabmanager->record_controller()->view()->current_item();
+			if(it){
+				_tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] {return _tree_screen->view()->source_model();}, it));
+			}
+		}
+		reset_main_menu();
+		reset_find_screen_tool_bar();
+		this->setVisible(true);
+		this->adjustSize();
 		QMainWindow::activateWindow();
 	}
 
 	void Browser::load_default_state(){
-		// QSettings _configuration(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
-		_configuration->beginGroup(QLatin1String("browser"));
-		QByteArray data = _configuration->value(QLatin1String("default_state")).toByteArray();
-		restore_state(data);
-		_configuration->endGroup();
+		if(_state != QByteArray()){
+			//
+			restore_state(_state);
+		}else{
+			// QSettings _configuration(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+			_configuration->beginGroup(QLatin1String("browser"));
+			QByteArray data = _configuration->value(QLatin1String("default_state")).toByteArray();
+			restore_state(data);
+			_configuration->endGroup();
+		}
 	}
 
 	QSize Browser::sizeHint() const {
@@ -661,7 +740,7 @@ namespace browser {
 		// std::shared_ptr<QSettings> _configuration = std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
 		// QSettings settings(globalparameters.work_directory() + "/" + globalparameters.target_os() +  "/"+globalparameters._browser_conf_filename, QSettings::IniFormat);
 		_configuration->beginGroup(QLatin1String("browser"));
-		QByteArray data = save_state(false);
+		QByteArray data = save_state();//false
 		_configuration->setValue(QLatin1String("default_state"), data);
 		_configuration->endGroup();
 	}
@@ -673,14 +752,15 @@ namespace browser {
 		assert(_find_screen);
 		// QToolBar *navigater = findscreen->navigater();
 		// assert(navigater);
-		auto topic	= _record_screen->editing_window()->topic();
-		int version	= 2;
+
+		int version = 2;
 		QByteArray data;
 		QDataStream stream(&data, QIODevice::WriteOnly);
 
 		stream << qint32(browser_magic);
 		stream << qint32(version);
-		stream << topic;
+		stream << _blogger->topic();
+		stream << _blogger->title();
 		stream << size();
 		stream << menuBar()->isVisible();
 		stream << !_find_screen->isHidden();
@@ -691,6 +771,44 @@ namespace browser {
 		return data;
 	}
 
+	std::tuple<qint32, qint32, QString, QString, QSize, bool, bool, bool, bool, std::tuple<qint32, qint32, QStringList, QString> > Browser::state(const QByteArray &state_){
+//		assert(_find_screen);
+		// QToolBar *navigater = findscreen->navigater();
+		// assert(navigater);
+		std::tuple<qint32, qint32, QString, QString, QSize, bool, bool, bool, bool, std::tuple<qint32, qint32, QStringList, QString> > result;
+		int version = 2;
+		QByteArray sd = state_;
+		QDataStream stream(&sd, QIODevice::ReadOnly);
+//		if(stream.atEnd()) return false;
+		if(!stream.atEnd()){
+			qint32 marker;
+			qint32 v;
+			stream >> marker; std::get<0>(result) = marker;
+			stream >> v; std::get<1>(result) = v;
+//		if(marker != browser_magic || v != version) return false;
+			if(marker == browser_magic && v == version){
+				QString title;
+				QString topic;
+				QSize size;
+				bool showMenuBar;
+				bool showToolbar;
+				bool showBookmarksBar;
+				bool showStatusbar;
+				QByteArray tabState;
+				stream >> title; std::get<2>(result)	= title;
+				stream >> topic; std::get<3>(result)	= topic;
+				stream >> size; std::get<4>(result)	= size;
+				stream >> showMenuBar; std::get<5>(result)	= showMenuBar;
+				stream >> showToolbar; std::get<6>(result)	= showToolbar;
+				stream >> showBookmarksBar; std::get<7>(result) = showBookmarksBar;
+				stream >> showStatusbar; std::get<8>(result) = showStatusbar;
+				stream >> tabState;
+
+				std::get<9>(result) = TabWidget::state(tabState);
+			}
+		}
+		return result;
+	}
 	bool Browser::restore_state(const QByteArray &state){
 		// FindScreen *_find_screen = globalparameters.find_screen();
 		assert(_find_screen);
@@ -706,6 +824,7 @@ namespace browser {
 		stream >> marker;
 		stream >> v;
 		if(marker != browser_magic || v != version) return false;
+		QString title;
 		QString topic;
 		QSize size;
 		bool showMenuBar;
@@ -713,6 +832,7 @@ namespace browser {
 		bool showBookmarksBar;
 		bool showStatusbar;
 		QByteArray tabState;
+		stream >> title;
 		stream >> topic;
 		stream >> size;
 		stream >> showMenuBar;
@@ -720,11 +840,12 @@ namespace browser {
 		stream >> showBookmarksBar;
 		stream >> showStatusbar;
 		stream >> tabState;
-		if(_record_screen->editing_window()->topic() != topic){
-			_record_screen->editing_window()->topic(topic);
+		if(_blogger->topic() != topic){
+			if(_blogger->title() != title) _blogger->title(title);
+			_blogger->topic(topic);
 			configuration( // std::make_unique<QSettings>(_current_topic_folder_name + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat)
 				[&]() -> std::unique_ptr<QSettings> {
-					auto _current_topic_folder_name = _record_screen->editing_window()->current_topic_folder_name();
+					auto _current_topic_folder_name = _blogger->current_topic_folder_name();
 					if(!QDir(_current_topic_folder_name).exists())
 						if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
 					auto _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_browser_conf_filename;
@@ -780,9 +901,40 @@ namespace browser {
 
 	const QString &Browser::lastsearch() const {return _lastsearch;}
 
-	void Browser::append_to_file_menu(){
+	void Browser::reset_main_menu(){
+		auto sc = new QShortcut(QKeySequence(Qt::Key_F6), this);
+		connect(sc, &QShortcut::activated, this, &Browser::slotSwapFocus);
+
+//		_main_window->menuBar()->clear();
+
+		reset_file_menu();
+
+		reset_tools_menu();
+
+		reset_edit_menu();
+
+		reset_view_menu();
+
+		reset_history_menu();
+
+		reset_bookmark_menu();
+
+		reset_window_menu();
+
+		reset_help_menu();
+
+		auto button = _tree_screen->menus_in_button();
+//		button->clear();
+		for(auto menu : _main_window->main_menu_map()) button->addMenu(menu.second);
+		setMenuBar(gl_paras->main_window()->menuBar());
+	}
+
+	void Browser::reset_file_menu(){
 		// File
 		QMenu *filemenu = _main_window->file_menu(); // menuBar()->addMenu(tr("&File"));
+
+		_main_window->init_file_menu();
+
 
 		filemenu->addAction(tr("&New Window"), this, &Browser::slotFileNew, QKeySequence::New);
 		filemenu->addAction(_tabmanager->newTabAction()); // tr("New &Tab")
@@ -821,12 +973,12 @@ namespace browser {
 		//// quit->setShortcut(Qt::CTRL + Qt::Key_Q);
 		//// connect(quit, &QAction::triggered, _main_window, &MainWindow::application_exit);
 		//// filemenu->addAction(quit);
-
+		_main_window->append_quit_menu();
 		//// _tree_screen->buttonmenu()->addMenu(filemenu);
-		_tree_screen->main_menu_map()["file_menu"] = filemenu;
+		_main_window->main_menu_map()["file_menu"] = filemenu;
 	}
 
-	void Browser::append_edit_menu(){
+	void Browser::reset_edit_menu(){
 		// Edit
 		QMenu *editMenu = _main_window->edit_menu();
 		// editMenu = _main_window->menuBar()->addMenu(tr("&Edit"));
@@ -865,11 +1017,11 @@ namespace browser {
 		editMenu->addSeparator();
 
 		editMenu->addAction(tr("&Browser preferences"), this, &Browser::slotPreferences, tr("Ctrl+,"));
-		_tree_screen->main_menu_map()["edit_menu"] = editMenu;
+		_main_window->main_menu_map()["edit_menu"] = editMenu;
 		// _tree_screen->menus_in_button()->addMenu(editMenu);
 	}
 
-	void Browser::append_view_menu(){
+	void Browser::reset_view_menu(){
 		// View
 		QMenu *viewMenu = _main_window->view_menu(); // _main_window->menuBar()->addMenu(tr("&View"));
 		viewMenu->clear();
@@ -934,11 +1086,11 @@ namespace browser {
 		viewMenu->addAction(tr("Page S&ource"), this, &Browser::slotViewPageSource, tr("Ctrl+Alt+U"));
 		QAction *a = viewMenu->addAction(tr("&Full Screen"), this, &Browser::slotViewFullScreen, Qt::Key_F11);
 		a->setCheckable(true);
-		_tree_screen->main_menu_map()["view_menu"] = viewMenu;
+		_main_window->main_menu_map()["view_menu"] = viewMenu;
 		// _tree_screen->menus_in_button()->addMenu(viewMenu);
 	}
 
-	void Browser::append_history_menu(){
+	void Browser::reset_history_menu(){
 		// History
 		HistoryMenu *historyMenu = _main_window->histry_menu();
 		// new HistoryMenu(
@@ -950,7 +1102,7 @@ namespace browser {
 		connect(static_cast<ModelMenu *>(historyMenu), &ModelMenu::hovered_signal, this, &Browser::slotUpdateStatusbar);
 		historyMenu->setTitle(tr("Hi&story"));
 
-		_main_window->menuBar()->addMenu(historyMenu);
+//		_main_window->menuBar()->addMenu(historyMenu);
 
 		// _tree_screen->menus_in_button()->addMenu(historyMenu);// ?
 
@@ -969,9 +1121,7 @@ namespace browser {
 		historyActions.append(_historyforward);
 
 		// QAction *_historyhome = new QAction(tr("Home"), this);
-		// connect(_historyhome, SIGNAL(triggered()), this, SLOT(slotHome()));
-
-		// connect(_historyhome, &QAction::triggered, this, &DockedWindow::slotHome);
+		// connect(_historyhome, &QAction::triggered, this, &DockedWindow::slotHome);// connect(_historyhome, SIGNAL(triggered()), this, SLOT(slotHome()));
 
 		_historyhome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
 
@@ -986,11 +1136,11 @@ namespace browser {
 #endif
 
 		historyMenu->setInitialActions(historyActions);
-		_tree_screen->main_menu_map()["history_menu"] = historyMenu;
+		_main_window->main_menu_map()["history_menu"] = historyMenu;
 		// _tree_screen->menus_in_button()->addMenu(historyMenu);
 	}
 
-	void Browser::append_bookmark_menu(){
+	void Browser::reset_bookmark_menu(){
 		// Bookmarks
 		BookmarksMenu *bookmarksMenu = _main_window->bookmark_menu();
 		// new BookmarksMenu(
@@ -1001,7 +1151,7 @@ namespace browser {
 		connect(bookmarksMenu, &BookmarksMenu::openUrl, _tabmanager, &TabWidget::loadUrlInCurrentTab);
 		connect(static_cast<ModelMenu *>(bookmarksMenu), &ModelMenu::hovered_signal, this, &Browser::slotUpdateStatusbar);
 		bookmarksMenu->setTitle(tr("&Bookmarks"));
-		_main_window->menuBar()->addMenu(bookmarksMenu);
+//		_main_window->menuBar()->addMenu(bookmarksMenu);
 
 		QList<QAction *> bookmarksActions;
 
@@ -1016,21 +1166,22 @@ namespace browser {
 		bookmarksActions.append(showAllBookmarksAction);
 		bookmarksActions.append(_addbookmark);
 		bookmarksMenu->setInitialActions(bookmarksActions);
-		_tree_screen->main_menu_map()["bookmarks_menu"] = bookmarksMenu;
+		_main_window->main_menu_map()["bookmarks_menu"] = bookmarksMenu;
 		// _tree_screen->menus_in_button()->addMenu(bookmarksMenu);
 	}
 
-	void Browser::append_window_menu(){
+	void Browser::reset_window_menu(){
 		// Window
 		_windowmenu = _main_window->window_menu(); // menuBar()->addMenu(tr("&Window"));
 		_windowmenu->clear();
 		connect(_windowmenu, &QMenu::aboutToShow, this, &Browser::slotAboutToShowWindowMenu);
 		slotAboutToShowWindowMenu();
-		_tree_screen->main_menu_map()["window_menu"] = _windowmenu;
+		_main_window->main_menu_map()["window_menu"] = _windowmenu;
 		// _tree_screen->menus_in_button()->addMenu(_windowmenu);
 	}
 
-	void Browser::append_to_tools_menu(){
+	void Browser::reset_tools_menu(){
+		_main_window->init_tools_menu();
 		QMenu *toolsMenu = _main_window->tools_menu(); // menuBar()->addMenu(tr("&Tools"));
 		toolsMenu->addAction(tr("Web &Search"), this, &Browser::slotWebSearch, QKeySequence(tr("Ctrl+K", "Web Search")));
 #if defined(QWEBENGINEINSPECTOR)
@@ -1039,47 +1190,19 @@ namespace browser {
 #endif
 	}
 
-	void Browser::append_to_help_menu(){
+	void Browser::reset_help_menu(){
 		_main_window->init_help_menu();
 		assert(_main_window->help_menu());
 		QMenu *helpMenu = _main_window->help_menu(); // menuBar()->addMenu(tr("&Help"));
 		// helpMenu->addAction(tr("About &Qt"), qApp, SLOT(aboutQt()));
 		helpMenu->addAction(tr("About &Embedded Browser"), this, &Browser::slotAboutApplication);
-		_tree_screen->main_menu_map()["help_menu"] = helpMenu;
+		_main_window->main_menu_map()["help_menu"] = helpMenu;
 		// _tree_screen->menus_in_button()->addMenu(helpMenu);
 	}
 
-	void Browser::append_to_main_menu(){
-		auto sc = new QShortcut(QKeySequence(Qt::Key_F6), this);
-		connect(sc, &QShortcut::activated, this, &Browser::slotSwapFocus);
 
-		_main_window->menuBar()->clear();
-		{
-			_main_window->init_file_menu();
-			append_to_file_menu();
-			_main_window->append_quit_menu();
-		}
 
-		{
-			_main_window->init_tools_menu();
-			append_to_tools_menu();
-		}
-
-		append_edit_menu();
-
-		append_view_menu();
-
-		append_history_menu();
-
-		append_bookmark_menu();
-
-		append_window_menu();
-
-		append_to_help_menu();
-		for(auto menu : _tree_screen->main_menu_map()) _tree_screen->menus_in_button()->addMenu(menu.second);
-	}
-
-	void Browser::setup_tool_bar(){
+	void Browser::reset_find_screen_tool_bar(){
 		// auto mainwindow = _main_window;
 		// FindScreen *_find_screen = globalparameters.find_screen();
 		assert(_find_screen);
@@ -1089,19 +1212,21 @@ namespace browser {
 		// connect(navigater->toggleViewAction(), SIGNAL(toggled(bool)), this, SLOT(updateToolbarActionText(bool)));
 
 		// _historyback = findscreen->historyback();
-
-		_historyback->setIcon(QIcon(":/resource/pic/mobile_back.svg") // style()->standardIcon(QStyle::SP_ArrowBack, 0, _find_screen)
-		                     ); // this
+		_historyback->disconnect();
+		_tabmanager->addWebAction(_historyback, QWebEnginePage::Back);
+		_historyback->setIcon(QIcon(":/resource/pic/mobile_back.svg"));// style()->standardIcon(QStyle::SP_ArrowBack, 0, _find_screen)
+		// this
 
 		_historybackmenu = new QMenu(this);
-		_historyback->setMenu(_historybackmenu);
+
 		connect(_historybackmenu, &QMenu::aboutToShow, this, &Browser::slotAboutToShowBackMenu);
 		connect(_historybackmenu, &QMenu::triggered, this, &Browser::slotOpenActionUrl);
-
+		_historyback->setMenu(_historybackmenu);
 		// navigater->addAction(_historyback);
-
-		_historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg") // style()->standardIcon(QStyle::SP_ArrowForward, 0, _find_screen)
-		                        ); // this
+		_historyforward->disconnect();
+		_tabmanager->addWebAction(_historyforward, QWebEnginePage::Forward);
+		_historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg")); // style()->standardIcon(QStyle::SP_ArrowForward, 0, _find_screen)
+		// this
 
 		_historyforwardmenu = new QMenu(this);
 		connect(_historyforwardmenu, &QMenu::aboutToShow, this, &Browser::slotAboutToShowForwardMenu);
@@ -1265,10 +1390,10 @@ namespace browser {
 		// _browser->new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));
 
 		// if(_entrance->window_list().count() == 0) { // ?
-		// globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+		// globalparameters.entrance()->new_browser(QUrl(web::Browser::_defaulthome));
 		// }
 
-		// browser::Browser *browser = _entrance->activiated_registered().first;   //QtSingleApplication::instance()->mainWindow();
+		// web::Browser *browser = _entrance->activiated_registered().first;   //QtSingleApplication::instance()->mainWindow();
 		// assert(browser == this); // ?
 		// browser->slotHome();
 
@@ -1360,9 +1485,11 @@ namespace browser {
 			}
 		}
 		for(int i = 0; i < _tabmanager->count(); i++) _tabmanager->webView(i)->close();
-		HidableTab *_vtab_record = _main_window->vtab_record();
-		auto index = _vtab_record->indexOf(_record_screen);
-		if(index != -1) _vtab_record->removeTab(index);
+//		{
+//			HidableTab *_vtab_record = _main_window->vtab_record();
+//			auto index = _vtab_record->indexOf(_record_screen);
+//			if(index != -1) _vtab_record->removeTab(index);
+//		}
 		event->accept();
 		deleteLater();
 	}
@@ -1568,7 +1695,8 @@ namespace browser {
 						  } (); // _browsers[offset];
 				if(_browser){
 					_browser->activateWindow();
-					_browser->currentTab()->setFocus();
+					auto v = _browser->currentTab();
+					if(v) v->setFocus();
 				}
 			}
 		}
@@ -1607,7 +1735,7 @@ namespace browser {
 		boost::intrusive_ptr<TreeItem> result = record_index->host();
 		if(result->is_lite()) result->to_fat();
 		// clean();
-		// assert(_it->is_registered_to_browser() || _it->field("url") == browser::Browser::_defaulthome);
+		// assert(_it->is_registered_to_browser() || _it->field("url") == web::Browser::_defaulthome);
 		// assert(tab_brother != target);
 
 		WebView *view = nullptr;
@@ -1618,7 +1746,7 @@ namespace browser {
 		// {
 		// for(auto &i : _mainWindows) {
 		auto url_euql = [&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), result->field<home_type>().toStdString()) && b->host()->id() == result->id() && b == result->binder();};
-		view = _tabmanager->find(url_euql); // if _item->field("url") == Browser::_defaulthome , force rebind
+		view = _tabmanager->find(url_euql); // if _item->field("url") == web::Browser::_defaulthome , force rebind
 		// if(view != nullptr) {
 		////            dp.first = i.data();
 		// if(!isVisible()) {
@@ -1628,14 +1756,16 @@ namespace browser {
 		////            break;
 		// } else
 		if(!view){
-			auto v = gl_paras->main_window()->find(url_euql);
-			if(v && v->tabmanager() != _tabmanager) v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
+			{
+//				auto view_found = gl_paras->main_window()->find(url_euql);
+//				if(view_found && view_found->tabmanager() != _tabmanager) view_found->tabmanager()->closeTab(view_found->tabmanager()->indexOf(view_found));
+			}
 			//// Record *blank_url = check_register_record(QUrl(DockedWindow::_defaulthome));
 
 			////            if(blank.isLite())blank.switchToFat();
 			////            blank.setNaturalFieldSource("url", DockedWindow::_defaulthome);
 
-			// WebView *blankview = tab->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == Browser::_defaulthome;}); // QUrl(Browser::_defaulthome)
+			// WebView *blankview = tab->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == web::Browser::_defaulthome;}); // QUrl(web::Browser::_defaulthome)
 
 			////            //PageView *no_pin = nullptr;
 
@@ -1674,7 +1804,7 @@ namespace browser {
 		// tab->setCurrentWidget(dp.second);
 		// dp.second->show();
 		// assert(dp.first);
-		if(_entrance->widget() != this) _entrance->setWidget(this);
+		if(_browser_docker->widget() != this) _browser_docker->setWidget(this);
 		auto _vtab_record = _main_window->vtab_record();
 		if(_vtab_record->currentWidget() != _record_screen && make_current) _vtab_record->setCurrentWidget(_record_screen);
 		assert(view);
@@ -1685,7 +1815,11 @@ namespace browser {
 
 	rs_t *Browser::record_screen(){return _record_screen;}
 
-	BrowserDock *Browser::entrance(){return _entrance;}
+//	Docker *Browser::browser_docker(){return _browser_docker;}
 	void Browser::configuration(std::unique_ptr<QSettings> &&conf){_configuration = std::move(conf);}
 	void Browser::configuration_full_name(const QString &conf_name){_configuration_full_name = conf_name;}
+	Blogger *Browser::blogger(){return _blogger;}
+	void Browser::on_blogger_close(){if(_blogger) _blogger->deleteLater(); _blogger = nullptr; close();}
+	void Browser::on_record_screen_close(){if(_record_screen) _record_screen->deleteLater(); _record_screen = nullptr; close();}
 }
+

@@ -34,7 +34,7 @@ DataBaseConfig::DataBaseConfig(std::shared_ptr<gl_para> gl_paras_, std::shared_p
 	// is_init_flag = false;
 	// Создается имя файла конфигурации
 	// QString configFileName=globalParameters.getWorkDirectory()+"/"+appconfig->datadir()+"/database.ini";
-	QString configFileName = gl_paras_->root_path() + "/" + QDir(appconfig_->data_dir()).dirName() + "/" + "/database.ini";
+	QString configFileName = gl_paras_->root_path() + "/" + QDir(appconfig_->data_dir()).dirName() + "/" + gl_para::_data_conf_filename;
 
 	// Проверяется, есть ли файл конфигурации
 	QFile confFile(configFileName);

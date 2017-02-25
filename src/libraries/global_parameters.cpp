@@ -20,7 +20,7 @@
 
 #include "libraries/window_switcher.h"
 #include "views/app_config/app_config_dialog.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/downloadmanager.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/hidable_tab.h"
@@ -31,7 +31,7 @@
 
 // #include "utility/config_ini.h"
 
-extern const char *index_xml_file_name;
+//extern const char *index_xml_file_name;
 
 extern const char *standardItem;
 extern const char *portableItem;
@@ -44,14 +44,15 @@ extern const std::string program_title_string;
 W_OBJECT_IMPL(GlobalParameters)
 #endif
 
-constexpr char gl_para::_program_instance_name[];
-constexpr char gl_para::_mode_filename[]; // = "mode.ini";
-constexpr char gl_para::_conf_filename[]; // = "conf.ini";
-constexpr char gl_para::_browser_conf_filename[]; // = "browser.conf";
-constexpr char gl_para::_browserview_conf_filename[]; // = "browserview.ini";
-constexpr char gl_para::_editor_conf_filename[]; // = "editorconf.ini";
-constexpr char gl_para::_entrance_conf_filename[]; // = "entrance.ini";
-constexpr char gl_para::_stylesheet_filename[]; // = "stylesheet.css";
+//constexpr const char* gl_para::_program_instance_name;
+//constexpr char gl_para::_mode_filename[]; // = "mode.ini";
+//constexpr char gl_para::_conf_filename[]; // = "conf.ini";
+//constexpr char gl_para::_browser_conf_filename[]; // = "browser.conf";
+//constexpr char gl_para::_dock_conf_filename[]; // = "browserview.ini";
+//constexpr char gl_para::_dock_settings_section_name[];
+//constexpr char gl_para::_editor_conf_filename[]; // = "editorconf.ini";
+//constexpr char gl_para::_entrance_conf_filename[]; // = "entrance.ini";
+//constexpr char gl_para::_stylesheet_filename[]; // = "stylesheet.css";
 
 gl_para::gl_para(QObject *pobj)
 	: mode_file_full_name_by_system([&] {return _root_path_given_by_system + "/" + gl_para::_mode_filename;})
@@ -102,6 +103,22 @@ gl_para::gl_para(QObject *pobj)
 		 }){
 	Q_UNUSED(pobj);
 	init();
+
+	_editors_shared_full_path_name
+		= [&]() -> QString {
+//			  // Handle local directory settings; a default is used if none is specified
+//			  if(gl_paras->editors_shared_full_path_name().isEmpty()){
+			  QString path =
+#ifdef Q_OS_WIN32
+				  QString(sapp_t::instance()->isSandbox() ? "%1\\qtm-sandbox" : "%1\\qtm-blog").arg(root_path()); // QDir::homePath()
+#else
+				  QString(sapp_t::instance()->isSandbox() ? "%1/qtm-sandbox" : "%1/qtm-blog").arg(root_path()); // + "/" + globalparameters.target_os());
+#endif
+//			  }
+			  if(!QDir(path).exists())
+				  if(!QDir::root().mkpath(path)) critical_error("Can not create directory: \"" + path + "\"");
+			  return path;
+		  } ();
 }
 
 gl_para::~gl_para(){}
@@ -255,11 +272,11 @@ std::tuple<const bool, const QString> gl_para::permanent_coordinate_root(const Q
 			  // if(! QFile(config_path + _browser_conf_filename).exists())
 			  check_exists_and_permission(gl_para::_browser_conf_filename);
 			  // if(! QFile(config_path + _browserview_conf_filename).exists())
-			  check_exists_and_permission(gl_para::_browserview_conf_filename);
+			  check_exists_and_permission(gl_para::_dock_conf_filename);
 			  // if(! QFile(config_path + _editor_conf_filename).exists())
 			  check_exists_and_permission(gl_para::_editor_conf_filename);
 			  // if(! QFile(config_path + _entrance_conf_filename).exists())
-			  check_exists_and_permission(gl_para::_entrance_conf_filename);
+//			  check_exists_and_permission(gl_para::_browser_dock_conf_filename);
 			  // if(! QFile(config_path + _stylesheet_filename).exists())
 			  check_exists_and_permission(gl_para::_stylesheet_filename);
 			  std::get<1>(result) = root_path_local;
@@ -609,7 +626,7 @@ void gl_para::style_source(const QString &source){_style_source = source;}
 
 QString gl_para::style_source() const {return _style_source;}
 
-void gl_para::download_manager(browser::DownloadManager *dm){_download_manager = dm;}
+void gl_para::download_manager(web::DownloadManager *dm){_download_manager = dm;}
 
 // QString GlobalParameters::root_path(void) const {return _root_path;}
 // QString gl_para::config_filename(void) const {return gl_para::_conf_filename;}
@@ -645,9 +662,9 @@ QString gl_para::application_name(void) const {
 	return app_name;
 }
 
-browser::Profile *gl_para::profile() const {return _profile;}
+web::Profile *gl_para::profile() const {return _profile;}
 
-void gl_para::profile(browser::Profile *profile_){_profile = profile_;}
+void gl_para::profile(web::Profile *profile_){_profile = profile_;}
 
 QSplitter *gl_para::find_splitter() const {return _find_splitter;}
 
@@ -679,23 +696,23 @@ HidableTab *gl_para::vtab_record() const {return _vtab_record;}
 // return _vtab_tree;
 // }
 
-browser::DownloadManager *gl_para::request_download_manager(){
+web::DownloadManager *gl_para::request_download_manager(){
 	bool found = false;
 	for(int i = 0; i < _vtab_record->count(); i++){
 		auto widget_ = _vtab_record->widget(i);
 		if(widget_->objectName() == download_manager_singleton_name){
-			_download_manager = dynamic_cast<browser::DownloadManager *>(widget_);
+			_download_manager = dynamic_cast<web::DownloadManager *>(widget_);
 			found = true;
 			break;
 		}
 	}
-	if(!found) _download_manager = new browser::DownloadManager(download_manager_singleton_name, _vtab_record);
-	// if(! _download_manager)_download_manager = new browser::DownloadManager(download_manager_singleton_name, _vtab_record);
+	if(!found) _download_manager = new web::DownloadManager(download_manager_singleton_name, _vtab_record);
+	// if(! _download_manager)_download_manager = new web::DownloadManager(download_manager_singleton_name, _vtab_record);
 	if(_vtab_record->currentIndex() != _vtab_record->indexOf(_download_manager)) _vtab_record->setCurrentWidget(static_cast<QWidget *>(_download_manager));
 	return _download_manager;
 }
 
-browser::DownloadManager *gl_para::download_manager() const {return _download_manager;}
+web::DownloadManager *gl_para::download_manager() const {return _download_manager;}
 
 void gl_para::editor_config(std::shared_ptr<EditorConfig> dialog){_editor_config = dialog;}
 
@@ -709,9 +726,9 @@ void gl_para::tree_screen(ts_t *point){_tree_screen = point;}
 
 ts_t *gl_para::tree_screen() const {return _tree_screen;}
 
-browser::BrowserDock *gl_para::browser_dock() const {return _entrance;}
+web::Docker *gl_para::browser_docker() const {return _browser_docker;}
 
-void gl_para::browser_dock(browser::BrowserDock * &b){_entrance = b;}
+void gl_para::browser_docker(web::Docker * &b){_browser_docker = b;}
 
 void gl_para::push_record_screen(rs_t *point){_table_screens.push_back(point);}
 
@@ -727,9 +744,9 @@ void gl_para::find_screen(FindScreen *point){_find_screen = point;}
 
 FindScreen *gl_para::find_screen() const {return _find_screen;}
 
-void gl_para::editor_dock(EditorDock *point){_editor_dock = point;}
+void gl_para::editor_docker(web::Docker *point){_editor_docker = point;}
 
-EditorDock *gl_para::editor_dock() const {return _editor_dock;}
+web::Docker *gl_para::editor_docker() const {return _editor_docker;}
 
 void gl_para::status_bar(QStatusBar *point){_statusbar = point;}
 
@@ -876,3 +893,9 @@ QByteArray gl_para::crypt_key(void) const {return _password_hash;}
 
 SysTrayIcon *gl_para::tray_icon(){return _tray_icon;}
 void gl_para::tray_icon(SysTrayIcon *ti){_tray_icon = ti;}
+void gl_para::global_home(const QUrl &url_){_global_home = url_;}
+QUrl gl_para::global_home() const {return _global_home;}
+
+QString gl_para::editors_shared_full_path_name() const {return _editors_shared_full_path_name;}
+
+QString gl_para::root_path_given_by_system() const {return _root_path_given_by_system;}

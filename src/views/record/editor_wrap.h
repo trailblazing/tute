@@ -39,7 +39,7 @@ class Record;
 class TreeItem;
 class FindScreen;
 class RecordModel;
-class EditingWindow;
+class Blogger;
 class QStackedWidget;
 
 class ClickableLabel : public QLabel {
@@ -87,7 +87,7 @@ signals:
 	;
 #endif
 
-public: EditorWrap(FindScreen *find_screen, EditingWindow *editing_win, QStringList hide_editor_tools_ = appconfig->hide_editor_tools(), QStackedWidget *main_stack_ = nullptr, QString object_name = "");
+public: EditorWrap(FindScreen *find_screen, Blogger *editing_win, std::shared_ptr<QSettings> topic_editor_config_, QStringList hide_editor_tools_ = appconfig->hide_editor_tools(), QStackedWidget *main_stack_ = nullptr, QString object_name = "");
 	~EditorWrap(void);
 
 	// void tree_path(const QString &path);
@@ -252,7 +252,7 @@ private:
 	// QWidget *_hidetitlebar;
 	FindScreen *_find_screen;
 	QStackedWidget *_main_stack;
-	EditingWindow *_editing_window;
+	Blogger *_blog;
 };
 
 #endif /* _METAEDITOR_H_ */

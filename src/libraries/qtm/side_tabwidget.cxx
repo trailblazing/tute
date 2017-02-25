@@ -1,19 +1,20 @@
 #include "side_tabwidget.h"
 // #include "views/main_window/hidable_tabwidget.h"
-#include "editing_window.h"
-#include "views/record/editor_dock.h"
+#include "blogger.h"
+
 #include "views/attach_table/attach_table_screen.h"
+#include "views/browser/docker.h"
 
 
-
-SideTabWidget::SideTabWidget(ts_t *tree_screen, FindScreen *find_screen, browser::BrowserDock *browser_dock, EditingWindow *editing_window, browser::Profile *profile, QString style_source_, QSplitter *splitter, QWidget *parent)
-	: HidableTab(tree_screen, find_screen, browser_dock, editing_window, profile, style_source_, splitter, std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_editor_conf_filename, QSettings::IniFormat), "geometry", "splitter_sizelist", "collapsed", parent)
-	  , _editing_window(editing_window)
-	  , _attachtable_screen(new AttachTableScreen(editing_window, this)){
+SideTabWidget::SideTabWidget(web::Docker *editor_docker_, Blogger *blogger_, std::shared_ptr<QSettings> topic_editor_config_, QSplitter *splitter, QWidget *parent)
+	: HidableTab(editor_docker_, splitter, topic_editor_config_, "geometry", "splitter_sizelist", "collapsed", parent)
+//	  , _editor_docker(editor_docker_)
+	  , _blogger(blogger_)
+	  , _attachtable_screen(new AttachTableScreen(blogger_, this)){
 	// , tabWidget(new HidableTabWidget(_tree_screen, _find_screen, _editentry, _entrance, _main_window, _profile, style_source_, this))
 	setupUi();
 	connect(_lineedit_topic, &QLineEdit::textChanged, [&](const QString &tp){
-			_editing_window->on_topic_changed(_lineedit_topic, tp);
+			_blogger->on_topic_changed(_lineedit_topic, tp);
 		});
 }
 
@@ -639,3 +640,5 @@ void SideTabWidget::title(const QString &title_){leTitle->setText(title_);}
 QString SideTabWidget::title() const {return leTitle->text();}
 void SideTabWidget::topic(const QString &topic_){_lineedit_topic->setText(topic_);}
 QString SideTabWidget::topic() const {return _lineedit_topic->text();}
+
+

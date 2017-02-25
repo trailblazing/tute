@@ -53,7 +53,7 @@ class QLabel;
 class QGridLayout;
 class QPropertyAnimation;
 
-namespace browser {
+namespace web {
 	class FullScreenNotification : public QWidget {
 #if QT_VERSION == 0x050600
 	W_OBJECT(FullScreenNotification)

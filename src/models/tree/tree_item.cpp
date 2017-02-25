@@ -11,7 +11,7 @@
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
 #include "tree_item.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "views/main_window/main_window.h"
@@ -68,37 +68,38 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem> _parent_item, boost::intrusive
 TreeItem::TreeItem(boost::intrusive_ptr<TreeItem> host_parent, QMap<QString, QString> field_data, const QDomElement &_dom_element, int pos, int mode)
 	: Record(field_data)
 	  , ItemsFlat(_dom_element, host_parent ? host_parent->is_crypt() : false)
-	  , dom_from_treeitem_impl([&](std::shared_ptr<QDomDocument> doc) -> QDomElement {
-					   // QDomElement node = doc->createElement("node");
-					   QDomElement record = Record::dom_from_record_impl(doc);
-					   if(ItemsFlat::count_direct() > 0){
-					           QDomElement children = ItemsFlat::dom_from_itemsflat_impl(doc);
-					           record.appendChild(children);
-					   }
-					   // node.appendChild(record);
-					   return record; // node;    //
-				   })
-	  , children_parent_as_this([&]() -> void { // boost::intrusive_ptr<TreeItem> parent_item
-					    ////    assert(static_cast<ItemsFlat *>(parent_item.get()) == this);
-					    // auto _this = static_cast<TreeItem *const>(this);
-					    // assert(_this);
-					    ////    QList<boost::intrusive_ptr<TreeItem>> candidates;
-					    ////    for(auto il : _child_linkers) {
-					    ////        if(!il->parent_item() || il->parent_item() != _this) {
-					    ////            candidates << il->host(); // il->host()->parent(parent_item);   // this operation will remove il from _child_linkers and try to insert new one
-					    ////        }
-					    ////    }
-					    ////    for(auto it : candidates) {
-					    ////        it->parent(_this);
-					    ////    }
-					    for(int i = 0; i < _child_linkers.size(); i++){
-					            auto il = _child_linkers.at(i);
-					            if(!il->host_parent() || il->host_parent() != this){
-					                    // candidates << il->host(); //
-					                    il->parent(this, i, add_new_record_after); // this operation will remove il from _child_linkers and try to insert new one
-						    }
-					    }
-				    })
+	  , dom_from_treeitem_impl(
+		  [&](std::shared_ptr<QDomDocument> doc) -> QDomElement {// QDomElement node = doc->createElement("node");
+			  QDomElement record = Record::dom_from_record_impl(doc);
+			  if(ItemsFlat::count_direct() > 0){
+				  QDomElement children = ItemsFlat::dom_from_itemsflat_impl(doc);
+				  record.appendChild(children);
+			  }
+			  // node.appendChild(record);
+			  return record; // node;    //
+		  })
+	  , children_parent_as_this(
+		  [&]() -> void { // boost::intrusive_ptr<TreeItem> parent_item
+				  ////    assert(static_cast<ItemsFlat *>(parent_item.get()) == this);
+				  // auto _this = static_cast<TreeItem *const>(this);
+				  // assert(_this);
+				  ////    QList<boost::intrusive_ptr<TreeItem>> candidates;
+				  ////    for(auto il : _child_linkers) {
+				  ////        if(!il->parent_item() || il->parent_item() != _this) {
+				  ////            candidates << il->host(); // il->host()->parent(parent_item);   // this operation will remove il from _child_linkers and try to insert new one
+				  ////        }
+				  ////    }
+				  ////    for(auto it : candidates) {
+				  ////        it->parent(_this);
+				  ////    }
+			  for(int i = 0; i < _child_linkers.size(); i++){
+				  auto il = _child_linkers.at(i);
+				  if(!il->host_parent() || il->host_parent() != this){
+					  // candidates << il->host(); //
+					  il->parent(this, i, add_new_record_after); // this operation will remove il from _child_linkers and try to insert new one
+				  }
+			  }
+		  })
 
 	  , _linker([&] {auto l = new Linker(host_parent, this); return l;} ()){ // , pos, mode
 	// , _position(PosSource(-1))
@@ -192,14 +193,14 @@ TreeItem::TreeItem(QMap<QString, QString> _field_data, const QDomElement &_dom_e
 					   return record; // node;    //
 				   })
 	  , children_parent_as_this([&]() -> void { // boost::intrusive_ptr<TreeItem> parent_item
-					    for(int i = 0; i < _child_linkers.size(); i++){
-					            auto il = _child_linkers.at(i);
-					            if(!il->host_parent() || il->host_parent() != this){
-					                    // candidates << il->host(); //
-					                    il->parent(this, i, add_new_record_after); // this operation will remove il from _child_linkers and try to insert new one
-						    }
-					    }
-				    })
+			  for(int i = 0; i < _child_linkers.size(); i++){
+				  auto il = _child_linkers.at(i);
+				  if(!il->host_parent() || il->host_parent() != this){
+					  // candidates << il->host(); //
+					  il->parent(this, i, add_new_record_after); // this operation will remove il from _child_linkers and try to insert new one
+				  }
+			  }
+		  })
 	  , _linker([&] {auto l = new Linker(nullptr, this); return l;} ()){
 	//
 	// , _position(PosSource(-1))
@@ -366,8 +367,8 @@ TreeItem::~TreeItem(){
 	////    if(page_valid()    // _page != nullptr
 	////      ) {
 	////        //
-	////        browser::WebView *view = _page->view();
-	////        browser::TabWidget *tabmanager = nullptr;
+	////        web::WebView *view = _page->view();
+	////        web::TabWidget *tabmanager = nullptr;
 
 	////        if(view) {
 	////            tabmanager = view->tabmanager();
@@ -388,7 +389,7 @@ TreeItem::~TreeItem(){
 	////            //        _page = nullptr;
 
 	////            if(view && tabmanager && is_holder
-	////               // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
+	////               // && check_register_record(QUrl(web::DockedWindow::_defaulthome)) != this
 	////              ) {
 	////                assert(_page == _page->_item->unique_page());   // _page->rebind_record() make sure of this statement
 	////                tabmanager->closeTab(tabmanager->webViewIndex(view));
@@ -1014,7 +1015,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
 		// boost::intrusive_ptr<TreeItem>
 		item = boost::intrusive_ptr<TreeItem>( // std::make_shared<TreeItem>
 			new TreeItem(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)), record) // shared_from_this()
-		                                     ); // Создается объект item
+			); // Создается объект item
 
 		//// Определяется, является ли родительская ветка зашифрованной
 		// if(this->field(boost::mpl::c_str < crypt_type > ::value) == "1") {
@@ -2372,8 +2373,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::host() const {
 	return result;
 }
 
-browser::WebPage *TreeItem::page() const {
-	browser::WebPage *page = nullptr;
+web::WebPage *TreeItem::page() const {
+	web::WebPage *page = nullptr;
 	if(_binder) page = _binder->page();
 	////    if(_page) {
 	////        if(_page->record() == this)
@@ -2408,7 +2409,7 @@ browser::WebPage *TreeItem::page() const {
 
 // TreeItem::activate_helper TreeItem::activator() const {return _activator;}
 
-// boost::intrusive_ptr<TreeItem> TreeItem::bind(browser::WebPage *page)
+// boost::intrusive_ptr<TreeItem> TreeItem::bind(web::WebPage *page)
 // {
 // assert(page);
 
@@ -2437,31 +2438,42 @@ browser::WebPage *TreeItem::page() const {
 // return this;
 // }
 
-browser::WebView *TreeItem::bind(){
+web::WebView *TreeItem::bind(){
 	assert(_binder);
-	browser::WebView *view = nullptr;
+	web::WebView *view = nullptr;
 	if(_binder){
-		if(  // !_record_binder
-			!_binder->page()
-		  || !_binder->host()){
-			if(!_binder->host()) _binder->host(this);
-			auto _browser = gl_paras->main_window()->activated_browser();
-			auto record_index = RecordIndex::instance([&] {return _browser->record_screen()->record_controller()->source_model();}, this);
-			// if(! _binder->page())
-			view = _browser->bind(record_index)->page()->view();
-		}else if(
-			// ||
-			(_binder->host() && _binder->host().get() != this)
-			|| (_binder->page() && _binder->page()->binder() != _binder)) view = _binder->bind(); // boost::intrusive_ptr<TreeItem>(this)
-		else view = _binder->page()->view();
-		assert(view);
+		auto page_	= _binder->page();
+		auto host_	= _binder->host();
+		if(!_binder->page() || !_binder->host()){
+			if(!host_ && page_){
+				new ::Binder(std::make_shared<web::WebPage::Binder>(this, page_)); // _binder->host(this);
+				view = page_->view();
+			}else{ //if(!page_ || (!host_ && !page_))
+				auto _browser = gl_paras->main_window()->browser<boost::intrusive_ptr<TreeItem> >(this);
+				auto record_index = RecordIndex::instance([&] {return _browser->tabmanager()->record_controller()->source_model();}, this);
+				// if(!page_)
+				page_ = _browser->bind(record_index)->page();
+			}
+		}else if((host_ && host_ != this) || (page_ && page_->binder() != _binder)){
+			page_->bind(this);
+			//_binder->bind(); // boost::intrusive_ptr<TreeItem>(this)
+		}//else view = page_->view();
+		view = page_->view();
+	}else{
+		auto _browser = gl_paras->main_window()->browser<boost::intrusive_ptr<TreeItem> >(this);
+		auto record_index = RecordIndex::instance([&] {return _browser->tabmanager()->record_controller()->source_model();}, this);
+		// if(!page_)
+		auto page_ = _browser->bind(record_index)->page();
+		new ::Binder(std::make_shared<web::WebPage::Binder>(this, page_));
+		view = page_->view();
 	}
+	assert(view);
 	return view;
 }
 
-browser::WebView *TreeItem::activate(const std::function<browser::WebView *(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal)> &find_activated){
+web::WebView *TreeItem::activate(const std::function<web::WebView *(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal)> &find_activated){
 	assert(_binder); // auto result = globalparameters.entrance()->item_bind(this);  // may be not registered to tree model
-	browser::WebView *v = nullptr;
+	web::WebView *v = nullptr;
 	auto check_view = find_activated([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return b->host()->id() == id();});
 	if(check_view){
 		if(this != check_view->page()->host().get() || !_binder){
@@ -2541,10 +2553,22 @@ const boost::intrusive_ptr<Binder>&& TreeItem::binder() const {return std::forwa
 
 void TreeItem::binder(boost::intrusive_ptr<Binder> &&binder_){
 	if(binder_){
-		binder_->host(this);
-		if(binder_ != _binder) this->_binder = std::forward<boost::intrusive_ptr<Binder> >(binder_);
+		assert(this == binder_->host());//binder_->host(this);
+		if(binder_ != _binder){
+			if(_binder && binder_){
+				auto new_page	= binder_->page();
+				auto old_page	= _binder->page();
+				if(new_page && new_page){
+					if(new_page != old_page){
+						auto view_ = old_page->view();
+						if(view_) emit view_->close_requested();
+					}
+				}
+			}
+			this->_binder = std::forward<boost::intrusive_ptr<Binder> >(binder_);
+		}
 	}else if(_binder){
-		_binder->page(nullptr);
+		//_binder->page(nullptr);
 		_binder = nullptr;
 	}
 }
@@ -2555,7 +2579,7 @@ const boost::intrusive_ptr<Linker>&& TreeItem::linker() const {return std::forwa
 
 void TreeItem::linker(boost::intrusive_ptr<Linker> &&up_linker_){
 	if(up_linker_){
-		up_linker_->host(this);
+		assert(up_linker_->host() == this);//up_linker_->host(this);
 		if(up_linker_ != _linker) this->_linker = std::forward<boost::intrusive_ptr<Linker> >(up_linker_);
 	}else if(_linker){
 		_linker->host_parent(nullptr);
@@ -2604,8 +2628,8 @@ void TreeItem::binder_reset(){
 		// };
 
 		////
-		// browser::WebView *view = _record_binder->bounded_page()->view();    //_page->view();
-		// browser::TabWidget *tabmanager = nullptr;
+		// web::WebView *view = _record_binder->bounded_page()->view();    //_page->view();
+		// web::TabWidget *tabmanager = nullptr;
 
 		// if(view) {
 		// tabmanager = view->tabmanager();
@@ -2626,7 +2650,7 @@ void TreeItem::binder_reset(){
 		////        _page = nullptr;
 
 		// if(view && tabmanager && is_holder) {
-		//// && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
+		//// && check_register_record(QUrl(web::DockedWindow::_defaulthome)) != this
 
 		////                assert(_record_binder->bounded_page() == _record_binder->bounded_item()->unique_page());   // _page->rebind_record() make sure of this statement
 
@@ -2649,9 +2673,12 @@ void TreeItem::binder_reset(){
 
 		////	    _page_binder.reset(nullptr);
 		// }else{
-		_binder->page(nullptr);
+		{
+//			_binder->page(nullptr);
 
-		_binder->host(nullptr);
+//			_binder->host(nullptr);
+			_binder = nullptr;
+		}
 		// }
 		////
 		////        auto _host_binder = _binder->host() ? _binder->host()->binder() : nullptr;

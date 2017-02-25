@@ -42,7 +42,7 @@ struct id_value;
 // QString operator()(QUrl url) {return url.fragment();}
 // };
 
-namespace browser {
+namespace web {
 	class WebPage;
 	class WebView;
 	class TabWidget;
@@ -297,11 +297,11 @@ public:
 
 	// void children_clear(void);
 
-	browser::WebPage *page() const; // const; // {return _page;}
+	web::WebPage *page() const; // const; // {return _page;}
 	boost::intrusive_ptr<TreeItem> host() const;
-	browser::WebView *bind();
-	// boost::intrusive_ptr<TreeItem> bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
-	browser::WebView *activate(const std::function<browser::WebView *(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal)> &find_activated);
+	web::WebView *bind();
+	// boost::intrusive_ptr<TreeItem> bind(web::WebPage *page);  // {_page = page; _page->record(this);}
+	web::WebView *activate(const std::function<web::WebView *(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal)> &find_activated);
 
 	// void binder(bind_helper g); // {_binder = g;}
 	// bind_helper binder() const; // {return _binder;}
@@ -371,7 +371,7 @@ private:
 	////    // Each branch can contain a table of final entries // Каждая ветка может содержать таблицу конечных записей
 	// std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();
 
-	// browser::WebPage    *_page;
+	// web::WebPage    *_page;
 	boost::intrusive_ptr<Binder> _binder; // = nullptr
 	// bool                            _page_valid = false;
 	// PosSource                       _position;
@@ -385,7 +385,7 @@ private:
 	// void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
 	// bool is_holder() const;
 
-	// friend class browser::WebPage;
+	// friend class web::WebPage;
 	friend class ItemsFlat;
 	friend class tkm_t;
 	// friend class TreeScreen;

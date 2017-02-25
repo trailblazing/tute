@@ -31,16 +31,16 @@
 
 #include "xml_rpc_handler.h"
 
-#define _BLOGGER_GETUSERSBLOGS		EditingWindow::_blogger_getUsersBlogs
-#define _MT_GETCATEGORYLIST		EditingWindow::_mt_getCategoryList
-#define _METAWEBLOG_NEWMEDIAOBJECT	EditingWindow::_metaWeblog_newMediaObject
+#define _BLOGGER_GETUSERSBLOGS		Blogger::HttpBusinessType::_blogger_getUsersBlogs
+#define _MT_GETCATEGORYLIST		Blogger::HttpBusinessType::_mt_getCategoryList
+#define _METAWEBLOG_NEWMEDIAOBJECT	Blogger::HttpBusinessType::_metaWeblog_newMediaObject
 // #define _BLOGGER_GETUSERSBLOGS            _blogger_getUsersBlogs
 // #define _MT_GETCATEGORYLIST               _mt_getCategoryList
 // #define _METAWEBLOG_NEWMEDIAOBJECT        _metaWeblog_newMediaObject
 
-#include "editing_window.h"
+#include "blogger.h"
 
-XmlRpcHandler::XmlRpcHandler(EditingWindow::HttpBusinessType x){
+XmlRpcHandler::XmlRpcHandler(Blogger::HttpBusinessType x){
 	reqType = x;
 	_fault	= false;
 	methodResponseFinished	= false;
@@ -58,7 +58,7 @@ XmlRpcHandler::XmlRpcHandler(){
 	receivingFaultString = false;
 }
 
-void XmlRpcHandler::setProtocol(EditingWindow::HttpBusinessType x){
+void XmlRpcHandler::setProtocol(Blogger::HttpBusinessType x){
 	reqType = x;
 }
 

@@ -50,8 +50,8 @@ struct index_proxy;
 struct index_source;
 struct id_value;
 
-namespace browser {
-	class BrowserDock;
+namespace web {
+	class Docker;
 	class Browser;
 	class TabWidget;
 	class WebView;
@@ -59,16 +59,16 @@ namespace browser {
 
 // struct pages_container {
 // public:
-// explicit pages_container(browser::TabWidget *_tabmanager);
+// explicit pages_container(web::TabWidget *_tabmanager);
 // ~pages_container();
-// browser::TabWidget      *tabmanager(){return _tabmanager;}
+// web::TabWidget      *tabmanager(){return _tabmanager;}
 
 //// void browser_pages(ItemsFlat *_browser_pages);
 //// ItemsFlat *browser_pages();
 //// ItemsFlat *browser_pages()const;
 
 // protected:
-// browser::TabWidget  *_tabmanager;
+// web::TabWidget  *_tabmanager;
 //// ItemsFlat           *_browser_pages;
 // };
 
@@ -81,7 +81,7 @@ Q_OBJECT
 #endif
 // By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
 friend class rctrl_t;
-friend class browser::BrowserDock;
+friend class web::Docker;
 
 public:
 	RecordModel(rctrl_t *record_controller); // , RecordScreen *_record_screen
@@ -173,7 +173,7 @@ private:
 	void on_table_config_changed(void);
 
 	// Добавление записей
-	browser::WebView *insert_new_item(boost::intrusive_ptr<TreeItem> _target_item // , int mode = add_new_record_after
+	web::WebView *insert_new_item(boost::intrusive_ptr<TreeItem> _target_item // , int mode = add_new_record_after
 	                                 );
 	bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 	void remove_child(boost::intrusive_ptr<TreeItem> it);
@@ -190,7 +190,7 @@ private:
 
 	rctrl_t *_record_controller;
 	friend class rs_t;
-	friend class browser::TabWidget;
+	friend class web::TabWidget;
 	friend struct RecordIndex;
 };
 

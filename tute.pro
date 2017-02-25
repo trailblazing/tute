@@ -53,15 +53,16 @@ else: DEFINES   +=  QT_NO_UITOOLS
 #DEFINES         +=  QWEBENGINEPAGE_SETNETWORKACCESSMANAGER
 DEFINES         +=  QWEBENGINEHISTORY_RESTORESESSION
 
-CONFIG  +=  qt      \
-        warn_on     \
-        console     \
-        exception   \
-        console     \
+CONFIG  +=      qt      \
+                warn_on     \
+                console     \
+                exception   \
+                console     \
 #        debug
 
-CONFIG  +=  c++14
-CONFIG  +=  gnu++14
+CONFIG  +=      c++14
+CONFIG  +=      gnu++14
+CONFIG  +=      -Wno-multichar
 #CONFIG  +=  staticlib static
 
 QMAKE_CXXFLAGS += -std=c++14 -std=gnu++14
@@ -175,7 +176,7 @@ message(Set installation directory for binary file to $${BINARY_INSTALL_PATH})
 ## _binary.commands  +=   $(COPY_DIR) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/\" \"$${OUT_PWD}/bin\"
 # _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/mode.ini\" \"$${OUT_PWD}/bin\"
 ### _binary.files  +=   "$${sourceDir}/bin/resource/standardconfig/$${TARGET_OS}/browser.conf"
-### _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/browserview.ini\" \"$${OUT_PWD}/bin/.\"
+### _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/dock.ini\" \"$${OUT_PWD}/bin/.\"
 ### _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/conf.ini\" \"$${OUT_PWD}/bin/.\"
 ### _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/editorconf.ini\" \"$${OUT_PWD}/bin/.\"
 ### _binary.commands  +=   $(COPY_FILE) \"$${PWD}/bin/resource/standardconfig/$${SOURCE_OS}/entrance.ini\" \"$${OUT_PWD}/bin/.\"
@@ -228,7 +229,6 @@ HEADERS     =   \
     src/views/browser/urllineedit.h \
     src/views/browser/webview.h \
     src/views/browser/xbel.h \
-    src/views/browser/entranceinfo.h \
     src/utility/delegate.h \
     src/views/browser/browser.h \
     src/views/browser/edittableview.hxx \
@@ -320,7 +320,6 @@ HEADERS     =   \
     src/libraries/qtm/accounts_dialog.h \
     src/libraries/qtm/application.h \
     src/libraries/qtm/dbus_adaptor.h \
-    src/libraries/qtm/editing_window.h \
     src/libraries/qtm/highlighter.h \
     src/libraries/qtm/location_line_edit.h \
     src/libraries/qtm/prefs_dialog.h \
@@ -334,10 +333,12 @@ HEADERS     =   \
     src/utility/add_action.h \
     src/libraries/qtm/side_tabwidget.h \
     src/views/record/editor_wrap.h \
-    src/views/browser/browser_dock.h \
-    src/views/record/editor_dock.h \
     src/views/browser/toolbar_search.h \
-    src/views/main_window/hidable_tab.h
+    src/views/main_window/hidable_tab.h \
+    src/views/browser/docker.h \
+    src/libraries/qtm/blogger.h \
+    src/utility/variant.h \
+    src/utility/for_each.h
 
 
 
@@ -462,7 +463,6 @@ SOURCES     =   src/main.cpp \
     src/libraries/qtm/accounts_dialog.cxx \
     src/libraries/qtm/application.cxx \
     src/libraries/qtm/dbus_adaptor.cxx \
-    src/libraries/qtm/editing_window.cxx \
     src/libraries/qtm/editing_window_response_handlers.cxx \
     src/libraries/qtm/highlighter.cxx \
     src/libraries/qtm/location_line_edit.cc \
@@ -479,10 +479,11 @@ SOURCES     =   src/main.cpp \
     src/libraries/flat_control.cpp \
     src/libraries/qtm/side_tabwidget.cxx \
     src/views/record/editor_wrap.cpp \
-    src/views/browser/browser_dock.cpp \
-    src/views/record/editor_dock.cpp \
     src/views/browser/toolbar_search.cpp \
-    src/views/main_window/hidable_tab.cpp
+    src/views/main_window/hidable_tab.cpp \
+    src/views/browser/docker.cpp \
+    src/libraries/qtm/blogger.cxx \
+    src/utility/variant.cxx
 
 
 lessThan(QT_MAJOR_VERSION,5) {
@@ -582,7 +583,7 @@ DISTFILES   +=          \
     doc/html/tabs.css \
     resource/standardconfig/$${SOURCE_OS}/mode.ini \
     resource/standardconfig/$${SOURCE_OS}/browser.conf \
-    resource/standardconfig/$${SOURCE_OS}/browserview.ini \
+    resource/standardconfig/$${SOURCE_OS}/dock.ini \
     resource/standardconfig/$${SOURCE_OS}/conf.ini \
     resource/standardconfig/$${SOURCE_OS}/editorconf.ini \
     resource/standardconfig/$${SOURCE_OS}/entrance.ini \

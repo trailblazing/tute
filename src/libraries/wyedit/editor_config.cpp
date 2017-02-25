@@ -21,39 +21,42 @@ W_OBJECT_IMPL(EditorConfig)
 #endif
 
 // Конструктор объекта хранения настроек редактора
-EditorConfig::EditorConfig(const QString &config_file_name, QWidget *parent)
-	: QWidget(parent){
+EditorConfig::EditorConfig(std::shared_ptr<QSettings> topic_editor_config_, QWidget *parent)
+	: QWidget(parent)
+	  , _editor_conf(topic_editor_config_){
 	Q_UNUSED(parent);
-	assert(config_file_name != "");
+//	auto config_file_name = topic_editor_config_->fileName();
+////	const QString &config_file_name;
+//	assert(config_file_name != "");
 
-	QString full_current_path = gl_paras->root_path();
-	// Информация о файле настроек редактора
-	std::shared_ptr<QFileInfo> conf_fileinfo = std::make_shared<QFileInfo>(config_file_name);
-	// Проверяется, есть ли файл конфигурации
-	if(!conf_fileinfo->exists()){
-		// critical_error("Editor config file " + config_file_name + " not found.");
-		auto editor_conf_location = full_current_path + "/" + gl_paras->target_os();
-		auto editor_conf_file = editor_conf_location + "/editorconf.ini";
-		if(!QDir(editor_conf_location).exists())
-			if(!QDir::root().mkpath(editor_conf_location)) critical_error("EditorConfig::EditorConfig(const QString &config_file_name, QWidget *parent) can not make path \"" + editor_conf_location + "\"");
-		QFileInfo editor_conf(editor_conf_file);
-		if(!editor_conf.exists())                                                                                // if(editor_conf.exists() && editor_conf.isFile()) QFile::remove(editor_conf_file);
-			if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/editorconf.ini", editor_conf_file)) throw std::runtime_error("Can not copy editorconf.ini");
-		QFile::setPermissions(editor_conf_file, QFile::ReadUser | QFile::WriteUser);
-		// bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.editorconf());//editorconf.ini
-		// assert(succedded);
-		conf_fileinfo = std::make_shared<QFileInfo>(editor_conf_file);
-	}
-	// Проверяется, доступен ли файл конфигурации на чтение или запись
-	if(conf_fileinfo->isWritable() == false || conf_fileinfo->isReadable() == false) critical_error("Editor config file " + config_file_name + " not writable or readable. Please check file permission.");
-	// Полное имя файла конфигурации разбивается на путь и имя файла
-	QString file_name	= conf_fileinfo->fileName();
-	QString file_dir	= conf_fileinfo->path();
+//	QString full_current_path = gl_paras->root_path();
+//	// Информация о файле настроек редактора
+//	std::shared_ptr<QFileInfo> conf_fileinfo = std::make_shared<QFileInfo>(config_file_name);
+//	// Проверяется, есть ли файл конфигурации
+//	if(!conf_fileinfo->exists()){
+//		// critical_error("Editor config file " + config_file_name + " not found.");
+//		auto editor_conf_location = full_current_path + "/" + gl_paras->target_os();
+//		auto editor_conf_file = config_file_name;//editor_conf_location + "/editorconf.ini";
+//		if(!QDir(editor_conf_location).exists())
+//			if(!QDir::root().mkpath(editor_conf_location)) critical_error("EditorConfig::EditorConfig(const QString &config_file_name, QWidget *parent) can not make path \"" + editor_conf_location + "\"");
+//		QFileInfo editor_conf(editor_conf_file);
+//		if(!editor_conf.exists())                                                                                                                                                                                                                 // if(editor_conf.exists() && editor_conf.isFile()) QFile::remove(editor_conf_file);
+//			if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/editorconf.ini", editor_conf_file)) throw std::runtime_error("Can not copy editorconf.ini");
+//		QFile::setPermissions(editor_conf_file, QFile::ReadUser | QFile::WriteUser);
+//		// bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.editorconf());//editorconf.ini
+//		// assert(succedded);
+//		conf_fileinfo = std::make_shared<QFileInfo>(editor_conf_file);
+//	}
+//	// Проверяется, доступен ли файл конфигурации на чтение или запись
+//	if(conf_fileinfo->isWritable() == false || conf_fileinfo->isReadable() == false) critical_error("Editor config file " + config_file_name + " not writable or readable. Please check file permission.");
+////	// Полное имя файла конфигурации разбивается на путь и имя файла
+////	QString file_name	= conf_fileinfo->fileName();
+////	QString file_dir	= conf_fileinfo->path();
 
-	// Создается объект работы с конфигурацией редактора
-	_editor_conf = std::make_unique<QSettings>(config_file_name, QSettings::IniFormat);
-	// conf->setPath(QSettings::IniFormat,QSettings::UserScope,file_dir);
-	// conf->setPath(QSettings::IniFormat,QSettings::SystemScope,file_dir);
+//	// Создается объект работы с конфигурацией редактора
+//	_editor_conf = std::make_unique<QSettings>(config_file_name, QSettings::IniFormat);
+//	// conf->setPath(QSettings::IniFormat,QSettings::UserScope,file_dir);
+//	// conf->setPath(QSettings::IniFormat,QSettings::SystemScope,file_dir);
 
 	// Вызываются действия для обновления конфига
 	update_version_process();
@@ -68,7 +71,11 @@ EditorConfig::~EditorConfig(){
 // Получение параметра по имени в виде строки с проверкой его существования
 QString EditorConfig::get_parameter(QString name){
 	QString t = _editor_conf->value(name).toString();
-	if(t.length() == 0) critical_error("In editor config not found parameter " + name);
+	if(t.length() == 0) {
+//		DiskHelper::recover_ini_file(std::make_shared<QFileInfo>(_blogger->current_topic_full_config_name()), true);
+		critical_error("In editor config not found parameter " + name);
+
+	    }
 	return t;
 }
 

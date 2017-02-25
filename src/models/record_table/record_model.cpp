@@ -21,7 +21,7 @@
 #include "models/tree/tree_know_model.h"
 #include "models/tree/tree_model.h"
 #include "views/browser/browser.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
@@ -35,8 +35,8 @@ extern FixedParameters fixedparameters;
 extern std::shared_ptr<AppConfig> appconfig;
 extern std::shared_ptr<gl_para> gl_paras;
 
-// pages_container::pages_container(browser::TabWidget *_tabmanager)
-// : _tabmanager(_tabmanager)	// new browser::TabWidget(_browser, _record_controller)
+// pages_container::pages_container(web::TabWidget *_tabmanager)
+// : _tabmanager(_tabmanager)	// new web::TabWidget(_browser, _record_controller)
 //// , _browser_pages(new ItemsFlat())      //    , _table(new RecordTable(_tree_item, QDomElement()))
 // {}
 
@@ -56,14 +56,14 @@ extern std::shared_ptr<gl_para> gl_paras;
 // if(-1 == _tabmanager->indexOf(_browser_pages->child(j)->unique_page()->view())) {
 // _reocrd_controller->request_item(
 // _browser_pages->child(j)
-// , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(browser::WebPage *)>>(
+// , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(web::WebPage *)>>(
 // ""
-// , &browser::TabWidget::ActiveRecordBinder::binder
+// , &web::TabWidget::ActiveRecordBinder::binder
 // , _tabmanager
 // )
-// , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
+// , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<TreeItem>>>(
 // ""
-// , &browser::TabWidget::ActiveRecordBinder::activator
+// , &web::TabWidget::ActiveRecordBinder::activator
 // , _tabmanager
 // )
 // );
@@ -252,7 +252,7 @@ W_OBJECT_IMPL(RecordModel)
 
 // Конструктор модели
 RecordModel::RecordModel(rctrl_t *record_controller) // TreeScreen *_tree_screen//, FindScreen *_find_screen//, RecordScreen *_record_screen
-// , browser::TabWidget *_tabmanager
+// , web::TabWidget *_tabmanager
 	: QAbstractTableModel(record_controller) // _record_controller	//
 	  // , pages_container(_tabmanager)
 	  , _record_controller(record_controller){
@@ -501,17 +501,17 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent){
 
 // for(int j = 0; j < _browser_pages->count(); j++) {
 // if(-1 == _tabmanager->indexOf(_browser_pages->child(j)->unique_page()->view())) {
-// boost::shared_ptr<browser::TabWidget> _tabmanager_ptr = boost::make_shared<browser::TabWidget>(_tabmanager);
+// boost::shared_ptr<web::TabWidget> _tabmanager_ptr = boost::make_shared<web::TabWidget>(_tabmanager);
 // _reocrd_controller->request_item(
 // _browser_pages->child(j)
-// , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(browser::WebPage *)>>(
+// , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(web::WebPage *)>>(
 // ""
-// , &browser::TabWidget::ActiveRecordBinder::binder
+// , &web::TabWidget::ActiveRecordBinder::binder
 // , _tabmanager_ptr
 // )
-// , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
+// , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<TreeItem>>>(
 // ""
-// , &browser::TabWidget::ActiveRecordBinder::activator
+// , &web::TabWidget::ActiveRecordBinder::activator
 // , _tabmanager_ptr
 // )
 // );
@@ -551,10 +551,10 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent){
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-browser::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _target_item){ // , int mode
+web::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _target_item){ // , int mode
 	                                                                                     // const index_source source_pos_index,
 	pos_source returned_position(-1);
-	browser::WebView *view = nullptr;
+	web::WebView *view = nullptr;
 	auto insert_new_tab = [&](pos_source &returned_position, boost::intrusive_ptr<TreeItem> _item){  // , const pos_source source_insert_pos
 				      // if(selected_position == -1) {
 				      boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return this;}, _item); // , _record_controller->tabmanager()->count() > 0 ? _record_controller->tabmanager()->webView((int) source_insert_pos)->page()->binder()->host() : nullptr
@@ -562,7 +562,7 @@ browser::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
 				      view = _record_controller->tabmanager()->newTab(record_index); // , _item->field("name")
 				      // else{
 				      // view = _record_controller->tabmanager()->webView((int)source_insert_pos);
-				      // view->page()->binder()->host()->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+				      // view->page()->binder()->host()->activate(std::bind(&web::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 				      //// addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
 				      // }
 				      assert(view);
@@ -612,7 +612,7 @@ browser::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
 			assert(returned_position != -1);
 			assert(view);
 		}
-		assert(item(returned_position) == _target_item || _target_item->field<url_type>() == browser::Browser::_defaulthome || _target_item->field<url_type>() == "");
+		assert(item(returned_position) == _target_item || _target_item->field<url_type>() == web::Browser::_defaulthome || _target_item->field<url_type>() == "");
 		assert(view);
 		endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
 	}
@@ -849,14 +849,14 @@ rctrl_t *RecordModel::reocrd_controller() const {return _record_controller;}
 boost::intrusive_ptr<TreeItem> RecordModel::current_item() const {
 	boost::intrusive_ptr<TreeItem> result(nullptr);
 	// #ifdef USE_LOAD_ON_FOUND
-	browser::WebView *v = nullptr;
+	web::WebView *v = nullptr;
 	v = _record_controller->tabmanager()->currentWebView();
 	auto page = v ? v->page() : nullptr;
 	if(page){
 		auto binder = page->binder();
 		if(binder){
 			result = binder->host();
-			assert(result);
+//			assert(result);
 		}
 	}
 	// #else

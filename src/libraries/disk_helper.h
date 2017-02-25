@@ -27,6 +27,7 @@ public:
 	static bool save_strings_to_directory(QString dirName, QMap<QString, QString> fileList);
 	static bool save_files_to_directory(QString dirName, QMap<QString, QByteArray> fileList);
 	static bool copy_file_force(QString source, QString target);
+	static std::shared_ptr<QFileInfo> recover_ini_file(std::shared_ptr<QFileInfo> target_file, bool force_remove = false);
 };
 
 #endif // DISKHELPER_H

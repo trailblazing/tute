@@ -32,14 +32,14 @@
 #include "libraries/flat_control.h"
 #include "libraries/flat_control.h"
 #include "libraries/global_parameters.h"
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #include "models/app_config/app_config.h"
 #include "models/record_table/items_flat.h"
 #include "models/record_table/linker.hxx"
 #include "models/record_table/record_index.hxx"
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_know_model.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/chasewidget.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/toolbar_search.h"
@@ -56,9 +56,9 @@ extern const char *global_root_id;
 W_OBJECT_IMPL(FindScreen)
 #endif
 
-FindScreen::FindScreen(QString object_name, ts_t *_tree_screen, QWidget *parent) // boost::intrusive_ptr<TreeItem> _selected_branch_root
+FindScreen::FindScreen(QString object_name, ts_t *tree_screen_, QWidget *parent) // boost::intrusive_ptr<TreeItem> _selected_branch_root
 	: QWidget(parent) //
-	  , _tree_screen(_tree_screen)
+	  , _tree_screen(tree_screen_)
 	  , _navigater(new QToolBar(this))
 	  , _historyback(new QAction(tr("Back"), _navigater)) // FlatToolButton *_history_back;
 	  , _historyforward(new QAction(tr("Forward"), _navigater)) // FlatToolButton *_history_forward;
@@ -66,7 +66,7 @@ FindScreen::FindScreen(QString object_name, ts_t *_tree_screen, QWidget *parent)
 	  , _stopreload(new QAction(_navigater)) // FlatToolButton *_stop_reload;
 	  , _stop(new QAction(tr("&Stop"), _navigater))
 	  , _reload(new QAction(tr("Reload Page"), _navigater)) // , back_ground{      // _tree_screen->know_branch()->root_item()  //_selected_branch_root      // }
-	  , _chasewidget(new browser::ChaseWidget(QSize(17, 17), this))
+	  , _chasewidget(new web::ChaseWidget(QSize(17, 17), this))
 #ifdef SHOW_PROCESS_DIALOG
 	  _progress(new QProgressDialog(this)),
 #endif
@@ -86,7 +86,7 @@ FindScreen::FindScreen(QString object_name, ts_t *_tree_screen, QWidget *parent)
 
 	// return result;
 	// }())    // static_cast<ItemsFlat *>(_selected_branch_root.get()) // never transfer this data directly, it is come from _treeknowmodel!   // _resultset_data(std::make_shared<RecordTable>(QDomElement()))
-	  , _toolbarsearch([&]() -> browser::ToolbarSearch *{_toolbarsearch = nullptr; auto ts = new browser::ToolbarSearch(this); return ts;} ()){
+	  , _toolbarsearch([&]() -> web::ToolbarSearch *{_toolbarsearch = nullptr; auto ts = new web::ToolbarSearch(this); return ts;} ()){
 	setObjectName(object_name);
 	_navigater->setMaximumWidth(130);
 	_chasewidget->setMaximumWidth(20);
@@ -143,10 +143,9 @@ void FindScreen::setup_navigate(void){
 
 	// _historyhome = new QAction(tr("Home"), _navigater);
 
-	_historyhome->setIcon(
-		QIcon(":/resource/pic/mobile_up.svg") // ":/resource/pic/streamline_home.svg"
-		// style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
-	                     );
+	_historyhome->setIcon(QIcon(":/resource/pic/mobile_up.svg"));// ":/resource/pic/streamline_home.svg"
+	// style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
+
 
 	_historyhome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
 
@@ -158,9 +157,9 @@ void FindScreen::setup_navigate(void){
 
 	_historyback->setShortcuts(QKeySequence::Back);
 	// _historyback->setIconVisibleInMenu(false);
-	_historyback->setIcon( // QIcon(":/resource/pic/walk_history_next.svg")//
-		QIcon(":/resource/pic/mobile_back.svg") // style()->standardIcon(QStyle::SP_ArrowBack, 0, this)
-	                     );
+	_historyback->setIcon(QIcon(":/resource/pic/mobile_back.svg")); // QIcon(":/resource/pic/walk_history_next.svg")//
+	// style()->standardIcon(QStyle::SP_ArrowBack, 0, this)
+
 	// QMenu *_historybackmenu = new QMenu(this);
 	// _historyback->setMenu(_historybackmenu);
 	// connect(_historybackmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowBackMenu()));
@@ -173,8 +172,8 @@ void FindScreen::setup_navigate(void){
 	// _historyforward = new QAction(tr("Forward"), _navigater);
 
 	_historyforward->setShortcuts(QKeySequence::Forward);
-	_historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg") // style()->standardIcon(QStyle::SP_ArrowForward, 0, this)
-	                        );
+	_historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg")); // style()->standardIcon(QStyle::SP_ArrowForward, 0, this)
+
 	// _historyforwardmenu = new QMenu(this);
 	// connect(_historyforwardmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowForwardMenu()));
 	// connect(_historyforwardmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
@@ -186,8 +185,8 @@ void FindScreen::setup_navigate(void){
 	// _stopreload = new QAction(_navigater);
 
 	// _reloadicon = style()->standardIcon(QStyle::SP_BrowserReload);
-	_stopreload->setIcon(QIcon(":/resource/pic/mobile_reload.svg") // style()->standardIcon(QStyle::SP_BrowserReload)
-	                    );
+	_stopreload->setIcon(QIcon(":/resource/pic/mobile_reload.svg")); // style()->standardIcon(QStyle::SP_BrowserReload)
+
 	add_action<QToolButton>(_navigater, _stopreload); // _navigater->addAction(_stopreload);
 }
 
@@ -236,7 +235,9 @@ void FindScreen::assembly_findtext_and_button(void){
 	// toolsAreaFindTextAndButton->addLayout(addressbar);
 	_find_text_and_button_tools_area->addWidget(_toolbarsearch); // _findtext
 	// toolsAreaFindTextAndButton->addWidget(con);
-	_find_text_and_button_tools_area->addWidget(_chasewidget);
+	auto chase_layout = new QVBoxLayout();
+	chase_layout->addWidget(_chasewidget);
+	_find_text_and_button_tools_area->addLayout(chase_layout);
 	_find_text_and_button_tools_area->addWidget(_find_start_button);
 	_find_text_and_button_tools_area->addWidget(_tools_expand);
 	// toolsAreaFindTextAndButton->addStretch();
@@ -375,14 +376,14 @@ void FindScreen::assembly_wherefind_line(void){
 
 void FindScreen::setup_signals(void){
 	// При каждом изменении текста в строке запроса
-	connect(_toolbarsearch, &browser::ToolbarSearch::textChanged, this, &FindScreen::enable_findbutton);
+	connect(_toolbarsearch, &web::ToolbarSearch::textChanged, this, &FindScreen::enable_findbutton);
 
 	// При каждом изменении текста извне может вырабатыватся этот сигнал
 	// Он вырабатывается в слоте setFindText()
 	connect(this, &FindScreen::text_changed_from_another, this, &FindScreen::enable_findbutton);
 
 	// При нажатии Enter в строке запроса
-	connect(_toolbarsearch, &browser::ToolbarSearch::return_pressed, this, [this] {FindScreen::find_clicked();});
+	connect(_toolbarsearch, &web::ToolbarSearch::return_pressed, this, [this] {FindScreen::find_clicked();});
 
 	// При нажатии кнопки Find
 	connect(_find_start_button, &QPushButton::clicked, this, [this] {FindScreen::find_clicked();});
@@ -396,9 +397,8 @@ void FindScreen::setup_signals(void){
 	// При нажатии кнопки закрытия
 	connect(_close_button, &FlatToolButton::clicked, this, &FindScreen::widget_hide);
 	connect(_close_button, &FlatToolButton::clicked, [] {
-	                auto browser = gl_paras->main_window()->activated_browser();
-
-	                browser->updateToolbarActionText(false);
+			auto browser = gl_paras->main_window()->browser(QString(gl_para::_current_browser), false);
+			if(browser) browser->updateToolbarActionText(false);
 		});
 
 	// Сигналы для запоминания состояния интерфейса
@@ -433,7 +433,7 @@ void FindScreen::setup_signals(void){
 	// , const KnowView::paste_strategy & _view_paste_strategy
 	// , equal_url_t _equal
 	// ) = &KnowView::item_bind;
-	// connect(_toolbarsearch, &browser::ToolbarSearch::search, _tree_screen->tree_view(), _item_bind);
+	// connect(_toolbarsearch, &web::ToolbarSearch::search, _tree_screen->tree_view(), _item_bind);
 }
 
 void FindScreen::setup_ui(void){
@@ -565,7 +565,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	// были найдены введенные перед нажатием Find данные, если они есть
 	// find_object<MainWindow>("mainwindow")
 	auto rs = dynamic_cast<rs_t *>(gl_paras->vtab_record()->currentWidget());
-	if(rs) rs->editing_window()->save_text_context();
+	if(rs) rs->blogger()->save_text_context();
 	//// Очищается таблица результата поиска
 	// _findtable->re_initialize();
 
@@ -622,10 +622,10 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 
 	////    TreeScreen *tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
 
-	////    browser::Browser *_browser = nullptr;
+	////    web::Browser *_browser = nullptr;
 
 	////    if(!reocrd_controller) {
-	////        _browser = globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+	////        _browser = globalparameters.entrance()->new_browser(QUrl(web::Browser::_defaulthome));
 	////        _browser->record_screen()->setObjectName(_toolbarsearch->text());
 	////    } else {
 	////        (*reocrd_controller)()->record_screen()->setObjectName(_toolbarsearch->text());
@@ -651,8 +651,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 					       _start_item = TreeItem::dangle_instance(QMap<QString, QString>()); // boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>()));
 					       // boost::intrusive_ptr<TreeItem> _parent_item
 					       // resultset_item;
-					       // browser::Entrance *_entrance = globalparameters.entrance();
-					       for(auto &browser : [] {set<browser::Browser *> bs; for(auto rs : gl_paras->main_window()->record_screens()) bs.insert(rs->browser()); return bs;} ()){
+					       // web::Entrance *_entrance = globalparameters.entrance();
+					       for(auto &browser : [] {set<web::Browser *> bs; for(auto rs : gl_paras->main_window()->record_screens()) bs.insert(rs->browser()); return bs;} ()){
 						       auto _tabmanager = browser->tabmanager();
 						       for(int i = 0; i < _tabmanager->count(); i++){
 							       _start_item << _tabmanager->webView(i)->page()->host();
@@ -741,10 +741,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 #endif
 
 	auto final_search = [&](boost::intrusive_ptr<TreeItem> &final_result // QList<boost::intrusive_ptr<Linker> >    &_result_list
-	                       ,
-	                        boost::intrusive_ptr<TreeItem> &_session_root_item // std::shared_ptr<RecordTable> &resultset_data
-	                       ,
-	                        boost::intrusive_ptr<TreeItem> &_start_item) -> boost::intrusive_ptr<TreeItem> & {
+			       , boost::intrusive_ptr<TreeItem> &_session_root_item// std::shared_ptr<RecordTable> &resultset_data
+			       , boost::intrusive_ptr<TreeItem> &_start_item) -> boost::intrusive_ptr<TreeItem> & {
 				    qDebug() << "Start finding in " << _candidate_records << " records";
 
 				    _total_progress_counter = 0;
@@ -879,8 +877,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 }
 
 boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<TreeItem> &final_result, boost::intrusive_ptr<TreeItem> _session_root_item, boost::intrusive_ptr<TreeItem> _start_item){
-	auto tree_view_ = _tree_screen->view();
-	auto current_model_ = [&] {return tree_view_->source_model();};
+//	auto tree_view_ = _tree_screen->view();
+//	auto current_model_ = [&] {return tree_view_->source_model();};
 	////    // Если была нажата отмена поиска
 	////    if(_cancel_flag == 1)return _result_item;
 	if(_cancel_flag != 1){
@@ -988,7 +986,7 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 							////                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
 							////                                ){
 							////                                auto result = browser->item_bind(record_index);
-							////                                result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+							////                                result->activate(std::bind(&web::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 							////                                _result_list << result->linker();																												//
 							////                            }else{
 							//// auto previous_item = _source_model()->item(tree_view->previous_index());
@@ -997,11 +995,24 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 							// }
 
 							auto alternative = final_result->contains_direct([&](boost::intrusive_ptr<const Linker> il){return il->host() == candidate || il->host()->field<id_type>() == candidate->field<id_type>() || url_equal(il->host()->field<home_type>().toStdString(), candidate->field<home_type>().toStdString()) || url_equal(il->host()->field<url_type>().toStdString(), candidate->field<url_type>().toStdString());});
-							if(!alternative) final_result << candidate; // result->linker();
-							else if(alternative != candidate) TreeLevel::instance(TreeIndex::require_treeindex(current_model_, alternative), candidate)->merge();
+							if(!alternative){
+								auto tags_ = candidate->field<tags_type>();
+								if(tags_.size() > 0)
+									if(tags_.at(0) == ',' || tags_.at(0) == ';') tags_.remove(0, 1);
+								auto tag_list = tags_.split(QRegExp("[,:]+"), QString::SkipEmptyParts);
+								auto search_topic = _toolbarsearch->text();
+								if(tag_list.size() > 0){
+									if(!tag_list.contains(search_topic)) tags_ += "," + search_topic;
+								}else // (tag_list.size() == 0)
+									tags_ += search_topic;
+								candidate->field<tags_type>(tags_);
+								final_result << candidate; // result->linker();
+							}
+							//else if(alternative != candidate) TreeLevel::instance(TreeIndex::require_treeindex(current_model_, alternative), candidate)->merge();
+
 							// }
 							// }else{
-							// candidate->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+							// candidate->activate(std::bind(&web::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 							// _result_list << candidate->linker();
 							// }
 							// else {

@@ -36,7 +36,7 @@
 #include "models/tree/tree_model.h"
 #include "record_controller.h"
 #include "views/app_config//app_config_dialog.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "views/find_in_base_screen/find_screen.h"
@@ -51,10 +51,10 @@
 #include "views/record_table/record_view.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
-
+#include "libraries/qtm/blogger.h"
 #include "views/browser/browser.h"
 #include "views/browser/toolbar_search.h"
-#include "views/record/editor_dock.h"
+
 
 extern std::shared_ptr<gl_para> gl_paras;
 extern FixedParameters fixedparameters;
@@ -65,16 +65,16 @@ extern WalkHistory walkhistory;
 W_OBJECT_IMPL(rctl_t)
 #endif
 
-rctrl_t::rctrl_t(EditingWindow *editing_window_ // TreeScreen           *_tree_screen        // , FindScreen         *_find_screen        // ,
-                , browser::TabWidget *tabmanager_, rs_t *record_screen_, wn_t *main_window_)
+rctrl_t::rctrl_t(Blogger *blogger_ // TreeScreen           *_tree_screen        // , FindScreen         *_find_screen        // ,
+		, web::TabWidget *tabmanager_, rs_t *record_screen_)
 	: QObject(record_screen_)
-	  , _tabmanager(tabmanager_)
+	  , _tabmanager(tabmanager_)//nullptr
 	  , _source_model(new RecordModel(this))
 	  , _proxy_model(new RecordProxyModel(this))
-	  , _view([&]() -> rv_t *{_view = nullptr; auto r = new rv_t(record_screen_, this); return r;} ()) // , qobject_cast<QWidget * >(RecordTableScreen)
+	  , _view([&]() -> rv_t *{_view = nullptr; assert(record_screen_); auto r = new rv_t(record_screen_, this); return r;} ()) // , qobject_cast<QWidget * >(RecordTableScreen)
 	  , _record_screen(record_screen_)
-	  , _editing_window(editing_window_)
-	  , _main_window(main_window_){
+	  , _blogger(blogger_){
+//	  , _main_window(main_window_)
 	// setObjectName(screen_name + "_controller");
 
 	// _tree_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
@@ -99,6 +99,7 @@ rctrl_t::rctrl_t(EditingWindow *editing_window_ // TreeScreen           *_tree_s
 	_view->setModel(_proxy_model);
 	// init();
 	// _no_view = false;
+	connect(_view, &rv_t::tabMoved, _tabmanager, &web::TabWidget::moveTab);
 }
 
 rctrl_t::~rctrl_t(){
@@ -160,15 +161,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){ // , const int mode
 			_view->selectionModel()->setCurrentIndex(index_proxy_, current_tree_current_index_mode); // selIdx   // QItemSelectionModel::Select    // ClearAndSelect
 			_view->setCurrentIndex(index_proxy_);
 			_view->edit(index_proxy_);
-			// В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
-			// Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
-			// In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
-			// Therefore, the recording must be made a virtual click to fill the final table of records
-// if(appconfig->interface_mode() == "mobile")
-			emit _view->clicked(static_cast<QModelIndex>(index_proxy_));
-			// QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
-			// emit _view->clicked(static_cast<QModelIndex>(index_proxy_));	// segment error?
 
 			_view->scrollTo(static_cast<QModelIndex>(index_proxy_)); // QAbstractItemView::PositionAtCenter
 			_view->update(static_cast<QModelIndex>(index_proxy_));
@@ -176,6 +169,14 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){ // , const int mode
 			auto real_index_source_ = _source_model->current_index();
 			auto real_index_proxy_	= index<index_proxy>(real_index_source_);
 			assert(real_index_proxy_ == index_proxy_);
+			// В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
+			// Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
+			// In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
+			// Therefore, the recording must be made a virtual click to fill the final table of records
+			if(appconfig->interface_mode() == "mobile") emit _view->clicked(static_cast<QModelIndex>(index_proxy_));
+			// QModelIndex selIdx=recordSourceModel->index(pos, 0);
+
+			// emit _view->clicked(static_cast<QModelIndex>(index_proxy_));	// segment error?
 
 			// this->setFocus();   // ?
 			pos_source pos_source_ = index<pos_source>(pos_proxy_);
@@ -250,7 +251,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::index_invoke(const index_proxy &index_pr
 ////    boost::intrusive_ptr<Record> record = this->table_model()->table_data()->record(pos);
 ////    assert(record->is_registered());
 
-////    //    if(record->getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome)
+////    //    if(record->getNaturalFieldSource("url") != web::DockedWindow::_defaulthome)
 ////    if(entrance && (!record->binder() || record->activator())) entrance->equip_registered(record);
 
 ////    if(record->binder() && record->activator())record->activate();
@@ -274,7 +275,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::index_invoke(const index_proxy &index_pr
 // {
 ////    //RecordTableData *table = recordSourceModel->getTableData();
 
-////    browser::Entrance *entrance = globalparameters.entrance();
+////    web::Entrance *entrance = globalparameters.entrance();
 
 ////    //Record *current_record = browser_view->getCurrentRecord();
 
@@ -333,7 +334,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::index_invoke(const index_proxy &index_pr
 
 // QString url = item->field("url");
 
-////    browser::WebPage *page = record->binded_only_page();
+////    web::WebPage *page = record->binded_only_page();
 ////    Record *old_record = nullptr;
 ////    if(page)old_record = page->current_record();
 
@@ -341,10 +342,10 @@ boost::intrusive_ptr<TreeItem> rctrl_t::index_invoke(const index_proxy &index_pr
 
 ////    if(record != old_record) {
 
-// if(url != "" && url != browser::Browser::_defaulthome) {   //       && record->active_immediately()
+// if(url != "" && url != web::Browser::_defaulthome) {   //       && record->active_immediately()
 
 ////        //        // back compatible
-////        //        //record->setNaturalFieldSource("url", browser::DockedWindow::_defaulthome);
+////        //        //record->setNaturalFieldSource("url", web::DockedWindow::_defaulthome);
 ////        //        if(// (!page && url != "")
 ////        //            // || (page && url != "" && url != page->url().toString())  // page redirect to new record already!
 ////        //            // || (page && !page->view()->hasFocus())
@@ -374,7 +375,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::index_invoke(const index_proxy &index_pr
 // }
 
 ////    } else {
-////        browser::TabWidget *tabwidget = entrance->activebrowser()->tabWidget();
+////        web::TabWidget *tabwidget = entrance->activebrowser()->tabWidget();
 
 ////        if(tabwidget->currentWebView() != page->view()) {
 ////            tabwidget->setCurrentIndex(tabwidget->webViewIndex(page->view()));
@@ -752,7 +753,7 @@ void rctrl_t::add_items_to_clipboard(ClipboardRecords *clipboardRecords, QModelI
 }
 
 int rctrl_t::row_count(void) const {
-	return _proxy_model->rowCount();
+	return _tabmanager->count();//_proxy_model->rowCount();
 }
 
 //// Get the number of the first highlighted item on the screen   // Получение номера первого выделенного элемента на экране
@@ -924,7 +925,7 @@ void rctrl_t::cut(void){
 	// обязательно должна быть сохранена, иначе редактирование,
 	// которое было после открытия записи и до нажатия Cut, потеряется
 	// find_object<MetaEditor>(meta_editor_singleton_name)
-	_editing_window->save_textarea();
+	_blogger->save_textarea();
 
 	copy();
 
@@ -1091,7 +1092,7 @@ void rctrl_t::paste(void){
 
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
-browser::WebView *rctrl_t::addnew_blank(){ // int mode
+web::WebView *rctrl_t::addnew_blank(){ // int mode
 	qDebug() << "In addnew_blank()";
 
 	//// Создается окно ввода данных
@@ -1115,8 +1116,8 @@ browser::WebView *rctrl_t::addnew_blank(){ // int mode
 	data["pin"]	= _string_from_check_state[Qt::Unchecked];
 	data["name"]	= "";
 	data["author"] = "";
-	data["home"]	= browser::Browser::_defaulthome;
-	data["url"]	= browser::Browser::_defaulthome;
+	data["home"]	= web::Browser::_defaulthome;
+	data["url"]	= web::Browser::_defaulthome;
 	data["tags"]	= "";
 
 	boost::intrusive_ptr<TreeItem> it = boost::intrusive_ptr<TreeItem>(new TreeItem(_view->current_item(), data));
@@ -1132,8 +1133,8 @@ browser::WebView *rctrl_t::addnew_blank(){ // int mode
 	// item->field("pin",   _check_state[Qt::Unchecked]);
 	// item->field("name",   "");
 	// item->field("author", "");
-	// item->field("home",   browser::Browser::_defaulthome);
-	// item->field("url",    browser::Browser::_defaulthome);
+	// item->field("home",   web::Browser::_defaulthome);
+	// item->field("url",    web::Browser::_defaulthome);
 	// item->field("tags",   "");
 
 	it->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
@@ -1152,7 +1153,7 @@ browser::WebView *rctrl_t::addnew_blank(){ // int mode
 
 //// Вызов окна добавления данных в таблицу конечных записей
 //// Call window to add data to a table of final entries
-// browser::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current){	// , const int mode
+// web::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current){	// , const int mode
 // boost::intrusive_ptr<TreeItem> item = record_index_->host();
 // qDebug() << "In add_new_record()";
 
@@ -1208,8 +1209,8 @@ browser::WebView *rctrl_t::addnew_blank(){ // int mode
 
 // Функция добавления новой записи в таблицу конечных записей
 // Принимает полный формат записи
-browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current){ // , const int mode
-	                                                                                                    // boost::intrusive_ptr<TreeItem> item_target = record_index_->host();
+web::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current){ // , const int mode
+	// boost::intrusive_ptr<TreeItem> item_target = record_index_->host();
 
 	boost::intrusive_ptr<TreeItem> item_target = record_index_->host();
 	qDebug() << "In add_new_record()";
@@ -1261,7 +1262,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
 	DiskHelper::remove_directory(directory);
 
 	qDebug() << "In addnew_item()";
-	browser::WebView *v = nullptr;
+	web::WebView *v = nullptr;
 
 	//// Получение Source-индекса первой выделенной строки
 	// index_source source_position_index = index<index_source>(_view->current_item());	// selection_first<IndexSource>();
@@ -1286,7 +1287,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
 	//// }
 
 	//// if(position_index.isValid() //   // do not need? but if it is invalid, the sequence will be changed. hughvonyoung@gmail.com
-	//////       && item.getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome
+	//////       && item.getNaturalFieldSource("url") != web::DockedWindow::_defaulthome
 	//// ) {
 
 	pos_source selected_source_position(-1);
@@ -1300,8 +1301,8 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
 		v = _tabmanager->webView(static_cast<int>(selected_source_position));
 	}
 	assert(selected_source_position != -1);
-	assert(_source_model->item(selected_source_position) == item_target || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
-	assert(_source_model->position(item_target->id()) == selected_source_position || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
+	assert(_source_model->item(selected_source_position) == item_target || item_target->field<url_type>() == "" || item_target->field<url_type>() == web::Browser::_defaulthome);
+	assert(_source_model->position(item_target->id()) == selected_source_position || item_target->field<url_type>() == "" || item_target->field<url_type>() == web::Browser::_defaulthome);
 	// assert(_source_model->child(selected_position) == item);
 
 	_view->reset();
@@ -1356,7 +1357,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
 ////    }
 
 ////    if(posIndex.isValid() //   // do not need? yeah, I am sure. hughvonyoung@gmail.com
-////       //       && record.getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome
+////       //       && record.getNaturalFieldSource("url") != web::DockedWindow::_defaulthome
 ////      ) {
 
 //// Вставка новых данных, возвращаемая позиция - это позиция в Source данных
@@ -1392,7 +1393,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
 // int TableController::new_record_from_url(   // move to request_record(Url...
 // const QUrl &url
 // , const int mode
-////    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+////    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, Record *const>> generator
 // )
 // {
 // qDebug() << "In add_new_record()";
@@ -1661,10 +1662,10 @@ void rctrl_t::remove(id_value delete_id){
 void rctrl_t::remove(QVector<id_value> delete_ids){
 	// Remove records for the specified list of identifiers // Удаление записей по указанному списку идентификаторов
 	auto pages_remove_from_browser
-	        = [&](QVector<id_value> delete_ids) -> browser::WebView * {
-			  browser::WebView *_new_view = nullptr;
+		= [&](std::vector<id_value> pre) -> web::WebView * {
+			  web::WebView *_new_view = nullptr;
 
-			  qDebug() << "Remove rows by ID list: " << delete_ids;
+			  qDebug() << "Remove rows by ID list: " << pre;
 			  QVector<id_value> sorted_delete_ids;
 
 			  auto sort_delete = [&](std::vector<id_value> &y) -> std::vector<id_value> {
@@ -1673,8 +1674,8 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 								       auto item2 = _source_model->item([&](const id_value id){return id == i2;});
 								       bool result = false;
 								       if(item1 && item2){
-								               browser::WebView *v1 = nullptr;
-								               browser::WebView *v2 = nullptr;
+									       web::WebView *v1 = nullptr;
+									       web::WebView *v2 = nullptr;
 								               if(  (v1 = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<url_type>().toStdString(), item1->field<url_type>().toStdString()) && b->host()->id() == item1->id();}))
 								                 && (v2 = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<url_type>().toStdString(), item2->field<url_type>().toStdString()) && b->host()->id() == item1->id();}))){
 								                       assert(v1->page()->binder()->host() == item1);
@@ -1695,20 +1696,16 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 			  // auto _browser_pages = _source_model->browser_pages();
 			  if(_source_model->count() > 0){  // return nullptr;	// if(!_browser_pages)
 				  bool changed = false;
-				  std::vector<id_value> pre;
-				  for(int i = 0; i < delete_ids.count(); i++){
-					  id_value id = delete_ids[i];
-					  pre.push_back(id);
-				  }
+
 				  pre = sort_delete(pre);
-				  // browser::WebView	*_first_delete	= nullptr;
+				  // web::WebView	*_first_delete	= nullptr;
 				  int _new_index = 0;
 				  for(size_t i = 0; i < pre.size(); i++){
 					  id_value id = pre[i];
 					  // QModelIndex idx = id_to_proxyindex(id);
 					  auto item = _source_model->item([&](const id_value id_){return id_ == id;});
 					  if(item){
-						  browser::WebView *v = nullptr;
+						  web::WebView *v = nullptr;
 						  if((v = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<url_type>().toStdString(), item->field<url_type>().toStdString()) && b->host()->id() == item->id();}))){  // "url"
 							  // item_to_be_deleted->unique_page()
 							  ////            int index = _tabmanager->indexOf(item->unique_page()->view());
@@ -1733,30 +1730,8 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 					  }
 					  // globalparameters.find_screen()->remove_id(id);  // ?
 				  }
+				  (void) changed;
 				  // _new_view = _tabmanager->sibling(_first_delete);
-				  if(changed){
-					  // Удаляется строка в Proxy модели
-					  // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
-					  // _proxy_model->removeRow(idx.row()); // ? is this still needed after source changed?
-					  _view->reset();
-					  _proxy_model->setSourceModel(_source_model);
-					  _view->setModel(_proxy_model);
-					  if(_tabmanager->count() > 0){
-						  _new_view = _tabmanager->webView(_new_index);
-						  if(_new_view != _tabmanager->currentWebView()) _tabmanager->select_as_current(_new_view);
-						  // _new_view = _tabmanager->currentWebView();
-						  auto _binder = _new_view->page()->binder();
-						  if(_new_view && _binder){
-							  auto it = _binder->host();
-							  auto index_ = index<pos_proxy>(it->id());
-							  if(_view->current_item() != it) this->select_as_current(index_);
-							  // for(auto id : real_delete_ids){
-							  // IndexProxy index_ = index<IndexProxy>(id);	// invalid
-							  // emit _view->dataChanged(index_, index_);
-							  // }
-						  }
-					  }
-				  }
 			  }
 			  // if(_tabmanager->count() > 0)_new_view = _tabmanager->currentWebView();
 			  return _new_view;
@@ -1802,13 +1777,48 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 	_editing_window->clear_all();
 #endif // USE_FILE_PER_TREEITEM
 	// Вызывается удаление отмеченных записей
-	// browser::WebView *v =
-	pages_remove_from_browser(delete_ids);
+	// web::WebView *v =
+	std::vector<id_value> pre;
+	for(int i = 0; i < delete_ids.count(); i++){
+		id_value id = delete_ids[i];
+		auto item = _source_model->item([&](const id_value id_){return id_ == id;});
+		if(item) pre.push_back(id);
+	}
+	bool changed = false;
+	pages_remove_from_browser(pre);
 	// if(v){
 	// auto binder = v->page()->binder();
 	// if(binder)
 	// if(binder->host() != _view->current_item())this->select_as_current(index<pos_proxy>(binder->host()));
 	// }
+	for(auto row : del_rows){
+		_proxy_model->removeRow(row); changed = true;
+	}
+	if(changed){
+		// Удаляется строка в Proxy модели
+		// Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
+		// _proxy_model->removeRow(idx.row()); // ? is this still needed after source changed?
+		_view->reset();
+		_proxy_model->setSourceModel(_source_model);
+		_view->setModel(_proxy_model);
+		if(_tabmanager->count() > 0){
+//			web::WebView *_new_view = nullptr;
+			auto _new_index = _tabmanager->currentIndex();
+			web::WebView *_new_view = _tabmanager->webView(_new_index);
+			if(_new_view != _tabmanager->currentWebView()) _tabmanager->select_as_current(_new_view);
+			// _new_view = _tabmanager->currentWebView();
+			auto _binder = _new_view->page()->binder();
+			if(_new_view && _binder){
+				auto it = _binder->host();
+				auto index_ = index<pos_proxy>(it->id());
+				if(_view->current_item() != it) this->select_as_current(index_);
+				// for(auto id : real_delete_ids){
+				// IndexProxy index_ = index<IndexProxy>(id);	// invalid
+				// emit _view->dataChanged(index_, index_);
+				// }
+			}
+		}
+	}
 	////        //// Сохранение дерева веток
 	////        ////    find_object<TreeScreen>(tree_screen_singleton_name)
 	////        // globalparameters.tree_screen()->save_knowtree();
@@ -1826,7 +1836,7 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 #ifdef USE_FILE_PER_TREEITEM
 		_editing_window->clear_all();
 #else
-		_editing_window->close();
+		_blogger->close();
 #endif // USE_FILE_PER_TREEITEM
 	}
 	// qobject_cast<rs_t *>(parent())
@@ -1919,11 +1929,11 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 
 	_proxy_model->setSortRole(SORT_ROLE);
 
-	std::vector<browser::WebView *> v_list;
+	std::vector<web::WebView *> v_list;
 	for(int index_ = 0; index_ < _tabmanager->count(); index_++) v_list.push_back(_tabmanager->webView(index_));
 	if(order == Qt::AscendingOrder){
 		if(header_title == pin_field_description){
-			// std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+			// std::sort(v_list.begin(), v_list.end(), [&](web::WebView *v0, web::WebView *v1){
 			// return v0->page()->host()->field<pin_type>() == "" ? v1->page()->host()->field<pin_type>() != "" ? true : false : false;
 			// });
 			// int t = 0;
@@ -1932,7 +1942,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 				// t ++;
 			}
 		}else if(header_title == title_field_description){
-			std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+			std::sort(v_list.begin(), v_list.end(), [&](web::WebView *v0, web::WebView *v1){
 					  return v0->page()->host()->field<name_type>() < v1->page()->host()->field<name_type>();
 				  });
 			int t = 0;
@@ -1941,7 +1951,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 				t++;
 			}
 		}else if(header_title == rating_field_description){
-			std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+			std::sort(v_list.begin(), v_list.end(), [&](web::WebView *v0, web::WebView *v1){
 					  return v0->page()->host()->field<rating_type>().toULongLong() > v1->page()->host()->field<rating_type>().toULongLong();
 				  });
 			int t = 0;
@@ -1952,7 +1962,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 		}
 	}else{
 		if(header_title == pin_field_description){
-			// std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+			// std::sort(v_list.begin(), v_list.end(), [&](web::WebView *v0, web::WebView *v1){
 			// return v0->page()->host()->field<pin_type>() != "" ? v1->page()->host()->field<pin_type>() == "" ? true : false : false;
 			// });
 			// int t = 0;
@@ -1961,7 +1971,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 				// t ++;
 			} //
 		}else if(header_title == title_field_description){
-			std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+			std::sort(v_list.begin(), v_list.end(), [&](web::WebView *v0, web::WebView *v1){
 					  return v0->page()->host()->field<name_type>() > v1->page()->host()->field<name_type>();
 				  });
 			int t = 0;
@@ -1970,7 +1980,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 				t++;
 			}
 		}else if(header_title == rating_field_description){
-			std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+			std::sort(v_list.begin(), v_list.end(), [&](web::WebView *v0, web::WebView *v1){
 					  return v0->page()->host()->field<rating_type>().toULongLong() > v1->page()->host()->field<rating_type>().toULongLong();
 				  });
 			int t = 0;
@@ -2030,7 +2040,7 @@ void rctrl_t::on_sort_click(void){
 
 // Слот, срабатывающий при вызове настроек
 void rctrl_t::settings(void){
-	AppConfigDialog appconfigdialog(this, "pageMain");
+	AppConfigDialog appconfigdialog("pageMain");
 	// appconfigdialog.changePage("pageMain");
 	appconfigdialog.show();
 
@@ -2057,11 +2067,11 @@ void rctrl_t::on_print_click(void){
 	print_dialog.exec();
 }
 
-// record url may be empty or browser::Browser::_defaulthome
+// record url may be empty or web::Browser::_defaulthome
 boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_){
 	boost::intrusive_ptr<TreeItem> it = record_index_->host();
 	boost::intrusive_ptr<TreeItem> _found_item = _source_model->item([&](const id_value id){return id == it->id();});
-	browser::WebView *v = nullptr;
+	web::WebView *v = nullptr;
 	pos_source source_position(-1);
 	// if(! _found_item){
 	//////    assert(record_controller);
@@ -2118,8 +2128,8 @@ boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordI
 }
 
 // Record *register_record(const QUrl &_url
-// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
-// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> activator
+// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, Record *const>> generator
+// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, Record *const>> activator
 // , RecordTableController *_record_ontroller)
 // {
 
@@ -2174,7 +2184,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordI
 // return item;
 // }
 
-// namespace browser {
+// namespace web {
 // class Browser;
 // class WebView;
 // }
@@ -2255,7 +2265,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordI
 
 // } else {
 // assert(_result == _source_item);
-// assert(_result->is_registered_to_browser() || _result->field("url") == browser::Browser::_defaulthome);
+// assert(_result->is_registered_to_browser() || _result->field("url") == web::Browser::_defaulthome);
 // }
 
 // assert(!_result->is_lite());
@@ -2285,7 +2295,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordI
 
 // if(_result->field("id") == "")_result->field("id", get_unical_id());
 
-// assert(_result->is_registered_to_browser() || _result->field("url") == browser::Browser::_defaulthome);
+// assert(_result->is_registered_to_browser() || _result->field("url") == web::Browser::_defaulthome);
 ////                _item->binder(generator);
 ////                _item->activator(activator);
 ////                _item->is_registered_to_record_controller(true);
@@ -2396,7 +2406,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordI
 
 // if(_result->field("id") == "")_result->field("id", get_unical_id());
 
-// assert(_result->is_registered_to_browser() || _result->field("url") == browser::Browser::_defaulthome);
+// assert(_result->is_registered_to_browser() || _result->field("url") == web::Browser::_defaulthome);
 
 ////            //            _result->binder(generator);
 ////            //            _result->activator(activator);
@@ -2506,7 +2516,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordI
 
 // if(_result->field("id") == "")_result->field("id", get_unical_id());
 
-// assert(_result->is_registered_to_browser() || _result->field("url") == browser::Browser::_defaulthome);
+// assert(_result->is_registered_to_browser() || _result->field("url") == web::Browser::_defaulthome);
 
 ////            //            _result->binder(generator);
 ////            //            _result->activator(activator);
@@ -2768,4 +2778,4 @@ boost::intrusive_ptr<TreeItem> rctrl_t::index<boost::intrusive_ptr<TreeItem> >(c
 	return _source_model->item(index<pos_source>(id));
 }
 
-EditingWindow *rctrl_t::editing_window(){return _editing_window;}
+Blogger *rctrl_t::editing_window(){return _blogger;}

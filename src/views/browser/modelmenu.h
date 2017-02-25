@@ -52,7 +52,7 @@
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 // A QMenu that is dynamically populated from a QAbstractItemModel
 	class ModelMenu : public QMenu {
 #if QT_VERSION == 0x050600

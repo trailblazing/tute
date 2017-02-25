@@ -18,11 +18,11 @@
 #endif
 
 extern const char *custom_hidabletabwidget_style;
-namespace browser {
+namespace web {
 	class WebView;
 	class Browser;
 	class Profile;
-	class BrowserDock;
+	class Docker;
 }
 struct Binder;
 class ts_t;
@@ -31,7 +31,7 @@ class EditorDock;
 class wn_t;
 class rs_t;
 class QSplitter;
-class EditingWindow;
+class Blogger;
 class QMainWindow;
 
 class HidableTab : public QTabWidget {
@@ -42,7 +42,7 @@ Q_OBJECT
 #endif
 
 public:
-	explicit HidableTab(ts_t *tree_screen, FindScreen *find_screen, browser::BrowserDock *entrance, QMainWindow *main_window, browser::Profile *profile, QString style_source_, QSplitter *splitter, std::shared_ptr<QSettings> splitter_config, QString splitter_group_name, QString splitter_sizelist_name, QString collapsed_status_name, QWidget *parent);
+	explicit HidableTab(QWidget *main_window, QSplitter *splitter, std::shared_ptr<QSettings> splitter_config, QString splitter_group_name, QString splitter_sizelist_name, QString collapsed_status_name, QWidget *parent);
 	~HidableTab();
 	QAction *_hide_action;
 
@@ -54,17 +54,18 @@ protected slots:
 public slots:
 	void collapse_when_true(bool checked);
 	// void onTabBarClicked(int index);
+	void on_close_request(QWidget * child_);
 protected:
 	// HidableTabWidget *_delegate_tab;
 	// QStackedLayout					*_layout;
 	QVBoxLayout *_layout;
-	ts_t *_tree_screen;
-	FindScreen *_find_screen;
-	browser::BrowserDock *_entrance;
-	QMainWindow *_main_window;
-	browser::Profile *_profile;
-	QString _style_source;
-	// std::set<browser::Browser *>			_browsers;
+//	ts_t *_tree_screen;
+//	FindScreen *_find_screen;
+//	web::Docker *_browser_docker;
+	QWidget *_main_window;
+//	web::Profile *_profile;
+//	QString _style_source;
+	// std::set<web::Browser *>			_browsers;
 	// std::set<rs_t *>				_record_screens;
 	QSplitter *_splitter;
 	std::shared_ptr<QSettings> _splitter_config;

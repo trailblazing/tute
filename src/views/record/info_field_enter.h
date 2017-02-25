@@ -20,7 +20,7 @@ class FlatToolButton;
 
 // Виджет ввода инфополей Title, Author, Url, Tags...
 
-// namespace browser {
+// namespace web {
 
 // class TabBar;
 // }
@@ -54,7 +54,7 @@ public slots:
 private:
 	// current key for work
 	QLabel *_recordpinlabel;
-	// browser::TabBar *_tabbar;
+	// web::TabBar *_tabbar;
 	QCheckBox *_recordpin;
 
 	// Ввод названия записи

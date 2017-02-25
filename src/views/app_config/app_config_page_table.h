@@ -23,7 +23,7 @@ Q_OBJECT
 #endif
 
 public:
-	AppConfigPageTable(rctrl_t *_record_controller, QWidget *parent = 0);
+	AppConfigPageTable(QWidget *parent = 0);//rctrl_t *_record_controller,
 	int apply_changes(void);
 
 signals:
@@ -47,7 +47,7 @@ protected:
 
 	void setupSignals(void);
 
-	rctrl_t *_record_controller;
+//	rctrl_t *_record_controller;
 };
 
 #endif // APPCONFIGPAGE_RECORDTABLE_H

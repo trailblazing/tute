@@ -67,7 +67,7 @@
 
 #include <QtCore/QDebug>
 
-namespace browser {
+namespace web {
 // W_OBJECT_IMPL(HistoryItem)
 
 #if QT_VERSION == 0x050600
@@ -260,7 +260,7 @@ namespace browser {
 	}
 
 	void HistoryManager::save(){
-		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
+		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
 		settings.beginGroup(QLatin1String("history"));
 		settings.setValue(QLatin1String("historyLimit"), _historylimit);
 
@@ -620,7 +620,7 @@ namespace browser {
 			menu.addSeparator();
 			menu.addAction(tr("Copy"), this, &HistoryDialog::copy);
 		}
-		menu.addAction(tr("Delete"), tree, &browser::EditTreeView::removeOne);
+		menu.addAction(tr("Delete"), tree, &web::EditTreeView::removeOne);
 		menu.exec(QCursor::pos());
 	}
 

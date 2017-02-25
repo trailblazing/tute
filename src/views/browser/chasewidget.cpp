@@ -53,7 +53,7 @@
 #include <QtGui/QShowEvent>
 #include <QtWidgets/QApplication>
 
-namespace browser {
+namespace web {
 #if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(ChaseWidget)
 #endif

@@ -36,12 +36,13 @@
 ./src/views/browser/settings.cpp
 ./src/views/browser/urllineedit.cpp
 ./src/views/browser/downloadmanager.h
-./src/views/browser/browser_dock.cpp
 ./src/views/browser/entranceinfo.h
 ./src/views/browser/searchlineedit.cpp
 ./src/views/browser/squeezelabel.cpp
 ./src/views/browser/edittableview.cpp
 ./src/views/browser/settings.h
+./src/views/browser/docker.cpp
+./src/views/browser/docker.h
 ./src/views/browser/modelmenu.h
 ./src/views/browser/downloadmanager.cpp
 ./src/views/browser/networkaccessmanager.h
@@ -62,7 +63,6 @@
 ./src/views/browser/history.cpp
 ./src/views/browser/edittreeview.cpp
 ./src/views/browser/autosaver.h
-./src/views/browser/browser_dock.h
 ./src/views/browser/browser.h
 ./src/views/browser/networkaccessmanager.cpp
 ./src/views/browser/cookiejar.cpp

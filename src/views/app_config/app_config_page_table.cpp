@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <QWidget>
 
+#include "libraries/global_parameters.h"
 #include "app_config_page_table.h"
 #include "controllers/record_table/record_controller.h"
 #include "libraries/disk_helper.h"
@@ -17,6 +18,10 @@
 #include "models/app_config/app_config.h"
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
+#include "views/main_window/hidable_tab.h"
+#include "views/record_table/record_screen.h"
+#include "views/browser/tabwidget.h"
+#include "views/browser/browser.h"
 
 extern std::shared_ptr<AppConfig> appconfig;
 extern FixedParameters fixedparameters;
@@ -26,9 +31,9 @@ extern std::shared_ptr<gl_para> gl_paras;
 W_OBJECT_IMPL(AppConfigPageTable)
 #endif
 
-AppConfigPageTable::AppConfigPageTable(rctrl_t *_record_controller, QWidget *parent)
-	: ConfigPage(parent)
-	  , _record_controller(_record_controller){
+AppConfigPageTable::AppConfigPageTable(QWidget *parent)//rctrl_t *record_controller,
+	: ConfigPage(parent){
+//	  , _record_controller(record_controller)
 	qDebug() << "Create record table config page";
 
 	QStringList all_field_names = fixedparameters._record_field;
@@ -87,11 +92,24 @@ void AppConfigPageTable::setupSignals(void){
 		i.next();
 		connect(i.value(), &QCheckBox::toggled, this, &AppConfigPageTable::on_field_toggle);
 	}
-	// Указатель на контроллер таблицы конечных записей
-	// RecordController *_record_controller = find_object<RecordController>("table_screen_controller");
-	// При изменении настроек отображения таблицы конечных записей должен вызываться соответствующий слот контроллера (чтобы перечиталась ширина столбцов)
-	if(_record_controller) connect(this, &AppConfigPageTable::record_table_config_change, _record_controller, &rctrl_t::on_recordtable_configchange);
-	// connect(this, &AppConfigPageTable::recordTableConfigChange, page_controller, &RecordController::on_recordtable_configchange);
+//	// Указатель на контроллер таблицы конечных записей
+//	// RecordController *_record_controller = find_object<RecordController>("table_screen_controller");
+//	// При изменении настроек отображения таблицы конечных записей должен вызываться соответствующий слот контроллера (чтобы перечиталась ширина столбцов)
+//	if(_record_controller) connect(this, &AppConfigPageTable::record_table_config_change, _record_controller, &rctrl_t::on_recordtable_configchange);                                                                                                                                                                   // connect(this, &AppConfigPageTable::recordTableConfigChange, page_controller, &RecordController::on_recordtable_configchange);
+	auto _vtab_record	= gl_paras->vtab_record();
+	int count_browser	= 0;
+	for(int i = 0; i < _vtab_record->count(); i++){
+		auto rs = _vtab_record->widget(i);
+		if(rs->objectName() == record_screen_multi_instance_name){
+			// auto	rs		= dynamic_cast<rs_t *>(w);
+			auto bro_ = dynamic_cast<rs_t *>(rs)->browser();
+			if(bro_){
+				auto _record_controller = bro_->tabmanager()->record_controller();
+				connect(this, &AppConfigPageTable::record_table_config_change, _record_controller, &rctrl_t::on_recordtable_configchange);
+			}
+			count_browser++;
+		}
+	}
 }
 
 // Слот, срабатывающий каждый раз когда изменяется чекбокс любого поля

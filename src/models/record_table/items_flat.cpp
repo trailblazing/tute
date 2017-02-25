@@ -18,7 +18,7 @@
 #include "models/tree/binder.hxx"
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_know_model.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "views/main_window/main_window.h"
@@ -52,21 +52,22 @@ const int add_new_record_after	= 2;
 // }
 
 ItemsFlat::ItemsFlat(const QDomElement &_dom_element, const bool is_crypt) // , boost::intrusive_ptr<TreeItem> _parent_item
-	: dom_from_itemsflat_impl([&](std::shared_ptr<QDomDocument> doc) -> QDomElement { // Преобразование таблицы конечных записей в Dom документ
-					  // Если у ветки нет таблицы конечных записей, возвращается пустой документ
-					  if(_child_linkers.size() == 0) return QDomElement();
-					  QDomElement item_flat_dom = doc->createElement("recordtable");
-					  // Пробегаются все записи в таблице
-					  for(int i = 0; i < _child_linkers.size(); i++){
-					          if(static_cast<ItemsFlat *>(_child_linkers.at(i)->host().get()) != this){
-					                  item_flat_dom.appendChild(_child_linkers.at(i)->host()->dom_from_treeitem_impl(doc)); // boost::static_pointer_cast<Record>(_child_items.at(i))->dom_from_record(doc)
-					                  // К элементу recordtabledata прикрепляются конечные записи
-						  }
-					  }
-					  // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
+	: dom_from_itemsflat_impl(
+		  [&](std::shared_ptr<QDomDocument> doc) -> QDomElement { // Преобразование таблицы конечных записей в Dom документ
+			  // Если у ветки нет таблицы конечных записей, возвращается пустой документ
+			  if(_child_linkers.size() == 0) return QDomElement();
+			  QDomElement item_flat_dom = doc->createElement("recordtable");
+			  // Пробегаются все записи в таблице
+			  for(int i = 0; i < _child_linkers.size(); i++){
+				  if(_child_linkers.at(i)->host() != this){//(static_cast<ItemsFlat *>(_child_linkers.at(i)->host().get()) != this)
+					  item_flat_dom.appendChild(_child_linkers.at(i)->host()->dom_from_treeitem_impl(doc)); // boost::static_pointer_cast<Record>(_child_items.at(i))->dom_from_record(doc)
+					  // К элементу recordtabledata прикрепляются конечные записи
+				  }
+			  }
+			  // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
 
-					  return item_flat_dom;
-				  })
+			  return item_flat_dom;
+		  })
 	  , _is_crypt(is_crypt){
 	//
 	if(!_dom_element.isNull()){  // QDomElement *dom_element = &i_dom_element;
@@ -121,23 +122,24 @@ ItemsFlat::ItemsFlat(const bool is_crypt)
 
 	// ,
 
-	  dom_from_itemsflat_impl([&](std::shared_ptr<QDomDocument> doc) -> QDomElement { // Преобразование таблицы конечных записей в Dom документ
-					  // Если у ветки нет таблицы конечных записей, возвращается пустой документ
-					  QDomElement item_flat_dom;
-					  if(_child_linkers.size() != 0){  // if(_child_linkers.size() == 0)return QDomElement();
-					          item_flat_dom = doc->createElement("recordtable");
-					          // Пробегаются все записи в таблице
-					          for(int i = 0; i < _child_linkers.size(); i++){
-					                  if(static_cast<ItemsFlat *>(_child_linkers.at(i)->host().get()) != this){  // history error
-					                          item_flat_dom.appendChild(_child_linkers.at(i)->host()->dom_from_treeitem_impl(doc)); // boost::static_pointer_cast<Record>(_child_items.at(i))->dom_from_record(doc)
-					                          // К элементу recordtabledata прикрепляются конечные записи
-							  }
-						  }
+	  dom_from_itemsflat_impl(
+		  [&](std::shared_ptr<QDomDocument> doc) -> QDomElement { // Преобразование таблицы конечных записей в Dom документ
+			  // Если у ветки нет таблицы конечных записей, возвращается пустой документ
+			  QDomElement item_flat_dom;
+			  if(_child_linkers.size() != 0){  // if(_child_linkers.size() == 0)return QDomElement();
+				  item_flat_dom = doc->createElement("recordtable");
+				  // Пробегаются все записи в таблице
+				  for(int i = 0; i < _child_linkers.size(); i++){
+					  if(_child_linkers.at(i)->host() != this){  // history error
+						  item_flat_dom.appendChild(_child_linkers.at(i)->host()->dom_from_treeitem_impl(doc)); // boost::static_pointer_cast<Record>(_child_items.at(i))->dom_from_record(doc)
+						  // К элементу recordtabledata прикрепляются конечные записи
 					  }
-					  // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
+				  }
+			  }
+			  // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
 
-					  return item_flat_dom;
-				  })
+			  return item_flat_dom;
+		  })
 	  , _is_crypt(is_crypt){
 	// treeItem = nullptr;
 	// workPos = -1;
@@ -219,7 +221,7 @@ QList<boost::intrusive_ptr<TreeItem> > ItemsFlat::children_direct(const std::fun
 
 QList<boost::intrusive_ptr<TreeItem> > ItemsFlat::children_direct(const QString &name) const {
 	QList<boost::intrusive_ptr<TreeItem> > results;
-	for(auto il : _child_linkers)                                                                            // for(int i = 0; i < count_direct(); i++) {
+	for(auto il : _child_linkers)                                                                                                                                                                                                                                        // for(int i = 0; i < count_direct(); i++) {
 		if(il->host()->field<name_type>() == name) results.push_back(il->host()); // return i;
 	return results; // -1;
 }
@@ -745,7 +747,7 @@ void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields){
 // if(id.length() > 0) walkhistory.remove_history_data(id);
 ////    //
 ////    Record record = tableData.at(i);
-////    browser::PageView *view = record.view();
+////    web::PageView *view = record.view();
 ////    //
 
 //// Начинается удаление записи
@@ -758,7 +760,7 @@ void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields){
 // qDebug() << "Delete record succesfull";
 
 ////    //
-////    browser::TabManager *tabmanager = view->tabmanager();
+////    web::TabManager *tabmanager = view->tabmanager();
 ////    tabmanager->closeTab(tabmanager->webViewIndex(view));
 ////    //
 
@@ -816,7 +818,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(boost::intrusive_ptr<c
 			if(  it
 			  && it == _item_linker // && _item_linker->integrity_external(_item_linker->host(), static_cast<const TreeItem *>(this))  // recursive call
 			  && static_cast<ItemsFlat *>(_item_linker->host_parent().get()) == this // _item_linker->host_parent() == this
-			  ){
+			     ){
 				// assert(_item_linker->integrity_external(_item_linker->host(), static_cast<const TreeItem *>(this)));
 				result = it->host();
 				break;
@@ -854,7 +856,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent(const std::function<b
 			// tab_manager->closeTab(tab_manager->webViewIndex(page->view()));
 			////		it->binder()->page()->on_close_requested();			// it->binder()->break_page();  // it->page_break();
 			// }
-			browser::WebView *web_view = nullptr;
+			web::WebView *web_view = nullptr;
 			if((web_view = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id();}))){
 				if(it->binder()){
 					assert(web_view->page() == it->page());
@@ -993,7 +995,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent_recursive(boost::intr
 				if(static_cast<QString>(id).length() > 0) walkhistory.remove_history_data(id);
 				////
 				// Record record = tableData.at(i);
-				// browser::PageView *view = record.view();
+				// web::PageView *view = record.view();
 				////
 
 				// Начинается удаление записи
@@ -1002,7 +1004,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent_recursive(boost::intr
 				// Удаляется элемент
 				_child_linkers.removeOne(il); // removeAt(i); // Было takeAt
 
-				browser::WebView *web_view = nullptr;
+				web::WebView *web_view = nullptr;
 				if((web_view = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id();}))){
 					if(it->binder()){
 						assert(web_view->page() == it->page());
@@ -1016,7 +1018,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent_recursive(boost::intr
 					// it->binder()->page()->on_close_requested(); // it->binder()->break_page();  // it->page_break();
 				}
 				////                //    //
-				////                //    browser::TabManager *tabmanager = view->tabmanager();
+				////                //    web::TabManager *tabmanager = view->tabmanager();
 				////                //    tabmanager->closeTab(tabmanager->webViewIndex(view));
 				////                //    //
 
@@ -1068,7 +1070,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent_recursive(boost::intr
 
 	////    //
 	////    Record record = tableData.at(i);
-	////    browser::PageView *view = record.view();
+	////    web::PageView *view = record.view();
 	////    //
 
 	//// Начинается удаление записи
@@ -1082,7 +1084,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent_recursive(boost::intr
 	// qDebug() << "Delete record succesfull";
 
 	////    //
-	////    browser::TabManager *tabmanager = view->tabmanager();
+	////    web::TabManager *tabmanager = view->tabmanager();
 	////    tabmanager->closeTab(tabmanager->webViewIndex(view));
 	////    //
 

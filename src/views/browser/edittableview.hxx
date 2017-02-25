@@ -57,7 +57,7 @@
 //QT_BEGIN_NAMESPACE
 
 
-// namespace browser {
+// namespace web {
 
 class EditTableView : public QTableView {
 #if QT_VERSION == 0x050600

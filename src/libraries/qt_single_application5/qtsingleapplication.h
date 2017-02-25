@@ -40,6 +40,8 @@
 #ifndef QTSINGLEAPPLICATION_H
 #define QTSINGLEAPPLICATION_H
 
+
+
 #include "libraries/global_parameters.h"
 #include "models/app_config/app_config.h"
 #include "models/database_config/database_config.h"
@@ -88,7 +90,7 @@ class QtLocalPeer;
 
 class SuperMenu;
 class QMenuBar;
-class EditingWindow;
+class Blogger;
 
 #endif
 
@@ -102,7 +104,7 @@ QT_END_NAMESPACE
 
 // extern const char *application_name;
 
-namespace browser {
+namespace web {
 	class BookmarksManager;
 	class Browser;
 	class CookieJar;
@@ -113,6 +115,7 @@ namespace browser {
 }
 
 class wn_t;
+class Blogger;
 
 class QT_QTSINGLEAPPLICATION_EXPORT sapp_t // : public BrowserApplication { //
 	: public QApplication {
@@ -164,7 +167,7 @@ Q_SIGNALS:
 
 private: void sys_init(char * *argv);
 	void main_window();
-	void browser_init();
+	void browsers_shared_info_init();
 #ifdef USE_QTM
 	void qtm_init();
 #endif
@@ -203,11 +206,11 @@ public:
 	static QByteArray proxyAuthenticationKey(const QNetworkProxy &, const QString &);
 	static QByteArray proxyAuthenticationKey(const QString &, const QString &, const QString &);
 
-	static browser::HistoryManager *historyManager();
-	static browser::CookieJar *cookieJar();
-	static browser::DownloadManager *request_download_manager();
+	static web::HistoryManager *historyManager();
+	static web::CookieJar *cookieJar();
+	static web::DownloadManager *request_download_manager();
 	static QNetworkAccessManager *networkAccessManager();
-	static browser::BookmarksManager *bookmarksManager();
+	static web::BookmarksManager *bookmarksManager();
 
 	void installTranslator(const QString &name);
 
@@ -243,17 +246,17 @@ private:
 	// void clean();
 	// void installTranslator(const QString &name);
 
-	static browser::HistoryManager *_historymanager;
-	static browser::DownloadManager *_downloadmanager;
+	static web::HistoryManager *_historymanager;
+	static web::DownloadManager *_downloadmanager;
 	static QNetworkAccessManager *_networkaccessmanager;
-	static browser::BookmarksManager *_bookmarksmanager;
+	static web::BookmarksManager *_bookmarksmanager;
 
 	// QList<QPointer<BrowserWindow> > _mainWindows;
-	browser::Profile *_profile;
+	web::Profile *_profile;
 	QLocalServer *_localserver;
 	QByteArray _last_session;
 	// QWebEngineProfile
-	browser::Profile *_private_profile;
+	web::Profile *_private_profile;
 	bool _private_browsing;
 	mutable QIcon _default_icon;
 
@@ -283,7 +286,7 @@ public:
 	RecentFile getRecentFile(int);
 	QStringList titles();
 	QStringList filenames();
-	EditingWindow *editing_window(){return _editing_win;}
+	Blogger *blogger(){return _blogger;}
 	void deleteSandbox();
 	bool isSandbox(){return _isSandbox;}
 
@@ -291,19 +294,19 @@ public slots:
 	void set_recent_files(const QStringList &, const QStringList &);
 	void add_recent_file(const QString &, const QString &);
 	void saveAll();
-	void editing_window(EditingWindow *sm);
+	void blogger(Blogger *blogger_);
 
 signals:
 	void recent_files_updated(QStringList, QStringList);
 	void recent_files_updated(const QList<sapp_t::RecentFile> &);
-	void editing_win_changed(EditingWindow *);
+	void blogger_changed(Blogger *);
 
 private:
 	QList<sapp_t::RecentFile> _recentFiles;
 #ifdef Q_OS_MAC
 	SuperMenu *superMenu;
 #endif
-	EditingWindow *_editing_win;
+	Blogger *_blogger;
 	bool _isSandbox = false;
 
 private slots:

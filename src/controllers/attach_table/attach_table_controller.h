@@ -19,7 +19,7 @@
 // class AttachTableData;
 class EditorWrap;
 class AttachTableScreen;
-class EditingWindow;
+class Blogger;
 
 class AttachTableController : public QObject {
 #if QT_VERSION == 0x050600
@@ -29,7 +29,7 @@ Q_OBJECT
 #endif
 
 public:
-	AttachTableController(EditingWindow *editing_window, AttachTableScreen *parent = 0);
+	AttachTableController(Blogger *blogger_, AttachTableScreen *parent = 0);
 	virtual ~AttachTableController();
 
 	AttachTableView *view(void);
@@ -57,7 +57,7 @@ protected:
 
 	AttachTableView *_view;
 	AttachTableModel *_model;
-	EditingWindow *_editing_window;
+	Blogger *_blogger;
 };
 
 #endif // __ATTACHTABLECONTROLLER_H__

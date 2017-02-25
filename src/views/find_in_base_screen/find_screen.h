@@ -36,7 +36,7 @@ class rctrl_t;
 class ts_t;
 struct Linker;
 
-namespace browser {
+namespace web {
 	class ChaseWidget;
 	class ToolbarSearch;
 	class TabWidget;
@@ -62,12 +62,12 @@ Q_OBJECT
 
 public:
 	static const constexpr char *_find_in_base_expand = "findInBaseExpand"; // "find_in_base_expand";
-	FindScreen(QString object_name, ts_t *_tree_screen, QWidget *parent = 0);
+	FindScreen(QString object_name, ts_t *tree_screen_, QWidget *parent = 0);
 	virtual ~FindScreen(void);
 	// QToolBar *navigater() {return _navigater;}
 
-	// void toolbarsearch(browser::ToolbarSearch *toolbarsearch) {_toolbarsearch = toolbarsearch;}
-	browser::ToolbarSearch *toolbarsearch(){return _toolbarsearch;}
+	// void toolbarsearch(web::ToolbarSearch *toolbarsearch) {_toolbarsearch = toolbarsearch;}
+	web::ToolbarSearch *toolbarsearch(){return _toolbarsearch;}
 
 	FlatToolButton *findstartbutton(){return _find_start_button;}
 
@@ -83,14 +83,14 @@ public:
 
 	QAction *reload(){return _reload;}
 
-	browser::ChaseWidget *chasewidget(){return _chasewidget;}
+	web::ChaseWidget *chasewidget(){return _chasewidget;}
 
 	// void remove_child(const QString &id);
 	// void remove_child(const int row);
 	void adjust_size();
 
 	// std::shared_ptr<sd::_interface<sd::meta_info<void *>, RecordController *>>      reocrd_controller;  // for entrance
-	// std::shared_ptr<sd::_interface<sd::meta_info<void *>, browser::TabWidget *>>    tabmanager;         // for entrance
+	// std::shared_ptr<sd::_interface<sd::meta_info<void *>, web::TabWidget *>>    tabmanager;         // for entrance
 
 public slots:
 
@@ -181,7 +181,7 @@ private:
 	QAction *_stop;
 	QAction *_reload;
 
-	browser::ChaseWidget *_chasewidget;
+	web::ChaseWidget *_chasewidget;
 
 	QHBoxLayout *_find_text_and_button_tools_area;
 
@@ -216,7 +216,7 @@ private:
 	// bool            _is_search_global = true;
 	// FindTableWidget     *_findtable;
 	// std::shared_ptr<ItemsFlat>      _selected_branch_as_pages;
-	browser::ToolbarSearch *_toolbarsearch; // QLineEdit *_findtext;     //    QStackedWidget *_lineedits;
+	web::ToolbarSearch *_toolbarsearch; // QLineEdit *_findtext;     //    QStackedWidget *_lineedits;
 
 	// Поля, где нужно искать (Заголовок, текст, теги...)
 	QMap<QString, bool> _search_area;

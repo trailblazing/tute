@@ -108,8 +108,10 @@ class FlatToolButton;
 class FindScreen;
 class EditorDock;
 class SuperMenu;
-class EditingWindow;
+class Blogger;
 class QStackedWidget;
+class QSettings;
+
 
 class Editor : public QWidget {
 #if QT_VERSION == 0x050600
@@ -119,7 +121,7 @@ Q_OBJECT
 #endif
 
 public:
-	Editor(QStackedWidget *main_stack, EditingWindow *editing_window, int mode, QStringList hide_editor_tools, bool enable_assembly = false, bool enable_random_seed = false);
+	Editor(QStackedWidget *main_stack, Blogger *blogger_, std::shared_ptr<QSettings> topic_editor_config_, int mode, QStringList hide_editor_tools, bool enable_assembly = false, bool enable_random_seed = false);
 	~Editor(void);
 
 	std::shared_ptr<EditorConfig> _editor_config;
@@ -208,7 +210,7 @@ public:
 	const char *version(void);
 
 	// void init_enable_assembly(bool flag);
-	static QString init_config_file_name(QString config_full_name);
+//	static QString init_config_file_name(QString config_full_name);
 	// void init_enable_random_seed(bool flag);
 	void init(int mode, QStringList hide_editor_tools, bool enable_assembly, bool enable_random_seed);
 
@@ -289,8 +291,8 @@ public:
 	};
 
 	enum {
-		WYEDIT_DESKTOP_MODE = 0
-		, WYEDIT_MOBILE_MODE = 1
+		WYEDIT_DESKTOP_MODE	= 0
+		, WYEDIT_MOBILE_MODE	= 1
 	};
 
 signals:
@@ -410,6 +412,7 @@ private slots:
 	// void onModificationChanged(bool flag);
 
 protected:
+
 	// Область редактирования текста
 	EditorTextArea *_text_area;
 
@@ -424,7 +427,7 @@ private:
 	QString _work_file_name;
 
 	int _view_mode; // ежим отображения редактора - WYEDIT_DESKTOP_MODE или WYEDIT_MOBILE_MODE
-	EditingWindow *_editing_window;
+	Blogger *_blog;
 
 private:
 	void setup_signals(void);
@@ -521,7 +524,7 @@ private:
 
 	friend class MetaEditor;
 	friend class EditorDock;
-	friend class EditingWindow;
+	friend class Blogger;
 	friend class SuperMenu;
 
 protected:

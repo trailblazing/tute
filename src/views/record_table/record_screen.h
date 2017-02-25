@@ -30,7 +30,7 @@ class EditorDock;
 class wn_t;
 class AppConfig;
 class HidableTab;
-class EditingWindow;
+class Blogger;
 
 struct pos_proxy;
 struct pos_source;
@@ -38,8 +38,8 @@ struct index_proxy;
 struct index_source;
 struct id_value;
 
-namespace browser {
-	class BrowserDock;
+namespace web {
+	class Docker;
 	class Browser;
 	class ToolbarSearch;
 	class TabWidget;
@@ -66,7 +66,7 @@ Q_OBJECT
 #endif
 
 public:
-	rs_t(ts_t *tree_screen, FindScreen *find_screen, EditorDock *editor_dock, EditingWindow *editing_window, browser::BrowserDock *browser_dock, HidableTab *vtab_record, const QString &_style_source, browser::Profile *profile);
+	rs_t(HidableTab *vtab_record, Blogger *blogger_, web::Browser *browser_);
 
 	virtual ~rs_t();
 
@@ -81,19 +81,21 @@ public:
 	rctrl_t *record_controller();
 
 	// bool                inited() {return _inited;}
-	// browser::TabWidget	*tabmanager();
-	browser::Browser *browser();
+	// web::TabWidget	*tabmanager();
+	web::Browser *browser();
 	ts_t *tree_screen();
 	// QAction			*record_hide();	// move to main_window::_vtab_record->tabBar()->tabBarClicked
 	// void			restore_menubar();
 
 	HidableTab *vtab_record();
-	EditingWindow *editing_window();
+	Blogger *blogger();
 public slots:
 
 	// Обновление панели инструментов
 	void tools_update(); // W_SLOT(tools_update)
 
+	void on_blogger_close();
+	void on_browser_close_request();
 protected:
 	void resizeEvent(QResizeEvent *e);
 private slots:
@@ -107,8 +109,8 @@ private:
 	// bool                _inited = false;
 	HidableTab *_vtab_record;
 	ts_t *_tree_screen;
-	EditorDock *_editor_dock;
-	EditingWindow *_editing_window;
+	web::Docker *_editor_docker;
+	Blogger *_blogger;
 
 	// These staffs used on the toolbar and in the context menu entries    // Действия, используемые как на тулбаре, так и в контекстном меню списка записей
 	QAction *_record_hide;
@@ -152,12 +154,12 @@ private:
 	QString _treepath;
 
 	// EditingWindow *_editing_window = nullptr;
-	browser::Browser *_browser;
-	rctrl_t *_record_controller; // browser::TabWidget	*_tabmanager;
+	web::Browser *_browser;
+	rctrl_t *_rctrl; // web::TabWidget	*_tabmanager;
 	VerticalScrollArea *_vertical_scrollarea;
 
 	QHBoxLayout *_records_toolslayout;
-	// browser::ToolbarSearch  *_recordtree_search;
+	// web::ToolbarSearch  *_recordtree_search;
 	// QHBoxLayout             *_recordtree_searchlayout;
 	QVBoxLayout *_records_screenlayout;
 
@@ -172,6 +174,8 @@ private:
 	friend class rctrl_t;
 	friend class wn_t;
 	// friend class ts_t;
+signals:
+	void close_request(QWidget *);
 };
 
 #endif /* RECORDTABLESCREEN_H_ */

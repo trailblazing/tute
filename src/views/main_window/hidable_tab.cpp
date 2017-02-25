@@ -6,10 +6,10 @@
 
 #include "hidable_tab.h"
 #include "libraries/global_parameters.h"
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #include "models/tree/binder.hxx"
 #include "models/tree/tree_index.hxx"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/main_window/main_window.h"
 #include "views/tree/tree_view.h"
 #include <QLayout>
@@ -85,16 +85,16 @@ const char *custom_hidabletabwidget_style = "QTabWidget::pane {"
 W_OBJECT_IMPL(HidableTabWidget)
 #endif
 
-HidableTab::HidableTab(ts_t *tree_screen, FindScreen *find_screen, browser::BrowserDock *entrance, QMainWindow *main_window, browser::Profile *profile, QString style_source_, QSplitter *splitter, std::shared_ptr<QSettings> splitter_config, QString splitter_group_name, QString splitter_sizelist_name, QString collapsed_status_name, QWidget *parent)
+HidableTab::HidableTab(QWidget *main_window, QSplitter *splitter, std::shared_ptr<QSettings> splitter_config, QString splitter_group_name, QString splitter_sizelist_name, QString collapsed_status_name, QWidget *parent)
 	: QTabWidget(parent)
 	  , _hide_action(new QAction(tr("▾"), this))
 	  , _layout(new QVBoxLayout(this)) // (new QStackedLayout(this))
-	  , _tree_screen(tree_screen)
-	  , _find_screen(find_screen)
-	  , _entrance(entrance)
+//	  , _tree_screen(tree_screen)
+//	  , _find_screen(find_screen)
+//	  , _browser_docker(brwoser_docker_)
 	  , _main_window(main_window)
-	  , _profile(profile)
-	  , _style_source(style_source_)
+//	  , _profile(profile)
+//	  , _style_source(style_source_)
 	  , _splitter(splitter)
 	  , _splitter_config(splitter_config)
 	  , _splitter_group_name(splitter_group_name)
@@ -160,6 +160,7 @@ HidableTab::HidableTab(ts_t *tree_screen, FindScreen *find_screen, browser::Brow
 
 	connect(this, &HidableTab::tabBarClicked, this, &HidableTab::on_tabbar_clicked);
 	connect(_splitter, &QSplitter::splitterMoved, this, &HidableTab::on_splitter_moved);
+//	connect(this, &::HidableTab::tabCloseRequested, this, &HidableTab::removeTab);
 }
 
 HidableTab::~HidableTab(){
@@ -383,7 +384,7 @@ void HidableTab::collapse_when_true(bool checked){
 			for(int i = 0; i < this->count(); i++){
 				auto w = this->widget(0);
 				w->setMaximumSize(QSize(0 // widget(0)->
-				                       , geometry().height()));
+						, geometry().height()));
 				w->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 			}
 			sizes[1]	= win_width - bar_width;
@@ -399,7 +400,7 @@ void HidableTab::collapse_when_true(bool checked){
 			for(int i = 0; i < this->count(); i++){
 				auto w = this->widget(0);
 				w->setMaximumSize(QSize( // widget(0)->geometry().width()
-							  std::numeric_limits<int>::max(), std::numeric_limits<int>::max()));
+						std::numeric_limits<int>::max(), std::numeric_limits<int>::max()));
 				w->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 			}
 			open_tab_widgets_north_south_expand();
@@ -410,7 +411,7 @@ void HidableTab::collapse_when_true(bool checked){
 			for(int i = 0; i < this->count(); i++){
 				auto w = this->widget(0);
 				w->setMaximumSize(QSize(std::numeric_limits<int>::max() // widget(0)->, geometry().height()
-				                       , std::numeric_limits<int>::max()));
+						, std::numeric_limits<int>::max()));
 				w->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 			}
 			open_tab_widgets_west_east_expand();
@@ -418,6 +419,13 @@ void HidableTab::collapse_when_true(bool checked){
 			// this->setMaximumHeight([&] {auto p = this->parentWidget();return p ? p->height() : this->geometry().height();} ());
 		}
 		this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	}
+}
+
+void HidableTab::on_close_request(QWidget *child_){
+	for(int it = 0; it < count(); it++){
+		if(widget(it) == child_) emit tabCloseRequested(it);
+		break;
 	}
 }
 

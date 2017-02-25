@@ -59,7 +59,7 @@
 
 #include "libraries/global_parameters.h"
 #include "main.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include <QtNetwork/QAuthenticator>
 #include <QtNetwork/QNetworkDiskCache>
 #include <QtNetwork/QNetworkProxy>
@@ -69,7 +69,7 @@
 
 extern std::shared_ptr<gl_para> gl_paras;
 
-namespace browser {
+namespace web {
 #if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(NetworkAccessManager)
 #endif
@@ -116,11 +116,17 @@ namespace browser {
 		double pctDownloadBuffer = (double (requestFinishedDownloadBufferCount) * 100.0 / double (requestFinishedCount));
 
 		qDebug("STATS [%lli requests total] [%3.2f%% from cache] [%3.2f%% pipelined] [%3.2f%% SSL/TLS] [%3.2f%% Zerocopy]", requestFinishedCount, pctCached, pctPipelined, pctSecure, pctDownloadBuffer);
+		//
+		if(reply->error() != QNetworkReply::NoError) qDebug() << QString("Network Error: %1").arg(reply->errorString());
+		if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true){
+			QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
+			qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
+		}
 #endif
 	}
 
 	void NetworkAccessManager::loadSettings(){
-		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
+		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
 		settings.beginGroup(QLatin1String("proxy"));
 		QNetworkProxy proxy;
 		if(settings.value(QLatin1String("enabled"), false).toBool()){
@@ -139,12 +145,12 @@ namespace browser {
 		// check if SSL certificate has been trusted already
 		QString replyHost = reply->url().host() + QString(":%1").arg(reply->url().port());
 		if(!sslTrustedHostList.contains(replyHost)){
-			BrowserDock *mainWindow = gl_paras->browser_dock(); // ->main_window(register_record(QUrl(DockedWindow::_defaulthome)));    //QtSingleApplication::instance()->mainWindow();
+			auto brwoser_docker_ = gl_paras->browser_docker(); // ->main_window(register_record(QUrl(DockedWindow::_defaulthome)));    //QtSingleApplication::instance()->mainWindow();
 
 			QStringList errorStrings;
 			for(int i = 0; i < error.count(); ++i) errorStrings += error.at(i).errorString();
 			QString errors = errorStrings.join(QLatin1String("\n"));
-			int ret = QMessageBox::warning(mainWindow, QCoreApplication::applicationName(), tr("SSL Errors:\n\n%1\n\n%2\n\n"
+			int ret = QMessageBox::warning(brwoser_docker_, QCoreApplication::applicationName(), tr("SSL Errors:\n\n%1\n\n%2\n\n"
 			                                                                                   "Do you want to ignore these errors for this host?")
 			                               .arg(reply->url().toString())
 			                               .arg(errors)

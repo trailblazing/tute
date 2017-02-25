@@ -4,6 +4,32 @@
 #include <wobjectimpl.h>
 #endif
 
+
+#include <chrono>
+
+
+#include <QColor>
+#include <QColorDialog>
+#include <QDateTime>
+#include <QDebug>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QLayout>
+#include <QMenu>
+#include <QMessageBox>
+#include <QObject>
+#include <QPalette>
+#include <QScrollBar>
+#include <QSplitter>
+#include <QStackedWidget>
+#include <QStringList>
+#include <QStyle>
+#include <QTextCursor>
+#include <QToolButton>
+#include <QtGlobal>
+#include <QtGui>
+
+
 #include "editor.h"
 #include "editor_abs_table.h"
 #include "editor_add_table_form.h"
@@ -25,30 +51,10 @@
 #include "models/app_config/app_config.h"
 #include "utility/add_action.h"
 #include "views/main_window/main_window.h"
-#include "views/record/editor_dock.h"
+#include "libraries/qtm/blogger.h"
 #include "views/record/editor_wrap.h"
 #include "views/tree/tree_screen.h"
-#include <QColor>
-#include <QColorDialog>
-#include <QDateTime>
-#include <QDebug>
-#include <QFileDialog>
-#include <QInputDialog>
-#include <QLayout>
-#include <QMenu>
-#include <QMessageBox>
-#include <QObject>
-#include <QPalette>
-#include <QScrollBar>
-#include <QSplitter>
-#include <QStackedWidget>
-#include <QStringList>
-#include <QStyle>
-#include <QTextCursor>
-#include <QToolButton>
-#include <QtGlobal>
-#include <QtGui>
-#include <chrono>
+
 
 #include "libraries/qtm/addimg.xpm"
 #include "libraries/qtm/addlink.xpm"
@@ -67,6 +73,7 @@
 // #include "libraries/qtm/remtag.xpm"
 
 #include "libraries/window_switcher.h"
+#include "views/browser/docker.h"
 
 extern std::shared_ptr<AppConfig> appconfig;
 extern const char *action_find_in_base;
@@ -76,14 +83,16 @@ const std::string editor_prefix = "editor_tb_";
 W_OBJECT_IMPL(Editor)
 #endif
 
-Editor::Editor(QStackedWidget *main_stack, EditingWindow *editing_window, int mode, QStringList hide_editor_tools, bool enable_assembly, bool enable_random_seed)
+Editor::Editor(QStackedWidget *main_stack, Blogger *blogger_, std::shared_ptr<QSettings> topic_editor_config_, int mode, QStringList hide_editor_tools, bool enable_assembly, bool enable_random_seed)
 	: QWidget(main_stack)
-	  , _editor_config([&]() -> std::shared_ptr<EditorConfig> {auto path = Editor::init_config_file_name(gl_paras->root_path() + "/" + gl_paras->target_os() + "/editorconf.ini"); return std::make_shared<EditorConfig>(path, nullptr);} ())
+	  , _editor_config([&]() -> std::shared_ptr<EditorConfig> {
+				   return std::make_shared<EditorConfig>(topic_editor_config_, nullptr);
+			   } ())
 	  , _find_dialog(std::make_unique<EditorFindDialog>(_editor_config, nullptr))
 	  , _tools_line_0(new QToolBar())
 	  , _tools_line_1(new QToolBar())
 	  , _text_area(new EditorTextArea(this))
-	  , _editing_window(editing_window){
+	  , _blog(blogger_){
 	// _init_data_enable_assembly		= true;
 	// _init_data_config_file_name		= "";
 	// _init_data_enable_random_seed	= false;
@@ -93,8 +102,8 @@ Editor::Editor(QStackedWidget *main_stack, EditingWindow *editing_window, int mo
 	save_callback_func	= nullptr;
 	load_callback_func	= nullptr;
 	back_callback_func	= nullptr;
-	work_directory(editing_window->_current_topic_full_folder_name);
-	file_name(editing_window->_default_filename + ".html");
+	work_directory(blogger_->_current_topic_full_folder_name);
+	file_name(blogger_->_default_filename + ".html");
 	// init_enable_assembly(enable_assembly);
 	// init_enable_random_seed(enable_random_seed);
 	init(mode, hide_editor_tools, enable_assembly, enable_random_seed);
@@ -158,27 +167,27 @@ const char *Editor::version(void){
 // _init_data_enable_assembly = flag;
 // }
 
-QString Editor::init_config_file_name(QString config_full_name){
-	// name				= globalparameters.work_directory()
-	// + "/" + globalparameters.target_os() + "/editorconf.ini"
-	auto location = gl_paras->root_path() + "/" + gl_paras->target_os();
-	assert(config_full_name.contains(location));
-	QDir conf_dir(location);
-	if(!conf_dir.exists())
-		if(!QDir::root().mkpath(location))
-			critical_error("void Editor::init_config_file_name(QString "
-			               "config_full_name) can not make dir \""
-			               + gl_paras->target_os() + "\"");
-	QFile conf_file(config_full_name);
-	if(!conf_file.exists())
-		if(!QFile::copy(":/resource/standardconfig/" + gl_paras->target_os() + "/editorconf.ini", config_full_name))
-			critical_error("void Editor::init_config_file_name(QString "
-			               "config_full_name) can not copy file \""
-			               + config_full_name + "\"");
-	conf_file.setPermissions(config_full_name, QFile::ReadUser | QFile::WriteUser);
-	// _init_data_config_file_name = config_full_name;
-	return config_full_name;
-}
+//QString Editor::init_config_file_name(QString config_full_name){
+//	// name				= globalparameters.work_directory()
+//	// + "/" + globalparameters.target_os() + "/editorconf.ini"
+//	auto location = gl_paras->root_path() + "/" + gl_paras->target_os();
+//	assert(config_full_name.contains(location));
+//	QDir conf_dir(location);
+//	if(!conf_dir.exists())
+//		if(!QDir::root().mkpath(location))
+//			critical_error("void Editor::init_config_file_name(QString "
+//			               "config_full_name) can not make dir \""
+//			               + gl_paras->target_os() + "\"");
+//	QFile conf_file(config_full_name);
+//	if(!conf_file.exists())
+//		if(!QFile::copy(":/resource/standardconfig/" + gl_paras->target_os() + "/editorconf.ini", config_full_name))
+//			critical_error("void Editor::init_config_file_name(QString "
+//			               "config_full_name) can not copy file \""
+//			               + config_full_name + "\"");
+//	conf_file.setPermissions(config_full_name, QFile::ReadUser | QFile::WriteUser);
+//	// _init_data_config_file_name = config_full_name;
+//	return config_full_name;
+//}
 
 // void Editor::init_enable_random_seed(bool flag){
 // _init_data_enable_random_seed = flag;
@@ -353,7 +362,7 @@ void Editor::setup_signals(void){
 	// &Editor::on_show_text_clicked);
 	// connect(_to_attach, &FlatToolButton::clicked, this,
 	// &Editor::on_to_attach_clicked);
-	connect(_text_area, &EditorTextArea::textChanged, [&] {_editing_window->_entry_ever_saved = false;});
+	connect(_text_area, &EditorTextArea::textChanged, [&] {_blog->_entry_ever_saved = false;});
 	connect(_text_area, &EditorTextArea::cursorPositionChanged, this, &Editor::on_cursor_position_changed);
 	connect(_text_area, &EditorTextArea::selectionChanged, this, &Editor::on_selection_changed);
 
@@ -515,32 +524,32 @@ void Editor::setup_buttons(void){
 	// move from EditingWindow
 
 	_action_open
-	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Open ...").c_str()), tr("Open ..."), tr("Load a saved entry from the disk"), QIcon(":/resource/pic/fileopen.svg"), [&](bool){_editing_window->choose();});
+		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Open ...").c_str()), tr("Open ..."), tr("Load a saved entry from the disk"), QIcon(":/resource/pic/fileopen.svg"), [&](bool){_blog->choose();});
 	_action_save
-	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Save").c_str()), tr("Save"), tr("Save this entry to disk for editing or publication later"), QIcon(":/resource/pic/save.svg"), [&](bool){_editing_window->save_text_context();});
+		= add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Save").c_str()), tr("Save"), tr("Save this entry to disk for editing or publication later"), QIcon(":/resource/pic/save.svg"), [&](bool){_blog->save_text_context();});
 
 	_action_link
 	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Link").c_str()), tr("Link"), tr("Inserts a link to another page, the location to be specified now"), QIcon(":/resource/pic/link.svg") // QPixmap(linkIcon_xpm)
 	                    ,
-	                     _editing_window, &EditingWindow::insertLink);
+			     _blog, &Blogger::insertLink);
 	_action_image
 	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Image").c_str()), tr("Image"), tr(std::string(std::string("Insert an image into the text, the location, alignment and alternate \n") + "text to be specified now").c_str()), QIcon(":/resource/pic/flip.svg") // QPixmap(imgIcon_xpm)
 	                    ,
-	                     [&](bool){_editing_window->insertImage();});
+			     [&](bool){_blog->insertImage();});
 	_action_more
 	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "More").c_str()), tr("More"), tr((std::string("Set this as the end of the main entry (which appears on the index) \n") + "and the beginning of the extended entry (which appears " + "when you click More, \n" + "Extended entry or view the entry on its own page).").c_str()), QIcon(":/resource/pic/more.svg") // QPixmap(more_xpm)
 	                    ,
-	                     [&](bool){_editing_window->insertMore();});
+			     [&](bool){_blog->insertMore();});
 	_action_preview
 	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Entry in preview").c_str()), tr("Entry in preview"), tr("Preview the entry in this window"), QIcon(":/resource/pic/preview.svg") // QPixmap(previewIcon_xpm)
 	                    ,
-	                     [&](bool checked){_editing_window->doPreview(checked);});
+			     [&](bool checked){_blog->doPreview(checked);});
 	_action_preview->setCheckable(true);
 	_action_preview->setChecked(false);
 	_action_blog_this
 	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Blog this!").c_str()), tr("Blog this!"), tr("Post this entry to the blog"), QIcon(":/resource/pic/pull.svg") // pentalpha.svg//QPixmap(blogThisIcon_xpm)
 	                    ,
-	                     [&](bool){_editing_window->blogThis();});
+			     [&](bool){_blog->blogThis();});
 
 	_tools_line_0->addSeparator();
 	_tools_line_0->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
@@ -556,7 +565,7 @@ void Editor::setup_buttons(void){
 	// _icon_attach_exists		=
 	// QIcon(":/resource/pic/attach_exists.svg");
 	_to_attach
-	        = add_action(_tools_line_0, this, tr((editor_prefix + "attach").c_str()), tr("Show attach files"), tr("Show attach files"), _icon_attach_not_exists, [&](bool){_editing_window->to_attach_layout();});
+		= add_action(_tools_line_0, this, tr((editor_prefix + "attach").c_str()), tr("Show attach files"), tr("Show attach files"), _icon_attach_not_exists, [&](bool){_blog->to_attach_layout();});
 
 	_insert_image_from_file
 	        = add_action(_tools_line_0, this, tr((editor_prefix + "insert_image_from_file").c_str()), tr("Insert image from file / edit image properties of selected image"), tr("Insert image from file / edit image properties of selected image"), QIcon(":/resource/pic/edit_insert_image_from_file.svg"), [&](bool){on_insert_image_from_file_clicked();});
@@ -570,7 +579,7 @@ void Editor::setup_buttons(void){
 	// Кнопка "назад", используется в мобильном интерфейсе
 	// Button "back", used in the mobile interface
 	_back
-	        = add_action(_tools_line_0, this, tr((editor_prefix + "back").c_str()), tr("Back"), tr("Back"), QIcon(":/resource/pic/mobile_back.svg"), [&](bool){_editing_window->editor_dock()->on_back_clicked();});
+		= add_action(_tools_line_0, this, tr((editor_prefix + "back").c_str()), tr("Back"), tr("Back"), QIcon(":/resource/pic/mobile_back.svg"), [&](bool){WindowSwitcher::record_to_recordtable();});
 
 	// Кнопка "поиск по базе", используется в мобильном интерфейсе
 	// Button "search database" used in the mobile interface
@@ -662,6 +671,12 @@ void Editor::setup_closebutton(void){
 	_close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton)); // SP_TitleBarCloseButton
 	// SP_DialogCloseButton
 	// _close_button->setAutoRaise(true);
+//	connect(_close_button, &FlatToolButton::clicked
+//	       , [&](bool checked){
+//			(void) checked;
+//			gl_paras->editor_docker()->hide();
+//			appconfig->editor_show(false);
+//		});
 	if(appconfig->interface_mode() == "desktop"){
 		int w	= _close_button->geometry().width();
 		int h	= _close_button->geometry().height();
@@ -2054,7 +2069,7 @@ void Editor::on_custom_contextmenu_requested(const QPoint &_position){
 	// menu.exec(event->globalPos());
 	// Если выбрана картинка
 	// Или нет выделения, но курсор находится на позиции картинки
-	auto _context_menu = gl_paras->editor_dock()->super_menu();
+	auto _context_menu = _blog->super_menu();
 	if(is_image_select() || is_cursor_on_image()) _context_menu->set_edit_image_properties(true);
 	else _context_menu->set_edit_image_properties(false);
 	// Контекстное меню запускается

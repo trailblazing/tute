@@ -28,13 +28,13 @@
 #include <QtWidgets>
 #endif
 
-#include "editing_window.h"
+#include "blogger.h"
 #include "libraries/qtm/side_tabwidget.h"
 #include "super_menu.h"
 #include "views/main_window/main_window.h"
 #include "xml_rpc_handler.h"
 
-void EditingWindow::blogger_getUsersBlogs(QByteArray response){
+void Blogger::blogger_getUsersBlogs(QByteArray response){
 	QXmlInputSource xis;
 	QXmlSimpleReader reader;
 	XmlRpcHandler handler(_current_http_business);
@@ -77,7 +77,7 @@ void EditingWindow::blogger_getUsersBlogs(QByteArray response){
 			currentAccountElement.appendChild(_accounts_dom.importNode(importedBlogList.firstChildElement("blogs"), true));
 			// qDebug() << "done";
 			if(!_no_auto_save){
-				QFile domOut(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_full_path_name)));
+				QFile domOut(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(gl_paras->editors_shared_full_path_name())));
 				if(domOut.open(QIODevice::WriteOnly)){
 					QTextStream domFileStream(&domOut);
 					_accounts_dom.save(domFileStream, 2);
@@ -106,7 +106,7 @@ void EditingWindow::blogger_getUsersBlogs(QByteArray response){
 	if(QApplication::overrideCursor()) QApplication::restoreOverrideCursor();
 }
 
-void EditingWindow::metaWeblog_newPost(QByteArray response){
+void Blogger::metaWeblog_newPost(QByteArray response){
 // Returned data should only contain a single string, and no structs. Hence
 // the XmlRpcHandler is not suitable.
 #ifndef NO_DEBUG_OUTPUT
@@ -127,7 +127,7 @@ void EditingWindow::metaWeblog_newPost(QByteArray response){
 		if(!_entry_ever_saved){
 			if(postAsSave && _clean_save){
 				setWindowModified(false);
-				dirtyIndicator->hide();
+				_dirty_indicator->hide();
 				setDirtySignals(true);
 			}
 		}
@@ -136,7 +136,7 @@ void EditingWindow::metaWeblog_newPost(QByteArray response){
 	addToConsole(QString("Entry number: %1\n").arg(entryNumber));
 }
 
-void EditingWindow::metaWeblog_editPost(QByteArray response){
+void Blogger::metaWeblog_editPost(QByteArray response){
 	addToConsole(QString(response));
 	if(response.contains("<fault>")){
 		statusBar()->showMessage(tr("The submission returned a fault - see console."), 2000);
@@ -146,7 +146,7 @@ void EditingWindow::metaWeblog_editPost(QByteArray response){
 		if(!_entry_ever_saved){
 			if(postAsSave && _clean_save){
 				setWindowModified(false);
-				dirtyIndicator->hide();
+				_dirty_indicator->hide();
 				setDirtySignals(true);
 			}
 		}
@@ -154,7 +154,7 @@ void EditingWindow::metaWeblog_editPost(QByteArray response){
 	if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
 }
 
-void EditingWindow::metaWeblog_newMediaObject(QByteArray response){
+void Blogger::metaWeblog_newMediaObject(QByteArray response){
 	QXmlInputSource xis;
 	QXmlSimpleReader reader;
 	XmlRpcHandler handler;
@@ -182,7 +182,7 @@ void EditingWindow::metaWeblog_newMediaObject(QByteArray response){
 	if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
 }
 
-void EditingWindow::mt_publishPost(QByteArray response){
+void Blogger::mt_publishPost(QByteArray response){
 	disconnect(this, SIGNAL(httpBusinessFinished()), 0, 0);
 	addToConsole(QString(response));
 	if(response.contains("<fault>")) statusBar()->showMessage(tr("An error occurred during rebuilding."), 2000);
@@ -190,7 +190,7 @@ void EditingWindow::mt_publishPost(QByteArray response){
 	if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
 }
 
-void EditingWindow::mt_getCategoryList(QByteArray response){
+void Blogger::mt_getCategoryList(QByteArray response){
 	QXmlInputSource xis;
 	QXmlSimpleReader reader;
 	XmlRpcHandler handler(_current_http_business);
@@ -228,7 +228,7 @@ void EditingWindow::mt_getCategoryList(QByteArray response){
 			               .arg(returnedCats.at(j).firstChildElement("categoryName").text())
 			               .arg(returnedCats.at(j).firstChildElement("categoryId").text()));
 		}
-	if(!_no_alpha_cats) qSort(catList.begin(), catList.end(), EditingWindow::caseInsensitiveLessThan);
+	if(!_no_alpha_cats) qSort(catList.begin(), catList.end(), Blogger::caseInsensitiveLessThan);
 	if(xfault) statusBar()->showMessage(tr("Could not connect; check account details & password"), 2000);
 	else{
 		if(!i){
@@ -264,7 +264,7 @@ void EditingWindow::mt_getCategoryList(QByteArray response){
 			_control_tab->lwOtherCats->setEnabled(true);
 			handleEnableCategories();
 			if(!_no_auto_save){
-				QFile domOut(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(_editors_shared_full_path_name)));
+				QFile domOut(PROPERSEPS(QString("%1/qtmaccounts2.xml").arg(gl_paras->editors_shared_full_path_name())));
 				if(domOut.open(QIODevice::WriteOnly)){
 					QTextStream domFileStream(&domOut);
 					_accounts_dom.save(domFileStream, 2);
@@ -280,7 +280,7 @@ void EditingWindow::mt_getCategoryList(QByteArray response){
 	if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
 }
 
-void EditingWindow::mt_setPostCategories(QByteArray response){
+void Blogger::mt_setPostCategories(QByteArray response){
 	disconnect(this, SIGNAL(httpBusinessFinished()), 0, 0);
 
 	QXmlInputSource xis;
@@ -302,7 +302,7 @@ void EditingWindow::mt_setPostCategories(QByteArray response){
 	QApplication::restoreOverrideCursor();
 }
 
-void EditingWindow::wp_getTags(QByteArray response){
+void Blogger::wp_getTags(QByteArray response){
 	disconnect(this, SIGNAL(httpBusinessFinished()), 0, 0);
 	addToConsole(response);
 
@@ -384,7 +384,7 @@ void EditingWindow::wp_getTags(QByteArray response){
 	if(QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
 }
 
-void EditingWindow::wp_newCategory(QByteArray response){
+void Blogger::wp_newCategory(QByteArray response){
 	disconnect(this, SIGNAL(httpBusinessFinished()), 0, 0);
 
 	// Parse the XML
@@ -401,10 +401,12 @@ void EditingWindow::wp_newCategory(QByteArray response){
 	QApplication::restoreOverrideCursor();
 }
 
-void EditingWindow::wp_newPost(QByteArray response){
+void Blogger::wp_newPost(QByteArray response){
 	metaWeblog_newPost(response);
 }
 
-void EditingWindow::wp_editPost(QByteArray response){
+void Blogger::wp_editPost(QByteArray response){
 	metaWeblog_editPost(response);
 }
+
+QStatusBar *Blogger::statusBar(){return gl_paras->status_bar();}

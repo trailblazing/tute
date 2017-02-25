@@ -39,13 +39,13 @@ class ts_t;
 class FindScreen;
 class EditorDock;
 class wn_t;
-class EditingWindow;
+class Blogger;
 class QSplitter;
 class AttachTableScreen;
 
 
-namespace browser {
-	class BrowserDock;
+namespace web {
+	class Docker;
 	class Profile;
 }
 
@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 class SideTabWidget : public HidableTab {
 public:
-	SideTabWidget(ts_t *_tree_screen, FindScreen *_find_screen, browser::BrowserDock *_browser_dock, EditingWindow *_main_window, browser::Profile *_profile, QString style_source_, QSplitter *splitter, QWidget *parent);
+	SideTabWidget(web::Docker *editor_docker_, Blogger *blogger_, std::shared_ptr<QSettings> topic_editor_config_, QSplitter *splitter, QWidget *parent);
 
 	void title(const QString &title_);
 	QString title() const;
@@ -61,7 +61,8 @@ public:
 	QString topic() const;
 
 private:
-	EditingWindow *_editing_window;
+//	web::Docker *_editor_docker;
+	Blogger *_blogger;
 	// QVBoxLayout *vboxLayout;
 	// QHBoxLayout *hboxLayout;
 	QSpacerItem *spacerItem;
@@ -160,7 +161,7 @@ protected:
 	void setupUi(); // setupUi
 
 	void retranslateUi(); // retranslateUi
-	friend class EditingWindow;
+	friend class Blogger;
 };
 
 QT_END_NAMESPACE

@@ -28,20 +28,24 @@
 
 class QAction;
 class QMenu;
-class EditingWindow;
+class Blogger;
 class SysTrayIcon;
 class QShowEvent;
 class sapp_t;
 class EditorContextMenu;
 class rs_t;
+class Blogger;
 
+namespace web {
+	class Docker;
+}
 class SuperMenu : public QMenu // EditorContextMenu	// QMenuBar
 {
 Q_OBJECT
 typedef QMenu super;
 
 public:
-	SuperMenu(FindScreen *_find_screen, EditorDock *editentry, HidableTab *vtab_record, QWidget *parent = 0, SysTrayIcon *sti = 0);
+	SuperMenu(Blogger *bloger_, QWidget *parent = 0, SysTrayIcon *sti = 0);
 	void setEditActionsEnabled(bool);
 	QAction *getCutAction(){return cutAction;}
 	QAction *getCopyAction(){return copyAction;}
@@ -90,32 +94,33 @@ public:
 public slots:
 	void set_recent_files(const QList<sapp_t::RecentFile> &);
 	void openRecentFile();
-	void editing_window(EditingWindow *editing_win_);
+	void blogger_changed(Blogger *bloger_);
 	void setConsoleActionTitle(bool);
 	void setPreviewActionTitle(bool);
 	void setHighlightingChecked(bool);
 
 private:
 	EditorContextMenu *_editor_context_menu;
-	QList<QAction *> _editing_win_actions;
+	QList<QAction *> _blogger_actions;
 	// QList<QMenu *> editingMenus;
 	QAction *noRecentFilesAction;
 	SysTrayIcon *_sti;
 	QList<sapp_t::RecentFile> recentFiles;
 	QAction *recentFileActions[10];
-	sapp_t *_app;
-	EditingWindow *_editing_win = nullptr;
+//	sapp_t *_app;
+	Blogger *_bloger = nullptr;
 
 	ts_t *_tree_screen;
-	browser::BrowserDock *_entrance;
+	web::Docker *_browser_docker;
 	wn_t *_main_window;
-	browser::Profile *_profile;
+	web::Profile *_profile;
 	Qt::WindowFlags _flags;
 	QString _style_source;
 
 	FindScreen *_find_screen;
-	EditorDock *_editentry;
-	HidableTab *_vtab_record;
+	web::Docker *_editor_docker;
+//	Bloger_blogerer;
+//	HidableTab *_vtab_record;
 
 	// QSplitter *_splitter;
 	// std::shared_ptr<QSettings>  _splitter_config;

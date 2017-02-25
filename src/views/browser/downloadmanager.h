@@ -66,7 +66,7 @@ QT_END_NAMESPACE
 
 class HidableTab;
 
-namespace browser {
+namespace web {
 	class TabWidget;
 	class DownloadManager;
 	class DownloadWidget : public QWidget, public Ui_DownloadItem, public std::enable_shared_from_this<DownloadWidget> {

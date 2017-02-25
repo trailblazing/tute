@@ -57,7 +57,7 @@
 #include <QtDBus>
 #endif
 
-#include "editing_window.h"
+#include "blogger.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "main.h"
 #include "quickpost_template.h"
@@ -90,21 +90,21 @@
 
 #include "qtm_version.h.in"
 
-SysTrayIcon::SysTrayIcon(ts_t *tree_screen, browser::BrowserDock *browser_dock, HidableTab *vtab_record, FindScreen *find_screen, EditorDock *editor_dock, wn_t *main_window, browser::Profile *profile, QString style_source, bool noWindow, Qt::WindowFlags flags, QObject *parent)
+SysTrayIcon::SysTrayIcon(HidableTab *vtab_record, web::Docker *editor_docker, wn_t *main_window, web::Profile *profile, QString style_source, bool noWindow, Qt::WindowFlags flags, QObject *parent)
 	: STI_SUPERCLASS(parent)
-	  , _tree_screen(tree_screen)
-	  , _browser_dock(browser_dock)
+//	  , _tree_screen(tree_screen)
+//	  , _browser_dock(browser_dock)
 	  , _vtab_record(vtab_record)
 	  , _main_window(main_window)
 	  , _profile(profile)
 	  , _flags(flags)
 	  , _style_source(style_source)
-	  , _find_screen(find_screen)
-	  , _editor_dock(editor_dock){
-	(void) noWindow;
+//	  , _find_screen(find_screen)
+	  , _editor_docker(editor_docker){
+//	(void) noWindow;
 	bool newWindow;
-	bool noNewWindow = //noWindow;//
-	                   false;
+	bool noNewWindow = noWindow;//false;
+
 	bool isUnityThere = false;
 	_dontStart = false;
 
@@ -136,7 +136,7 @@ SysTrayIcon::SysTrayIcon(ts_t *tree_screen, browser::BrowserDock *browser_dock, 
 	isUnityThere = interface->isServiceRegistered("com.canonical.Unity").value();
 #endif
 
-	_app = qobject_cast<sapp_t *>(qApp);
+	_app = sapp_t::instance();// qobject_cast<sapp_t *>(qApp);
 
 #ifndef Q_OS_MAC
 	switch(doubleClickFunction){
@@ -227,7 +227,7 @@ SysTrayIcon::SysTrayIcon(ts_t *tree_screen, browser::BrowserDock *browser_dock, 
 	if(handleArguments()) noNewWindow = true;
 #ifndef Q_OS_MAC
 	if(newWindow && !noNewWindow){
-		EditingWindow *c = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
+		Blogger *c = new Blogger();
 		c->setSTI(this);
 		c->setWindowTitle(tr((program_title_string + " - new entry [*]").c_str()));
 		c->show();
@@ -247,12 +247,12 @@ SysTrayIcon::~SysTrayIcon()
 bool SysTrayIcon::handleArguments(){
 	int i;
 	bool rv = false;
-	EditingWindow *c;
+	Blogger *c;
 	QStringList failedFiles;
 	QStringList args = QApplication::arguments();
 	args.removeAll("&");
 	for(i = 1; i < args.size(); i++){
-		c = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
+		c = new Blogger();
 		if(!args.at(i).startsWith("--")){
 			qDebug() << "Opening:" << args.at(i);
 			if(c->load(args.at(i), true)){
@@ -373,16 +373,16 @@ void SysTrayIcon::setCopyTitle(bool status){
 }
 
 void SysTrayIcon::newDoc(){
-	EditingWindow *c = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
+	Blogger *c = new Blogger();
 	c->setSTI(this);
 	c->setWindowTitle(QObject::tr((program_title_string + " - new entry [*]").c_str()));
 	c->setPostClean();
 #ifdef Q_OS_MAC
 // setNoStatusBar( c );
 #endif
-	EditingWindow *editing_win_ = _app->editing_window();
+	Blogger *blogger_ = _app->blogger();
 	qDebug() << "got active widget";
-	if(editing_win_) EditingWindow::positionWidget(c, editing_win_);
+	if(blogger_) Blogger::positionWidget(c, blogger_);
 	qDebug() << "positioned widget";
 	c->show();
 	c->activateWindow();
@@ -409,7 +409,7 @@ void SysTrayIcon::choose(QString fname){
 	if(fname.isEmpty()) fn = QFileDialog::getOpenFileName(0, tr("Choose a file to open"), localStorageDirectory, extn);
 	else fn = fname;
 	if(!fn.isEmpty()){
-		EditingWindow *e = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source);
+		Blogger *e = new Blogger();
 		if(!e->load(fn, true)){
 #ifdef Q_OS_MAC
 			QMessageBox::warning(0, program_title_string.c_str(), tr("Could not load the file you specified."), QMessageBox::Cancel, QMessageBox::NoButton);
@@ -786,12 +786,12 @@ void SysTrayIcon::doQP(QString receivedText){
 					newPost = QString("<a title = \"%1\" href=\"%2\">%1</a>\n\n")
 					          .arg(newTitle)
 					          .arg(cbtext);
-			}else                                                                                                                  // Post has no valid title
+			}else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // Post has no valid title
 				newPost = QString(tr("<a href=\"%1\">Insert link text here</a>"))
 				          .arg(cbtext);
 		}
 	}
-	EditingWindow *c = new EditingWindow(_tree_screen, _browser_dock, _vtab_record, _profile, _find_screen, _editor_dock, _style_source, appconfig->hide_editor_tools(), global_root_id, newPost);
+	Blogger *c = new Blogger(gl_para::_default_topic, newPost);
 	c->setSTI(this);
 	c->setPostClean();
 	if(activeTemplate >= 0){

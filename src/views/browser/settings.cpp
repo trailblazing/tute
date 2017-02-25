@@ -59,7 +59,7 @@
 #include <QtWebEngineWidgets/QtWebEngineWidgets>
 #include <QtWidgets/QtWidgets>
 
-namespace browser {
+namespace web {
 	class WebView;
 	class TabWidget;
 
@@ -105,7 +105,7 @@ namespace browser {
 	}
 
 	void SettingsDialog::loadFromSettings(){
-		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
+		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
 		settings.beginGroup(QLatin1String("MainWindow"));
 		const QString default_home_ = QLatin1String(Browser::_defaulthome);
 		homeLineEdit->setText(settings.value(QLatin1String("home"), default_home_).toString());
@@ -193,7 +193,7 @@ namespace browser {
 	}
 
 	void SettingsDialog::saveToSettings(){
-		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
+		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
 		settings.beginGroup(QLatin1String("MainWindow"));
 		settings.setValue(QLatin1String("home"), homeLineEdit->text());
 		settings.endGroup();

@@ -51,7 +51,7 @@
 #include <QPushButton>
 #include <QUrl>
 
-namespace browser {
+namespace web {
 	static const int defaultHeight = 30;
 
 	static QString textForPermissionType(QWebEnginePage::Feature type){

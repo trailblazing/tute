@@ -10,6 +10,7 @@
 #include <QObject>
 #include <QProgressBar>
 
+#include "utility/add_action.h"
 #include "controllers/record_table/record_controller.h"
 #include "libraries/flat_control.h"
 #include "libraries/global_parameters.h"
@@ -24,12 +25,12 @@
 #include "record_screen.h"
 #include "record_view.h"
 #include "views/browser/browser.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/toolbar_search.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
-#include "views/record/editor_dock.h"
+#include "libraries/qtm/blogger.h"
 #include "views/record/editor_wrap.h"
 #include "views/record_table/vertical_scrollarea.h"
 #include "views/tree/tree_screen.h"
@@ -46,13 +47,14 @@ extern const char *tree_screen_viewer_name;
 W_OBJECT_IMPL(rs_t)
 #endif
 
-rs_t::rs_t(ts_t *tree_screen, FindScreen *find_screen, EditorDock *editor_dock, EditingWindow *editing_window, browser::BrowserDock *browser_dock // , browser::Browser    *_browser    //		  , wn_t *main_window
-          , HidableTab *vtab_record, const QString &style_source, browser::Profile *profile)
-	: QWidget(vtab_record) // , _browser(_browser)
+rs_t::rs_t(HidableTab *vtab_record
+	   , Blogger *blogger_
+	   , web::Browser *browser_)
+	: QWidget(vtab_record) //
 	  , _vtab_record(vtab_record)
-	  , _tree_screen(tree_screen)
-	  , _editor_dock(editor_dock)
-	  , _editing_window(editing_window)
+	  , _tree_screen(gl_paras->tree_screen())
+	  , _editor_docker(gl_paras->editor_docker())
+	  , _blogger(blogger_)
 // , _record_hide(new QAction(tr("Hide record view"), this))	// move to main_window::_vtab_record->tabBar()->tabBarClicked// new QAction(_main_window->h_tree_splitter()->sizes()[0] == 0 ? tr("Show tree view") : tr("Hide tree view"), this)
 // , _save_in_new_branch(new QAction(tr("Save in new branch manually"), this))
 #ifdef USE_BUTTON_PIN
@@ -88,19 +90,18 @@ rs_t::rs_t(ts_t *tree_screen, FindScreen *find_screen, EditorDock *editor_dock, 
 	  , _toolsline(new QToolBar(this))
 	  , _extra_toolsline(new QToolBar(this))
 	  , _treepathlabel(new QLabel(this))
-	  // , _editing_window(new EditingWindow(tree_screen, browser_dock, vtab_record, profile, find_screen, editor_dock, style_source))
-	  , _browser([&]() -> browser::Browser *{_browser = nullptr; auto b = new browser::Browser(tree_screen, find_screen, editing_window, this, browser_dock, style_source, profile, Qt::MaximizeUsingFullscreenGeometryHint); return b;} ()) // , _vtab_tree
-	  , _record_controller(_browser->tabmanager()->record_controller()) // , _tabmanager(_browser->tabmanager())
-	  , _vertical_scrollarea(new VerticalScrollArea(_record_controller->view(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void *> > >(&RecordView::resizeEvent, _tabmanager->record_controller()->view())
+	  , _browser(browser_)
+	  , _rctrl([&]() -> rctrl_t *{_rctrl = nullptr; auto r = new rctrl_t(blogger_, browser_->tabmanager(), this); return r;} ()) // , _tabmanager(_browser->tabmanager())
+	  , _vertical_scrollarea(new VerticalScrollArea(_rctrl->view(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void *> > >(&RecordView::resizeEvent, _tabmanager->record_controller()->view())
 	  , _records_toolslayout(new QHBoxLayout())
 	  , _records_screenlayout(new QVBoxLayout()){
-	assert(_record_controller);
-	// , _recordtree_search(new browser::ToolbarSearch(this))
+	assert(_rctrl);
+	// , _recordtree_search(new web::ToolbarSearch(this))
 	// Инициализируется контроллер списка записей
 	// recordTableController = new RecordTableController(this);
 
 	setObjectName(record_screen_multi_instance_name);
-
+	setAttribute(Qt::WA_DeleteOnClose, true);
 	// _table_controller->setObjectName(object_name + "_controller");
 
 	setup_actions();
@@ -199,60 +200,137 @@ rs_t::rs_t(ts_t *tree_screen, FindScreen *find_screen, EditorDock *editor_dock, 
 	////    }
 	///
 
+	connect(this, &rs_t::close_request, _vtab_record, &::HidableTab::on_close_request);
+
 	connect(_vtab_record, &::HidableTab::tabCloseRequested, [&](int index){
 			assert(_vtab_record);
-			auto w = _vtab_record->widget(index);
-			if(w){
-			        _vtab_record->removeTab(index);
-			        if(w->objectName() == record_screen_multi_instance_name){
-			                // auto rs = dynamic_cast<rs_t *>(w);
-			                auto _browser = dynamic_cast<rs_t *>(w)->browser();
-			                if(_browser){
-			                        _browser->close();
-			                        // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-			                        _browser->deleteLater();
+			auto count = _vtab_record->count();
+			assert(index < count);
+			if(index != -1){
+				auto w = _vtab_record->widget(index);
+				if(w){
+					if(w->objectName() == record_screen_multi_instance_name){
+						auto rs = dynamic_cast<rs_t *>(w);
+						if(rs){
+							auto browser_ = rs->browser();
+							if(browser_){
+								browser_->close();
+//								emit browser_->close_request(browser_);
+								browser_->deleteLater();//
+								// if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+//			                        _browser->deleteLater();
+							}
+							auto blogger_ = rs->blogger();
+							if(blogger_){
+								blogger_->close();//
+//								emit blogger_->close_request(blogger_);
+								blogger_->deleteLater();
+							}
+							rs->close();//
+//							emit rs->close_request(rs);
+							rs->deleteLater();
+						}
+					}else{
+						w->close();
+//			                w->deleteLater();
 					}
-				}else{
-			                w->close();
-			                w->deleteLater();
+//				_vtab_record->removeTab(index);// move into HidableTab
 				}
+				w = nullptr;
 			}
-			w = nullptr;
 		});
 
-	connect(_vtab_record, &::HidableTab::currentChanged, [&](int index){
-			QWidget *w = nullptr;
-			w = _vtab_record->widget(index);
-			if(w){
-			        if(w->objectName() == record_screen_multi_instance_name){
-			                auto rs = dynamic_cast<rs_t *>(w);
-			                if(rs){
-			                        auto browser = rs->browser();
-			                        if(browser){
-			                                // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-			                                browser->show();
-			                                browser->activateWindow();
-			                                if(!browser->isTopLevel()) browser->raise();
-			                                browser->adjustSize();
-			                                if(browser->tabmanager()->count() > 0){
-			                                        auto v = browser->currentTab();
-			                                        if(v){
-			                                                auto p = v->page();
-			                                                if(p){
-			                                                        auto it = p->host();
-			                                                        if(_tree_screen->view()->current_item()->id() != it->id()){
-			                                                                //
-			                                                                _tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] {return _tree_screen->view()->source_model();}, it));
+	connect(_vtab_record, &::HidableTab::tabBarClicked//currentChanged
+		, [&](int index){
+			if(gl_paras->vtab_record()->updatesEnabled()){//if(_vtab_record->updatesEnabled()){
+				if(index >= 0 && index < _vtab_record->count()){
+					QWidget *w = nullptr;
+					w = _vtab_record->widget(index);
+					if(w){
+						if(w->objectName() == record_screen_multi_instance_name){
+							auto current_rs = dynamic_cast<rs_t *>(w);
+							if(current_rs){
+								auto blogger_ = current_rs->blogger();
+								if(blogger_){
+									if(blogger_ != _editor_docker->widget()){
+										blogger_->show();
+										blogger_->activateWindow();
+										if(!blogger_->isTopLevel()) blogger_->raise();
+										_editor_docker->prepend(blogger_);
+//									_editor_docker->setWidget(blogger_);
+//									blogger_->setParent(_editor_docker);
+										blogger_->adjustSize();
+									}
+								}
+								auto browser = current_rs->browser();
+								if(browser){
+									if(browser != gl_paras->browser_docker()->widget()){
+										// if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+										browser->show();
+//							if(!browser->isActiveWindow())
+										browser->activateWindow();
+										if(!browser->isTopLevel()) browser->raise();
+										browser->adjustSize();
+										auto _tabmanager = browser->tabmanager();
+										if(_tabmanager->count() > 0){
+											auto v = browser->currentTab();
+											if(v){
+//			                                                if(!v->isActiveWindow())
+
+//									v->activateWindow();
+
+												auto p = v->page();
+												if(p){
+													auto it = p->host();
+													if(it){
+														if(_tree_screen->view()->current_item()->id() != it->id()){
+															//
+															_tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] {return _tree_screen->view()->source_model();}, it));
+														}
+														auto to_home = gl_paras->find_screen()->historyhome();
+														to_home->disconnect();
+														QObject::connect(to_home, &QAction::triggered, v
+															, [&](bool checked = true) -> void {
+																Q_UNUSED(checked)
+																if(p->binder()){
+																	QString home = it->field<home_type>();
+																	QUrl homeurl = QUrl(home);
+																	if(homeurl.isValid() && homeurl != p->url()){
+																		it->field<url_type>(home); // "url",
+																		p->load(it, true);
+																	}
+																}
+															});
+													}
+												}
+											}
+										}
+									}
+								}
+								// rs->adjustSize();
+								for(int i = 0; i < _vtab_record->count(); i++){
+									auto w = _vtab_record->widget(i);
+
+									auto rs = dynamic_cast<rs_t *>(w);
+									if(rs != current_rs){
+										auto blogger_ = rs->blogger();
+										if(blogger_){
+											blogger_->hide();
+											if(blogger_->isTopLevel()) blogger_->lower();
+										}
+										auto browser = rs->browser();
+										if(browser){
+											browser->hide();
+											if(browser->isTopLevel()) browser->lower();
 										}
 									}
 								}
 							}
 						}
-			                        // rs->adjustSize();
 					}
+					w = nullptr;
 				}
 			}
-			w = nullptr;
 		});
 
 	// connect(this, &rs_t::isVisible, [&] {
@@ -262,19 +340,20 @@ rs_t::rs_t(ts_t *tree_screen, FindScreen *find_screen, EditorDock *editor_dock, 
 	// _browser->raise();
 	// return _browser->isVisible();
 	// });
-	connect(this, &rs_t::isHidden, _browser, &browser::Browser::hide);
+	connect(this, &rs_t::isHidden, _browser, &web::Browser::hide);
 }
 
 rs_t::~rs_t(){
+	if(_blogger) connect(this, &rs_t::close_request, _blogger, &Blogger::on_record_screen_close);
+	if(_browser) connect(this, &rs_t::close_request, _browser, &web::Browser::on_record_screen_close);
+	emit close_request(this);
 	// delete _recordtree_search;
-	// delete
-	if(_record_controller) _record_controller->deleteLater();
-	// delete
-	if(_browser){
-		_browser->close();
-		_browser->deleteLater();
-		_browser = nullptr;
-	}
+	if(_rctrl) _rctrl->deleteLater();
+//	if(_browser){
+//		_browser->close();
+//		_browser->deleteLater();
+//		_browser = nullptr;
+//	}
 	_vertical_scrollarea->deleteLater();
 }
 
@@ -477,7 +556,7 @@ void rs_t::setup_actions(void){
 // ts_t * _tree_screen = globalparameters.tree_screen();																														// find_object<TreeScreen>(tree_screen_singleton_name);
 // assert(_tree_screen);
 // auto tree_view = _tree_screen->view();
-// browser::Entrance *_entrance = globalparameters.entrance();
+// web::Entrance *_entrance = globalparameters.entrance();
 // assert(_entrance);
 // auto know_model_board = [&](){
 // return _tree_screen->view()->know_model_board();
@@ -497,7 +576,7 @@ void rs_t::setup_actions(void){
 // boost::intrusive_ptr<TreeItem> branch_item = TreeItem::dangle_instance(data);	// boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));																																							// current_root_item
 
 // bool modified = false;
-// for(auto &browser : [&] {set<browser::Browser *> bs;for(auto rs : _main_window->vtab_record()->record_screens())bs.insert(rs->browser()); return bs;} ()){
+// for(auto &browser : [&] {set<web::Browser *> bs;for(auto rs : _main_window->vtab_record()->record_screens())bs.insert(rs->browser()); return bs;} ()){
 // auto tabmanager = browser->tabmanager();																																																// record_controller()->source_model();  // ->record_table();
 // for(int i = 0; i < tabmanager->count(); i ++){
 // auto page_item = tabmanager->webView(i)->page()->host();
@@ -549,33 +628,34 @@ void rs_t::setup_actions(void){
 	_addnew_to_end->setIcon(QIcon(":/resource/pic/note_add.svg"));
 	// setIcon(style()->standardIcon(QStyle::SP_FileIcon, 0, this));
 	connect(_addnew_to_end, &QAction::triggered, _record_controller // _tabmanager
-	       ,
-	        std::bind(&rctl_t::addnew_blank, _record_controller, add_new_record_to_end) // &RecordController::addnew_to_end  // &browser::TabWidget::addnew_to_end
-	       );
+		,
+		std::bind(&rctl_t::addnew_blank, _record_controller, add_new_record_to_end) // &RecordController::addnew_to_end  // &web::TabWidget::addnew_to_end
+		);
 
 	// Добавление записи до
 	// _addnew_before = new QAction(tr("Add note before"), this);
 	_addnew_before->setStatusTip(tr("Add a note before selected"));
 	connect(_addnew_before, &QAction::triggered, _record_controller // _tabmanager
-	       ,
-	        std::bind(&rctl_t::addnew_blank, _record_controller, add_new_record_before) // &RecordController::addnew_before  // &browser::TabWidget::addnew_before
-	       );
+		,
+		std::bind(&rctl_t::addnew_blank, _record_controller, add_new_record_before) // &RecordController::addnew_before  // &web::TabWidget::addnew_before
+		);
 
 	// Добавление записи после
 	// _addnew_after = new QAction(tr("Add note after"), this);
 	_addnew_after->setStatusTip(tr("Add a note after selected"));
 	connect(_addnew_after, &QAction::triggered, _record_controller // _tabmanager
-	       ,
-	        std::bind(&rctl_t::addnew_blank, _record_controller, add_new_record_after) // &RecordController::addnew_after   // &browser::TabWidget::addnew_after
-	       );
+		,
+		std::bind(&rctl_t::addnew_blank, _record_controller, add_new_record_after) // &RecordController::addnew_after   // &web::TabWidget::addnew_after
+		);
 #endif
+
 
 	// едактирование записи
 	// _edit_field = new QAction(tr("Edit properties (pin, name, author, url, tags...)"), this);
 	_edit_field->setStatusTip(tr("Edit note properties")); // (pin, name, author, url, tags...)
 	_edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
-	connect(_edit_field, &QAction::triggered, _record_controller, &rctrl_t::on_edit_fieldcontext); // _tabmanager
-// &browser::TabWidget::on_edit_fieldcontext
+	connect(_edit_field, &QAction::triggered, _rctrl, &rctrl_t::on_edit_fieldcontext); // _tabmanager
+// &web::TabWidget::on_edit_fieldcontext
 
 #ifdef USE_BUTTON_CLOSE
 	// Удаление записи
@@ -584,7 +664,7 @@ void rs_t::setup_actions(void){
 	_close->setIcon(QIcon(":/resource/pic/note_close.svg"));
 	_close->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_W));
 	connect(_close, &QAction::triggered, _record_controller, &rctl_t::close_context); // _tabmanager
-// &browser::TabWidget::close_context
+// &web::TabWidget::close_context
 #endif
 
 	_delete->setStatusTip(tr("Delete note for ever"));
@@ -592,10 +672,20 @@ void rs_t::setup_actions(void){
 	connect(_delete, &QAction::triggered, _tree_screen, [&](bool checked = false) mutable -> void {
 			Q_UNUSED(checked);
 			auto _tree_view = _tree_screen->view();
-			auto _current_model = [&](){
-						      return _tree_view->source_model();
-					      };
-			auto _item = _browser->tabmanager()->currentWebView()->page()->host();
+			auto _current_model = [&](){return _tree_view->source_model();};
+			auto _item = //_browser->tabmanager()->currentWebView()->page()->host();
+			[&] {
+				boost::intrusive_ptr<TreeItem> r;
+				auto v = _browser->tabmanager()->currentWebView();
+				if(v){
+					auto p = v->page();
+					if(p){
+						auto b = p->binder();
+						if(b) r = b->host();
+					}
+				}
+				return r;
+			} ();
 			_tree_view->delete_permanent(_current_model, QList<boost::intrusive_ptr<TreeItem> >() << _item, &tkm_t::delete_permanent, "cut", false);
 		});
 
@@ -605,109 +695,125 @@ void rs_t::setup_actions(void){
 	// _cut = new QAction(tr("&Cut note(s)"), this);
 	_cut->setStatusTip(tr("Cut notes(s) to clipboard"));
 	_cut->setIcon(QIcon(":/resource/pic/cb_cut.svg"));
-	connect(_cut, &QAction::triggered, _record_controller, &rctl_t::cut); // &browser::TabWidget::cut
+	connect(_cut, &QAction::triggered, _record_controller, &rctl_t::cut); // &web::TabWidget::cut
 
 	// Копирование записи (записей) в буфер обмена
 	// _copy = new QAction(tr("&Copy note(s)"), this);
 	_copy->setStatusTip(tr("Copy note(s) to clipboard"));
 	_copy->setIcon(QIcon(":/resource/pic/cb_copy.svg"));
-	connect(_copy, &QAction::triggered, _record_controller, &rctl_t::copy); // &browser::TabWidget::copy
+	connect(_copy, &QAction::triggered, _record_controller, &rctl_t::copy); // &web::TabWidget::copy
 
 	// Вставка записи из буфера обмена
 	// _paste = new QAction(tr("&Paste note(s)"), this);
 	_paste->setStatusTip(tr("Paste note(s) from clipboard"));
 	_paste->setIcon(QIcon(":/resource/pic/cb_paste.svg"));
 	connect(_paste, &QAction::triggered, _record_controller, &rctl_t::paste); // _tabmanager
-// &browser::TabWidget::paste
+// &web::TabWidget::paste
 
 #endif
 	// auto _editor = new QAction(tr("Editor"), this);
 	_editor->setStatusTip(tr("Editor open/close"));
-	_editor->setIcon(QIcon(":/resource/pic/attach_switch_to_editor.svg"));
+	_editor->setIcon(QIcon(":/resource/pic/edit_switch.svg"));
 	_editor->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E));
-	connect(_editor, &QAction::triggered, _editor_dock, &EditorDock::editor_switch);
+	connect(_editor, &QAction::triggered, [&](bool checked){
+//			if(checked){//
+			(void) checked;
+			if(!(_editor_docker->isVisible())){
+				_editor_docker->show();
+				// emit _app->editing_win_changed(_editenty->blog_editor());
+				// emit this->editing_activated(blog_editor());
+				// _app->sendEvent(_editenty->blog_editor(), new QEvent(QEvent::WindowActivate));
+
+				appconfig->editor_show(true);
+			}else{
+				_editor_docker->hide();
+				// _app->sendEvent(_editenty->blog_editor(), new QEvent(QEvent::WindowActivate));
+
+				appconfig->editor_show(false);
+			}
+		});
 
 	// Настройка внешнего вида таблицы конечных записей
 	// _settings = new QAction(tr("&Settings"), this);
 	_settings->setStatusTip(tr("Table view settins"));
 	_settings->setIcon(QIcon(":/resource/pic/cogwheel.svg"));
-	connect(_settings, &QAction::triggered, _record_controller, &rctrl_t::settings); // &browser::TabWidget::settings
+	connect(_settings, &QAction::triggered, _rctrl, &rctrl_t::settings); // &web::TabWidget::settings
 
-	assert(_record_controller);
+//	assert(_record_controller);
 	// Перемещение записи вверх
 	// _action_move_up = new QAction(tr("&Move Up"), this);
 	_action_move_top->setStatusTip(tr("Move note to top"));
 	_action_move_top->setIcon(QIcon(":/resource/pic/back_to_top.svg"));
 	connect(_action_move_top, &QAction::triggered, [&]() mutable {
 			qDebug() << "In moveup(, 0)";
-
+			auto r_ctl = _rctrl;
 			// Получение номера первой выделенной строки
-			pos_proxy pos_proxy_ = _record_controller->view()->selection_first<pos_proxy>();
+			pos_proxy pos_proxy_ = _rctrl->view()->selection_first<pos_proxy>();
 
 			// Выясняется ссылка на таблицу конечных данных
 			// auto item = _source_model->browser_pages();
 			pos_proxy pos_target = pos_proxy(0);
 			// Перемещение текущей записи вверх
-			_record_controller->source_model()->move(_record_controller->index<pos_source>(pos_proxy_), _record_controller->index<pos_source>(pos_target));
+			r_ctl->source_model()->move(r_ctl->index<pos_source>(pos_proxy_), r_ctl->index<pos_source>(pos_target));
 
 			// Установка засветки на перемещенную запись
-			_record_controller->select_as_current(pos_target);
+			r_ctl->select_as_current(pos_target);
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)
 			gl_paras->tree_screen()->view()->know_model_save();
 		}); // _record_controller, &RecordController::move_up
 
-	assert(_record_controller);
+//	assert(_record_controller);
 	// Перемещение записи вверх
 	// _action_move_up = new QAction(tr("&Move Up"), this);
 	_action_move_up->setStatusTip(tr("Move note up"));
-	_action_move_up->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
+	_action_move_up->setIcon(QIcon(":/resource/pic/mobile_up.svg"));
 	connect(_action_move_up, &QAction::triggered, [&]() mutable {
 			qDebug() << "In moveup()";
-
+			auto r_ctl = _rctrl;
 			// Получение номера первой выделенной строки
-			pos_proxy pos_proxy_ = _record_controller->view()->selection_first<pos_proxy>();
+			pos_proxy pos_proxy_ = r_ctl->view()->selection_first<pos_proxy>();
 
 			// Выясняется ссылка на таблицу конечных данных
 			// auto item = _source_model->browser_pages();
 
 			// Перемещение текущей записи вверх
-			_record_controller->source_model()->move(_record_controller->index<pos_source>(pos_proxy_));
+			r_ctl->source_model()->move(r_ctl->index<pos_source>(pos_proxy_));
 
 			// Установка засветки на перемещенную запись
-			_record_controller->select_as_current(pos_proxy((int) pos_proxy_ - 1));
+			r_ctl->select_as_current(pos_proxy((int) pos_proxy_ - 1));
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)
 			gl_paras->tree_screen()->view()->know_model_save();
 		}); // _record_controller, &RecordController::move_up
-	// connect(_action_move_up, &QAction::triggered, _tabmanager, &browser::TabWidget::move_up);
+	// connect(_action_move_up, &QAction::triggered, _tabmanager, &web::TabWidget::move_up);
 
 	// Перемещение записи вниз
 	// _action_move_dn = new QAction(tr("&Move Down"), this);
 	_action_move_dn->setStatusTip(tr("Move note down"));
-	_action_move_dn->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
+	_action_move_dn->setIcon(QIcon(":/resource/pic/mobile_down.svg"));
 	connect(_action_move_dn, &QAction::triggered, [&]() mutable {
 			qDebug() << "In movedn()";
-
+			auto r_ctl = _rctrl;
 			// Получение номера первой выделенной строки
-			pos_proxy pos_proxy_ = _record_controller->view()->selection_first<pos_proxy>();
+			pos_proxy pos_proxy_ = r_ctl->view()->selection_first<pos_proxy>();
 
 			// Выясняется ссылка на таблицу конечных данных
 			// auto item = _source_model->browser_pages();
-			pos_proxy target = static_cast<int>(pos_proxy_) < _record_controller->tabmanager()->count() - 1 ? pos_proxy((int) pos_proxy_ + 1) : pos_proxy(_record_controller->tabmanager()->count() - 1);
+			pos_proxy target = static_cast<int>(pos_proxy_) < r_ctl->tabmanager()->count() - 1 ? pos_proxy((int) pos_proxy_ + 1) : pos_proxy(r_ctl->tabmanager()->count() - 1);
 			// Перемещение текущей записи вниз
-			_record_controller->source_model()->move(_record_controller->index<pos_source>(pos_proxy_), _record_controller->index<pos_source>(target));
+			r_ctl->source_model()->move(r_ctl->index<pos_source>(pos_proxy_), r_ctl->index<pos_source>(target));
 
 			// Установка засветки на перемещенную запись
-			_record_controller->select_as_current(pos_proxy((int) pos_proxy_ + 1));
+			r_ctl->select_as_current(pos_proxy((int) pos_proxy_ + 1));
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)
 			gl_paras->tree_screen()->view()->know_model_save();
 		}); // _record_controller, &RecordController::move_dn
-	// connect(_action_move_dn, &QAction::triggered, _tabmanager, &browser::TabWidget::move_dn);
+	// connect(_action_move_dn, &QAction::triggered, _tabmanager, &web::TabWidget::move_dn);
 
 	// Поиск по базе (клик связывается с действием в MainWindow)
 	// _find_in_base = new QAction(tr("Find in base"), this);
@@ -746,13 +852,14 @@ void rs_t::setup_actions(void){
 	_sort->setIcon(QIcon(":/resource/pic/sort.svg"));
 	connect(_sort, &QAction::triggered, [&](bool){
 			auto indicator = _sort->data().toInt();
-			auto horizontal_header = _record_controller->view()->horizontalHeader();
+			auto r_ctl = _rctrl;
+			auto horizontal_header = r_ctl->view()->horizontalHeader();
 			if(horizontal_header->sortIndicatorOrder() == Qt::AscendingOrder){
-			        horizontal_header->setSortIndicator(indicator, Qt::DescendingOrder);
-			        _record_controller->on_sort_request(indicator, Qt::DescendingOrder);
+				horizontal_header->setSortIndicator(indicator, Qt::DescendingOrder);
+				r_ctl->on_sort_request(indicator, Qt::DescendingOrder);
 			}else{
-			        horizontal_header->setSortIndicator(indicator, Qt::AscendingOrder);
-			        _record_controller->on_sort_request(indicator, Qt::AscendingOrder);
+				horizontal_header->setSortIndicator(indicator, Qt::AscendingOrder);
+				r_ctl->on_sort_request(indicator, Qt::AscendingOrder);
 			}
 		}); // _record_controller, &rctrl_t::on_sort_click);
 
@@ -760,9 +867,9 @@ void rs_t::setup_actions(void){
 	// _print = new QAction(tr("Print table"), this);
 	_print->setStatusTip(tr("Print current notes table"));
 	_print->setIcon(QIcon(":/resource/pic/drops.svg")); // actionPrint->setIcon(QIcon(":/resource/pic/print_record_table.svg"));
-	connect(_print, &QAction::triggered, _record_controller, &rctrl_t::on_print_click);
+	connect(_print, &QAction::triggered, _rctrl, &rctrl_t::on_print_click);
 	// _tabmanager
-	// &browser::TabWidget::on_print_click
+	// &web::TabWidget::on_print_click
 
 	// Сразу после создания все действия запрещены
 	disable_all_actions();
@@ -787,9 +894,10 @@ void rs_t::setup_ui(void){
 	append_action_as_button<QToolButton>(_toolsline, _addnew_to_end);
 #endif
 	if(appconfig->interface_mode() == "desktop"){
-		add_action<QToolButton>(_toolsline, _edit_field);
+		add_action<QToolButton>(_toolsline, _editor);
+//		add_action<QToolButton>(_toolsline, _edit_field);
 #ifdef USE_BUTTON_CLOSE
-		append_action_as_button<QToolButton>(_toolsline, _close);
+		add_action<QToolButton>(_toolsline, _close);
 #endif
 	}
 	add_action<QToolButton>(_toolsline, _action_walk_history_previous);
@@ -943,7 +1051,7 @@ void rs_t::assembly(void){
 }
 
 void rs_t::resizeEvent(QResizeEvent *e){
-	_record_controller->view()->resizeEvent(e);
+	_rctrl->view()->resizeEvent(e);
 
 	QWidget::resizeEvent(e);
 
@@ -1020,18 +1128,18 @@ void rs_t::tools_update(){
 #ifdef USE_BUTTON_PIN
 	_pin->setEnabled(true);
 #endif
-	rv_t *_view = _record_controller->view();
+	rv_t *_view = _rctrl->view();
 	QItemSelectionModel *item_selection_model = _view->selectionModel();
 
 	// int		selected_rows	= item_selection_model->selectedIndexes().size();	// (item_selection_model->selectedRows()).size();// always crash because tabmanager inaccessible
 	bool has_selection = item_selection_model->hasSelection();
-	if(_browser){
-		auto tab = _browser->tabmanager();
-		if(tab){
-			auto it = tab->current_item();
-			if(it) has_selection = true;
-		}
-	}
+//	if(_browser){
+//		auto tab = _browser->tabmanager();
+//		if(tab){
+//			auto it = tab->current_item();
+//			if(it) has_selection = true;
+//		}
+//	}
 	bool sorting_enabled = _view->isSortingEnabled();
 #ifdef USE_BLANK_ITEM
 	// Добавление записи
@@ -1060,7 +1168,7 @@ void rs_t::tools_update(){
 	// едактировать можно только тогда, когда выбрана только одна строка
 	if(has_selection // item_selection_model->hasSelection()
 	   // && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
-	  ) _edit_field->setEnabled(true);
+	   ) _edit_field->setEnabled(true);
 	// Удаление записи
 	// Пункт активен только если запись (или записи) выбраны в списке
 	if(has_selection){  // item_selection_model->hasSelection()
@@ -1119,15 +1227,15 @@ void rs_t::tools_update(){
 	  && _view->is_selected_set_to_bottom() == false) _action_move_dn->setEnabled(true);
 	// Обновляется состояние области редактирования текста
 	if(  has_selection // item_selection_model->hasSelection()
-	  && _record_controller->row_count() > 0){
+	  && _rctrl->row_count() > 0){
 		qDebug() << "In table select present";
 		// qDebug() << "In table row count is" << _record_controller->row_count();
 		// find_object<MetaEditor>(meta_editor_singleton_name)
-		_editing_window->textarea_editable(true);
+		_blogger->textarea_editable(true);
 	}else{
 		qDebug() << "In table select non present";
 		// find_object<MetaEditor>(meta_editor_singleton_name)
-		_editing_window->textarea_editable(false);
+		_blogger->textarea_editable(false);
 	}
 }
 
@@ -1165,12 +1273,12 @@ void rs_t::on_syncro_click(void){
 
 void rs_t::on_walkhistory_previous_click(void){
 	// find_object<MainWindow>("mainwindow")
-	_editing_window->go_walk_history_previous();
+	_blogger->go_walk_history_previous();
 }
 
 void rs_t::on_walkhistory_next_click(void){
 	// find_object<MainWindow>("mainwindow")
-	_editing_window->go_walk_history_next();
+	_blogger->go_walk_history_next();
 }
 
 // Возвращение к дереву разделов в мобильном интерфейсе
@@ -1186,15 +1294,19 @@ void rs_t::tree_path(QString path){
 
 QString rs_t::tree_path(void){return _treepath;}
 
-rctrl_t *rs_t::record_controller(){return _record_controller;}
+rctrl_t *rs_t::record_controller(){return _rctrl;}
 
-// browser::TabWidget *rs_t::tabmanager(){return _tabmanager;}
+// web::TabWidget *rs_t::tabmanager(){return _tabmanager;}
 
-browser::Browser *rs_t::browser(){return _browser;}
+web::Browser *rs_t::browser(){return _browser;}
 
 ts_t *rs_t::tree_screen(){return _tree_screen;}
 
 // QAction *rs_t::record_hide(){return _record_hide;}	// move to main_window::_vtab_record->tabBar()->tabBarClicked
 HidableTab *rs_t::vtab_record(){return _vtab_record;}
 
-EditingWindow *rs_t::editing_window(){return _editing_window;}
+Blogger *rs_t::blogger(){return _blogger;}
+
+void rs_t::on_blogger_close(){_blogger = nullptr; close();}
+
+void rs_t::on_browser_close_request(){_browser = nullptr; close();}

@@ -53,7 +53,7 @@
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 /*
             This class will call the save() slot on the parent object when the parent changes.
             It will wait several seconds after changed() to combining multiple changes and

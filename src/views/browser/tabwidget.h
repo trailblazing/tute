@@ -42,6 +42,8 @@
 #ifndef TABWIDGET_H
 #define TABWIDGET_H
 
+
+#include <tuple>
 #include "boost/format.hpp"
 #include <exception>
 
@@ -128,23 +130,23 @@ class RecordModel;
 class rv_t;
 class tv_t;
 class EditorDock;
-class EditingWindow;
+class Blogger;
 QT_END_NAMESPACE
 
-namespace browser {
+namespace web {
 	class WebView;
 	class TabWidget;
 }
 
 // extern boost::intrusive_ptr<Record> request_record(
 // const QUrl &_url
-// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
-// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
+// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>>
+// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>>
 // );
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 	class Browser;
 	class FullScreenNotification;
 	class Profile;
@@ -230,7 +232,7 @@ namespace browser {
 		// QVBoxLayout	*buttonLayout;
 		// private:	// cloned from TabBar
 		// QList<QShortcut *> _tabshortcuts;
-		// friend class browser::TabWidget;
+		// friend class web::TabWidget;
 
 		// QPoint	_dragstartpos;
 		// int	_dragcurrentindex;
@@ -323,7 +325,7 @@ namespace browser {
 
 		private:
 			QList<QShortcut *> _tabshortcuts;
-			friend class browser::TabWidget;
+			friend class web::TabWidget;
 
 			QPoint _dragstartpos;
 			int _dragcurrentindex;
@@ -474,7 +476,7 @@ namespace browser {
 #endif
 
 	public:
-		TabWidget(ts_t *tree_screen_, FindScreen *find_screen_, EditingWindow *editing_window_, Browser *browser_, rs_t *record_screen_, BrowserDock *entrance_, wn_t *main_window_, Profile *profile_);
+		TabWidget(Blogger *blogger_, Browser *browser_, wn_t *main_window_, Profile *profile_);
 		// , TableController *_page_controller
 		// , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
@@ -559,7 +561,7 @@ namespace browser {
 
 		TabBar *tabbar();
 		rctrl_t *record_controller();
-
+		void record_controller(rctrl_t *rctrl);
 		// boost::intrusive_ptr<TreeItem> item_request_from_tree_fragment(const QUrl &_url);
 
 		// boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
@@ -608,6 +610,7 @@ namespace browser {
 		WebView *sibling(WebView *v) const;
 
 		// int insertTab(int index, QWidget *w, const QIcon& icon, const QString &label);
+		static std::tuple<qint32, qint32, QStringList, QString> state(const QByteArray &state_);
 	protected:
 		void mouseDoubleClickEvent(QMouseEvent *event);
 		void contextMenuEvent(QContextMenuEvent *event);
@@ -652,12 +655,12 @@ namespace browser {
 
 	private:
 		ts_t *_tree_screen;
-		EditingWindow *_editing_window;
-		BrowserDock *_entrance;
+		Blogger *_blogger;
+		web::Docker *_browser_docker;
 		Browser *_browser;
-		rs_t *_record_screen;
+//		rs_t *_record_screen;
 		wn_t *_main_window;
-		rctrl_t *_record_controller; // RecordScreen        *_record_screen;
+		rctrl_t *_rctrl = nullptr; // RecordScreen        *_record_screen;
 
 		QAction *_recentlyclosedtabsaction;
 		QAction *_newtabaction;

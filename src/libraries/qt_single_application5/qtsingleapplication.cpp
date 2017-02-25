@@ -272,7 +272,7 @@
 #include "bookmarks.h"
 // #include "views/browser/browser.h"
 #include "libraries/global_parameters.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 
 #include "cookiejar.h"
 #include "downloadmanager.h"
@@ -306,7 +306,7 @@
 
 #ifdef USE_QTM
 
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #include <QMenuBar>
 #include <QtCore>
 
@@ -322,12 +322,13 @@ extern const char *program_title;
 extern const QString program_title_qstring;
 extern const std::string program_title_string;
 extern TrashMonitoring trashmonitoring;
-browser::DownloadManager *sapp_t::_downloadmanager = nullptr;
-browser::HistoryManager *sapp_t::_historymanager = nullptr;
-QNetworkAccessManager *sapp_t::_networkaccessmanager	= nullptr;
-browser::BookmarksManager *sapp_t::_bookmarksmanager	= nullptr;
+web::DownloadManager *sapp_t::_downloadmanager = nullptr;
+web::HistoryManager *sapp_t::_historymanager = nullptr;
+QNetworkAccessManager *sapp_t::_networkaccessmanager = nullptr;
+web::BookmarksManager *sapp_t::_bookmarksmanager = nullptr;
 
-static void set_user_style_sheet(QWebEngineProfile *profile, const QString &styleSheet, browser::BrowserDock *_entrance // , browser::BrowserWindow *mainWindow = 0
+static void set_user_style_sheet(QWebEngineProfile *profile, const QString &styleSheet
+//				 , web::BrowserDock *_entrance // , web::BrowserWindow *mainWindow = 0
                                 ){
 	Q_ASSERT(profile);
 	QString scriptName(QStringLiteral("userStyleSheet"));
@@ -356,10 +357,10 @@ static void set_user_style_sheet(QWebEngineProfile *profile, const QString &styl
 	profile->scripts()->insert(script);
 	// run the script on the already loaded views
 	// this has to be deferred as it could mess with the storage initialization on startup
-	if(_entrance){
-		_entrance->style_source(source);
-		// QMetaObject::invokeMethod(browsemanager, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, source));
-	}
+//	if(_entrance){
+//		_entrance->style_source(source);
+//		// QMetaObject::invokeMethod(browsemanager, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, source));
+//	}
 }
 
 #if QT_VERSION == 0x050600
@@ -612,11 +613,11 @@ void sapp_t::sys_init(char * *argv){
 	connect(_peer, &QtLocalPeer::messageReceived, &QtLocalPeer::messageReceived);
 }
 
-void sapp_t::browser_init(){
+void sapp_t::browsers_shared_info_init(){
 	auto conf_location = gl_paras->root_path() + "/" + gl_paras->target_os();
 	if(!QDir(conf_location).exists())
 		if(!QDir::root().mkpath(conf_location)) critical_error("void sapp_t::browser_init() can not make path " + conf_location + " for browser.ini");
-	auto brower_conf_file_name = conf_location + "/" + gl_paras->_browser_conf_filename;
+	auto brower_conf_file_name = conf_location + "/" + gl_para::_browser_conf_filename;
 	QFileInfo check_file(brower_conf_file_name);
 	if(!(check_file.exists() && check_file.isFile())){
 		// Файл перемещается в корзину
@@ -639,7 +640,7 @@ void sapp_t::browser_init(){
 	// langTranslator.load(langFileName);
 	installTranslator(langFileName); // &langTranslator
 
-	QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
+	QSettings settings(brower_conf_file_name, QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("sessions"));
 	_last_session = settings.value(QLatin1String("lastSession")).toByteArray();
 	settings.endGroup();
@@ -669,7 +670,7 @@ void sapp_t::qtm_init(){
 		setApplicationVersion(app_version); // QTM_VERSION
 		_isSandbox = false;
 	}
-	_editing_win = 0;
+	_blogger = nullptr;
 
 	connect(this, SIGNAL(aboutToQuit()), this, SLOT(saveRecentFiles()));
 	connect(this, SIGNAL(lastWindowClosed()), this, SLOT(handleLastWindowClosed()));
@@ -727,19 +728,22 @@ void sapp_t::main_window(){
 	gl_paras->window_switcher()->disable();
 	_window->restore_find_in_base_visible();
 	_window->restore_geometry();
-	_window->restore_tree_position();
+//	_window->restore_tree_position();
 	// _window->restore_recordtable_position();
 	// _window->restore_editor_cursor_position();
 	// _window->restore_editor_scrollbar_position();
-	for(int i = 0; i < _window->vtab_record()->count(); i++){
-		auto wd = _window->vtab_record()->widget(i);
-		auto rs = dynamic_cast<rs_t *>(wd);
-		if(rs){
-			auto ew = rs->editing_window();
-			ew->restore_editor_cursor_position();
-			ew->restore_editor_scrollbar_position();
-		}
-	}
+
+//	// move to _window->synchronization();
+//	for(int i = 0; i < _window->vtab_record()->count(); i++){
+//		auto wd = _window->vtab_record()->widget(i);
+//		auto rs = dynamic_cast<rs_t *>(wd);
+//		if(rs){
+//			auto ew = rs->blogger();
+//			ew->restore_editor_cursor_position();
+//			ew->restore_editor_scrollbar_position();
+//		}
+//	}
+	//
 	gl_paras->window_switcher()->enable();
 	if(appconfig->interface_mode() == "mobile") gl_paras->window_switcher()->restore_focus_widget();
 	qDebug() << "Restore session succesfull";
@@ -821,7 +825,7 @@ sapp_t::sapp_t(int &argc, char * *argv
 	  , _peer(new QtLocalPeer(this, QString()))
 	  , _act_window(nullptr)
 	  , _gui_enabled(gui_enabled)
-	  , _profile(new browser::Profile(profile_storage_name, this))
+	  , _profile(new web::Profile(profile_storage_name, this))
 	  , _localserver(new QLocalServer(this))
 	  , _private_profile(nullptr)
 	  , _private_browsing(false){
@@ -837,7 +841,7 @@ sapp_t::sapp_t(int &argc, char * *argv
 	// _app->waitForApplicationRun();
 	main_window();
 
-	browser_init();
+	browsers_shared_info_init();
 }
 
 /*!
@@ -855,7 +859,7 @@ sapp_t::sapp_t(const QString &appId, int &argc, char * *argv
 	  , _peer(new QtLocalPeer(this, appId))
 	  , _act_window(nullptr)
 	  , _gui_enabled(true)
-	  , _profile(new browser::Profile(profile_storage_name, this))
+	  , _profile(new web::Profile(profile_storage_name, this))
 	  , _localserver(new QLocalServer(this))
 	  , _private_profile(nullptr)
 	  , _private_browsing(false){
@@ -867,7 +871,7 @@ sapp_t::sapp_t(const QString &appId, int &argc, char * *argv
 	qtm_init();
 #endif
 	main_window();
-	browser_init();
+	browsers_shared_info_init();
 }
 
 /*!
@@ -1039,16 +1043,18 @@ void sapp_t::newLocalSocketConnection(){
 	QTextStream stream(socket);
 	QString _url;
 	stream >> _url;
-	if(_url.isEmpty()) _url = browser::Browser::_defaulthome; // browser::DockedWindow *w = nullptr;
+	if(_url.isEmpty()) _url = web::Browser::_defaulthome; // web::DockedWindow *w = nullptr;
 
 	// if(!url.isEmpty()) {
-
-	QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
+	auto setting_path = gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename;
+	auto s = ":/resource/standardconfig/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename;
+	if(!QFile(setting_path).exists()) if(!DiskHelper::copy_file_force(s, setting_path)) critical_error("Unhandled error when copy \"" + s + "\" to \"" + setting_path + "\"");
+	QSettings settings(setting_path, QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("general"));
 	int openLinksIn = settings.value(QLatin1String("openLinksIn"), 0).toInt();
 	settings.endGroup();
 
-	auto entrance = gl_paras->browser_dock();
+	auto entrance = gl_paras->browser_docker();
 	auto tree_screen = gl_paras->tree_screen();
 	auto tree_view = tree_screen->view();
 	// boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
@@ -1060,10 +1066,10 @@ void sapp_t::newLocalSocketConnection(){
 	// return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
 	// }));
 	// } catch(std::exception &e) {} //    Record *record = request_record(url);
-	////    std::pair<browser::Browser *, browser::WebView *> dp;
+	////    std::pair<web::Browser *, web::WebView *> dp;
 	if(entrance && tree_screen){  // && _tree_modelindex
 		if(openLinksIn == 1){
-			auto browser = gl_paras->main_window()->new_browser();
+			auto browser = gl_paras->main_window()->browser(_url);
 			// boost::intrusive_ptr<TreeIndex> tree_index;
 			// try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item()->linker()->sibling_order()); } catch(std::exception &e) {throw e; }
 
@@ -1075,7 +1081,7 @@ void sapp_t::newLocalSocketConnection(){
 			// boost::intrusive_ptr<RecordIndex> record_index(nullptr);
 
 			// try {
-			boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, it); // , browser->record_screen()->record_controller()->source_model()->sibling(it)
+			boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->tabmanager()->record_controller()->source_model();}, it); // , browser->record_screen()->record_controller()->source_model()->sibling(it)
 			// } catch(std::exception &) {}
 			// if(record_index){
 			browser->bind(record_index)->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1)); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
@@ -1166,7 +1172,7 @@ void QtSingleApplication::quitBrowser(){
  */
 void sapp_t::postLaunch(){
 	QString directory = gl_paras->root_path(); // QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-	if(directory.isEmpty())	directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
+	if(directory.isEmpty())	directory = gl_paras->root_path_given_by_system(); // QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
 #if defined(QWEBENGINESETTINGS_PATHS)
 	QWebEngineSettings::setIconDatabasePath(directory);
 	QWebEngineSettings::setOfflineStoragePath(directory);
@@ -1178,14 +1184,14 @@ void sapp_t::postLaunch(){
 	// newMainWindow() needs to be called in main() for this to happen
 	if(gl_paras->main_window()->record_screens().size() > 0){  // _mainWindows.count()
 		QStringList args = QCoreApplication::arguments();
-		// browser::Browser *browser = _globalparameters.entrance()->activated_browser();
+		// web::Browser *browser = _globalparameters.entrance()->activated_browser();
 		// assert(browser);
 		// if(!browser) {
-		// std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+		// std::pair<web::Browser *, web::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(web::Browser::_defaulthome));
 		// browser = dp.first;
 		// }
 		if(args.count() > 1){
-			// browser->loadPage(args.last());			// mainWindow()->loadPage(args.last());
+			// browser->loadPage(args.last()); // mainWindow()->loadPage(args.last());
 			tv_t *tree_view = gl_paras->tree_screen()->view();
 			auto it = tree_view->session_root_auto();
 			TreeIndex::activate([&] {return tree_view->source_model();}, it, args.last(), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), args.last().toStdString()) || url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());});
@@ -1197,7 +1203,7 @@ void sapp_t::postLaunch(){
 }
 
 void sapp_t::loadSettings(){
-	QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
+	QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
 
 	settings.beginGroup(QLatin1String("websettings"));
 
@@ -1229,7 +1235,9 @@ void sapp_t::loadSettings(){
 	QString css = settings.value(QLatin1String("userStyleSheet")).toString();
 	if(css == "" && _style != "") css = _style;
 	else css = instance()->styleSheet();
-	set_user_style_sheet(_profile, css, gl_paras->browser_dock()); // ->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
+	set_user_style_sheet(_profile, css);
+//			     , gl_paras->browser_dock()
+	// ->main_window(register_record(QUrl(web::DockedWindow::_defaulthome)))
 
 	_profile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());
 	settings.endGroup();
@@ -1291,7 +1299,7 @@ void sapp_t::saveSession(){
 	if(_private_browsing) return;
 	// globalparameters.entrance()->clean();
 
-	std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
+	std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
 	settings->beginGroup(QLatin1String("sessions"));
 
 	QByteArray data;
@@ -1299,7 +1307,7 @@ void sapp_t::saveSession(){
 	QDataStream stream(&buffer);
 	buffer.open(QIODevice::ReadWrite);
 
-	auto _browsers	= [&] {set<browser::Browser *> bs; for(auto rs : gl_paras->main_window()->record_screens()) bs.insert(rs->browser()); return bs;} ();
+	auto _browsers	= [&] {set<web::Browser *> bs; for(auto rs : gl_paras->main_window()->record_screens()) bs.insert(rs->browser()); return bs;} ();
 	uint count_win	= static_cast<uint>(_browsers.size());
 	;
 	stream << count_win; // static_cast<uint>(_browsers.size());
@@ -1324,30 +1332,13 @@ void sapp_t::restoreLastSession(){
 		stream >> windowState;
 		historywindows.append(windowState);
 	}
-	// QList<QPointer<browser::Browser > > opened_windows = globalparameters.entrance()->browsers();
-	// if(opened_windows.count() == 0) {
-	// globalparameters.entrance()->new_browser(
-	// QUrl(browser::Browser::_defaulthome)
-	// );
-	// }
 	for(int i = 0; i < historywindows.count(); ++i){
-		////        browser::BrowserWindow *newWindow = 0;
-		////        QList<QPointer<browser::DockedWindow > > opened_windows = globalparameters.entrance()->window_list();
-		// browser::Browser *browser = globalparameters.main_window()->vtab_record()->activated_browser();
-		////	assert(browser->currentTab()->page()->url() == QUrl() || browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome));
-		if(  0 == i
-		  && gl_paras->main_window()->record_screens().size() == 1
-		     // && browser->tabWidget()->count() == 1
-		     // && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome)	// ?
-		  ){
-			//// newWindow = globalParameters.browsermanager()->main_window();
-			// globalparameters.entrance()->restore_state(historywindows.at(i));
-			gl_paras->main_window()->activated_browser()->restore_state(historywindows.at(i));
-		}else{
-			// newWindow =
-			gl_paras->main_window()->new_browser()->restore_state(historywindows.at(i));
-		}
-		// newWindow->restoreState(windows.at(i));
+//		auto tuple_ = web::Browser::state(historywindows.at(i));
+		gl_paras->main_window()->browser(historywindows.at(i));
+//		if(  0 == i
+//		  && gl_paras->main_window()->record_screens().size() == 1
+//		  ) gl_paras->main_window()->browser(gl_para::_default_topic)->restore_state(historywindows.at(i));
+//		else gl_paras->main_window()->browser(gl_para::_default_topic)->restore_state(historywindows.at(i));
 	}
 }
 
@@ -1467,19 +1458,19 @@ bool QtSingleApplication::event(QEvent *event){
 // mainWindow()->activateWindow();
 // }
 
-browser::CookieJar *sapp_t::cookieJar(){
+web::CookieJar *sapp_t::cookieJar(){
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
 
-	return (browser::CookieJar *) networkAccessManager()->cookieJar();
+	return (web::CookieJar *) networkAccessManager()->cookieJar();
 #else
 
 	return 0;
 #endif
 }
 
-browser::DownloadManager *sapp_t::request_download_manager(){
+web::DownloadManager *sapp_t::request_download_manager(){
 	// if(!_downloadmanager) {
-	// _downloadmanager = new browser::DownloadManager();
+	// _downloadmanager = new web::DownloadManager();
 	// }
 
 	// return _downloadmanager;
@@ -1490,8 +1481,8 @@ browser::DownloadManager *sapp_t::request_download_manager(){
 QNetworkAccessManager *sapp_t::networkAccessManager(){
 	// #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
 	// if(!s_networkAccessManager) {
-	// s_networkAccessManager = new browser::NetworkAccessManager();
-	// s_networkAccessManager->setCookieJar(new browser::CookieJar);
+	// s_networkAccessManager = new web::NetworkAccessManager();
+	// s_networkAccessManager->setCookieJar(new web::CookieJar);
 	// }
 	// return s_networkAccessManager;
 	// #else
@@ -1508,13 +1499,13 @@ QNetworkAccessManager *sapp_t::networkAccessManager(){
 	return _networkaccessmanager;
 }
 
-browser::HistoryManager *sapp_t::historyManager(){
-	if(!_historymanager) _historymanager = new browser::HistoryManager();
+web::HistoryManager *sapp_t::historyManager(){
+	if(!_historymanager) _historymanager = new web::HistoryManager();
 	return _historymanager;
 }
 
-browser::BookmarksManager *sapp_t::bookmarksManager(){
-	if(!_bookmarksmanager) _bookmarksmanager = new browser::BookmarksManager();
+web::BookmarksManager *sapp_t::bookmarksManager(){
+	if(!_bookmarksmanager) _bookmarksmanager = new web::BookmarksManager();
 	return _bookmarksmanager;
 }
 
@@ -1537,9 +1528,9 @@ QIcon sapp_t::defaultIcon() const {
 void sapp_t::setPrivateBrowsing(bool privateBrowsing){
 	if(_private_browsing == privateBrowsing) return;
 	_private_browsing = privateBrowsing;
-	auto browsers = [&] {set<browser::Browser *> bs; for(auto rs : gl_paras->main_window()->record_screens()) bs.insert(rs->browser()); return bs;} ();
+	auto browsers = [&] {set<web::Browser *> bs; for(auto rs : gl_paras->main_window()->record_screens()) bs.insert(rs->browser()); return bs;} ();
 	if(privateBrowsing){
-		if(!_private_profile) _private_profile = new browser::Profile(profile_storage_name, this); // new QWebEngineProfile(this);
+		if(!_private_profile) _private_profile = new web::Profile(profile_storage_name, this); // new QWebEngineProfile(this);
 		for(auto &browser : browsers) browser->tabWidget()->setProfile(_private_profile);
 	}else{
 		for(auto &browser : browsers){
@@ -1760,11 +1751,11 @@ void sapp_t::saveAll(){
 	gl_paras->main_window()->save_all_state();
 }
 
-void sapp_t::editing_window(EditingWindow *ew){
+void sapp_t::blogger(Blogger *blogger_){
 #ifdef Q_OS_MAC
-	emit editing_win_changed(ew);
+//	emit editing_win_changed(blogger_);
 #endif
-	_editing_win = ew;
+	_blogger = blogger_;
 	// emit editing_win_changed(ew);//recursively
 }
 
@@ -1796,7 +1787,7 @@ void sapp_t::handleWindowChange(QWidget *oldW, QWidget *newW){
 }
 
 void sapp_t::handleLastWindowClosed(){
-	_editing_win = 0;
+	_blogger = nullptr;
 }
 
 #endif

@@ -43,7 +43,7 @@
 
 #include <QtCore/QFile>
 
-namespace browser {
+namespace web {
 	BookmarkNode::BookmarkNode(BookmarkNode::Type type, BookmarkNode *parent)
 		: expanded(false)
 		  , _parent(parent)

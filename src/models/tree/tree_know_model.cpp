@@ -26,7 +26,7 @@
 #include "models/tree/tree_index.hxx"
 #include "views/app_config/app_config_dialog.h"
 #include "views/browser/browser.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/webview.h"
 #include "views/main_window/hidable_tab.h"
 #include "views/main_window/main_window.h"
@@ -45,10 +45,11 @@ W_OBJECT_IMPL(tkm_t)
 #endif
 
 // Конструктор модели дерева, состоящего из Item элементов
-tkm_t::tkm_t(const QString &index_xml_file_name, tv_t *parent)
-	: tm_t(parent){ // , _root_item(nullptr)
-	                // xmlFileName = "";
-	                // rootItem = nullptr;
+tkm_t::tkm_t(tv_t *parent)//const QString &index_xml_file_name_,
+	: tm_t(parent)
+	  , _xml_file_path(gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + gl_para::_index_xml_file_name){ // , _root_item(nullptr)
+	// xmlFileName = "";
+	// rootItem = nullptr;
 
 	// QMap<QString, QString> root_parent_data;
 	// root_parent_data["id"] = global_root_parent_id;
@@ -66,8 +67,8 @@ tkm_t::tkm_t(const QString &index_xml_file_name, tv_t *parent)
 
 	// assert(_root_item->linker()->host().get() == _root_item.get());
 	// assert(_root_item->linker()->host_parent().get() != _root_item.get());
-	_xml_file_path = gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + index_xml_file_name;
-	init_from_xml(_xml_file_path); // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
+//	_xml_file_path = gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + index_xml_file_name_;
+	init_from_xml(); // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
 	int all_count = count_records_all();
 	while(all_count <= 0){
 		assert(trashmonitoring.is_inited());
@@ -75,10 +76,10 @@ tkm_t::tkm_t(const QString &index_xml_file_name, tv_t *parent)
 		if(trashmonitoring.recover_from_trash(target_file)){
 			////	throw std::runtime_error("database load failure");
 
-			init_from_xml(_xml_file_path);
+			init_from_xml();
 			all_count = count_records_all();
 		}else{
-			AppConfigDialog appconfigdialog(nullptr, "pageMain"); // globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
+			AppConfigDialog appconfigdialog("pageMain"); // globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
 			appconfigdialog.show();
 			//// if(all_count <= 0)
 			// throw std::runtime_error("database load failure");
@@ -96,9 +97,10 @@ tkm_t::tkm_t(boost::intrusive_ptr<TreeItem> root_item, tv_t *parent)
 // дереву элементов и удалить их
 tkm_t::~tkm_t(){} // delete rootItem;
 
-std::shared_ptr<XmlTree> tkm_t::init_from_xml(QString _file_full_path){
-	auto target_file = std::make_shared<QFileInfo>(_file_full_path);
-	while(!QFile::exists(_file_full_path)){
+std::shared_ptr<XmlTree> tkm_t::init_from_xml(){
+//	QString _xml_file_path;
+	auto target_file = std::make_shared<QFileInfo>(_xml_file_path);
+	while(!QFile::exists(_xml_file_path)){
 		// AppConfigDialog appconfigdialog(nullptr	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
 		// , "pageMain"	// "pageRecordTable"
 		// );
@@ -107,14 +109,14 @@ std::shared_ptr<XmlTree> tkm_t::init_from_xml(QString _file_full_path){
 		assert(trashmonitoring.is_inited());
 		if(trashmonitoring.recover_from_trash(target_file)){
 			// _file_name		=;
-			_xml_file_path = _file_full_path;
+//			_xml_file_path = _xml_file_path;
 		}else{
-			AppConfigDialog appconfigdialog(nullptr, "pageMain"); // globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
+			AppConfigDialog appconfigdialog("pageMain"); // globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
 			appconfigdialog.show();
 			// _file_name =;
 		}
 	}
-	_xml_file_path = _file_full_path;
+//	_xml_file_path = _xml_file_path;
 	// Загрузка файла и преобразование его в DOM модель
 	std::shared_ptr<XmlTree> xmlt = std::make_shared<XmlTree>();
 	if(xmlt->load(_xml_file_path)) init(xmlt->dom_model()); // return xmlt;
@@ -434,7 +436,7 @@ bool tkm_t::format_check(QDomElement elementFormat){
 	// В настоящий момент поддерживается формат 1.2
 	// В настоящий момент предполагается, что номер версии всегда 1, поэтому вся работа идет по номеру подверсии
 	if(baseSubVersion <= 1)
-		if(update_sub_version_from_1_to_2() == false)                                                                                                                        // Смена формата с 1.1 на 1.2
+		if(update_sub_version_from_1_to_2() == false)                                                                                                                                                                                                                                                                                                                                                                                    // Смена формата с 1.1 на 1.2
 			return false;
 	// На будущее, для перехода с подверии 2 на подверсию 3, эти строки надо добавлять к существующим (а не заменять)
 	// if(baseSubVersion<=2)
@@ -450,8 +452,8 @@ bool tkm_t::update_sub_version_from_1_to_2(void){
 
 void tkm_t::reload(void){
 	gl_paras->main_window()->setDisabled(true);
-	if(_xml_file_path == index_xml_file_name) _xml_file_path = gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + index_xml_file_name;
-	init_from_xml(_xml_file_path);
+//	if(_xml_file_path == gl_para::_index_xml_file_name) _xml_file_path = gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + gl_para::_index_xml_file_name;
+	init_from_xml();
 	gl_paras->main_window()->setEnabled(true);
 }
 
@@ -507,6 +509,7 @@ void tkm_t::save(){
 			out.setCodec("UTF-8");
 			auto str = doc.toString();
 			if(str != "") out << str;
+			wfile.close();
 		}
 	}
 }
@@ -632,7 +635,7 @@ void tkm_t::dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement &xm
 // QMap<QString, QString> data;
 // data["id"]      = id;
 // data["name"]    = name;
-// data["url"]     = browser::Browser::_defaulthome;
+// data["url"]     = web::Browser::_defaulthome;
 //// Подузел прикрепляется к указанному элементу
 //// в конец списка подчиненных элементов
 // boost::intrusive_ptr<TreeItem> current = new TreeItem(parent, data, QDomElement(), pos); // parent->child_add_new(pos, id, name);
@@ -672,7 +675,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::new_child(boost::intrusive_ptr<TreeIndex> 
 	QMap<QString, QString> data;
 	data["id"] = id;
 	data["name"]	= name;
-	data["url"]	= browser::Browser::_defaulthome;
+	data["url"]	= web::Browser::_defaulthome;
 	// Подузел прикрепляется к указанному элементу
 	// в конец списка подчиненных элементов
 	boost::intrusive_ptr<TreeItem> current = new TreeItem(parent, data, QDomElement(), pos); // parent->child_add_new(pos, id, name);
@@ -939,7 +942,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree
 // {
 // boost::intrusive_ptr<TreeItem> current;
 
-// if(item->field("url") != browser::Browser::_defaulthome) {
+// if(item->field("url") != web::Browser::_defaulthome) {
 //// Подузел прикрепляется к указанному элементу
 //// в конец списка подчиненных элементов
 // current = parent->add_child(item);
@@ -1252,7 +1255,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 
 							    // remove_target->self_remove_from_parent();
 							    result = parent_of_delete->delete_permanent(equal_linker);
-							    browser::WebView *v = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host() == result;});
+							    web::WebView *v = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host() == result;});
 							    if(v) v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
 							    auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
 
@@ -1347,7 +1350,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent_recursive(boost::intrusiv
 
 																	   // remove_target->self_remove_from_parent();
 																	   result = host_parent()->delete_permanent(equal_linker);
-																	   browser::WebView *v = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host() == result;});
+																	   web::WebView *v = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host() == result;});
 																	   if(v) v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
 																	   auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
 
@@ -1444,7 +1447,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent_recursive(boost::intrusiv
 		////        }
 
 		////    if(!reocrd_controller) {
-		////        globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+		////        globalparameters.entrance()->new_browser(QUrl(web::Browser::_defaulthome));
 		////    }
 
 		////        if(item_to_be_deleted->is_registered_to_browser())   // item_to_be_deleted->unique_page()
@@ -1682,7 +1685,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::merge(boost::intrusive_ptr<TreeLevel> _tre
 ////        //        }
 
 ////        //    if(!reocrd_controller) {
-////        //        globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+////        //        globalparameters.entrance()->new_browser(QUrl(web::Browser::_defaulthome));
 ////        //    }
 
 ////        //        if(item_to_be_deleted->is_registered_to_browser())   // item_to_be_deleted->unique_page()

@@ -28,7 +28,7 @@
 
 class SuperMenu;
 class QMenuBar;
-class EditingWindow;
+class Blogger;
 
 class Application : public QApplication {
 Q_OBJECT
@@ -46,7 +46,7 @@ public:
 	recentFile getRecentFile(int);
 	QStringList titles();
 	QStringList filenames();
-	EditingWindow *currentEditingWindow(){return _currentEditingWindow;}
+	Blogger *currentEditingWindow(){return _currentEditingWindow;}
 	void deleteSandbox();
 	bool isSandbox(){return _isSandbox;}
 
@@ -54,19 +54,19 @@ public slots:
 	void set_recent_files(const QStringList &, const QStringList &);
 	void add_recent_file(const QString &, const QString &);
 	void saveAll();
-	void setMainWindow(EditingWindow *sm);
+	void setMainWindow(Blogger *sm);
 
 signals:
 	void recent_files_updated(QStringList, QStringList);
 	void recent_files_updated(const QList<Application::recentFile> &);
-	void mainWindowChanged(EditingWindow *);
+	void mainWindowChanged(Blogger *);
 
 private:
 	QList<recentFile> _recentFiles;
 #ifdef Q_OS_MAC
 	SuperMenu *superMenu;
 #endif
-	EditingWindow *_currentEditingWindow;
+	Blogger *_currentEditingWindow;
 	bool _isSandbox;
 
 private slots:

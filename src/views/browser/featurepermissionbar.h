@@ -57,7 +57,7 @@ QT_END_NAMESPACE
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 	class FeaturePermissionBar : public QWidget {
 #if QT_VERSION == 0x050600
 	W_OBJECT(FeaturePermissionBar)

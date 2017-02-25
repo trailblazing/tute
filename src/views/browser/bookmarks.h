@@ -61,7 +61,7 @@ class FlatToolButton;
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 /*!
             Bookmark manager, owner of the bookmarks, loads, saves and basic tasks
  */

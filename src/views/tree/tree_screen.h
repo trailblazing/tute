@@ -37,6 +37,7 @@ extern QString get_unical_id(void);
 extern std::shared_ptr<gl_para> gl_paras;
 extern const char *global_root_id;
 
+//extern const char *action_edit_switch;
 extern const char *action_hide_tree_screen;
 // extern const char	*action_set_as_session_root;
 extern const char *action_find_in_base;
@@ -81,14 +82,16 @@ class rs_t;
 class tsv_t;
 #endif // USE_TREE_SCREEN_VIEW
 class wn_t;
+class Blogger;
 struct TreeIndex;
 struct Linker;
 
-namespace browser {
+namespace web {
 	class ToolbarSearch;
 	class WebPage;
 	class TabWidget;
 	class DownloadManager;
+	class Docker;
 }
 
 class AdjustingScrollArea : public QScrollArea {
@@ -140,8 +143,8 @@ public:
 	typedef std::function<boost::intrusive_ptr<TreeItem>(TreeIndex, boost::intrusive_ptr<TreeItem>, const substitute_condition &)>	paste_strategy;
 
 	ts_t(QString object_name
-	     // , std::shared_ptr<AppConfig> _appconfig
-	    , QMenu *filemenu, QMenu *toolsmenu, wn_t *main_window = 0);
+	    , web::Docker *editor_docker_
+	    , wn_t *main_window = 0);
 	virtual ~ts_t();
 
 	QMap<QString, QAction *> _actionlist;
@@ -150,7 +153,7 @@ public:
 	// TreeKnowModel *know_root_modify() {return know_root_holder::know_root();}
 
 	// std::shared_ptr<sd::_interface<sd::meta_info<void *>, RecordController *>>      reocrd_controller;  // for entrance
-	// std::shared_ptr<sd::_interface<sd::meta_info<void *>, browser::TabWidget *>>    tabmanager;         // for entrance
+	// std::shared_ptr<sd::_interface<sd::meta_info<void *>, web::TabWidget *>>    tabmanager;         // for entrance
 
 	// boost::intrusive_ptr<TreeItem> synchronize();
 
@@ -213,7 +216,7 @@ public:
 	void viewer(tsv_t *v);
 #endif
 
-	std::map<std::__cxx11::string, QMenu *> &main_menu_map();
+
 public slots:
 	// void view_paste_from_search(TreeIndex _modelindex, boost::intrusive_ptr<TreeItem> _result_item, std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition); // , std::shared_ptr<RecordTable> resultset_data
 
@@ -257,6 +260,7 @@ private slots:
 
 private:
 	// TreeController  *_tree_controller;
+	web::Docker *_editor_docker;
 	wn_t *_main_window;
 	QToolBar *_tools_line;
 #ifdef USE_MAIN_MENU_IN_BUTTON
@@ -265,13 +269,13 @@ private:
 	// QToolBar        *_main_menu_bar;                  // QMenuBar *_menubar;
 	// QPushButton     *_main_menu_button;
 	// QWidgetAction   *_main_menu_action;
-	std::map<std::string, QMenu *> _main_menu_map;
+
 	QMenu *_main_menu_in_button;
 	QMenu *_context_menu;
 	tv_t *_tree_view;
 	// KnowModel       *_know_model_board;      // for tree screen, move to KnowView
 	QHBoxLayout *_tools_layout;
-	// browser::ToolbarSearch  *_recordtree_search;
+	// web::ToolbarSearch  *_recordtree_search;
 	// QHBoxLayout             *_recordtree_searchlayout;
 	AdjustingScrollArea *_adjustingscrollarea;
 	// TreeViewHelpWidget *_treeviewhelpwidget;
@@ -285,8 +289,8 @@ private:
 	// std::shared_ptr<AppConfig> _appconfig;
 	// QString         _session_id = global_root_id;
 
-	void assembly_menubar(QMenu *_filemenu, QMenu *_toolsmenu);
-	void setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
+	void assembly_menubar();
+	void setup_ui();
 
 	// void setup_model(KnowModel *treemodel);
 	// void update_model(KnowModel *_current_know_branch);
@@ -313,8 +317,8 @@ private:
 
 	// KnowModel *know_model_board();    // don't recommand to operate on this know_model directly
 
-	// friend class browser::WebPage;
-	// friend void browser::WebPage::onUrlChanged(const QUrl &url);
+	// friend class web::WebPage;
+	// friend void web::WebPage::onUrlChanged(const QUrl &url);
 	friend class tv_t;
 	friend class wn_t;
 };

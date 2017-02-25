@@ -5,7 +5,7 @@
 #include <QModelIndex>
 #include <QVariant>
 #include <QtXml>
-
+#include "libraries/global_parameters.h"
 #include "tree_model.h"
 
 #if QT_VERSION == 0x050600
@@ -16,10 +16,11 @@
 // KnowTreeModel - класс с удобными методами для управления данными дерева
 // Внимание! Данный класс наследуется от класса TreeModel
 
-extern const char *index_xml_file_name;
+//extern const char *index_xml_file_name;
 extern const int add_new_record_to_end;
 extern const int add_new_record_before;
 extern const int add_new_record_after;
+extern std::shared_ptr<gl_para> gl_paras;
 
 class XmlTree;
 class ClipboardBranch;
@@ -40,11 +41,11 @@ Q_OBJECT
 public:
 	typedef std::function<QList<boost::intrusive_ptr<TreeItem> >(const std::function<tkm_t *()> &, const QList<boost::intrusive_ptr<TreeItem> > &)> view_delete_permantent_strategy;
 
-	tkm_t(const QString &index_xml_file_name, tv_t *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
+	tkm_t(tv_t *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
 	tkm_t(boost::intrusive_ptr<TreeItem> root_item, tv_t *parent = 0);
 	~tkm_t();
 
-	std::shared_ptr<XmlTree> init_from_xml(QString _file_full_path);
+	std::shared_ptr<XmlTree> init_from_xml();
 	std::shared_ptr<XmlTree> init_from_xml(std::shared_ptr<XmlTree> xmlt);
 	void reload(void);
 
@@ -176,7 +177,7 @@ private:
 
 private:
 	// QModelIndex get_item_index_recurse(QModelIndex currindex, TreeItem *finditem, int mode);
-	QString _xml_file_path = index_xml_file_name;
+	QString _xml_file_path =  gl_para::_index_xml_file_name;
 
 	bool _synchronized = false;
 

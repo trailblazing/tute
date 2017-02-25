@@ -15,7 +15,7 @@ class AttachTableView;
 class AttachTableController;
 class FlatToolButton;
 class EditorWrap;
-class EditingWindow;
+class Blogger;
 // Виджет
 
 class AttachTableScreen : public QWidget {
@@ -26,7 +26,7 @@ Q_OBJECT
 #endif
 
 public:
-	AttachTableScreen(EditingWindow *editing_window, QWidget *parent = 0);
+	AttachTableScreen(Blogger *blogger_, QWidget *parent = 0);
 	virtual ~AttachTableScreen();
 
 	void clear(void);

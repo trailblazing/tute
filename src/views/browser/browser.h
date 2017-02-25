@@ -42,6 +42,9 @@
 #ifndef BROWSERWINDOW_H
 #define BROWSERWINDOW_H
 
+
+#include <tuple>
+
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
@@ -60,6 +63,9 @@
 // #include "models/tree/TreeItem.h"
 #include "models/tree/tree_model.h"
 #include "views/tree/tree_screen.h"
+#include "libraries/global_parameters.h"
+#include "models/app_config/app_config.h"
+
 
 #if QT_VERSION == 0x050600
 #include <QObject>
@@ -79,20 +85,22 @@ class ts_t;
 class tsv_t;
 struct RecordIndex;
 class EditorDock;
-class EditingWindow;
+class Blogger;
 
+
+extern std::shared_ptr<AppConfig> appconfig;
 extern const char *profile_storage_name;
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 	class AutoSaver;
 	class BookmarksToolBar;
 	class ChaseWidget;
 	class TabWidget;
 	class ToolbarSearch;
 	class WebView;
-	class BrowserDock;
+	class Docker;
 
 	class UrlRequestInterceptor
 		: // public boost::intrusive_ref_counter<UrlRequestInterceptor, boost::thread_safe_counter>,
@@ -128,7 +136,9 @@ namespace browser {
 	Q_OBJECT
 #endif
 	public:
-		Browser(ts_t *tree_screen, FindScreen *find_screen, EditingWindow *editing_window, rs_t *record_screen, BrowserDock *entrance, const QString &style_source, browser::Profile *profile, Qt::WindowFlags flags);
+		Browser(Blogger *blogger_
+		       , const QByteArray &state_ = QByteArray()
+		       , Qt::WindowFlags flags = Qt::MaximizeUsingFullscreenGeometryHint);
 
 		// Browser(QUrl const &url         // Record *const record
 		// , TreeScreen        *_tree_screen
@@ -187,7 +197,7 @@ namespace browser {
 
 		WebView *currentTab() const;
 		QByteArray save_state(bool withTabs = true) const;
-		bool restore_state(const QByteArray &state);
+		bool restore_state(const QByteArray &state_);
 		QAction *action_restore_last_session();
 		// Q_INVOKABLE
 		void runScriptOnOpenViews(const QString &);
@@ -204,14 +214,18 @@ namespace browser {
 		boost::intrusive_ptr<TreeItem> bind(boost::intrusive_ptr<RecordIndex> record_index, bool make_current = true);
 		// boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
 		rs_t *record_screen();
-		BrowserDock *entrance();
+//		web::Docker *browser_docker();
 		void configuration(std::unique_ptr<QSettings> &&conf);
 		void configuration_full_name(const QString &conf_name);
+		static std::tuple<qint32, qint32, QString, QString, QSize, bool, bool, bool, bool, std::tuple<qint32, qint32, QStringList, QString> > state(const QByteArray &state_);
+		Blogger *blogger();
 	public slots:
 		// void loadPage(const QString &url) = delete;
 		void slotHome();
 		void updateToolbarActionText(bool visible); // void updateToolbarActionText(bool visible);
 
+		void on_blogger_close();
+		void on_record_screen_close();
 	protected:
 		void closeEvent(QCloseEvent *event);
 		void resizeEvent(QResizeEvent *);
@@ -280,21 +294,23 @@ namespace browser {
 
 		void run_script(const QString &style_source);
 		void load_default_state();
-		void append_to_file_menu();
-		void append_edit_menu();
-		void append_view_menu();
-		void append_history_menu();
-		void append_bookmark_menu();
-		void append_window_menu();
-		void append_to_tools_menu();
-		void append_to_help_menu();
-		void append_to_main_menu();
-		void setup_tool_bar();
+		void reset_file_menu();
+		void reset_edit_menu();
+		void reset_view_menu();
+		void reset_history_menu();
+		void reset_bookmark_menu();
+		void reset_window_menu();
+		void reset_tools_menu();
+		void reset_help_menu();
+		void reset_main_menu();
+		void reset_find_screen_tool_bar();
 		void update_statusbar_action_text(bool visible);
 		void handle_find_text_result(bool found);
 		// void initUrl();
 	private:
+		QByteArray _state;
 		bool _is_under_construction = true;
+		HidableTab *_vtab_record;
 		ts_t *_tree_screen;
 		FindScreen *_find_screen;
 		wn_t *_main_window;
@@ -333,15 +349,20 @@ namespace browser {
 		bool _webattributeenabled;
 		QWidget *_centralwidget;
 		QVBoxLayout *_layout;
+		Blogger *_blogger;
 
-		rs_t *_record_screen;
 		TabWidget *_tabmanager;
-		BrowserDock *_entrance;
+		rs_t *_record_screen;
+
+		web::Docker *_browser_docker;
 		QString _configuration_full_name = "";
 		std::unique_ptr<QSettings> _configuration;
 		friend class sapp_t; // QtSingleApplication;
-		friend class BrowserDock;
+		friend class web::Docker;
 		friend class WebView;
+		friend class ::Blogger;
+	signals:
+		void close_request(QWidget *);
 	};
 }
 

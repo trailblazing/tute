@@ -118,12 +118,13 @@ extern const char *tree_screen_singleton_name;
 extern const char *find_screen_singleton_name;
 extern const char *download_manager_singleton_name;
 extern const char *windowswitcher_singleton_name;
-extern const char *browser_dock_singleton_name;
+extern const char *browser_docker_singleton_name;
+extern const char *editor_docker_singleton_name;
 extern const char *record_controller_multi_instance_name;
 extern const char *knowtreeview_singleton_name;
 extern const char *global_root_id;
 // extern const char *global_root_parent_id;
-extern const char *index_xml_file_name;
+//extern const char *index_xml_file_name;
 // template <class X> inline X *find_object(QString n);
 void print_object_tree(void);
 // Поиск объекта от корня по имени
@@ -192,15 +193,15 @@ extern std::string url_difference(const std::string &url_compare_stored, const s
 extern bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
 
 // extern Record *register_record(const QUrl &_url
-////                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, Record *const> > generator
+////                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, web::WebView *, Record *const> > generator
 // , RecordTableController *record_controller = globalparameters.getRecordTableScreen()->getRecordTableController());
 
 // extern boost::intrusive_ptr<Record> register_record(boost::intrusive_ptr<Record> record
-////                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+////                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, Record *const>> generator
 // , TableController *record_controller = globalparameters.table_screen()->table_controller());
 // extern boost::intrusive_ptr<Record> check_record(const QUrl &_url);
 
-// namespace browser {
+// namespace web {
 // class Browser;
 // class WebView;
 // }
@@ -208,13 +209,13 @@ extern bool url_equal(const std::string &url_compare_stored, const std::string &
 // template<typename> struct active_record;
 
 // extern boost::intrusive_ptr<Record> request_record(const QUrl &_url
-// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> generator
-// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator);
+// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>> generator
+// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>> activator);
 // extern boost::intrusive_ptr<Record> request_record(const boost::intrusive_ptr<Record> record
-// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> generator
-// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator);
+// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>> generator
+// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>> activator);
 
-// boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record> record, browser::WebPage *page);
+// boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record> record, web::WebPage *page);
 
 extern std::ifstream::pos_type filesize(const char *filename);
 extern std::streampos file_size(const char *file_path);

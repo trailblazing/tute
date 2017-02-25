@@ -1,12 +1,16 @@
 #ifndef __RECORD_H__
 #define __RECORD_H__
 
+
+
+#include <memory>
 #include <QByteArray>
 #include <QMap>
 #include <QString>
 #include <boost/mpl/map.hpp>
-#include <memory>
-// #include <QDomElement>
+#include <boost/assert.hpp>
+
+#include <QDomElement>
 // #include <QDomDocument>
 
 #include "utility/delegate.h"
@@ -17,7 +21,7 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
 #include "libraries/fixed_parameters.h"
-
+#include "main.h"
 // Класс одной записи в таблице записей
 // Class entries in the table of records
 
@@ -67,7 +71,10 @@
 // class Attach;
 // class AttachTableData;
 
-namespace browser {
+
+
+
+namespace web {
 	class Browser;
 	class WebView;
 	class WebPage;
@@ -99,7 +106,7 @@ public:
 
 	virtual ~Record();
 
-	// browser::WebPage *unique_page();   // const; // {return _page;}
+	// web::WebPage *unique_page();   // const; // {return _page;}
 
 	void dom_to_record(const QDomElement &_dom_element);
 	// QDomElement export_to_dom(QDomDocument *doc) const;
@@ -186,10 +193,53 @@ public:
 	}
 	bool is_natural_field_exists(QString name) const;
 	// QString crypt_field(const QString &name) const;
+//	tempalte<typename InputRange>
+	struct element_fullfill {
+		QDomElement	&elem;
+		Record *const	_this;
 
+		element_fullfill(QDomElement &elem_, Record *const this_) : elem(elem_), _this(this_){}
+
+		template<typename index_type>
+		int operator ()(index_type index_type_value) const {
+			(void) index_type_value;
+//			typedef boost::mpl::at<InputRange, indices>::type index_type;
+			const QString &field_name = //index_type_value;//
+						    boost::mpl::c_str<index_type>::value;//index_type is mpl_::void_?
+//						    boost::mpl::c_str<typename boost::mpl::at<natural_field_set, index_type>::type>::value;
+			auto internal_field
+				= [&](QString name){if(_this->_field_data.contains(name)) return _this->_field_data[name]; else return QString(); };
+			auto internal_field_write
+				= [&](QString key, QString value){_this->_field_data.insert(key, value);};
+			// = available_field_list.at(j);
+			auto dir = internal_field(boost::mpl::c_str<dir_type>::value);
+			if(field_name == boost::mpl::c_str<id_type>::value && _this->field<id_type>() == "") internal_field_write(field_name, dir.length() > 0 ? dir : get_unical_id());
+			// Устанавливается значение поля как атрибут DOM-узла
+			if(_this->_field_data.contains(field_name)) elem.setAttribute(field_name, internal_field(field_name));
+			return 0;
+		}
+	};
 	// Setting and reading data without transformation. Used to generate / XML readers    // Установка и чтение данных без преобразований. Используется при генерации/чтении XML
-	QString natural_field_source(QString name) const;
-	void natural_field_source(QString name, QString value);
+	template<typename concrete>
+	QString natural_field_source() const {//QString name
+		// Если имя поля недопустимо
+		BOOST_MPL_ASSERT_RELATION((boost::mpl::contains<natural_field_set, concrete>::type::value), ==, true);// critical_error("Record::natural_field_source() : get unavailable field " + name);
+		BOOST_MPL_ASSERT((boost::mpl::has_key<natural_field_set, concrete>));
+		BOOST_MPL_ASSERT((boost::mpl::contains<natural_field_set, concrete>));
+		// Если поле с таким названием есть
+		if(_field_data.contains(boost::mpl::c_str<concrete>::value)) return _field_data[boost::mpl::c_str < concrete > ::value]; // Возвращается значение поля
+		else return QString();
+	}
+	template<typename concrete>
+	void natural_field_source(QString value){//QString name,, concrete cc
+//		(void) cc;
+		// Если имя поля недопустимо
+		BOOST_MPL_ASSERT_RELATION((boost::mpl::contains<natural_field_set, concrete>::type::value), ==, true);//if(fixedparameters.is_record_field_natural(name) == false) critical_error("In Record::natural_field_source() unavailable field name " + name + " try set to " + value);
+		BOOST_MPL_ASSERT((boost::mpl::has_key<natural_field_set, concrete>));
+		BOOST_MPL_ASSERT((boost::mpl::contains<natural_field_set, concrete>));
+		// Устанавливается значение поля
+		_field_data.insert(boost::mpl::c_str<concrete>::value, value);
+	}
 
 	QMap<QString, QString> natural_field_list() const;
 
@@ -224,14 +274,14 @@ public:
 	// bool is_registered_to_record_controller_and_tabmanager() {return _is_registered_to_shadow_list;}
 	// void is_registered_to_record_controller_and_tabmanager(bool reg) {_is_registered_to_shadow_list = reg;}
 
-	// void binder(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> g) {_binder = g;}
-	// std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> binder() const {return _binder;}
+	// void binder(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>> g) {_binder = g;}
+	// std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>> binder() const {return _binder;}
 
-	// void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> a) {_activator = a;}
-	// std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator() const {return _activator;}
+	// void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>> a) {_activator = a;}
+	// std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>> activator() const {return _activator;}
 
-	// browser::WebView *bind();
-	// browser::WebView *active();
+	// web::WebView *bind();
+	// web::WebView *active();
 	bool dir_exists();
 	bool file_exists();
 	id_value id() const;
@@ -244,7 +294,7 @@ public:
 	}
 #endif
 protected:
-	// browser::WebPage            *_page;
+	// web::WebPage            *_page;
 	// ---------------------------------------------------------------------
 	// Свойства класса (не забыть перечислить все в конструкторе копривания)
 	// Class properties (do not forget to list all the constructor koprivaniya)
@@ -269,8 +319,8 @@ protected:
 #endif
 	std::shared_ptr<AttachTableData> _attach_table_data; // Таблица прикрепляемых файлов
 
-	// std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> _binder;
-	// std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> _activator;
+	// std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>> _binder;
+	// std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<Record>>> _activator;
 
 	// -----------------
 	// Защищенные методы

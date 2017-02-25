@@ -45,7 +45,7 @@
 
 #include "squeezelabel.h"
 
-namespace browser {
+namespace web {
 #if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(SqueezeLabel)
 #endif

@@ -51,7 +51,7 @@
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QStyleOptionFrame> // #include <QtWidgets/QStyleOptionFrameV2>
 
-namespace browser {
+namespace web {
 #if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(ClearButton)
 #endif

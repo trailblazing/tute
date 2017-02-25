@@ -20,7 +20,7 @@ Q_OBJECT
 #endif
 
 public:
-	AppConfigDialog(rctrl_t *_record_controller, QString first_page_name = "");
+	AppConfigDialog(QString first_page_name = "");
 	void change_page(QString name);
 
 private:
@@ -30,7 +30,7 @@ private:
 	QListWidgetItem *pageSynchro;
 	QListWidgetItem *pageRecordTable;
 	QListWidgetItem *pageMisc;
-	rctrl_t *_record_controller;
+//	rctrl_t *_record_controller;
 
 	// friend class XmlTree;
 	// friend class rctrl_t;

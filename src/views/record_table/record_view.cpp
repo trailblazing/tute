@@ -17,7 +17,7 @@
 #include "libraries/fixed_parameters.h"
 #include "libraries/flat_control.h"
 #include "libraries/global_parameters.h"
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #include "libraries/window_switcher.h"
 #include "main.h"
 #include "models/app_config/app_config.h"
@@ -510,7 +510,7 @@ QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewIte
 
 #endif
 
-		return result;                                                                                                                                                                                                                                                                                                                                           // return QStyledItemDelegate::createEditor(parent, option, index);
+		return result;                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
 void ViewDelegation::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
@@ -667,14 +667,14 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 	  , rating_width([&] {return _rating_width;})
 	  , _context_menu(new QMenu(this))
 	  , _record_screen(record_screen_)
-	  , _record_controller(record_controller_)
+	  , _rctrl(record_controller_)
 	  , _layout(new QVBoxLayout(this))
 	  , _delegate(new ViewDelegation(this)) // (new ButtonColumnDelegate(this))//
 	  , _rating_width(_delegate->_rating_width) // , _enable_move_section(true)
 	  , _is_field_type_column(
 		  [&](const QString &type_name, int index) -> bool {
 			  // QString _type_name = boost::mpl::c_str<field_type>::value;
-			  auto header_title = _record_controller->source_model()->headerData(index, Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
+			  auto header_title = _rctrl->source_model()->headerData(index, Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
 			  auto rating_field_description = fixedparameters.record_field_description(QStringList() << type_name)[type_name];
 
 			  return header_title == rating_field_description;
@@ -737,12 +737,11 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 
 					    connect(this->horizontalHeader(), &QHeaderView::sectionMoved, this, &rv_t::on_section_moved);
 					    connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &rv_t::on_section_resized);
-					    connect(this->horizontalHeader(), &QHeaderView::sortIndicatorChanged, _record_controller, &rctrl_t::on_sort_request);
+					    connect(this->horizontalHeader(), &QHeaderView::sortIndicatorChanged, _rctrl, &rctrl_t::on_sort_request);
 				    };
 
 			  auto assembly_context_menu
-			          = [&, this](void) -> void // RecordView::
-				    {
+				  = [&, this](void) -> void { // RecordView::
 //// Конструирование меню
 // _context_menu = new QMenu(this);
 
@@ -790,7 +789,7 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 						    // auto main_menu_action = _context_menu->addSection("main menu");
 						    // main_menu_action->setMenu(_main_menu_in_button);            // _context_menu->addAction(_main_menu_action);
 						    // _context_menu->addAction(_record_screen->tree_screen()->_actionlist[action_main_menu]);
-						    auto main_menu_set = _record_screen->tree_screen()->main_menu_map();
+						    auto main_menu_set = gl_paras->main_window()->main_menu_map();
 						    for(auto menu : main_menu_set) _context_menu->addMenu(menu.second);
 					    }
 				    };
@@ -874,7 +873,7 @@ rv_t::~rv_t(){
 // _controller = pController;
 // }
 
-rctrl_t *rv_t::record_controller(){return _record_controller;}
+rctrl_t *rv_t::record_controller(){return _rctrl;}
 
 QModelIndex rv_t::previous_index() const {return _previous_index;}
 
@@ -913,7 +912,7 @@ void rv_t::on_click(const QModelIndex &index_proxy_){
 	// setSelectionMode(QAbstractItemView::SingleSelection);// ExtendedSelection
 	if(index_proxy_.isValid() && _previous_index != index_proxy_){
 		_previous_index = index_proxy_;
-		_record_controller->index_invoke(index_proxy(index_proxy_));
+		_rctrl->index_invoke(index_proxy(index_proxy_));
 	}
 }
 
@@ -932,7 +931,7 @@ void rv_t::on_doubleclick(const QModelIndex &index){
 
 		// Нужно перерисовать окно редактирования чтобы обновились инфополя
 		// делается это путем "повторного" выбора текущего пункта
-		_record_controller->index_invoke(index_proxy(index), true); // force to refresh		// аньше было select()
+		_rctrl->index_invoke(index_proxy(index), true); // force to refresh		// аньше было select()
 		// globalparameters.main_window()->editor_switch();
 	}
 }
@@ -1033,15 +1032,15 @@ void rv_t::edit_field_context(void){
 	////    if(! ((QModelIndex) proxy_index).isValid())
 	// }else{
 	auto c_i = current_item();
-	if(!currentIndex().isValid()) _record_controller->select_as_current(_record_controller->index<pos_proxy>(c_i));
-	proxy_index = _record_controller->index<index_proxy>(c_i);
+	if(!currentIndex().isValid()) _rctrl->select_as_current(_rctrl->index<pos_proxy>(c_i));
+	proxy_index = _rctrl->index<index_proxy>(c_i);
 	// current_index	= currentIndex();
 	// }
 	// assert(((QModelIndex) proxy_index).row() == current_index.row());
-	if(_record_controller->edit_field_context(proxy_index)){  // proxy_index
+	if(_rctrl->edit_field_context(proxy_index)){  // proxy_index
 		// Нужно перерисовать окно редактирования чтобы обновились инфополя
 		// делается это путем "повторного" выбора текущего пункта
-		_record_controller->index_invoke(proxy_index); // proxy_index // Раньше было select()
+		_rctrl->index_invoke(proxy_index); // proxy_index // Раньше было select()
 	}
 }
 
@@ -1098,9 +1097,9 @@ void rv_t::edit_field_context(void){
 // }
 
 boost::intrusive_ptr<TreeItem> rv_t::current_item() const {
-	auto it = _record_controller->source_model()->current_item();
+	auto it = _rctrl->source_model()->current_item();
 	if(it){
-		pos_proxy pos_proxy_ = _record_controller->index<pos_proxy>(it);
+		pos_proxy pos_proxy_ = _rctrl->index<pos_proxy>(it);
 		////	pos_source	possource	= _record_controller->index<pos_source>(it);
 		////	auto		index		= static_cast<QModelIndex>(_record_controller->index<index_source>(posproxy));
 		// index_proxy proxy_curi(selectionModel()->currentIndex());
@@ -1108,14 +1107,14 @@ boost::intrusive_ptr<TreeItem> rv_t::current_item() const {
 		////	auto	proxy_index	= _record_controller->proxy_model()->mapFromSource(static_cast<QModelIndex>(source_index));
 		////	assert(proxy_curi == proxy_index);
 		//
-		if(pos_proxy_ != static_cast<QModelIndex>(_record_controller->index<index_proxy>(_record_controller->source_model()->current_index())).row()){  //
+		if(pos_proxy_ != static_cast<QModelIndex>(_rctrl->index<index_proxy>(_rctrl->source_model()->current_index())).row()){  //
 			// if(pos_proxy_ != static_cast<QModelIndex>(proxy_curi).row()){	// never equaled	// currentIndex().row()){	// selectionModel()->currentIndex().row()
 			//
 			// const_cast<rv_t *>(this)->reset();
 			// _record_controller->proxy_model()->setSourceModel(_record_controller->source_model());
 			// const_cast<rv_t *>(this)->setModel(_record_controller->proxy_model());
 
-			_record_controller->select_as_current(pos_proxy_);
+			_rctrl->select_as_current(pos_proxy_);
 		}
 	}
 	return it;
@@ -1268,7 +1267,12 @@ void rv_t::mousePressEvent(QMouseEvent *event){
 	////call the parents function
 	// QTableView::mousePressEvent(event);
 	// }
-	_record_controller->select_as_current(_record_controller->index<pos_proxy>(index_proxy(next_index)));
+
+
+	auto it = _rctrl->source_model()->item(_rctrl->index<pos_source>(_rctrl->index<pos_proxy>(index_proxy(next_index)))); // pos_source(pos_proxy(index.row()))
+	auto header_title = _rctrl->source_model()->headerData(next_index.column(), Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
+	auto rating_field_description = fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
+	if(it && header_title != rating_field_description) _rctrl->select_as_current(_rctrl->index<pos_proxy>(index_proxy(next_index)));
 	QTableView::mousePressEvent(event);
 }
 
@@ -1334,7 +1338,7 @@ void rv_t::start_drag(){
 	if(currentIndex().isValid()){
 		// Перед переносом нужно запомнить текст последней редактируемой записи, чтобы не перенесся неотредактированный вариант
 		// find_object<MainWindow>("mainwindow")
-		_record_screen->editing_window()->save_text_context();
+		_record_screen->blogger()->save_text_context();
 
 		// Копирование выделенных строк в объект переноса
 		QDrag *drag = new QDrag(this);
@@ -1388,7 +1392,7 @@ ClipboardRecords *rv_t::get_selected_records(void){
 	clipboardRecords->clear();
 
 	// Объект заполняется выбранными записями
-	_record_controller->add_items_to_clipboard(clipboardRecords, indexes_for_copy);
+	_rctrl->add_items_to_clipboard(clipboardRecords, indexes_for_copy);
 
 	return clipboardRecords;
 }
@@ -1563,7 +1567,7 @@ template <>
 pos_source rv_t::selection_first<pos_source>() const {
 	pos_proxy pos_proxy_ = selection_first<pos_proxy>();
 
-	return _record_controller->index<pos_source>(pos_proxy_);
+	return _rctrl->index<pos_source>(pos_proxy_);
 }
 
 template <>
@@ -1580,7 +1584,7 @@ index_proxy rv_t::selection_first<index_proxy>() const {
 	pos_proxy pos_proxy_ = selection_first<pos_proxy>();
 	if(pos_proxy_ == -1) return index_proxy(QModelIndex());
 	// QModelIndex index = recordProxyModel->index( pos, 0 );
-	index_proxy index = _record_controller->index<index_proxy>(pos_proxy(pos_proxy_));
+	index_proxy index = _rctrl->index<index_proxy>(pos_proxy(pos_proxy_));
 
 	return index;
 }
@@ -1590,12 +1594,12 @@ index_source rv_t::selection_first<index_source>() const {
 	index_proxy proxy_index = selection_first<index_proxy>();
 	if(!((QModelIndex) proxy_index).isValid()) return index_source(QModelIndex());
 	// QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
-	index_source index = _record_controller->index<index_source>(proxy_index);
+	index_source index = _rctrl->index<index_source>(proxy_index);
 
 	return index;
 }
 
 template <>
 boost::intrusive_ptr<TreeItem> rv_t::selection_first<boost::intrusive_ptr<TreeItem> >() const {
-	return _record_controller->source_model()->item(selection_first<pos_source>());
+	return _rctrl->source_model()->item(selection_first<pos_source>());
 }

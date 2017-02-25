@@ -122,7 +122,7 @@
         <file>resource/pic/leaves_shine.svg</file>
         <file>resource/pic/clover.svg</file>
         <file>resource/pic/trace.svg</file>
-        <file>resource/standardconfig/any/browserview.ini</file>
+        <file>resource/standardconfig/any/dock.ini</file>
         <file>resource/pic/tangerine.svg</file>
         <file>resource/pic/apple.svg</file>
         <file>resource/pic/mobile_down.svg</file>
@@ -149,5 +149,6 @@
         <file>resource/pic/preview.svg</file>
         <file>resource/pic/back_to_top.svg</file>
         <file>resource/pic/pull.svg</file>
+        <file>resource/pic/edit_switch.svg</file>
     </qresource>
 </RCC>

@@ -52,7 +52,7 @@
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 	class SettingsDialog : public QDialog, public Ui_Settings {
 #if QT_VERSION == 0x050600
 	W_OBJECT(SettingsDialog)

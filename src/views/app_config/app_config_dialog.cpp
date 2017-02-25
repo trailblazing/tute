@@ -27,9 +27,9 @@ extern const std::string program_title_string;
 W_OBJECT_IMPL(AppConfigDialog)
 #endif
 
-AppConfigDialog::AppConfigDialog(rctrl_t *_record_controller, QString first_page_name)
-	: QWidget()
-	  , _record_controller(_record_controller){
+AppConfigDialog::AppConfigDialog(QString first_page_name)//rctrl_t *record_controller_,
+	: QWidget(){
+//	  , _record_controller(record_controller_)
 	if(appconfig->interface_mode() == "mobile"){  // if(true)
 		qDebug() << "Screen size X Y: " << screen_size_x() << screen_size_y();
 		this->setMinimumSize(screen_size_x(), screen_size_y());
@@ -41,7 +41,7 @@ AppConfigDialog::AppConfigDialog(rctrl_t *_record_controller, QString first_page
 	pageMain	= config_dialog->add_widget(new AppConfigPageMain(this), tr("Main"));
 	pageCrypt	= config_dialog->add_widget(new AppConfigPageCrypt(this), tr("Crypt"));
 	pageSynchro = config_dialog->add_widget(new AppConfigPageSynchro(this), tr("Synchro"));
-	pageRecordTable = config_dialog->add_widget(new AppConfigPageTable(_record_controller, this), tr("Note area"));
+	pageRecordTable = config_dialog->add_widget(new AppConfigPageTable(this), tr("Note area"));
 	pageMisc = config_dialog->add_widget(new AppConfigPageMisc(this), tr("Misc"));
 
 	config_dialog->updateListWidth();

@@ -15,7 +15,7 @@
 #include "libraries/disk_helper.h"
 #include "libraries/flat_control.h"
 #include "libraries/global_parameters.h"
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #include "main.h"
 #include "models/app_config/app_config.h"
 #include "models/attach_table/attach_table_data.h"
@@ -23,7 +23,6 @@
 #include "views/attach_table/attach_table_screen.h"
 #include "views/attach_table/attach_table_view.h"
 #include "views/dialog/reduce_message_box.h"
-#include "views/record/editor_dock.h"
 #include "views/record/editor_wrap.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
@@ -35,11 +34,11 @@ extern std::shared_ptr<AppConfig> appconfig;
 W_OBJECT_IMPL(AttachTableController)
 #endif
 
-AttachTableController::AttachTableController(EditingWindow *editing_window, AttachTableScreen *parent)
+AttachTableController::AttachTableController(Blogger *blogger_, AttachTableScreen *parent)
 	: QObject(parent)
 	  , _view([&]() -> AttachTableView *{_view = nullptr; auto v = new AttachTableView(qobject_cast<QWidget *>(parent)); return v;} ())
 	  , _model([&]() -> AttachTableModel *{_model = nullptr; auto at = new AttachTableModel(this); return at;} ())
-	  , _editing_window(editing_window){
+	  , _blogger(blogger_){
 	// Создается область со списком файлов
 	// _view = new AttachTableView(qobject_cast<QWidget *>(parent)); // Вид размещается внутри виджета Screen
 	_view->setObjectName("attachTableView");
@@ -129,7 +128,7 @@ void AttachTableController::add_smart(QString attach_type){
 	// Обновление иконки аттачей в редакторе
 	if(attachTableData->size() > 0){
 		// auto *editor_ = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
-		_editing_window->to_attach()->setIcon(_editing_window->icon_attach_exists());
+		_blogger->to_attach()->setIcon(_blogger->icon_attach_exists());
 	}
 }
 QStringList AttachTableController::select_files_for_adding(QString attach_type){
@@ -319,7 +318,7 @@ void AttachTableController::on_delete_attach(void){
 	// Обновление иконки аттачей в редакторе
 	if(attachTableData->size() == 0){
 		// auto *editor_ = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
-		_editing_window->to_attach()->setIcon(_editing_window->icon_attach_not_exists());
+		_blogger->to_attach()->setIcon(_blogger->icon_attach_not_exists());
 	}
 }
 // Открытие аттача (аттачей) на просмотр
@@ -375,7 +374,7 @@ void AttachTableController::on_show_attach_info(void){
 }
 void AttachTableController::on_switch_to_editor(void){
 	// auto *editor_ = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
-	_editing_window->to_editor_layout();
+	_blogger->to_editor_layout();
 }
 // Получение списка идентификаторов аттачей, выделенных в представлении
 QList<QString> AttachTableController::selected_id(void){

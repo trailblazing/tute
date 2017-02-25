@@ -64,9 +64,9 @@
 #include "ui_proxy.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
-#include "views/record/editor_dock.h"
 #include "views/tree/tree_view.h"
 #include "webview.h"
+#include "libraries/qtm/blogger.h"
 
 #include <QWebChannel>
 #include <QWebEnginePage>
@@ -95,7 +95,7 @@
 #include "models/record_table/record.h"
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/record_table/record_screen.h"
 #include "views/record_table/record_view.h"
 // #include "browserview.moc"
@@ -113,7 +113,7 @@ extern std::shared_ptr<AppConfig> appconfig;
 extern bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
 extern const char *program_title;
 
-namespace browser {
+namespace web {
 #ifdef USE_POPUP_WINDOW
 
 #if QT_VERSION == 0x050600
@@ -315,12 +315,12 @@ namespace browser {
 	W_OBJECT_IMPL(WebPage)
 #endif
 
-	WebPage::WebPage(Profile *profile, boost::intrusive_ptr<TreeItem> item, ts_t *tree_screen, EditingWindow *editing_window, BrowserDock *entrance, Browser *browser, TabWidget *tabmanager, rctrl_t *record_controller, WebView *parent)
+	WebPage::WebPage(Profile *profile, boost::intrusive_ptr<TreeItem> item, ts_t *tree_screen, Blogger *editing_window, web::Docker *browser_docker_, Browser *browser, TabWidget *tabmanager, rctrl_t *record_controller, WebView *parent)
 		: QWebEnginePage(profile, parent)
 		  , _profile(profile)
 		  , _tree_screen(tree_screen)
-		  , _editing_window(editing_window)
-		  , _entrance(entrance)
+		  , _blogger(editing_window)
+		  , _browser_docker(browser_docker_)
 		  , _browser(browser)
 		  , _tabmanager(tabmanager)
 		  , _record_controller(record_controller)
@@ -333,10 +333,10 @@ namespace browser {
 			if(_binder->host()){
 				if(  url.toString() != ""
 				  && url != QUrl() && !url.host().isEmpty() && !url.scheme().isEmpty() && url.isValid()
-				  && url != QUrl(Browser::_defaulthome)
+				  && url != QUrl(web::Browser::_defaulthome)
 				  && url != _loadingurl
 				  && url.toString() != _binder->host()->field<url_type>()){
-					assert(_editing_window);
+					assert(_blogger);
 					// if(url.toString() != ""){
 
 					record_info_update(url, title());
@@ -355,11 +355,11 @@ namespace browser {
 					  // if(  url() != QUrl()
 					  // && ! url().host().isEmpty()
 					  // && ! url().scheme().isEmpty()
-					  // && url() != QUrl(Browser::_defaulthome)
+					  // && url() != QUrl(web::Browser::_defaulthome)
 					  // && url() == _loadingurl
 					  // && url().toString() == _binder->host()->field<url_type>()
 					  // ){
-					  assert(_editing_window);
+					  assert(_blogger);
 					  if(  title != ""
 					    && title != host_->field<name_type>() // && !QUrl(title).isValid()
 					    ){
@@ -477,7 +477,7 @@ namespace browser {
 	                if(url_str != ""){
 	                        auto host_ = _binder->host();
 	                        host_->field<url_type>(url_str); // "url",
-	                        if(host_->field<home_type>() == Browser::_defaulthome && url_str != Browser::_defaulthome) host_->field<home_type>(url_str);
+				if(host_->field<home_type>() == web::Browser::_defaulthome && url_str != web::Browser::_defaulthome) host_->field<home_type>(url_str);
 	                        data_changed = true;
 #ifdef USE_EDITOR_WRAP
 	                        if(is_current){
@@ -524,7 +524,7 @@ namespace browser {
 
 	        // Выясняется указатель на объект редактирования текста записи
 	        // MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
-	        assert(_editing_window);
+		assert(_blogger);
 // boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
 // try {
 // record_index = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _record_controller->source_model()->sibling(current_item), current_item);
@@ -545,14 +545,14 @@ namespace browser {
 // table->work_pos(pos);
 #endif // USE_FILE_PER_TREEITEM
 	        // Устанавливается функция обратного вызова для записи данных
-	        _editing_window->save_callback(Editor::editor_save_callback); // _editentry->editor_save_callback
+		_blogger->save_callback(Editor::editor_save_callback); // _editentry->editor_save_callback
 
 	        // Сохраняется текст и картинки в окне редактирования
 	        // find_object<MainWindow>("mainwindow")
-	        _editing_window->save_text_context();
+		_blogger->save_text_context();
 #ifdef USE_FILE_PER_TREEITEM
 	        // Для новой выбраной записи выясняется директория и основной файл
-	        if(current_item->field<id_type>().length() == 0) current_item->field<id_type>(current_item->field<dir_type>().length() > 0 ? current_item->field<dir_type>() : get_unical_id()); // "id",	// || current_item->field("url") == Browser::_defaulthome
+		if(current_item->field<id_type>().length() == 0) current_item->field<id_type>(current_item->field<dir_type>().length() > 0 ? current_item->field<dir_type>() : get_unical_id()); // "id",	// || current_item->field("url") == web::Browser::_defaulthome
 	        if(current_item->field<url_type>() == "") current_item->field<dir_type>(current_item->id()); // "dir",
 	        if(current_item->field<file_type>() == "") current_item->field<file_type>("text.html"); // "file",
 	        QString current_dir	= current_item->field<dir_type>(); // table->field(pos, "dir");
@@ -585,7 +585,7 @@ namespace browser {
 	        qDebug() << "void WebPage::metaeditor_sychronize() : id " << current_item->field<id_type>(); // table->field(pos, "id");
 	        qDebug() << "void WebPage::metaeditor_sychronize() : name " << current_item->field<name_type>(); // table->field(pos, "name");
 	        qDebug() << "void WebPage::metaeditor_sychronize() : crypt " << current_item->field<crypt_type>(); // table->field(pos, boost::mpl::c_str < crypt_type > ::value);
-	        if(current_item->field<crypt_type>() == "1")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
+		if(current_item->field<crypt_type>() == "1")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
 			if(full_dir.length() == 0 || current_file.length() == 0) _editing_window->dir_file_empty_reaction(EditorWrap::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 	        // _editentry->blog_editor()->editor()->clear_all_misc_field();
 	        // В редактор заносится информация, идет ли работа с зашифрованным текстом
@@ -626,57 +626,23 @@ namespace browser {
 	                _editing_window->scrollbar_position(walkhistory.scrollbar_position(id));
 		}
 #else
-	        auto id = _editing_window->topic();
+		auto id = _blogger->topic();
 	        // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
 	        if(appconfig->remember_cursor_at_ordinary_selection()){
-	                _editing_window->cursor_position(walkhistory.cursor_position(static_cast<id_value>(id)));
-	                _editing_window->scrollbar_position(walkhistory.scrollbar_position(static_cast<id_value>(id)));
+			_blogger->cursor_position(walkhistory.cursor_position(static_cast<id_value>(id)));
+			_blogger->scrollbar_position(walkhistory.scrollbar_position(static_cast<id_value>(id)));
 		}
 #endif // USE_FILE_PER_TREEITEM
 	        // Обновление иконки аттачей
-	        if(current_item->attach_table()->size() == 0)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // table->record(pos)->getAttachTablePointer()->size()
-			_editing_window->to_attach()->setIcon(_editing_window->icon_attach_not_exists());
+		if(current_item->attach_table()->size() == 0)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    // table->record(pos)->getAttachTablePointer()->size()
+			_blogger->to_attach()->setIcon(_blogger->icon_attach_not_exists());
 	        // Если нет приаттаченных файлов
-	        else _editing_window->to_attach()->setIcon(_editing_window->icon_attach_exists()); // Есть приаттаченные файлы
+		else _blogger->to_attach()->setIcon(_blogger->icon_attach_exists()); // Есть приаттаченные файлы
 
 	        // }
 	}
 
-// deprecated
-	void WebPage::binder_reset(){
-	        // {	// if(sychronize_to_record_view)// _tabmanager
-	        ////	_record_controller->on_recordtable_configchange();
-	        // }
-	        //// _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
-	        if(_binder){
-	                // auto _host_binder = _binder->host() ? _binder->host()->binder() : nullptr;
-	                ////	    assert(_host_binder == _binder);
-	                // if(_host_binder && _host_binder == _binder){
-	                ////		if(_host_binder->page())
-	                // _host_binder->page(nullptr);
-	                ////		if(_host_binder->host())
-	                // _host_binder->host(nullptr);
-	                ////		// _binder->break_page();   // item_break(_binder->item_link());  // break_items();
 
-	                ////		_host_binder.reset(nullptr);
-	                // }else{
-	                _binder->page(nullptr);
-
-	                _binder->host(nullptr);
-	                // }
-	                ////            auto _page_binder = _binder->page() ? _binder->page()->binder() : nullptr;
-	                ////            if(_page_binder){
-	                ////                assert(_page_binder == _binder);
-	                ////                if(_page_binder->page())_page_binder->page(nullptr);
-	                ////                if(_page_binder->host()){_page_binder->host(boost::intrusive_ptr<TreeItem>(nullptr));}
-	                //////		_binder->page()->binder(nullptr);
-	                //////		_binder->page(nullptr);
-	                ////                _page_binder = nullptr;
-	                ////            }
-	                // _binder.reset(nullptr);
-		}
-	        _record_controller->on_recordtable_configchange();
-	}
 
 	Browser *WebPage::browser(){return _browser;} // return _entrance->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
 
@@ -714,7 +680,7 @@ namespace browser {
 	        QString _url_str = _binder->host()->field<url_type>();
 	        QUrl _url = QUrl(_url_str);
 	        if(  _view // && _loadingurl.isValid()     // && url().isValid()    // && url().toString() != _url_str
-	             // && _url_str != Browser::_defaulthome		// url() may be nothing
+		     // && _url_str != web::Browser::_defaulthome		// url() may be nothing
 	          && _url != _loadingurl // lead loading stop
 	          ){
 	                // triggerAction(QWebEnginePage::Stop);
@@ -738,7 +704,7 @@ namespace browser {
 	                auto it = _binder->host();
 	                auto tree_view = _tree_screen->view();
 	                if(it != tree_view->current_item()) tree_view->select_as_current(TreeIndex::require_treeindex([&] {return tree_view->source_model();}, it));
-	                // if(_url_str != Browser::_defaulthome){	// && _loadingurl.isValid()   // && _loadingurl == _url
+			// if(_url_str != web::Browser::_defaulthome){	// && _loadingurl.isValid()   // && _loadingurl == _url
 	                if(_view){
 	                        auto record_view = _record_controller->view();
 	                        if(record_view){
@@ -772,15 +738,15 @@ namespace browser {
 	        return _view;
 	}
 
-	boost::intrusive_ptr<TreeItem> WebPage::bind(boost::intrusive_ptr<TreeItem> host_){ // , browser::WebPage *page
+	boost::intrusive_ptr<TreeItem> WebPage::bind(boost::intrusive_ptr<TreeItem> host_){ // , web::WebPage *page
 	        boost::intrusive_ptr<TreeItem> result(nullptr);
 
 	        // auto binder = [](boost::shared_ptr<WebPage::RecordBinder> ar) {
-	        // return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
+		// return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *, boost::intrusive_ptr<TreeItem>   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
 	        // >>("", &WebPage::RecordBinder::binder, ar);
 	        // };
 	        // auto activator = [](boost::shared_ptr<WebPage::RecordBinder> ar) {
-	        // return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
+		// return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, web::WebView *>>("", &WebPage::RecordBinder::activator, ar);
 	        // };
 
 	        // registered record, but have no generator:
@@ -844,6 +810,45 @@ namespace browser {
 	        return result;
 	}
 
+	// deprecated
+	void WebPage::binder_reset(){
+		// {	// if(sychronize_to_record_view)// _tabmanager
+		////	_record_controller->on_recordtable_configchange();
+		// }
+		//// _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
+		if(_binder){
+			// auto _host_binder = _binder->host() ? _binder->host()->binder() : nullptr;
+			////	    assert(_host_binder == _binder);
+			// if(_host_binder && _host_binder == _binder){
+			////		if(_host_binder->page())
+			// _host_binder->page(nullptr);
+			////		if(_host_binder->host())
+			// _host_binder->host(nullptr);
+			////		// _binder->break_page();   // item_break(_binder->item_link());  // break_items();
+
+			////		_host_binder.reset(nullptr);
+			// }else{
+			{
+				//	                        _binder->page(nullptr);
+
+				//	                        _binder->host(nullptr);
+				_binder = nullptr;
+			}
+			// }
+			////            auto _page_binder = _binder->page() ? _binder->page()->binder() : nullptr;
+			////            if(_page_binder){
+			////                assert(_page_binder == _binder);
+			////                if(_page_binder->page())_page_binder->page(nullptr);
+			////                if(_page_binder->host()){_page_binder->host(boost::intrusive_ptr<TreeItem>(nullptr));}
+			//////		_binder->page()->binder(nullptr);
+			//////		_binder->page(nullptr);
+			////                _page_binder = nullptr;
+			////            }
+			// _binder.reset(nullptr);
+		}
+		_record_controller->on_recordtable_configchange();
+	}
+
 	bool WebPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame){
 	        Q_UNUSED(type);
 	        if(isMainFrame){
@@ -883,7 +888,7 @@ namespace browser {
 	        // runJavaScript(script, [&](const QVariant &var){url_ = var.toString();assert(url_ != "");});
 	        // assert(url_ != "");
 	        QUrl target_url = QUrl(_hovered_url);
-	        if(!target_url.isValid()) target_url = Browser::_defaulthome;
+		if(!target_url.isValid()) target_url = web::Browser::_defaulthome;
 	        // assert(url != "");
 
 	        // QWebChannel *channel = new QWebChannel(this);
@@ -904,16 +909,16 @@ namespace browser {
 	        boost::intrusive_ptr<TreeIndex> this_treeindex = TreeIndex::require_treeindex([&] {return tree_view->source_model();}, this->host()); // parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->host());
 	        auto find_binder	= [&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString());};
 	        auto find_target	= [&](){return gl_paras->main_window()->find(find_binder);};
-	        if(type == QWebEnginePage::WebBrowserWindow){
+		if(type == QWebEnginePage::WebBrowserWindow){// this means a new topic at current design, it is not reasonable.
 	                WebView *v = find_target();
 	                if(v) v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
-	                Browser *_browser = gl_paras->main_window()->new_browser(); // QtSingleApplication::instance()->newMainWindow();
+			Browser *_browser_new = gl_paras->main_window()->browser(target_url, true); // QtSingleApplication::instance()->newMainWindow();
 
 	                auto it = // this_index->
 	                          TreeIndex::require_item(target_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal((it_->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toString().toStdString());}); // return it_->field<url_type>() == target_url.toString();
-	                // Browser::_defaulthome
+			// web::Browser::_defaulthome
 
-	                page = _browser->bind(RecordIndex::instance([&] {return _browser->record_screen()->record_controller()->source_model();}, it))->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1))->page();
+			page = _browser_new->bind(RecordIndex::instance([&] {return _browser_new->tabmanager()->record_controller()->source_model();}, it))->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1))->page();
 
 	                assert(page);
 		}else if(type == WebBrowserBackgroundTab){
@@ -941,13 +946,12 @@ namespace browser {
 	                        assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
 	                        auto it = this_treeindex->bind(target_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) // std::placeholders::_1
-	                                                      ,
-	                                                       [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());});
+							      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());});
 	                        // page = it ? it->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page() : nullptr;
 	                        page = it ? it->page() : nullptr;
-	                        assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
+				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 			}
-	                assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
+			assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 		}else
 #ifdef USE_POPUP_WINDOW
 	        if(type == WebBrowserTab)
@@ -977,15 +981,12 @@ namespace browser {
 	                        assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
 	                        auto it = this_treeindex->bind(target_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) // std::placeholders::_1
-	                                                      ,
-	                                                       [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());});
-	                        page = it ? it->activate(std::bind(&wn_t::find, gl_paras->main_window(), find_binder) // std::placeholders::_1
-	                                                )
-	                               ->page()
-				       : nullptr;
-	                        assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
+							      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());});
+				page = it ? it->activate(std::bind(&wn_t::find, gl_paras->main_window(), find_binder))->page() : nullptr; // std::placeholders::_1
+
+				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 			}
-	                assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
+			assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 		}
 #ifdef USE_POPUP_WINDOW
 	        else{  // type == WebDialog
@@ -993,7 +994,7 @@ namespace browser {
 	                                                     // view()->tabmanager()
 	                                                    ,
 	                                                     _profile
-	                                                     // , QUrl(Browser::_defaulthome)
+							     // , QUrl(web::Browser::_defaulthome)
 	                                                     // , _record_controller
 	                                                     // , _page_controller
 	                                                     // , view()->tabmanager()->browser()
@@ -1029,7 +1030,7 @@ namespace browser {
 	        // page->activate();
 	        // });
 	        // }
-	        assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "" || type == WebDialog);
+		assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "" || type == WebDialog);
 
 	        return page;
 	}
@@ -1094,19 +1095,19 @@ namespace browser {
 
 	void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth){
 	        // if(_entrance->browsers().count() == 0) {
-	        // _entrance->new_browser(QUrl(browser::Browser::_defaulthome));
+		// _entrance->new_browser(QUrl(web::Browser::_defaulthome));
 	        // }
 
-	        Browser *browser = gl_paras->main_window()->activated_browser(); // QtSingleApplication::instance()->mainWindow();
+//	        Browser *_browser = gl_paras->main_window()->activated_browser(); // QtSingleApplication::instance()->mainWindow();
 
-	        QDialog dialog(browser);
+		QDialog dialog(_browser);
 	        dialog.setWindowFlags(Qt::Sheet);
 
 	        Ui::PasswordDialog passwordDialog;
 	        passwordDialog.setupUi(&dialog);
 
 	        passwordDialog.iconLabel->setText(QString());
-	        passwordDialog.iconLabel->setPixmap(browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, browser).pixmap(32, 32));
+		passwordDialog.iconLabel->setPixmap(_browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, _browser).pixmap(32, 32));
 
 	        QString introMessage = tr("<qt>Enter username and password for \"%1\" at %2</qt>");
 	        introMessage = introMessage.arg(auth->realm()).arg(requestUrl.toString().toHtmlEscaped());
@@ -1128,19 +1129,19 @@ namespace browser {
 	        Q_UNUSED(requestUrl);
 
 	        // if(_entrance->browsers().count() == 0) {
-	        // _entrance->new_browser(QUrl(browser::Browser::_defaulthome));
+		// _entrance->new_browser(QUrl(web::Browser::_defaulthome));
 	        // }
 
-	        Browser *browser = gl_paras->main_window()->activated_browser(); // QtSingleApplication::instance()->mainWindow();
+//	        Browser *_browser = gl_paras->main_window()->activated_browser(); // QtSingleApplication::instance()->mainWindow();
 
-	        QDialog dialog(browser);
+		QDialog dialog(_browser);
 	        dialog.setWindowFlags(Qt::Sheet);
 
 	        Ui::ProxyDialog proxyDialog;
 	        proxyDialog.setupUi(&dialog);
 
 	        proxyDialog.iconLabel->setText(QString());
-	        proxyDialog.iconLabel->setPixmap(browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, browser).pixmap(32, 32));
+		proxyDialog.iconLabel->setPixmap(_browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, _browser).pixmap(32, 32));
 
 	        QString introMessage = tr("<qt>Connect to proxy \"%1\" using:</qt>");
 	        introMessage = introMessage.arg(proxyHost.toHtmlEscaped());
@@ -1394,7 +1395,18 @@ namespace browser {
 			}
 	                // recovery_global_consistency();
 	                // target_ = _page->binder()->host();
-	                auto current = _tabmanager->currentWebView()->page()->binder()->host();
+			auto current = [&] {
+				boost::intrusive_ptr<TreeItem> r;
+				auto v = _tabmanager->currentWebView();
+				if(v){
+					auto p = v->page();
+					if(p){
+						auto b = p->binder();
+						if(b) r = b->host();
+					}
+				}
+				return r;
+			} ();
 	                if(_record_controller->source_model()->current_item() != current){
 	                        auto pp = _record_controller->index<pos_proxy>(current);
 	                        // auto	index_proxy_	= _record_controller->index<index_proxy>(pp);
@@ -1416,17 +1428,12 @@ namespace browser {
 	bool WebView::load_finished() const {return _load_finished;}
 
 	WebView::~WebView(){
-	        // if(_page->record()) {
-	        // _page->record()->page(nullptr);
-	        ////            globalparameters.getRecordTableScreen()->previousInFocusChain();    //_record;
-	        // _page->record(nullptr);
-	        // }
-	        if(_page){
-	                // delete _page;
-	                // _page = nullptr; //
-	                // emit _page->close_requested();
-	                _page->deleteLater();
-		}
+//	        if(_page){
+//	                // delete _page;
+//	                // _page = nullptr; //
+//	                // emit _page->close_requested();
+//	                _page->deleteLater();
+//		}
 	}
 
 	WebPage *WebView::page() const {return _page;}
@@ -1436,17 +1443,17 @@ namespace browser {
 #endif
 
 	WebView::WebView(boost::intrusive_ptr<TreeItem> host_, Profile *profile // , bool openinnewtab
-	                , ts_t *tree_screen, EditingWindow *editing_window, BrowserDock *entrance, Browser *browser, TabWidget *tabmanager, rctrl_t *table_controller)
+			, ts_t *tree_screen, Blogger *editing_window, web::Docker *browser_docker_, Browser *browser, TabWidget *tabmanager, rctrl_t *table_controller)
 		: QWebEngineView(static_cast<QWidget *>(tabmanager)) // ->parent()
 		  , _browser(browser)
 		  , _tabmanager(tabmanager) // , _record(record)
 		  , _record_controller(table_controller)
-		  , _page([&]() -> WebPage *{_page = nullptr; auto p = new WebPage(profile, host_, tree_screen, editing_window, entrance, browser, tabmanager, table_controller, this); return p;} ()) // , openinnewtab
+		  , _page([&]() -> WebPage *{_page = nullptr; auto p = new WebPage(profile, host_, tree_screen, editing_window, browser_docker_, browser, tabmanager, table_controller, this); return p;} ()) // , openinnewtab
 		  // , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
 		  , _progress(0)
-		  , _iconreply(0){
+		  , _icon_reply(0){
 	        settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
-	        settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+		settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
 	        settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
 	        settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 	        settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
@@ -1507,7 +1514,7 @@ namespace browser {
 				if(_binder->host()){
 				        if(  url.toString() != ""
 				          && url != QUrl() && !url.host().isEmpty() && !url.scheme().isEmpty()
-				          && url != QUrl(Browser::_defaulthome)
+					  && url != QUrl(web::Browser::_defaulthome)
 				             // && url != _loadingurl
 				          && url.toString() != _binder->host()->field<url_type>())
 						if(url.isValid() && url != this->_page->_loadingurl) this->urlChanged(url);
@@ -1521,6 +1528,9 @@ namespace browser {
 
 	        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::loadFinished, this, &WebView::onLoadFinished);
 	        connect(this, &WebView::close_requested, &WebView::on_close_requested);
+		connect(this, &WebView::close_requested, [&](){
+				_tabmanager->closeTab(_tabmanager->webViewIndex(this));
+			});
 	        // &WebPage::titleChanged(const QString &title);
 	        // &WebPage::urlChanged(const QUrl &url);
 	        // _page->load(_record->getField("url"));    // auto  loaded
@@ -1553,7 +1563,7 @@ namespace browser {
 					if(_binder->host()){
 					        if(  url.toString() != ""
 					          && url != QUrl() && !url.host().isEmpty() && !url.scheme().isEmpty()
-					          && url != QUrl(Browser::_defaulthome)
+						  && url != QUrl(web::Browser::_defaulthome)
 					          && url.toString() != _binder->host()->field<url_type>())
 							if(url.isValid() && url != this->_page->_loadingurl) this->urlChanged(url);
 					}
@@ -1575,23 +1585,29 @@ namespace browser {
 	}
 
 	void WebView::activateWindow(){
-	        QObject::disconnect(_home_connection);
+		if(!_browser->isActiveWindow()) _browser->activateWindow();
+//	        QObject::disconnect(_home_connection);
 
-	        _home_connection
-	                = QObject::connect(
-			_tabmanager->browser()->_historyhome, &QAction::triggered, this, [&](bool checked = true) -> void {
-				Q_UNUSED(checked)
-				if(_page->binder()){
-				        boost::intrusive_ptr<TreeItem> _item = _page->binder()->host();
-				        assert(_item);
-				        QString home = _item->field<home_type>();
-				        QUrl homeurl = QUrl(home);
-				        if(homeurl.isValid() && homeurl != _page->url()){
-				                _item->field<url_type>(home); // "url",
-				                _page->load(_item, true);
-					}
-				}
-			});
+//	        _home_connection
+//	                =
+		auto to_home = _browser->_historyhome;
+		to_home->disconnect();
+		QObject::connect(to_home, &QAction::triggered, this, [&](bool checked = true) -> void {
+					 Q_UNUSED(checked)
+					 if(_page->binder()){
+						 boost::intrusive_ptr<TreeItem> _item = _page->binder()->host();
+						 assert(_item);
+						 QString home = _item->field<home_type>();
+						 QUrl homeurl = QUrl(home);
+						 if(homeurl.isValid() && homeurl != _page->url()){
+							 _item->field<url_type>(home); // "url",
+							 _page->load(_item, true);
+						 }
+					 }
+				 });
+
+
+
 	        QWebEngineView::activateWindow();
 	}
 
@@ -1727,9 +1743,9 @@ namespace browser {
 
 	void WebView::onIconUrlChanged(const QUrl &url){
 	        QNetworkRequest iconRequest(url);
-	        _iconreply = sapp_t::networkAccessManager()->get(iconRequest);
-	        _iconreply->setParent(this);
-	        connect(_iconreply, &QNetworkReply::finished, this, &WebView::iconLoaded);
+		_icon_reply = sapp_t::networkAccessManager()->get(iconRequest);
+		_icon_reply->setParent(this);
+		connect(_icon_reply, &QNetworkReply::finished, this, &WebView::iconLoaded);
 	}
 
 	void WebView::on_close_requested(){
@@ -1768,13 +1784,13 @@ namespace browser {
 
 	void WebView::iconLoaded(){
 	        _icon = qobject_cast<sapp_t *>(qApp)->defaultIcon(); // QIcon();
-	        if(_iconreply){
-	                QByteArray data = _iconreply->readAll();
+		if(_icon_reply){
+			QByteArray data = _icon_reply->readAll();
 	                QPixmap pixmap;
 	                pixmap.loadFromData(data);
 	                _icon.addPixmap(pixmap);
-	                _iconreply->deleteLater();
-	                _iconreply = 0;
+			_icon_reply->deleteLater();
+			_icon_reply = 0;
 		}
 	        emit iconChanged();
 	}
@@ -1858,56 +1874,30 @@ namespace browser {
 		: // std::enable_shared_from_this<Coupler>()
 		  _host(item_)
 		  , _page(page_){ // , _make_current(make_current)
-	                          // _bounded_page->record_binder(new TreeItem::coupler_delegation(shared_from_this()));
-	                          // _bounded_item->record_binder(_bounded_page->record_binder());
+				  // _bounded_page->binder(new TreeItem::coupler_delegation(shared_from_this()));
+				  // _bounded_item->binder(_bounded_page->record_binder());
 	}
 
 	WebView *WebPage::Binder::bind(){ // boost::intrusive_ptr<TreeItem> item
 	        assert(_page);
-	        ////                boost::intrusive_ptr<TreeItem> result = _the->record_controller()->source_model()->find(item);
+
 	        WebView *view = nullptr;
-	        // if(_page){
-	        // view = _page->view();
-	        // if(! _item){
-	        // _item = _page->binder() ? _page->binder()->host() : nullptr;
-	        ////
-	        // }
-	        // }
-	        //////                if(result) {
-	        //////                    view = item->bind();    //
-	        //////                    // item->unique_page()->view();
-	        //////                } else {
-	        //// WebView *view = _bounded_page->bind(item);
-	        //////        (item.get()->*_bind)(_bounded_page);
-	        //////        //                }
-	        //// _bounded_item = item;
 	        if(_host){
 	                if(!_page){
-	                        auto _browser = gl_paras->main_window()->activated_browser();
-	                        auto record_index = RecordIndex::instance([&] {return _browser->record_screen()->record_controller()->source_model();}, _host);
+				auto _browser = gl_paras->main_window()->browser(_host);
+				auto record_index = RecordIndex::instance([&] {return _browser->tabmanager()->record_controller()->source_model();}, _host);
 
 	                        _page	= _browser->bind(record_index)->page();
 	                        view	= _page->view();
 			}
-	                // if((_bounded_item && _bounded_item.get() != item.get())) { // || (_item && !_item->page_valid())    // bug, they may all are nullptr, conflict with upon
-	                // _bounded_page->item_break(_bounded_item);
-	                // }
-	                // _bounded_item = item;
 	                if(_host->binder() != _page->binder()){
 	                        assert(_host->binder());
 	                        _page->binder_reset();
-	                        // _page->binder(// std::forward<boost::intrusive_ptr<TreeItem::Coupler>&>(
-	                        // _item->binder()
-	                        //// )
-	                        // )
-	                        // ;
 			}
 	                _page->bind(_host);
-	                if(_page->url().toString() != _host->field<url_type>()) _page->setUrl(QUrl(_host->field<url_type>())); // _bounded_page = view->page();
-	                // MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
-	                assert(_page->_editing_window);
+			if(_page->url().toString() != _host->field<url_type>()) _page->setUrl(QUrl(_host->field<url_type>()));
 #ifdef USE_EDITOR_WRAP
-	                if(_page->_editing_window->item() != _host) _page->metaeditor_sychronize();
+			if(_page->_blogger->item() != _host) _page->metaeditor_sychronize();
 #endif //USE_EDITOR_WRAP
 	                assert(_page->binder()->integrity_external(_host, _page));
 		}else{
@@ -1960,17 +1950,17 @@ namespace browser {
 
 	boost::intrusive_ptr<::Binder> WebPage::binder(){return _binder;}
 
-	const boost::intrusive_ptr<::Binder>&& WebPage::binder() const {return std::forward<const boost::intrusive_ptr<::Binder> >(_binder);}
+//	const boost::intrusive_ptr<::Binder>&& WebPage::binder() const {return std::forward<const boost::intrusive_ptr<::Binder> >(_binder);}
 
 	boost::intrusive_ptr<::Binder> WebPage::binder(boost::intrusive_ptr<::Binder> &&binder_){
 	        boost::intrusive_ptr<::Binder> result(nullptr);
 	        if(binder_){
-	                binder_->page(this);
-	                if(binder_ != _binder) this->_binder = std::forward<boost::intrusive_ptr<::Binder> >(binder_);
+			assert(binder_->page() == this);// binder_->page(this);
+			if(binder_ != _binder) this->_binder = std::forward<boost::intrusive_ptr<::Binder> >(binder_);
 	                result = this->_binder;
 		}else{
-	                _binder->host(nullptr);
-	                _binder->page(nullptr);
+//	                _binder->host(nullptr);
+//	                _binder->page(nullptr);
 	                _binder = nullptr;
 		}
 	        return result;

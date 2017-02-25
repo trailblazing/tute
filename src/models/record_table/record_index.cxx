@@ -28,12 +28,12 @@ boost::intrusive_ptr<TreeItem> RecordIndex::bind( // const std::function<RecordM
 	bool make_current) noexcept {
 	boost::intrusive_ptr<TreeItem> result(nullptr);
 	rctrl_t *ctrl = _current_model()->reocrd_controller(); // current_model_()
-	browser::Browser *browser_ = ctrl->tabmanager()->browser();
+	web::Browser *browser_ = ctrl->tabmanager()->browser();
 
 	assert(_host);
 	if(_host){
 		auto url = _host->field<url_type>();
-		if(url != ""){  // && url != browser::Browser::_defaulthome
+		if(url != ""){  // && url != web::Browser::_defaulthome
 			// if(sibling_item_ != _host){
 			// index_source sibling_index_ = sibling_item_ ? current_model_()->index(sibling_item_) : current_model_()->current_index();
 			// if(! static_cast<QModelIndex>(sibling_index_).isValid()){
@@ -128,7 +128,7 @@ boost::intrusive_ptr<TreeItem> RecordIndex::synchronize(boost::intrusive_ptr<Tre
 			auto current_model_ = [&] {return rctrl->source_model();};
 			auto alternative_item = v->page()->host();
 			auto url = alternative_item->field<url_type>(); // host_->field<url_type>();
-			if(url != ""){  // && url != browser::Browser::_defaulthome
+			if(url != ""){  // && url != web::Browser::_defaulthome
 				// rctrl_t *rctrl = current_model_()->reocrd_controller();
 				_found_item = rctrl->synchronize(RecordIndex::instance(current_model_, alternative_item, nullptr)); // host_
 			}

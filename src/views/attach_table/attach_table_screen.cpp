@@ -7,7 +7,7 @@
 #include "attach_table_view.h"
 #include "controllers/attach_table/attach_table_controller.h"
 #include "libraries/global_parameters.h"
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #include "main.h"
 #include "utility/add_action.h"
 #include "views/record/editor_wrap.h"
@@ -20,10 +20,10 @@ extern std::shared_ptr<gl_para> gl_paras;
 W_OBJECT_IMPL(AttachTableScreen)
 #endif
 
-AttachTableScreen::AttachTableScreen(EditingWindow *editing_window, QWidget *parent)
+AttachTableScreen::AttachTableScreen(Blogger *blogger_, QWidget *parent)
 	: QWidget(parent)
 	  , toolsLine([&]() -> QToolBar * {toolsLine = new QToolBar(this); setupActions(); return toolsLine;} ())
-	  , attachTableController(new AttachTableController(editing_window, this))
+	  , attachTableController(new AttachTableController(blogger_, this))
 	  , attachTableView(attachTableController->view()){
 	// По факту этот класс - синглтон. Синглтон сам задает себе имя
 	this->setObjectName("attachTableScreen");

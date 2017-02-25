@@ -10,7 +10,7 @@
 extern std::shared_ptr<AppConfig> appconfig;
 extern std::shared_ptr<gl_para> gl_paras;
 extern TrashMonitoring trashmonitoring;
-extern const char *index_xml_file_name;
+//extern const char *index_xml_file_name;
 
 DiskHelper::DiskHelper()
 {}
@@ -20,7 +20,7 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom){
 	QDir dirfrom(nameDirFrom);
 	QStringList fileList = dirfrom.entryList();
 
-	QString nameDirTo = gl_paras->root_path() + "/" + QDir(appconfig->trash_dir()).dirName();
+	QString name_dir_to = gl_paras->root_path() + "/" + QDir(appconfig->trash_dir()).dirName();
 	// Перебор всех файлов в удаляемой директории
 	for(int i = 0; i < fileList.size(); i++){
 		// Директории с именами "." и ".." обрабатывать не нужно
@@ -34,7 +34,7 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom){
 		bool targetFileFree = false;
 		do {
 			fileNameToShort = get_unical_id() + "_" + fileList.at(i);
-			fileNameTo = nameDirTo + "/" + fileNameToShort;
+			fileNameTo = name_dir_to + "/" + fileNameToShort;
 			if(QFile::exists(fileNameTo)) targetFileFree = false;
 			else targetFileFree = true;
 		} while(!targetFileFree);
@@ -313,6 +313,65 @@ bool DiskHelper::copy_file_force(QString source, QString target){
 	if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(target) & (QFile::ReadUser | QFile::WriteUser))){
 		if(!QFile::setPermissions(target, QFile::ReadUser | QFile::WriteUser)) critical_error("Can\'t set permissions to file \"" + target + "\"");
 		else result = true;
+	}
+	return result;
+}
+
+std::shared_ptr<QFileInfo> DiskHelper::recover_ini_file(std::shared_ptr<QFileInfo> target_file, bool force_remove){
+	std::shared_ptr<QFileInfo> result(nullptr); // = false;
+	auto need = false;
+	auto _file_name = target_file->fileName(); // "someting.ini" // "index.xml";
+	auto only_path	= target_file->path();
+	auto file_name_fullpath = target_file->filePath(); // appconfig->tetra_dir() + "/" + _file_name;
+	auto test_file_full = only_path + "/" + "temp.ini";
+	auto source_file_name = QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + _file_name;
+	// if(QFile::exists(appconfig->tetra_dir() + "/" + _file_name))remove_oldest_file(_file_name);
+	if(QFile::exists(file_name_fullpath)){
+		// QFileInfo currentFile(_trashmonitoring->_path + "/" + _name);
+		// _file_size = currentFile.size();
+
+		// unsigned int _file_size = 0;
+		// QFile		file_from(file_name_fullpath);
+		// if(file_from.open(QIODevice::ReadOnly)){
+		auto _file_size = filesize(file_name_fullpath.toStdString().c_str()); // file_from.size();		// when file does open.
+		// file_from.close();
+		// }
+		if(!QFile::copy(source_file_name, test_file_full)) critical_error("Can not copy file from \"" + source_file_name + "\" to \"" + test_file_full + "\"");
+		auto _source_size = filesize(test_file_full.toStdString().c_str());
+		if(0 == _file_size || _file_size < _source_size){
+			if(!QFile::remove(file_name_fullpath)){  // Файл физически удаляется
+				// }else{
+				critical_error("In recover_from_trash. Can not delete file " + file_name_fullpath);
+				exit(0);
+			}else need = true;
+		}
+	}else need = true;
+	if(need || force_remove){
+		if(QFile(file_name_fullpath).exists()) if(!QFile::remove(file_name_fullpath)) critical_error("Can\'t remove fiel \"" + file_name_fullpath + "\"");
+		// auto	_main_program_file = globalparameters.main_program_file();
+		// QFileInfo	main_program_file_info(_main_program_file);
+		// QString	full_current_path = main_program_file_info.absolutePath();
+//		if(!QDir(gl_paras->root_path() + "/" + QDir(appconfig->trash_dir()).dirName()).exists()) QDir(gl_paras->root_path()).mkdir(QDir(appconfig->trash_dir()).dirName());
+		if(QFile(test_file_full).exists()){
+			if(!QFile::rename(test_file_full, file_name_fullpath)){//if(!QFile::copy(source_file_name, file_name_fullpath))
+				//
+				critical_error("Can not rename file from \"" + test_file_full + "\" to \"" + file_name_fullpath + "\""); //throw std::runtime_error("Can not copy index.xml");
+			}
+		}else{
+			//
+			if(!QFile::copy(source_file_name, file_name_fullpath)) critical_error("Can not copy file from \"" + source_file_name + "\" to \"" + file_name_fullpath + "\"");
+		}
+		QFile::setPermissions(file_name_fullpath, QFile::ReadUser | QFile::WriteUser);
+		// bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.index_xml());
+		// assert(succedded);
+
+		result = std::make_shared<QFileInfo>(file_name_fullpath); // target_file;
+
+		// result = target_file;
+		// }
+	}else{
+		//
+		if(QFile(test_file_full).exists()) if(!QFile::remove(test_file_full)) critical_error("In recover_from_trash. Can not delete file " + test_file_full);
 	}
 	return result;
 }

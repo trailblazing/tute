@@ -94,10 +94,10 @@ void InfoFieldEnter::setup_ui(void){
 	expandInfo->setMaximumSize(x, x);
 	expandInfo->resize(x, x);
 	if(appconfig->add_new_record_expand_info() == "0"){
-		expandInfo->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
+		expandInfo->setIcon(QIcon(":/resource/pic/mobile_down.svg"));
 		// expandInfo->setIcon(this->style()->standardIcon(QStyle::SP_ArrowDown));
 	}else{
-		expandInfo->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
+		expandInfo->setIcon(QIcon(":/resource/pic/mobile_up.svg"));
 		// expandInfo->setIcon(this->style()->standardIcon(QStyle::SP_ArrowUp));
 	}
 }
@@ -178,14 +178,14 @@ void InfoFieldEnter::expandInfoClick(void){
 
 		appconfig->add_new_record_expand_info("1");
 
-		expandInfo->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
+		expandInfo->setIcon(QIcon(":/resource/pic/mobile_up.svg"));
 	}else{
 		// Надо информацию свернуть
 		expandInfoOnDisplay("0");
 
 		appconfig->add_new_record_expand_info("0");
 
-		expandInfo->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
+		expandInfo->setIcon(QIcon(":/resource/pic/mobile_down.svg"));
 	}
 }
 

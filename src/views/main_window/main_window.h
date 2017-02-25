@@ -1,11 +1,16 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+
+
+
+#include <memory>
+#include <map>
+
 #include <QDialog>
 #include <QMainWindow>
 #include <QTextBlockFormat>
 #include <QTextListFormat>
 #include <QWidget>
-#include <memory>
 
 #include <QXmlInputSource>
 #include <QXmlSimpleReader>
@@ -60,8 +65,8 @@ extern const QString program_title_qstring;
 extern const std::string program_title_string;
 extern const char *meta_editor_singleton_name;
 
-namespace browser {
-	class BrowserDock;
+namespace web {
+	class Docker;
 	class Browser;
 	class DownloadManager;
 	class HistoryMenu;
@@ -70,7 +75,7 @@ namespace browser {
 }
 
 class ts_t;
-class EditorWrap;
+class Editor;
 class rs_t;
 class FindScreen;
 class WindowSwitcher;
@@ -80,10 +85,11 @@ class gl_para;
 class AppConfig;
 class DataBaseConfig;
 class tsv_t;
-class EditorDock;
+class Blogger;
 class QHBoxLayout;
 class QVBoxLayout;
 class SysTrayIcon;
+class TreeItem;
 
 class wn_t
 	: public QMainWindow {
@@ -99,7 +105,7 @@ public:
 		// , std::shared_ptr<AppConfig> appconfig_
 		// , std::shared_ptr<DataBaseConfig> databaseconfig_
 		// ,
-		browser::Profile *profile, QString style_source);
+		web::Profile *profile, QString style_source);
 
 	~wn_t();
 
@@ -129,8 +135,8 @@ public:
 	QMenu *file_menu() const;
 	QMenu *edit_menu() const;
 	QMenu *view_menu() const;
-	browser::HistoryMenu *histry_menu() const;
-	browser::BookmarksMenu *bookmark_menu() const;
+	web::HistoryMenu *histry_menu() const;
+	web::BookmarksMenu *bookmark_menu() const;
 	QMenu *window_menu() const;
 	QMenu *tools_menu() const;
 	QMenu *help_menu() const;
@@ -139,11 +145,18 @@ public:
 	QSplitter *h_tree_splitter() const;
 	// std::vector<tsv_t *>	tree_viewers() const;
 	std::set<rs_t *> record_screens() const;
-	browser::WebView *find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const;
-	browser::Browser *new_browser();
-	browser::Browser *activated_browser();
+	web::WebView *find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const;
+
+
 	// EditingWindow *current_editing_window();
-	EditingWindow *new_editing_window(const QString &topic);
+//	Blogger *editing_window(const QString &topic, const QByteArray &state_ = QByteArray());
+	std::map<std::string, QMenu *> &main_menu_map();
+
+	template<typename initia_t> web::Browser *browser(const initia_t &it, bool force = true);
+
+
+
+
 public slots:
 	void application_exit(void);
 	void application_fast_exit(void);
@@ -197,7 +210,7 @@ private:
 	// std::shared_ptr<DataBaseConfig> _databaseconfig;
 
 	QWidget *_central_widget;
-	browser::Profile *_profile;
+	web::Profile *_profile;
 	QString _style_source;
 	// QAction *_action_tray_restore;
 	// QAction *_action_tray_maximize;
@@ -211,22 +224,24 @@ private:
 	QSplitter *_h_record_splitter;
 	QSplitter *_h_tree_splitter;
 	// QSplitter           *_h_splitter;
-
+	std::map<std::string, QMenu *> _main_menu_map;
 	QMenu *_filemenu;
 	QMenu *_editmenu;
 	QMenu *_viewmenu;
-	browser::HistoryMenu *_histrymenu;
-	browser::BookmarksMenu *_bookmarkmenu;
+	web::HistoryMenu *_histrymenu;
+	web::BookmarksMenu *_bookmarkmenu;
 	QMenu *_windowmenu;
 	QMenu *_toolsmenu;
 	QMenu *_helpmenu;
 
+
+
+	web::Docker *_browser_docker;
+	HidableTab *_vtab_record;
+	web::Docker *_editor_docker;
 	ts_t *_tree_screen;
 	FindScreen *_find_screen;
-	browser::BrowserDock *_browser_dock;
-	HidableTab *_vtab_record;
-	EditorDock *_editor_dock;
-	// browser::DownloadManager	*_download;
+	// web::DownloadManager	*_download;
 
 	QStatusBar *_statusbar;
 	WindowSwitcher *_switcher;
@@ -244,6 +259,14 @@ protected:
 
 	bool _enable_real_close;
 
-	friend class browser::Browser;
+	friend class web::Browser;
 };
+
+
+template<> web::Browser *wn_t::browser<boost::intrusive_ptr<TreeItem> >(const boost::intrusive_ptr<TreeItem> &it, bool force);
+template<> web::Browser *wn_t::browser<QUrl>(const QUrl &url_, bool force);
+template<> web::Browser *wn_t::browser<QByteArray>(const QByteArray &state_, bool force);
+template<> web::Browser *wn_t::browser<QString>(const QString &topic, bool force);
+
+
 #endif

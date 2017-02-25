@@ -58,7 +58,7 @@ QT_END_NAMESPACE
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 	class SearchButton;
 
 /*

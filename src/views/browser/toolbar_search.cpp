@@ -65,14 +65,14 @@
 
 // #include "views/browser/chasewidget.h"
 #include "controllers/record_table/record_controller.h"
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #include "main.h"
 #include "models/record_table/linker.hxx"
 #include "models/record_table/record_model_proxy.h"
 #include "models/tree/binder.hxx"
 #include "models/tree/tree_index.hxx"
 #include "models/tree/tree_know_model.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/hidable_tab.h"
@@ -80,7 +80,7 @@
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
 
-namespace browser {
+namespace web {
 #if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(ToolbarSearch)
 #endif
@@ -125,7 +125,7 @@ namespace browser {
 	}
 
 	void ToolbarSearch::save(){
-		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
+		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
 		settings.beginGroup(QLatin1String("toolbarsearch"));
 		settings.setValue(QLatin1String("recentSearches"), _stringlistmodel->stringList());
 		settings.setValue(QLatin1String("maximumSaved"), _maxsavedsearches);
@@ -133,7 +133,7 @@ namespace browser {
 	}
 
 	void ToolbarSearch::load(){
-		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename, QSettings::IniFormat);
+		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
 		settings.beginGroup(QLatin1String("toolbarsearch"));
 		QStringList list = settings.value(QLatin1String("recentSearches")).toStringList();
 		_maxsavedsearches = settings.value(QLatin1String("maximumSaved"), _maxsavedsearches).toInt();
@@ -142,15 +142,16 @@ namespace browser {
 	}
 
 	void ToolbarSearch::search_now(){
-		QString search_text = lineEdit()->text();
+		QString search_text = text();//lineEdit()->text();
 
 		auto result_item = gl_paras->find_screen()->find_clicked();
-		ts_t *_tree_screen = gl_paras->tree_screen();
-		auto tree_view = _tree_screen->view();
-		auto current_item = tree_view->current_item();
-		boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::require_treeindex([&] {return tree_view->source_model();}, current_item);
-		auto browser = gl_paras->main_window()->new_editing_window(_findtext->text())->record_screen()->browser();
 		if(result_item){
+			ts_t *_tree_screen = gl_paras->tree_screen();
+			auto tree_view = _tree_screen->view();
+			auto current_item = tree_view->current_item();
+			boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::require_treeindex([&] {return tree_view->source_model();}, current_item);
+			//		auto topic = Blogger::purify_topic(_findtext->text());
+			auto browser = gl_paras->main_window()->browser(search_text);
 			if(0 >= result_item->count_direct()){
 				QUrl url = QUrl(search_text);
 				// if(url.host().isSimpleText());
@@ -247,7 +248,7 @@ namespace browser {
 				// auto	child_items		= std::async(std::launch::async, &tv_t::move_children, tree_view, tree_index, result_item, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();}).get();
 				// auto _vtab_record = globalparameters.main_window()->vtab_record();
 				// auto browser = gl_paras->main_window()->new_editing_window(_findtext->text())->record_screen()->browser();// activated_browser();
-				auto ctrl	= browser->record_screen()->record_controller();
+				auto ctrl	= browser->tabmanager()->record_controller();
 				auto last	= ctrl->source_model()->item(pos_source(ctrl->source_model()->count() - 1));
 				// auto	current_item_	= ctrl->view()->current_item();	// source_model()->item(pos_source(0));
 				////	    auto	child_linkers		= result_item->child_linkers();
@@ -262,7 +263,7 @@ namespace browser {
 						// && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
 						// ){
 						// auto result = browser->item_bind(record_index);
-						// result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+						// result->activate(std::bind(&web::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 						// _result_list << result->linker();																												//
 						// }else{
 						// auto previous_item = _source_model()->item(tree_view->previous_index());
@@ -333,14 +334,14 @@ namespace browser {
 
 	void ToolbarSearch::text(const QString &text){_findtext->setText(text);}
 
-	QString ToolbarSearch::text() const {return _findtext->text();}
+	QString ToolbarSearch::text() const {return Blogger::purify_topic(_findtext->text());}
 
 	void WorkerThread::run(){
 		// QString result;
 		auto element = _child_items.last(); // acrosss thread
 		// auto _vtab_record = globalparameters.main_window()->vtab_record();
-		auto browser = gl_paras->main_window()->activated_browser();
-		auto record_controller = browser->record_screen()->record_controller();
+		auto browser = element->page()->browser();//gl_paras->main_window()->activated_browser(gl_para::_what_ever_topic);
+		auto record_controller = browser->tabmanager()->record_controller();
 		// auto					tab_brother		= record_controller->view()->current_item();	// acrosss thread
 		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return record_controller->source_model();}, element); // tab_brother
 		// if(record_index){
@@ -348,7 +349,7 @@ namespace browser {
 		// && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
 		// ){
 		// auto result = browser->item_bind(record_index);
-		// result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		// result->activate(std::bind(&web::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 		// _result_list << result->linker();																												//
 		// }else{
 		// auto previous_item = _source_model()->item(tree_view->previous_index());

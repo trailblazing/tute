@@ -277,7 +277,7 @@ protected slots:
 protected:
 	QMenu *_context_menu;
 	rs_t *_record_screen;
-	rctrl_t *_record_controller;
+	rctrl_t *_rctrl;
 	VerticalScrollArea *_vertical_scroll_area = nullptr;
 	QVBoxLayout *_layout;
 	ViewDelegation *_delegate; // ButtonColumnDelegate	*_delegate;

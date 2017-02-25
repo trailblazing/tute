@@ -9,11 +9,11 @@
 #include "main.h"
 #include "models/app_config/app_config.h"
 #include "models/tree/tree_know_model.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/hidable_tab.h"
-#include "views/record/editor_dock.h"
+
 #include "views/record/editor_wrap.h"
 #include "views/record/editor_wrap.h"
 #include "views/record_table/record_screen.h"
@@ -30,7 +30,7 @@ extern std::shared_ptr<gl_para> gl_paras;
 W_OBJECT_IMPL(WindowSwitcher)
 #endif
 
-WindowSwitcher::WindowSwitcher(QString object_name, EditorDock *editor_dock, QObject *parent)
+WindowSwitcher::WindowSwitcher(QString object_name, QObject *parent)
 	: QObject(parent){
 	setObjectName(object_name);
 	enable();
@@ -39,7 +39,7 @@ WindowSwitcher::WindowSwitcher(QString object_name, EditorDock *editor_dock, QOb
 	// MetaEditor *edView=find_object<MetaEditor>(meta_editor_singleton_name); // Выясняется указатель на объект редактирования текста записи
 
 	// MetaEditor *metaEditor = globalparameters.getMetaEditor();
-	editor_dock->back_callback(&WindowSwitcher::record_to_recordtable); // Устанавливается функция обратного вызова при клике на кнопку Back
+//	editor_docker->back_callback(&WindowSwitcher::record_to_recordtable); // Устанавливается функция обратного вызова при клике на кнопку Back
 }
 
 void WindowSwitcher::enable(void){
@@ -61,7 +61,7 @@ void WindowSwitcher::tree_to_record_screen(void){
 
 	// Скрываются все прочие области
 	gl_paras->tree_screen()->hide();
-	gl_paras->editor_dock()->hide();
+	gl_paras->editor_docker()->hide();
 	// globalParameters.getFindScreen()->hide();
 
 	auto _index = gl_paras->tree_screen()->view()->current_index();
@@ -95,7 +95,7 @@ void WindowSwitcher::record_to_recordtable(void){
 
 	// Скрываются все прочие области
 	gl_paras->tree_screen()->hide();
-	gl_paras->editor_dock()->hide();
+	gl_paras->editor_docker()->hide();
 	// globalParameters.getFindScreen()->hide();
 	auto _index = gl_paras->tree_screen()->view()->current_index();
 	if(_index.isValid()){
@@ -125,7 +125,7 @@ void WindowSwitcher::recordtable_ro_record_editor(void){
 	for(auto &i : gl_paras->record_screens()) i->hide();
 	// globalParameters.getFindScreen()->hide();
 
-	QWidget *object = static_cast<QWidget *>(gl_paras->editor_dock());
+	QWidget *object = static_cast<QWidget *>(gl_paras->editor_docker());
 	object->show();
 	appconfig->focus_widget(object->objectName());
 }
@@ -137,7 +137,7 @@ void WindowSwitcher::recordtable_to_find_in_base(void){
 void WindowSwitcher::recordtable_to_tree(void){
 	if(!enableSwitcher) return;
 	// Скрываются все прочие области
-	gl_paras->editor_dock()->hide();
+	gl_paras->editor_docker()->hide();
 	for(auto &i : gl_paras->record_screens()) i->hide();
 	// globalParameters.getFindScreen()->hide();
 
@@ -156,7 +156,7 @@ void WindowSwitcher::find_in_base_click(void){
 	// Определяется ссылка на виджет поиска
 	FindScreen *_find_screen = gl_paras->find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
 	QSplitter *_v_right_splitter = gl_paras->v_right_splitter(); // find_object<QSplitter>("v_right_splitter");
-	// browser::Entrance *entrance = globalparameters.entrance();
+	// web::Entrance *entrance = globalparameters.entrance();
 	if(_find_screen && _v_right_splitter){
 		// auto dp = entrance->activiated_registered();
 		int height = _find_screen->height();
@@ -177,7 +177,7 @@ void WindowSwitcher::restore_focus_widget(){
 	// Скрываются все прочие области
 	gl_paras->tree_screen()->hide();
 	for(auto &i : gl_paras->record_screens()) i->hide();
-	gl_paras->editor_dock()->hide();
+	gl_paras->editor_docker()->hide();
 	// globalParameters.getFindScreen()->hide();
 
 	QString widgetName = appconfig->focus_widget();
@@ -212,8 +212,8 @@ void WindowSwitcher::restore_focus_widget(){
 		return;
 	}
 	if(widgetName == meta_editor_singleton_name){
-		gl_paras->editor_dock()->show();
-		gl_paras->editor_dock()->setFocus();
+		gl_paras->editor_docker()->show();
+		gl_paras->editor_docker()->setFocus();
 
 		return;
 	}

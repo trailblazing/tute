@@ -51,7 +51,7 @@
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 	class SqueezeLabel : public QLabel {
 #if QT_VERSION == 0x050600
 	W_OBJECT(SqueezeLabel)

@@ -38,9 +38,9 @@
 #endif
 
 #include "browser.h"
-#include "browser_dock.h"
+#include "docker.h"
 #include "controllers/record_table/record_controller.h"
-#include "entranceinfo.h"
+//#include "entranceinfo.h"
 #include "libraries/global_parameters.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "libraries/window_switcher.h"
@@ -60,10 +60,11 @@
 #include "views/record_table/record_screen.h"
 #include "views/record_table/record_view.h"
 #include "views/tree/tree_screen.h"
+#include "libraries/qtm/blogger.h"
 #include "webview.h"
 #include <utility>
 
-namespace browser {
+namespace web {
 // struct BrowserViewPrivate {
 ////Q_OBJECT
 // public:
@@ -148,7 +149,7 @@ namespace browser {
 // return _record;
 // }
 
-	void BrowserDock::init_setting(void){
+	void Docker::init_setting(void){
 		// QUrl _url;
 
 		// if(record)
@@ -163,24 +164,29 @@ namespace browser {
 		// sb.append(QDir::separator());
 		// sb.append("browserview.ini");
 
-		QString configFileName = gl_paras->root_path() + "/" + gl_paras->target_os() + "/browserview.ini";
+		QString t = gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_dock_conf_filename;
 		// check to see if we have a settings file where we started from
 		// if not fall back to system hard coded path
-		QFileInfo file(configFileName.toLatin1()); // file(sb.toLatin1());
+		QFileInfo file(t.toLatin1()); // file(sb.toLatin1());
 		if(file.exists()){
 			qDebug() << "using local settings file";
 			settingsFile.setFile(file.filePath());
 		}else{
 			qDebug() << "using system defined settings file";
-			settingsFile.setFile(SETTINGS_FILE);
+
+			auto s = QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + gl_para::_dock_conf_filename;
+			// if(!QFile::copy(s, t)) critical_error("Can not copy mode.ini"); // throw std::runtime_error("Can not copy mode.ini");
+			// else QFile::setPermissions(_standard_path + "/" + _mode_filename, QFile::ReadUser | QFile::WriteUser);
+			if(!DiskHelper::copy_file_force(s, t)) critical_error("Unhandled error encountered when force copy file \"" + s + "\" to \"" + t + "\"");
+			settingsFile.setFile(t);
 		}
 		QSettings settings(settingsFile.filePath(), QSettings::NativeFormat);
 
-		settings.beginGroup(SETTINGS_SECTION);
+		settings.beginGroup(gl_para::_dock_settings_section_name);
 
 		// if(_url.isEmpty()) {
 		url = (settings.value("browser_view").toString()); // QUrl url(settings.value("browser_view").toString());
-
+		gl_paras->global_home(url);
 		// } else {
 		// url = _url;
 		// }
@@ -213,7 +219,7 @@ namespace browser {
 #endif
 		}
 		this->set_scrollbars(settings.value("hide_scrollbars", false).toBool());
-		this->set_cache(settings.value("enable_cache", false).toBool(), settings.value("cache_size_megabytes", 5).toInt());
+//		this->set_cache(settings.value("enable_cache", false).toBool(), settings.value("cache_size_megabytes", 5).toInt());
 
 		settings.endGroup();
 
@@ -292,26 +298,25 @@ namespace browser {
 // }
 // }
 
-	BrowserDock *BrowserDock::prepend(Browser *browser){
-		browser->setParent(this);
-		setWidget(browser);
-		browser->show();
 
-		//// adjustSize();
-		//// setAutoFillBackground(true);
-		//// setFeatures(QDockWidget::NoDockWidgetFeatures);
-		//// _browser = browser;
-		// bool found = false;
-		// for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
-		// if(*i == browser){
-		// found = true;
-		// break;
-		// }
-		// }
 
-		// if(! found)_browsers.insert(browser);
-		return this;
-	}
+//	template<>
+//	EditorDock *Docker::prepend<EditorDock, Blog>(Blog *browser){
+//		browser->setParent(this);
+//		setWidget(browser);
+//		browser->show();
+
+//		return this;
+//	}
+
+//	template<>
+//	Docker *Docker::prepend<Docker, Browser>(Browser *browser){
+//		browser->setParent(this);
+//		setWidget(browser);
+//		browser->show();
+
+//		return this;
+//	}
 
 // void Entrance::on_splitter_moved(int pos, int index)
 // {
@@ -327,57 +332,62 @@ namespace browser {
 // repaint();
 // }
 
-	void BrowserDock::on_activate_window(){
-		FindScreen *findscreen = gl_paras->find_screen();
+//	void BrowserDock::on_activate_window(){
+//		FindScreen *findscreen = gl_paras->find_screen();
 
-		assert(findscreen);
-		assert(findscreen->historyhome());
+//		assert(findscreen);
+//		assert(findscreen->historyhome());
 
-		QObject::disconnect(_home_connection);
+//		QObject::disconnect(_home_connection);
 
-		_home_connection = QObject::connect(
-			findscreen->historyhome(), &QAction::triggered, this, [this](bool checked = true) -> void {
-				Q_UNUSED(checked)
-				assert(_main_window->activated_browser());
-				auto view = _main_window->activated_browser()->tabmanager()->currentWebView();
-				assert(view);
-				if(view){
-				        WebPage *page = view->page();
-				        if(page){
-				                boost::intrusive_ptr<TreeItem> _item = page->host();
-				                assert(_item);
-				                QString home = _item->field<home_type>();
-				                QUrl homeurl = QUrl(home);
-				                if(homeurl.isValid() && homeurl != page->url()){
-				                        _item->field<url_type>(home); // "url",
-				                        // boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
+//		_home_connection
+//			= QObject::connect(findscreen->historyhome(), &QAction::triggered
+//					  , this, [this](bool checked = true) -> void {
+//						   Q_UNUSED(checked)
+//						   assert(_main_window->activated_browser());
+//						   auto view = _main_window->activated_browser()->tabmanager()->currentWebView();
+//						   assert(view);
+//						   if(view){
+//							   WebPage *page = view->page();
+//							   if(page){
+//								   boost::intrusive_ptr<TreeItem> _item = page->host();
+//								   assert(_item);
+//								   QString home = _item->field<home_type>();
+//								   QUrl homeurl = QUrl(home);
+//								   if(homeurl.isValid() && homeurl != page->url()){
+//									   _item->field<url_type>(home); // "url",
+//									   // boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
 
-				                        // try {
-				                        // record_index = new RecordModel::ModelIndex([&] {return page->record_controller()->source_model();}, page->record_controller()->source_model()->sibling(_item), _item);
-				                        // } catch(std::exception &e) {throw e;}
-				                        page->bind(_item)->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1)); // page->load(record, true);
-						}
-					}
-				}
-			});
-	}
+//									   // try {
+//									   // record_index = new RecordModel::ModelIndex([&] {return page->record_controller()->source_model();}, page->record_controller()->source_model()->sibling(_item), _item);
+//									   // } catch(std::exception &e) {throw e;}
+//									   page->bind(_item)->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1)); // page->load(record, true);
+//								   }
+//							   }
+//						   }
+//					   });
+//	}
 
 #if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(Entrance)
 #endif
 
-	BrowserDock::BrowserDock(QString object_name, ts_t *_tree_screen, FindScreen *_find_screen // browser::ToolbarSearch *toolbarsearch
-	                         // , Editentry *_editentry
-	                        , wn_t *_main_window, const QString &style_source, browser::Profile *_profile, Qt::WindowFlags flags)
-		: QDockWidget(_main_window, flags) // , _application(application)
+	Docker::Docker(QString object_name
+//		      , ts_t *tree_screen
+//		      , FindScreen *find_screen // web::ToolbarSearch *toolbarsearch	                         // , Editentry *_editentry
+		      , wn_t *main_window
+//		      , const QString &style_source
+//		      , web::Profile *profile
+		      , Qt::WindowFlags flags)
+		: QDockWidget(main_window, flags) // , _application(application)
 		  // , _browsers(std::set<Browser * >())	// , _shadow_branch(_record_controller->source_model()->_browser_pages)
-		  , _tree_screen(_tree_screen)
-		  , _find_screen(_find_screen)
+//		  , _tree_screen(tree_screen)
+//		  , _find_screen(find_screen)
 		  // , _editentry(_editentry)	// , _record_controller(_record_controller)
-		  , _main_window(_main_window)
+//		  , _main_window(main_window)
 		  // , _appconfig(appconfig_)
-		  , _style_source(style_source)
-		  , _profile(_profile)
+//		  , _style_source(style_source)
+//		  , _profile(profile)
 		  , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint)){ // | Qt::SplashScreen
 		                                                                                         // , _dockwidget(new DockWidget(
 		                                                                                         // this
@@ -468,10 +478,10 @@ namespace browser {
 
 		delete titleBar;
 
-		setup_actions();
+//		setup_actions();
 
-		setup_ui();
-		assembly();
+//		setup_ui();
+//		assembly();
 
 		init_setting();
 
@@ -488,7 +498,7 @@ namespace browser {
 		// browser->show();
 	}
 
-	BrowserDock::~BrowserDock(){
+	Docker::~Docker(){
 		// if(_browsers.size() > 0){
 		// for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
 		// if(*i && *i != widget()){
@@ -509,14 +519,14 @@ namespace browser {
 		}
 	}
 
-	void BrowserDock::setup_actions(){
-		// _actionFreeze = new QAction(tr("Pin / freeze browser view"), this);
-		// _actionFreeze->setStatusTip(tr("Pin / freeze browser view"));
-		// _actionFreeze->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
-	}
+//	void BrowserDock::setup_actions(){
+//		// _actionFreeze = new QAction(tr("Pin / freeze browser view"), this);
+//		// _actionFreeze->setStatusTip(tr("Pin / freeze browser view"));
+//		// _actionFreeze->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
+//	}
 
-	void BrowserDock::setup_ui(void)
-	{}
+//	void BrowserDock::setup_ui(void)
+//	{}
 
 // void BrowserView::setupDynamicSignals(void)
 // {
@@ -748,7 +758,7 @@ namespace browser {
 // }
 // }
 
-// void Entrance::setup_signals(browser::ToolbarSearch *toolbarsearch)
+// void Entrance::setup_signals(web::ToolbarSearch *toolbarsearch)
 // {
 ////        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
 // void(Entrance::*_activate)(const QUrl &, const TreeScreen::paste_strategy &, equal_url_t) = &Entrance::activate;  // <url_fragment>;
@@ -757,7 +767,7 @@ namespace browser {
 
 // }
 
-	void BrowserDock::assembly(void){}
+//	void BrowserDock::assembly(void){}
 
 // void BrowserManager::setUrl(const QUrl &_url)
 // {
@@ -765,25 +775,31 @@ namespace browser {
 // main_window()->loadPage(_url.toString());
 // }
 
-	void BrowserDock::set_scrollbars(bool hide){
+	void Docker::set_scrollbars(bool hide){
 		if(!hide){
 			// d->view->page()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
 			// d->view->page()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAsNeeded);
 		}
 	}
 
-	void BrowserDock::set_cache(bool cache, int cache_size){
-		if(cache){
-			QNetworkDiskCache *diskCache = new QNetworkDiskCache(this);
-			QString location = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-			diskCache->setCacheDirectory(location);
-			diskCache->setMaximumCacheSize(cache_size * 1024 * 1024); // in MB's
-			// d->nam->setCache(diskCache);
-			// browser->setCache(diskCache);
-			qDebug() << QString("Cache location: %1").arg(location);
-			qDebug() << QString("Cache maximum size: %1MB").arg(cache_size);
-		}
+	void Docker::remove_child(QWidget *cl){
+		_children_resize_event.erase(cl);
 	}
+
+
+
+	//	void BrowserDock::set_cache(bool cache, int cache_size){
+	//		if(cache){
+	//			QNetworkDiskCache *diskCache = new QNetworkDiskCache(this);
+//			QString location = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+//			diskCache->setCacheDirectory(location);
+//			diskCache->setMaximumCacheSize(cache_size * 1024 * 1024); // in MB's
+//			// d->nam->setCache(diskCache);
+//			// browser->setCache(diskCache);
+//			qDebug() << QString("Cache location: %1").arg(location);
+//			qDebug() << QString("Cache maximum size: %1MB").arg(cache_size);
+//		}
+//	}
 
 ////deprecated
 // void BrowserManager::onLoadFinished(bool finished)
@@ -878,44 +894,44 @@ namespace browser {
 ////    }
 // }
 
-	void BrowserDock::finished(QNetworkReply *reply){
-		if(reply->error() != QNetworkReply::NoError) qDebug() << QString("Network Error: %1").arg(reply->errorString());
-		if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true){
-			QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
-			qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
-		}
-		// QUrl url = reply->url();
-		// QString _url = current_record->getNaturalFieldSource("url");
-		// std::string url_compare_stored = _url.toStdString();
-		// std::string url_compare_get = url.toString().toStdString();
-		// std::string compare = "";
+//	void BrowserDock::finished(QNetworkReply *reply){
+//		if(reply->error() != QNetworkReply::NoError) qDebug() << QString("Network Error: %1").arg(reply->errorString());
+//		if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true){
+//			QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
+//			qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
+//		}
+//		// QUrl url = reply->url();
+//		// QString _url = current_record->getNaturalFieldSource("url");
+//		// std::string url_compare_stored = _url.toStdString();
+//		// std::string url_compare_get = url.toString().toStdString();
+//		// std::string compare = "";
 
-		// if(url_compare_stored.size() >= url_compare_get.size()) {
-		// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-		// compare = url_compare_stored;
-		// } else {
-		// url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
-		// compare = url_compare_get;
-		// }
+//		// if(url_compare_stored.size() >= url_compare_get.size()) {
+//		// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+//		// compare = url_compare_stored;
+//		// } else {
+//		// url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
+//		// compare = url_compare_get;
+//		// }
 
-		// std::string::size_type pos;
+//		// std::string::size_type pos;
 
-		// while((pos = compare.find_first_of(" ")) != compare.npos)compare.erase(pos, 1);
+//		// while((pos = compare.find_first_of(" ")) != compare.npos)compare.erase(pos, 1);
 
-		// if(compare == "" || compare == "/") {
-		////if(this->current_record->getNaturalFieldSource("url") != url.toString()) {
-		// this->current_record->setNaturalFieldSource("url", url.toString());
-		// this->loadChanged();
-		// }
-	}
+//		// if(compare == "" || compare == "/") {
+//		////if(this->current_record->getNaturalFieldSource("url") != url.toString()) {
+//		// this->current_record->setNaturalFieldSource("url", url.toString());
+//		// this->loadChanged();
+//		// }
+//	}
 
-	void BrowserDock::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors){
-		foreach(const QSslError &error, errors){
-			qDebug() << QString("SSL Error: %1").arg(error.errorString());
-		}
+//	void BrowserDock::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors){
+//		foreach(const QSslError &error, errors){
+//			qDebug() << QString("SSL Error: %1").arg(error.errorString());
+//		}
 
-		reply->ignoreSslErrors(errors);
-	}
+//		reply->ignoreSslErrors(errors);
+//	}
 
 // void Entrance::clean()
 // {
@@ -945,7 +961,7 @@ namespace browser {
 // if(_it->is_lite())_it->to_fat();
 
 // boost::intrusive_ptr<TreeItem> result(nullptr);
-////        assert(_it->is_registered_to_browser() || (_it->field("url") == browser::Browser::_defaulthome));
+////        assert(_it->is_registered_to_browser() || (_it->field("url") == web::Browser::_defaulthome));
 ////        clean();
 
 // Browser *_browser = nullptr;    // DockedWindow *w = nullptr;
@@ -956,8 +972,8 @@ namespace browser {
 
 // if(_it) {   // && !_it->record_binder()
 
-////            if(QUrl(_it->field("url")).isValid())_it->field("url", Browser::_defaulthome);  // terrify!!! delete all URL
-// if(_it->field("url") == "")_it->field("url", browser::Browser::_defaulthome);
+////            if(QUrl(_it->field("url")).isValid())_it->field("url", web::Browser::_defaulthome);  // terrify!!! delete all URL
+// if(_it->field("url") == "")_it->field("url", web::Browser::_defaulthome);
 
 // assert(QUrl(_it->field("url")).isValid());
 
@@ -1123,7 +1139,7 @@ namespace browser {
 // #if defined(Q_OS_OSX)
 // void BrowserView::lastWindowClosed(){
 // clean();
-// Browser *browser = new browser::Browser(this);
+// Browser *browser = new web::Browser(this);
 // browser->slotHome();
 // _main_windows.prepend(browser);
 // }
@@ -1232,11 +1248,14 @@ namespace browser {
 // }
 // }
 
-	void BrowserDock::resizeEvent(QResizeEvent *e){
-		// for(auto i : _browsers) {
-		// if(i) i->resizeEvent(e);
-		// }
-		if(this->widget()) static_cast<Browser *>(this->widget())->resizeEvent(e);
+	void Docker::resizeEvent(QResizeEvent *e){
+		auto win = this->widget();
+		if(win){
+////			auto real_win = static_cast<QMainWindow *>(win);
+////			if(real_win) real_win->resizeEvent(e);
+//			resize_event(e);// just sotre the last child!
+			for(auto el : _children_resize_event) el.second(e);
+		}
 		QDockWidget::resizeEvent(e);
 	}
 
@@ -1273,11 +1292,11 @@ namespace browser {
 // return v;
 // }
 
-	void BrowserDock::style_source(const QString &style_source){
-		_style_source = style_source;
-	}
+//	void BrowserDock::style_source(const QString &style_source_){
+//		_style_source = style_source_;
+//	}
 
-	QString BrowserDock::style_source(){return _style_source;}
+//	QString BrowserDock::style_source(){return _style_source;}
 
 // WebView *Entrance::find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const
 // {
@@ -1373,7 +1392,7 @@ namespace browser {
 ////    }
 
 ////    //    else {
-////    //        browser::Entrance *_entrance = globalparameters.entrance();
+////    //        web::Entrance *_entrance = globalparameters.entrance();
 
 ////    //        for(int w = 0; w < _entrance->browsers().size(); w++) {
 ////    //            auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();

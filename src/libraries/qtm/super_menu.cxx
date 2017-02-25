@@ -38,7 +38,7 @@
 #include <QSettings>
 #endif
 
-#include "editing_window.h"
+#include "blogger.h"
 #include "prefs_dialog.h"
 #include "qtm_version.h.in"
 #include "super_menu.h"
@@ -50,20 +50,21 @@
 #include "views/main_window/hidable_tab.h"
 #include "views/main_window/main_window.h"
 #include "views/record/editor_wrap.h"
-
+#include "views/browser/docker.h"
 #include "main.h"
-#include "views/record/editor_dock.h"
+
 
 // #include "macFunctions.h"
-#define CON_TRIG(a, b) connect(a, SIGNAL(triggered(bool)), _editing_win, b)
+#define CON_TRIG(a, b) connect(a, SIGNAL(triggered(bool)), _bloger, b)
 
-SuperMenu::SuperMenu(FindScreen *_find_screen, EditorDock *editentry, HidableTab *vtab_record, QWidget *parent, SysTrayIcon *sti)
+SuperMenu::SuperMenu(Blogger *bloger_, QWidget *parent, SysTrayIcon *sti)
 	: super(parent)
 	  , _sti(sti)
-	  , _find_screen(_find_screen)
-	  , _editentry(editentry)
-	  , _vtab_record(vtab_record){
-	_app = qobject_cast<sapp_t *>(qApp);
+//	  , _find_screen(_find_screen)
+	  , _bloger(bloger_)
+	  , _editor_docker(gl_paras->editor_docker()){
+//	  , _vtab_record(vtab_record)
+	auto _app = sapp_t::instance();//qobject_cast<sapp_t *>(qApp);
 	// _editing_win	= 0;
 
 	// setBackgroundRole(QPalette::Foreground);
@@ -263,39 +264,40 @@ SuperMenu::SuperMenu(FindScreen *_find_screen, EditorDock *editentry, HidableTab
 	addWPTagAction->setShortcut(QKeySequence("Ctrl++"));
 	removeWPTagAction->setShortcut(QKeySequence("Ctrl+-"));
 
-	_editing_win_actions	<< saveAction << saveAsAction << saveAllAction
+	_blogger_actions	<< saveAction << saveAsAction << saveAllAction
 	                        << saveAllAction << exportAction << uploadAction << refreshBlogListAction
 	                        << blogThisAction << abortAction << accountsAction << qptAction
 	                        << clearConsoleAction << closeAction;
 
-	_editing_win_actions	<< undoAction << redoAction << cutAction << copyAction << pasteAction << tidyPasteAction
+	_blogger_actions	<< undoAction << redoAction << cutAction << copyAction << pasteAction << tidyPasteAction
 	                        << pasteAsAction << actionSelectAll << actionEditImageProperties << findAction << findAgainAction
 	                        << boldAction << italicAction << underlineAction
 	                        << blockquoteAction << ulAction << olAction;
 
-	_editing_win_actions	<< pasteAsMarkedParasAction << pasteAsBlockquoteAction
+	_blogger_actions	<< pasteAsMarkedParasAction << pasteAsBlockquoteAction
 	                        << pasteAsMarkdownBlockquoteAction
 	                        << pasteAsUnorderedListAction << pasteAsOrderedListAction;
 
-	_editing_win_actions	<< linkAction << clipLinkAction << selfLinkAction << autoLinkAction
+	_blogger_actions	<< linkAction << clipLinkAction << selfLinkAction << autoLinkAction
 	                        << imageAction << clipImageAction << moreAction;
 
-	_editing_win_actions	<< highlightingAction << showConsoleAction << previewAction
+	_blogger_actions	<< highlightingAction << showConsoleAction << previewAction
 	                        << viewBasicsAction << viewCatsAction << viewExcerptAction << viewWPTagsAction
 	                        << viewTechTagsAction << viewPingsAction;
 
-	_editing_win_actions << refreshCatsAction << updateCatsAction << addCatAction;
+	_blogger_actions << refreshCatsAction << updateCatsAction << addCatAction;
 
-	_editing_win_actions	<< addWPTagAction << removeWPTagAction << refreshWPTagsAction
+	_blogger_actions	<< addWPTagAction << removeWPTagAction << refreshWPTagsAction
 	                        << addTechTagAction << addClipTechTagAction << removeTechTagAction
 	                        << addPingAction << addClipPingAction << removePingAction;
 
-	_editing_win_actions << whatsThisAction;
+	_blogger_actions << whatsThisAction;
 	/*editingMenus << editMenu << insMenu << viewMenu << categoryMenu << servicesMenu
 	          << helpMenu; */
-	Q_FOREACH(QAction *a, _editing_win_actions) a->setEnabled(false);
-	connect(_app, &sapp_t::editing_win_changed, this, &SuperMenu::editing_window);
+	Q_FOREACH(QAction *a, _blogger_actions) a->setEnabled(false);
+	connect(_app, &sapp_t::blogger_changed, this, &SuperMenu::blogger_changed);
 	connect(_app, &sapp_t::lastWindowClosed, this, &SuperMenu::handleLastWindowClosed);
+	blogger_changed(bloger_);
 }
 
 void SuperMenu::setEditActionsEnabled(bool state){
@@ -317,10 +319,10 @@ void SuperMenu::setEditActionsEnabled(bool state){
 }
 
 void SuperMenu::newEntry(){
-	EditingWindow *c = new EditingWindow(_tree_screen, _entrance, _vtab_record, _profile, _find_screen, _editentry, _style_source);
+	Blogger *c = new Blogger();
 	c->setSTI(_sti);
 	c->setWindowTitle(QObject::tr((program_title_string + " - new entry [*]").c_str()));
-	if(_editing_win) EditingWindow::positionWidget(c, _editing_win);
+	if(_bloger) Blogger::positionWidget(c, _bloger);
 	// setNoStatusBar( c );
 	c->show();
 	QApplication::alert(c);
@@ -342,7 +344,7 @@ void SuperMenu::choose(QString fname){
 	if(fname.isEmpty()) fn = QFileDialog::getOpenFileName(0, tr("Choose a file to open"), localStorageDirectory, extn);
 	else fn = fname;
 	if(!fn.isEmpty()){
-		EditingWindow *e = new EditingWindow(_tree_screen, _entrance, _vtab_record, _profile, _find_screen, _editentry, _style_source);
+		Blogger *e = new Blogger();
 		if(!e->load(fn, true)){
 			QMessageBox::warning(0, program_title_qstring, tr("Could not load the file you specified."), QMessageBox::Cancel, QMessageBox::NoButton);
 			e->deleteLater();
@@ -797,66 +799,69 @@ void SuperMenu::getPreferences(){
 #endif
 }
 
-void SuperMenu::editing_window(EditingWindow *editing_win_){
-	_editing_win	= 0;
-	_editing_win	= qobject_cast<EditingWindow *>(editing_win_);
-	Q_FOREACH(QAction *a, _editing_win_actions) disconnect(a, SIGNAL(triggered()), 0, 0);
-	if(!_editing_win)
-		Q_FOREACH(QAction *b, _editing_win_actions) b->setEnabled(false);
+void SuperMenu::blogger_changed(Blogger *bloger_){
+//	_bloger	= 0;
+//	bloger_	= bloger_;//qobject_cast<Bloger *>(bloger_);
+	Q_FOREACH(QAction *a, _blogger_actions) disconnect(a, SIGNAL(triggered()), 0, 0);
+	if(!bloger_)
+		Q_FOREACH(QAction *b, _blogger_actions) b->setEnabled(false);
 	else{
 		/*Q_FOREACH( QMenu *d, editingMenus ) {
 		                  d->setEnabled( true );
 		                } */
-		Q_FOREACH(QAction *c, _editing_win_actions) c->setEnabled(true);
+		Q_FOREACH(QAction *c, _blogger_actions) c->setEnabled(true);
 		// Assign file menu actions
-		connect(saveAction, SIGNAL(triggered(bool)), _editing_win, SLOT(save()));
-		connect(saveAsAction, SIGNAL(triggered(bool)), _editing_win, SLOT(saveAs()));
-		connect(saveAllAction, SIGNAL(triggered(bool)), _editing_win, SLOT(saveAll()));
-		connect(exportAction, SIGNAL(triggered(bool)), _editing_win, SLOT(exportEntry()));
-		connect(uploadAction, SIGNAL(triggered(bool)), _editing_win, SLOT(uploadFile()));
-		connect(refreshBlogListAction, SIGNAL(triggered(bool)), _editing_win, SLOT(refreshBlogList()));
-		connect(blogThisAction, SIGNAL(triggered()), _editing_win, SLOT(newMTPost()));
-		connect(abortAction, SIGNAL(triggered()), _editing_win, SLOT(stopThisJob()));
-		connect(accountsAction, SIGNAL(triggered()), _editing_win, SLOT(getAccounts()));
+		connect(saveAction, SIGNAL(triggered(bool)), bloger_, SLOT(save()));
+		connect(saveAsAction, SIGNAL(triggered(bool)), bloger_, SLOT(saveAs()));
+		connect(saveAllAction, SIGNAL(triggered(bool)), bloger_, SLOT(saveAll()));
+		connect(exportAction, SIGNAL(triggered(bool)), bloger_, SLOT(exportEntry()));
+		connect(uploadAction, SIGNAL(triggered(bool)), bloger_, SLOT(uploadFile()));
+		connect(refreshBlogListAction, SIGNAL(triggered(bool)), bloger_, SLOT(refreshBlogList()));
+		connect(blogThisAction, SIGNAL(triggered()), bloger_, SLOT(newMTPost()));
+		connect(abortAction, SIGNAL(triggered()), bloger_, SLOT(stopThisJob()));
+		connect(accountsAction, SIGNAL(triggered()), bloger_, SLOT(getAccounts()));
 #ifndef Q_OS_MAC
 		CON_TRIG(prefsAction, SLOT(getPreferences()));
 #endif
 		CON_TRIG(saveBlogsAction, SLOT(saveAccountsDom()));
-		connect(qptAction, SIGNAL(triggered()), _editing_win, SLOT(configureQuickpostTemplates()));
-		connect(clearConsoleAction, SIGNAL(triggered()), _editing_win, SLOT(clearConsole()));
-		connect(closeAction, &QAction::triggered, [&](bool){gl_paras->editor_dock()->editor_switch();});
+		connect(qptAction, SIGNAL(triggered()), bloger_, SLOT(configureQuickpostTemplates()));
+		connect(clearConsoleAction, SIGNAL(triggered()), bloger_, SLOT(clearConsole()));
+		connect(closeAction, &QAction::triggered, [&](bool checked){
+				(void) checked;
+				_bloger->browser()->close();
+			});
 		// SLOT(close()), temporary polic, current I only have one currentWindow
 
-		connect(undoAction, &QAction::triggered, [&](bool){_editing_win->editor()->on_undo();}); // _editing_win, &EditingWindow::undo);
-		connect(redoAction, &QAction::triggered, [&](bool){_editing_win->editor()->on_redo();}); // _editing_win, SLOT(redo()));
+		connect(undoAction, &QAction::triggered, [&](bool){bloger_->editor()->on_undo();}); // _editing_win, &EditingWindow::undo);
+		connect(redoAction, &QAction::triggered, [&](bool){bloger_->editor()->on_redo();}); // _editing_win, SLOT(redo()));
 
 		// Assign edit menu actions
-		connect(cutAction, &QAction::triggered, [&](bool){_editing_win->editor()->cut();}); // _editing_win, SLOT(cut()));
-		connect(copyAction, &QAction::triggered, [&](bool){_editing_win->copy();});
+		connect(cutAction, &QAction::triggered, [&](bool){bloger_->editor()->cut();}); // _editing_win, SLOT(cut()));
+		connect(copyAction, &QAction::triggered, [&](bool){bloger_->copy();});
 		CON_TRIG(copyURLAction, SLOT(copyURL()));
-		connect(pasteAction, &QAction::triggered, [&](bool){_editing_win->paste();}); // _editing_win->editor(), &Editor::paste);
-		connect(tidyPasteAction, &QAction::triggered, [&](bool){_editing_win->tidyPaste();});
+		connect(pasteAction, &QAction::triggered, [&](bool){bloger_->paste();}); // _editing_win->editor(), &Editor::paste);
+		connect(tidyPasteAction, &QAction::triggered, [&](bool){bloger_->tidyPaste();});
 
 		//
 
 		// Сигналы контекстного меню
 
-		connect(actionSelectAll, &QAction::triggered, [&](bool){_editing_win->editor()->on_selectAll();});
-		connect(actionEditImageProperties, &QAction::triggered, [&](bool){_editing_win->editor()->on_context_menu_edit_image_properties();});
+		connect(actionSelectAll, &QAction::triggered, [&](bool){bloger_->editor()->on_selectAll();});
+		connect(actionEditImageProperties, &QAction::triggered, [&](bool){bloger_->editor()->on_context_menu_edit_image_properties();});
 
-		connect(file_print_action, &QAction::triggered, _editing_win, &EditingWindow::file_print);
-		connect(file_print_preview_action, &QAction::triggered, _editing_win, &EditingWindow::file_print_preview);
-		connect(file_print_pdf_action, &QAction::triggered, _editing_win, &EditingWindow::file_print_pdf);
+		connect(file_print_action, &QAction::triggered, bloger_, &Blogger::file_print);
+		connect(file_print_preview_action, &QAction::triggered, bloger_, &Blogger::file_print_preview);
+		connect(file_print_pdf_action, &QAction::triggered, bloger_, &Blogger::file_print_pdf);
 		//
 
 		CON_TRIG(findAction, SLOT(handleFind()));
 		CON_TRIG(findAgainAction, SLOT(findAgain()));
-		connect(boldAction, SIGNAL(triggered(bool)), _editing_win, SLOT(makeBold()));
-		connect(italicAction, SIGNAL(triggered(bool)), _editing_win, SLOT(makeItalic()));
-		connect(underlineAction, SIGNAL(triggered(bool)), _editing_win, SLOT(makeUnderline()));
-		connect(blockquoteAction, SIGNAL(triggered(bool)), _editing_win, SLOT(makeBlockquote()));
-		connect(ulAction, SIGNAL(triggered(bool)), _editing_win, SLOT(makeUnorderedList()));
-		connect(olAction, SIGNAL(triggered(bool)), _editing_win, SLOT(makeOrderedList()));
+		connect(boldAction, SIGNAL(triggered(bool)), bloger_, SLOT(makeBold()));
+		connect(italicAction, SIGNAL(triggered(bool)), bloger_, SLOT(makeItalic()));
+		connect(underlineAction, SIGNAL(triggered(bool)), bloger_, SLOT(makeUnderline()));
+		connect(blockquoteAction, SIGNAL(triggered(bool)), bloger_, SLOT(makeBlockquote()));
+		connect(ulAction, SIGNAL(triggered(bool)), bloger_, SLOT(makeUnorderedList()));
+		connect(olAction, SIGNAL(triggered(bool)), bloger_, SLOT(makeOrderedList()));
 
 		// Assign "paste as" sub-menu actions
 		CON_TRIG(pasteAsMarkedParasAction, SLOT(pasteAsMarkedParagraphs()));
@@ -866,28 +871,28 @@ void SuperMenu::editing_window(EditingWindow *editing_win_){
 		CON_TRIG(pasteAsOrderedListAction, SLOT(pasteAsOrderedList()));
 
 		// Assign insert menu actions
-		connect(linkAction, SIGNAL(triggered(bool)), _editing_win, SLOT(insertLink()));
-		connect(clipLinkAction, SIGNAL(triggered(bool)), _editing_win, SLOT(insertLinkFromClipboard()));
-		connect(selfLinkAction, SIGNAL(triggered(bool)), _editing_win, SLOT(insertSelfLink()));
-		connect(autoLinkAction, SIGNAL(triggered(bool)), _editing_win, SLOT(insertAutoLink()));
-		connect(imageAction, SIGNAL(triggered(bool)), _editing_win, SLOT(insertImage()));
-		connect(clipImageAction, SIGNAL(triggered(bool)), _editing_win, SLOT(insertImageFromClipboard()));
-		connect(moreAction, SIGNAL(triggered(bool)), _editing_win, SLOT(insertMore()));
+		connect(linkAction, SIGNAL(triggered(bool)), bloger_, SLOT(insertLink()));
+		connect(clipLinkAction, SIGNAL(triggered(bool)), bloger_, SLOT(insertLinkFromClipboard()));
+		connect(selfLinkAction, SIGNAL(triggered(bool)), bloger_, SLOT(insertSelfLink()));
+		connect(autoLinkAction, SIGNAL(triggered(bool)), bloger_, SLOT(insertAutoLink()));
+		connect(imageAction, SIGNAL(triggered(bool)), bloger_, SLOT(insertImage()));
+		connect(clipImageAction, SIGNAL(triggered(bool)), bloger_, SLOT(insertImageFromClipboard()));
+		connect(moreAction, SIGNAL(triggered(bool)), bloger_, SLOT(insertMore()));
 
 		// Assign view menu actions
-		connect(highlightingAction, SIGNAL(triggered(bool)), _editing_win, SLOT(setHighlighting(bool)));
+		connect(highlightingAction, SIGNAL(triggered(bool)), bloger_, SLOT(setHighlighting(bool)));
 #ifndef Q_OS_MAC
 		CON_TRIG(viewToolbarAction, SLOT(setToolBarVisible(bool)));
 #endif
-		connect(showConsoleAction, SIGNAL(triggered(bool)), _editing_win, SLOT(handleConsole(bool)));
+		connect(showConsoleAction, SIGNAL(triggered(bool)), bloger_, SLOT(handleConsole(bool)));
 		/* connect( showConsoleAction, SIGNAL( triggered( bool ) ),
 		                    this, SLOT( setConsoleActionTitle( bool ) ) ); */
-		connect(previewAction, SIGNAL(triggered(bool)), _editing_win, SLOT(doPreview(bool)));
+		connect(previewAction, SIGNAL(triggered(bool)), bloger_, SLOT(doPreview(bool)));
 		/* connect( previewAction, SIGNAL( triggered( bool ) ),
 		                     this, SLOT( setPreviewActionTitle( bool ) ) ); */
-		connect(viewBasicsAction, SIGNAL(triggered(bool)), _editing_win, SLOT(doViewBasicSettings()));
-		connect(viewCatsAction, SIGNAL(triggered(bool)), _editing_win, SLOT(doViewCategories()));
-		connect(viewExcerptAction, SIGNAL(triggered(bool)), _editing_win, SLOT(doViewExcerpt()));
+		connect(viewBasicsAction, SIGNAL(triggered(bool)), bloger_, SLOT(doViewBasicSettings()));
+		connect(viewCatsAction, SIGNAL(triggered(bool)), bloger_, SLOT(doViewCategories()));
+		connect(viewExcerptAction, SIGNAL(triggered(bool)), bloger_, SLOT(doViewExcerpt()));
 
 		// At this point I defined the CON_TRIG macro because typing all that was
 		// getting slow. The following do the same thing as the preceding.
@@ -917,7 +922,7 @@ void SuperMenu::editing_window(EditingWindow *editing_win_){
 }
 
 void SuperMenu::handleConsole(bool isChecked){
-	if(_editing_win) _editing_win->handleConsole(isChecked);
+	if(_bloger) _bloger->handleConsole(isChecked);
 }
 
 void SuperMenu::setConsoleActionTitle(bool consoleShown){
@@ -935,8 +940,8 @@ void SuperMenu::setHighlightingChecked(bool state){
 }
 
 void SuperMenu::handleLastWindowClosed(){
-	Q_FOREACH(QAction *a, _editing_win_actions) a->setEnabled(false);
-	_editing_win = 0;
+	Q_FOREACH(QAction *a, _blogger_actions) a->setEnabled(false);
+	_bloger = nullptr;
 }
 
 // Показывать или нет пункт редактирования свойств изображения

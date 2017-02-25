@@ -53,7 +53,7 @@
 #define AUTOSAVE_IN	1000 * 3 // seconds
 #define MAXWAIT		1000 * 15 // seconds
 
-namespace browser {
+namespace web {
 #if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(AutoSaver)
 #endif

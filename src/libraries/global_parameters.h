@@ -1,12 +1,16 @@
 #ifndef __GLOBALPARAMETERS_H__
 #define __GLOBALPARAMETERS_H__
 
-#include <QDir>
-#include <QStandardPaths>
-#include <QStatusBar>
+
 #include <functional>
 #include <memory>
 #include <set>
+
+#include <QDir>
+#include <QStandardPaths>
+#include <QStatusBar>
+#include <QUrl>
+
 // #include <QCoreApplication>
 
 #if QT_VERSION == 0x050600
@@ -21,10 +25,11 @@ extern const char *portableItem;
 // #define QWEBENGINEPAGE_HITTESTCONTENT
 // #endif
 
-namespace browser {
-	class BrowserDock;
+namespace web {
+	class Docker;
 	class DownloadManager;
 	class Profile;
+	class Browser;
 }
 
 class ts_t;
@@ -41,6 +46,9 @@ class AttachTableController;
 class HidableTab;
 class EditorDock;
 class SysTrayIcon;
+class QUrl;
+class Blogger;
+
 
 #ifndef USE_QTM
 #define USE_QTM
@@ -78,8 +86,8 @@ public:
 	QString target_os(void) const;
 	QString application_name(void) const;
 
-	browser::Profile *profile() const;
-	void profile(browser::Profile *profile_);
+	web::Profile *profile() const;
+	void profile(web::Profile *profile_);
 
 	QSplitter *find_splitter() const;
 	void find_splitter(QSplitter *_find_splitter);
@@ -102,8 +110,8 @@ public:
 	void tree_screen(ts_t *point);
 	ts_t *tree_screen() const;
 
-	browser::BrowserDock *browser_dock() const;
-	void browser_dock(browser::BrowserDock * &b);
+	web::Docker *browser_docker() const;
+	void browser_docker(web::Docker * &b);
 
 	void push_record_screen(rs_t *point);
 	std::set<rs_t *> record_screens() const;
@@ -114,8 +122,8 @@ public:
 	void find_screen(FindScreen *point);
 	FindScreen *find_screen() const;
 
-	void editor_dock(EditorDock *point);
-	EditorDock *editor_dock() const;
+	void editor_docker(web::Docker *point);
+	web::Docker *editor_docker() const;
 
 	void status_bar(QStatusBar *point);
 	QStatusBar *status_bar() const;
@@ -136,10 +144,10 @@ public:
 	void style_source(const QString &source);
 	QString style_source() const;
 
-	browser::DownloadManager *request_download_manager();
+	web::DownloadManager *request_download_manager();
 
-	void download_manager(browser::DownloadManager *dm);
-	browser::DownloadManager *download_manager() const;
+	void download_manager(web::DownloadManager *dm);
+	web::DownloadManager *download_manager() const;
 
 	std::shared_ptr<EditorConfig> editor_config() const;
 	void editor_config(std::shared_ptr<EditorConfig> dialog);
@@ -150,18 +158,45 @@ public:
 	// QMap<QString, QString>	config_ini() const;
 	// QMap<QString, QString>	index_xml() const;
 	// QMap<QString, QString>	editorconf() const;
-	static constexpr char _program_instance_name[] = "tute"; // QCoreApplication::applicationName();// won't work
-	static constexpr char _mode_filename[]	= "mode.ini";
-	static constexpr char _conf_filename[]	= "conf.ini";
-	static constexpr char _browser_conf_filename[] = "browser.conf";
-	static constexpr char _browserview_conf_filename[] = "browserview.ini";
-	static constexpr char _editor_conf_filename[] = "editorconf.ini";
-	static constexpr char _entrance_conf_filename[] = "entrance.ini";
-	static constexpr char _stylesheet_filename[] = "stylesheet.css";
+
+	// static constexpr const char *_defaulthome = "about:blank";
+	static constexpr const char *_program_instance_name = "tute"; // QCoreApplication::applicationName();// won't work
+	static constexpr const char *_index_xml_file_name = "index.xml";
+	static constexpr const char *_mode_filename	= "mode.ini";//static constexpr char _mode_filename[]	= "mode.ini";
+	static constexpr const char *_conf_filename	= "conf.ini";//static constexpr char _conf_filename[]	= "conf.ini";
+	static constexpr const char *_browser_conf_filename = "browser.conf";//static constexpr char _browser_conf_filename[] = "browser.conf";
+	static constexpr const char *_dock_conf_filename = "dock.ini";//static constexpr char _dock_conf_filename[] = "dock.ini";
+	static constexpr const char *_dock_settings_section_name = "system";//static constexpr char _dock_settings_section_name[] = "system";
+	static constexpr const char *_editor_conf_filename = "editorconf.ini";//static constexpr char _editor_conf_filename[] = "editorconf.ini";
+	static constexpr const char *_data_conf_filename = "database.ini";
+	//	static constexpr const char *_browser_dock_conf_filename = "entrance.ini";//static constexpr char _entrance_conf_filename[] = "entrance.ini";
+	static constexpr const char *_stylesheet_filename = "stylesheet.css";//static constexpr char _stylesheet_filename[] = "stylesheet.css";
 	// static constexpr char _document_config_name[] = "document.ini";
+	static constexpr const char *_file_menu_name		= "file_menu";
+	static constexpr const char *_tools_menu_name		= "tools_menu";
+	static constexpr const char *_edit_menu_name		= "edit_menu";
+	static constexpr const char *_view_menu_name		= "view_menu";
+	static constexpr const char *_window_menu_name		= "window_menu";
+	static constexpr const char *_help_menu_name		= "help_menu";
+	static constexpr const char *_history_menu_name		= "history_menu";
+	static constexpr const char *_bookmark_menu_name	= "bookmark_menu";
+
+
+	static constexpr const char *_default_topic	= "undefined";
+	static constexpr const char *_default_post	= "Welcome to \"undefined\" topic";
+
+//	static constexpr const char *_what_ever_topic	= "what_ever";
+	static constexpr const char *_current_browser = "current_browser";
+
+	static constexpr int initialize_priority = 0;
+	template<typename T> struct initialize_prior_to;
 	SysTrayIcon *tray_icon();
 	void tray_icon(SysTrayIcon *ti);
 
+	void global_home(const QUrl &url_);
+	QUrl global_home() const;
+	QString editors_shared_full_path_name() const;
+	QString root_path_given_by_system() const;
 private:
 #define STANDARD_MODE	true
 #define PORTABLE_MODE	false
@@ -171,13 +206,19 @@ private:
 	// void create_root_standard(void);
 	// void create_root_portable(void);
 	// void initialize_root_impl(const QString &root_dir);
-
-	browser::Profile *_profile = nullptr;
+	QString _root_path_given_by_system = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation); // QDir::homePath() + "/.config/" + gl_para::_program_instance_name;
+#ifdef USE_ALTERNATIVE_PATH
+	std::pair<QString, QString> _candidate_mode_paths_by_system = {QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + gl_para::_program_instance_name, QDir::homePath() + "/." + gl_para::_program_instance_name};
+#endif // USE_ALTERNATIVE_PATH
+	std::function<QString()> mode_file_full_name_by_system;
+	std::function<std::tuple<const bool, const QString>()> init;
+	QString _editors_shared_full_path_name = "";
+	web::Profile *_profile = nullptr;
 	ts_t *_tree_screen = nullptr;
-	browser::BrowserDock *_entrance = nullptr;
+	web::Docker *_browser_docker = nullptr;
 	std::shared_ptr<EditorConfig> _editor_config;
-	FindScreen *_find_screen	= nullptr;
-	EditorDock *_editor_dock	= nullptr;
+	FindScreen *_find_screen = nullptr;
+	web::Docker *_editor_docker = nullptr;
 	QStatusBar *_statusbar = nullptr;
 	WindowSwitcher *_window_switcher = nullptr;
 	QSplitter *_find_splitter = nullptr;
@@ -186,7 +227,7 @@ private:
 	QSplitter *_v_right_splitter	= nullptr;
 	HidableTab *_vtab_record = nullptr; // HidableTabWidget			*_vtab_tree		= nullptr;
 	wn_t *_mainwindow = nullptr;
-	browser::DownloadManager *_download_manager = nullptr;
+	web::DownloadManager *_download_manager = nullptr;
 	AttachTableController *_attachtable_controller = nullptr;
 
 	QByteArray _password_hash;
@@ -196,14 +237,12 @@ private:
 	// QString _main_program_path	= "";
 	// QString	_root_path				= "./";
 
-	QString _root_path_given_by_system = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation); // QDir::homePath() + "/.config/" + gl_para::_program_instance_name;
-#ifdef USE_ALTERNATIVE_PATH
-	std::pair<QString, QString> _candidate_mode_paths_by_system = {QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + gl_para::_program_instance_name, QDir::homePath() + "/." + gl_para::_program_instance_name};
-#endif // USE_ALTERNATIVE_PATH
+
 	std::vector<rs_t *> _table_screens;
 	SysTrayIcon *_tray_icon;
-	std::function<QString()> mode_file_full_name_by_system;
-	std::function<std::tuple<const bool, const QString>()> init;
+
+
+	QUrl _global_home;
 	friend class AppConfigPageMain;
 };
 

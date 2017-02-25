@@ -68,7 +68,7 @@
 #define BOOKMARKBAR	"Bookmarks Bar"
 #define BOOKMARKMENU	"Bookmarks Menu"
 
-namespace browser {
+namespace web {
 #if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(BookmarksManager)
 #endif
@@ -739,7 +739,7 @@ namespace browser {
 			menu.addAction(tr("Open"), this, &BookmarksDialog::open);
 			menu.addSeparator();
 		}
-		menu.addAction(tr("Delete"), tree, &browser::EditTreeView::removeOne);
+		menu.addAction(tr("Delete"), tree, &web::EditTreeView::removeOne);
 		menu.exec(QCursor::pos());
 	}
 

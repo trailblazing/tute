@@ -28,7 +28,7 @@
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_know_model.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "views/main_window/main_window.h"

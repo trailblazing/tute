@@ -80,13 +80,13 @@ class tm_t;
 class ts_t;
 class tkm_t;
 
-namespace browser {
+namespace web {
 	class ChaseWidget;
 }
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 	class AutoSaver;
 
 	class WorkerThread : public QThread {
@@ -163,7 +163,7 @@ namespace browser {
 		QStackedWidget *_lineedits;
 		QLineEdit *_findtext;
 		// TabManager           *_tabmanager;
-		// browser::ChaseWidget *_chasewidget;
+		// web::ChaseWidget *_chasewidget;
 	};
 }
 

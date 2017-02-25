@@ -58,11 +58,19 @@ void qt_mac_set_dock_menu(QMenu *);
 #endif
 #endif
 
+class wn_t;
+namespace web {
+	class Profile;
+	class Docker;
+}
+class Blogger;
+
+
 class SysTrayIcon : public STI_SUPERCLASS {
 Q_OBJECT
 
 public:
-	SysTrayIcon(ts_t *tree_screen, browser::BrowserDock *browser_dock, HidableTab *vtab_record, FindScreen *find_screen, EditorDock *editor_dock, wn_t *main_window, browser::Profile *profile, QString style_source, bool noWindow = false, Qt::WindowFlags flags = Qt::Widget, QObject *parent = 0);
+	SysTrayIcon(HidableTab *vtab_record, web::Docker *editor_docker, wn_t *main_window, web::Profile *profile, QString style_source, bool noWindow = false, Qt::WindowFlags flags = Qt::Widget, QObject *parent = 0);
 	~SysTrayIcon();
 	void setDoubleClickFunction(int);
 	bool dontStart(){return _dontStart;}
@@ -139,17 +147,17 @@ private:
 	QMenu *recentFilesMenu;
 	QByteArray userAgentString;
 
-	ts_t *_tree_screen;
-	browser::BrowserDock *_browser_dock;
+//	ts_t *_tree_screen;
+	web::Docker *_browser_dock;
 	HidableTab *_vtab_record;
 
 	wn_t *_main_window;
-	browser::Profile *_profile;
+	web::Profile *_profile;
 	Qt::WindowFlags _flags;
 	QString _style_source;
 
-	FindScreen *_find_screen;
-	EditorDock *_editor_dock;
+//	FindScreen *_find_screen;
+	web::Docker *_editor_docker;
 
 // QSplitter *_splitter;
 // std::shared_ptr<QSettings>  _splitter_config;

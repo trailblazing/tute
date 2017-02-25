@@ -59,15 +59,15 @@
 #endif
 
 // QT_BEGIN_NAMESPACE
-namespace browser {
+namespace web {
 	class HistoryItem;
 }
 
 #if QT_VERSION == 0x050600
-W_REGISTER_ARGTYPE(browser::HistoryItem)
+W_REGISTER_ARGTYPE(web::HistoryItem)
 #endif
 
-namespace browser {
+namespace web {
 	class HistoryItem {
 	public:
 		HistoryItem(){}

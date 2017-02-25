@@ -25,8 +25,8 @@
 #include <functional>
 #include <memory>
 // #include "ui_EditingWindowBase.h"
-#include "ui_SideWidget.h"
-#include "ui_aboutbox.h"
+//#include "ui_SideWidget.h"
+//#include "ui_aboutbox.h"
 // #include "ui_account_form.h"
 #include "accounts_dialog.h"
 #include "highlighter.h"
@@ -51,6 +51,7 @@
 #include <QMainWindow>
 #include <QString>
 #include <QtXml>
+#include <QWidget>
 
 #ifndef DONT_USE_SSL
 #include <QSslError>
@@ -82,7 +83,7 @@ class FlatToolButton;
 class sapp_t;
 class SideTabWidget;
 class EditorTextArea;
-
+class rs_t;
 using namespace Ui;
 
 #ifdef Q_OS_WIN
@@ -103,21 +104,25 @@ class SuperMenu;
 extern std::shared_ptr<AppConfig> appconfig;
 extern const char *global_root_id;
 
-namespace browser {
+namespace web {
+	class Docker;
 	class Browser;
 }
 
-class EditingWindow : public QMainWindow {
+class Blogger : public QMainWindow {//QWidget
 Q_OBJECT
-
+typedef QMainWindow super;
 public:
 	// EditingWindow( QWidget *widget = 0 );
 	/*  Catkin( QList<QString>, QList<QString>, int,
 	       QWidget *parent = 0 );*/
-	EditingWindow(ts_t *tree_screen, browser::BrowserDock *browser_dock, HidableTab *vtab_record, browser::Profile *profile, FindScreen *find_screen, EditorDock *editor_dock, QString style_source_, QStringList hide_editor_tools_ = appconfig->hide_editor_tools(), QString new_post_topic = "undefined" // global_root_id// get_unical_id()
-	             , QString new_post_content = "Welcome to topic" // = QString()
-	             , Qt::WindowFlags flags = Qt::Widget);
-	~EditingWindow();
+	Blogger(QString new_post_topic = gl_para::_default_topic// global_root_id// get_unical_id()
+	       , QString new_post_content = gl_para::_default_post// (std::string("Welcome to \"") + gl_para::_default_topic + "\" topic").c_str() // = QString()
+	       , QStringList hide_editor_tools_ = appconfig->hide_editor_tools()
+	       , const QByteArray &state_ = QByteArray()
+	       , Qt::WindowFlags flags = Qt::Widget);
+	~Blogger();
+	template<typename T> struct initialize_prior_to {static constexpr bool value = true;};
 #ifdef USE_SYSTRAYICON
 	void setSTI(SysTrayIcon *);
 #endif
@@ -144,9 +149,9 @@ public:
 	TEXTEDIT *editor();
 	QStackedWidget *main_stack();
 
-	rs_t *record_screen();
-	EditorDock *editor_dock();
-
+//	rs_t *record_screen();
+	web::Docker *editor_docker();
+	static QString purify_topic(const QString &topic);
 private:
 	void doUiSetup();
 	void checkForEmptySettings();
@@ -200,12 +205,12 @@ private:
 private:
 //	sapp_t *_app;
 
-	QString _editors_shared_full_path_name = "";
+//	QString _editors_shared_full_path_name = "";
 	QString _current_topic_name = "";
 	QString _current_topic_full_folder_name	= "";
 	QString _current_topic_full_config_name	= "";
 
-	std::unique_ptr<QSettings> _topic_editor_config;
+	std::shared_ptr<QSettings> _topic_editor_config;
 
 	int currentAccount, currentBlog, loadedEntryBlog;
 	QString loadedAccountId;
@@ -246,7 +251,7 @@ private:
 	bool useBloggerTitleFormatting;
 	int bloggerTitleFormat;
 	QStringList bloggerTitleFormatStrings;
-	QLabel *dirtyIndicator;
+	QLabel *_dirty_indicator;
 	int STI2ClickFunction;
 	QDomDocument _accounts_dom;
 	QDomElement accountsElement, currentAccountElement, currentBlogElement, currentCategoryElement;
@@ -409,6 +414,8 @@ public slots:
 	void file_print_pdf();
 	void on_topic_changed(QLineEdit *lineedit_topic, const QString &tp);
 
+	void on_record_screen_close();
+	void on_browser_close_request();
 protected:
 	QTextBrowser *_preview_window;
 	Highlighter *_highlighter;
@@ -420,18 +427,18 @@ protected:
 	std::unique_ptr<QNetworkAccessManager> _net_acess_manager;
 	QNetworkReply *_current_reply;
 
-	ts_t *_tree_screen;
-	browser::BrowserDock *_browser_dock;
+//	ts_t *_tree_screen;
+//	web::Docker *_browser_docker;
 	HidableTab *_vtab_record;
 	// wn_t *_main_window;
-	browser::Profile *_profile;
-	Qt::WindowFlags _flags;
-	QString _style_source;
+//	web::Profile *_profile;
+//	Qt::WindowFlags _flags;
+//	QString _style_source;
 
-	EditorDock *_editor_dock;
-	FindScreen *_find_screen;
 
-	SuperMenu *_super_menu;
+//	FindScreen *_find_screen;
+
+
 	QWidget *_central_widget; // *leftWidget,
 	QSplitter *_splitter;
 	QStackedWidget *_main_stack;
@@ -469,8 +476,12 @@ protected:
 
 	QString _splitter_groupname;
 	QString _splitter_sizelist;
+
+	web::Browser *_browser = nullptr;
 	rs_t *_record_screen = nullptr;
-	// browser::Browser *_browser = nullptr;
+	web::Docker *_editor_docker;
+	SuperMenu *_super_menu;
+	// web::Browser *_browser = nullptr;
 	// virtual void resizeEvent( QResizeEvent *e );
 	virtual void closeEvent(QCloseEvent *);
 	virtual void showEvent(QShowEvent *);
@@ -479,11 +490,13 @@ protected:
 	virtual bool event(QEvent *);
 	// std::function<void (const QString &, bool)> save_impl;
 
+	QStatusBar *statusBar();
 signals:
 	void httpBusinessFinished();
 	void categoryRefreshFinished();
 	void blogRefreshFinished();
-	friend class EditorDock;
+	void close_request(QWidget *);
+	friend class web::Docker;
 	friend class EditorWrap;
 	friend class Editor;
 	friend class SideTabWidget;
@@ -615,6 +628,10 @@ public:
 	void topic(const QString &topic_);
 	QString topic() const;
 	QString current_topic_folder_name() const;
+	void title(const QString &title_);
+	QString title() const;
+	SuperMenu *super_menu();
+	web::Browser *browser();
 };
 
 #endif

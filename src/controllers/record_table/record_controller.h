@@ -30,12 +30,12 @@ class tkm_t;
 class wn_t;
 class ts_t;
 class FindScreen;
-class EditorDock;
+//class EditorDock;
 class AppConfig;
-class EditingWindow;
+class Blogger;
 
-namespace browser {
-	class BrowserDock;
+namespace web {
+	class Docker;
 	class Browser;
 	class WebView;
 	class TabWidget;
@@ -57,7 +57,7 @@ Q_OBJECT
 public:
 	// typedef TreeItem::bind_helper       bind_helper;
 	// typedef TreeItem::activate_helper   active_helper;
-	rctrl_t(EditingWindow *editing_window_, browser::TabWidget *tabmanager_, rs_t *record_screen_, wn_t *main_window_);
+	rctrl_t(Blogger *blogger_, web::TabWidget *tabmanager_, rs_t *record_screen_);
 	virtual ~rctrl_t();
 
 	// void init(void);
@@ -65,8 +65,8 @@ public:
 	rv_t *view(void);
 	RecordModel *source_model(); // {return _source_model;}
 	RecordProxyModel *proxy_model();
-	browser::TabWidget *tabmanager(){return _tabmanager;}
-
+	web::TabWidget *tabmanager(){return _tabmanager;}
+	void tabmanager(web::TabWidget *tab_){_tabmanager = tab_;}
 	boost::intrusive_ptr<TreeItem> index_invoke(const index_proxy &index_proxy_, bool force_update = false);
 
 	// bool is_tree_item_exists(void);
@@ -124,7 +124,7 @@ public:
 	// void sychronize_metaeditor_to_item(const PosSource pos_source_);
 	void sychronize_attachtable_to_item(const pos_source pos);
 
-	browser::WebView *addnew_blank(); // int mode
+	web::WebView *addnew_blank(); // int mode
 
 	// int new_record_from_url(const QUrl &url, const int mode = add_new_record_after);
 
@@ -137,7 +137,7 @@ public:
 	// RecordController *reocrd_controller() {return this;}
 	// RecordController *reocrd_controller()const {return const_cast<RecordController *>(this);}
 
-	EditingWindow *editing_window();
+	Blogger *editing_window();
 signals:
 
 public slots:
@@ -187,16 +187,16 @@ protected:
 	// void browser_update(const PosSource pos_source_);
 
 	// bool                _no_view = true;
-	browser::TabWidget *_tabmanager; //
+	web::TabWidget *_tabmanager; //
 	RecordModel *_source_model; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
 	RecordProxyModel *_proxy_model;
 	rv_t *_view;
 	rs_t *_record_screen;
-	EditingWindow *_editing_window;
-	wn_t *_main_window;
+	Blogger *_blogger;
+//	wn_t *_main_window;
 
-	// browser::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true);	// , const int mode = add_new_record_after	// add_new_record_after
-	browser::WebView *addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true); // , const int mode = add_new_record_after
+	// web::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true);	// , const int mode = add_new_record_after	// add_new_record_after
+	web::WebView *addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true); // , const int mode = add_new_record_after
 	boost::intrusive_ptr<TreeItem> synchronize(boost::intrusive_ptr<RecordIndex> record_index_);
 	void edit_field(pos_source pos, QString pin, QString name, QString author, QString home, QString url, QString tags);
 
@@ -205,7 +205,7 @@ protected:
 	// void pages_remove_from_browser(QVector<QString> del_ids);
 	// void remove_child(int index);
 
-	// friend class browser::Entrance;
+	// friend class web::Entrance;
 
 	// friend class WebView;
 
@@ -213,7 +213,7 @@ protected:
 
 	// friend Record *register_record(const QUrl &_url);
 	friend struct RecordIndex;
-	friend class browser::TabWidget;
+	friend class web::TabWidget;
 };
 
 // template<typename return_type, typename parameter_type>  std::function<return_type(const parameter_type &)> index_object;	// -std=c++14

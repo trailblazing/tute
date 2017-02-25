@@ -52,7 +52,7 @@
 
 // QT_BEGIN_NAMESPACE
 
-namespace browser {
+namespace web {
 	class NetworkAccessManager : public QNetworkAccessManager {
 #if QT_VERSION == 0x050600
 	W_OBJECT(NetworkAccessManager)

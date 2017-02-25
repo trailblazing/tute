@@ -109,7 +109,7 @@ QString AppConfig::get_parameter(QString name) const {
 bool AppConfig::data_dir(QString dirName){
 	QDir directory(dirName);
 	if(directory.exists() && directory.isReadable()){
-		_app_conf->setValue("datadir", dirName);
+		_app_conf->setValue("datadir", directory.dirName());
 
 		return true;
 	}else return false;
@@ -122,7 +122,7 @@ QString AppConfig::data_dir(void) const {return get_parameter("datadir");}
 bool AppConfig::trash_dir(QString dirName){
 	QDir directory(dirName);
 	if(directory.exists() && directory.isReadable()){
-		_app_conf->setValue("trashdir", dirName);
+		_app_conf->setValue("trashdir", directory.dirName());
 
 		return true;
 	}else return false;
@@ -635,7 +635,7 @@ QStringList AppConfig::replace_parameter_in_table(QString replaceName, QString r
 // ------------------------------------
 
 void AppConfig::update_version_process(void){
-	QString configFileName = gl_paras->root_path() + "/" + gl_paras->target_os() + "/conf.ini";
+	QString configFileName = gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_conf_filename;
 
 	AppConfigUpdater updater;
 	updater.set_config_file(configFileName);
@@ -1042,7 +1042,7 @@ QStringList AppConfig::parameter_table<14>(bool withEndSignature){ // QStringLis
 	if(gl_paras->target_os() == "android")
 		table	<< "uglyQssReplaceHeightForTableView"
 		        << "int"
-		        << "35";                                                           // Так как не все параметры можно стилизовать через QSS, здесь задается высота ячейки таблицы
+			<< "35";                                                                                                                               // Так как не все параметры можно стилизовать через QSS, здесь задается высота ячейки таблицы
 	else
 		table	<< "uglyQssReplaceHeightForTableView"
 		        << "int"
@@ -1095,11 +1095,11 @@ QStringList AppConfig::parameter_table<16>(bool withEndSignature){ // QStringLis
 	if(gl_paras->target_os() == "android")
 		table	<< "showSplashScreen"
 		        << "bool"
-		        << "true";                                                               // В Андроид долгий запуск, нужно показывать сплешскрин
+			<< "true";                                                                                                                                       // В Андроид долгий запуск, нужно показывать сплешскрин
 	else
 		table	<< "showSplashScreen"
 		        << "bool"
-		        << "false";                                                                 // На десктопе быстрый запуск, сплешскрин только мешает
+			<< "false";                                                                                                                                           // На десктопе быстрый запуск, сплешскрин только мешает
 	if(withEndSignature)
 		table	<< "0"
 		        << "0"
@@ -1119,11 +1119,11 @@ QStringList AppConfig::parameter_table<17>(bool withEndSignature){ // QStringLis
 	if(gl_paras->target_os() == "android")
 		table	<< "interfaceMode"
 		        << "QString"
-		        << "mobile";                                                                   // В Андроид должен быть мобильный интерфейс
+			<< "mobile";                                                                                                                                               // В Андроид должен быть мобильный интерфейс
 	else
 		table	<< "interfaceMode"
 		        << "QString"
-		        << "desktop";                                                                     // На десктопе должен быть интерфейс адоптированный для работы на рабочем столе
+			<< "desktop";                                                                                                                                                   // На десктопе должен быть интерфейс адоптированный для работы на рабочем столе
 	if(withEndSignature)
 		table	<< "0"
 		        << "0"
@@ -1163,11 +1163,11 @@ QStringList AppConfig::parameter_table<19>(bool withEndSignature){ // QStringLis
 	if(gl_paras->target_os() == "android")
 		table	<< "hideEditorTools"
 		        << "QString"
-		        << "italic,underline,monospace,alignleft,aligncenter,alignright,alignwidth,numericlist,dotlist,indentplus,indentminus,showformatting,showhtml,fontcolor,expand_edit_area,save,createtable,table_add_row,table_remove_row,table_add_col,table_remove_col,table_merge_cells,table_split_cell";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   // В Андроид прячутся инструменты сложного форматирования текста
+			<< "italic,underline,monospace,alignleft,aligncenter,alignright,alignwidth,numericlist,dotlist,indentplus,indentminus,showformatting,showhtml,fontcolor,expand_edit_area,save,createtable,table_add_row,table_remove_row,table_add_col,table_remove_col,table_merge_cells,table_split_cell";                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // В Андроид прячутся инструменты сложного форматирования текста
 	else
 		table	<< "hideEditorTools"
 		        << "QString"
-		        << "";                                                       // На десктопе скрываемых кнопок редактора нет
+			<< "";                                                                                                                       // На десктопе скрываемых кнопок редактора нет
 	if(withEndSignature)
 		table	<< "0"
 		        << "0"

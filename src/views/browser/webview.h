@@ -86,17 +86,18 @@ class tm_t;
 class ts_t;
 class rctrl_t;
 class EditorDock;
-class EditingWindow;
+class Blogger;
 
 // QT_BEGIN_NAMESPACE
 
 // #define USE_POPUP_WINDOW
 
-namespace browser {
+namespace web {
 	class Browser;
 	class PopupWindow;
 	class WebView;
 	class TabWidget;
+	class Docker;
 
 #ifdef USE_POPUP_WINDOW
 	class PopupView;
@@ -181,7 +182,7 @@ namespace browser {
 		// typedef typename Binder::page_helper page_helper;
 
 	public:
-		WebPage(Profile *profile, boost::intrusive_ptr<TreeItem> item, ts_t *tree_screen, EditingWindow *editentry, BrowserDock *entrance, Browser *browser, TabWidget *tabmanager, rctrl_t *record_controller, WebView *parent = 0);
+		WebPage(Profile *profile, boost::intrusive_ptr<TreeItem> item, ts_t *tree_screen, Blogger *editentry, web::Docker *browser_docker_, Browser *browser, TabWidget *tabmanager, rctrl_t *record_controller, WebView *parent = 0);
 
 		~WebPage();
 
@@ -224,7 +225,7 @@ namespace browser {
 		boost::intrusive_ptr<TreeItem> bind(boost::intrusive_ptr<TreeItem> host_);
 
 		boost::intrusive_ptr<::Binder> binder();
-		const boost::intrusive_ptr<::Binder>&& binder() const;
+//		const boost::intrusive_ptr<::Binder>&& binder() const;
 		boost::intrusive_ptr<::Binder> binder(boost::intrusive_ptr<::Binder> &&binder_);
 
 	protected:
@@ -254,8 +255,8 @@ namespace browser {
 	private:
 		Profile *_profile;
 		ts_t *_tree_screen;
-		EditingWindow *_editing_window;
-		BrowserDock *_entrance;
+		Blogger *_blogger;
+		web::Docker *_browser_docker;
 		Browser *_browser;
 		TabWidget *_tabmanager;
 		rctrl_t *_record_controller;
@@ -344,7 +345,7 @@ namespace browser {
 
 	public:
 		WebView(boost::intrusive_ptr<TreeItem> host_, Profile *profile // , bool openinnewtab
-		       , ts_t *tree_screen, EditingWindow *editentry, BrowserDock *entrance, Browser *browser, TabWidget *tabmanager, rctrl_t *record_controller);
+		       , ts_t *tree_screen, Blogger *editentry, Docker *entrance, Browser *browser, TabWidget *tabmanager, rctrl_t *record_controller);
 
 		~WebView();
 		WebPage *page() const;
@@ -414,9 +415,9 @@ namespace browser {
 		// QUrl _initialurl;
 		int _progress;
 		QIcon _icon;
-		QNetworkReply *_iconreply;
+		QNetworkReply *_icon_reply;
 		bool _load_finished = false;
-		QMetaObject::Connection _home_connection; // for disconnect
+//		QMetaObject::Connection _home_connection; // for disconnect
 		friend class TabWidget;
 		friend class WebPage;
 	};

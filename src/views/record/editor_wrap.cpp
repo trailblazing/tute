@@ -26,28 +26,28 @@
 #include "models/tree/binder.hxx"
 #include "models/tree/tree_item.h"
 #include "views/attach_table/attach_table_screen.h"
-#include "views/browser/browser_dock.h"
+#include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/hidable_tab.h"
 #include "views/main_window/main_window.h"
-#include "views/record/editor_dock.h"
+
 #include "views/record_table/record_screen.h"
 #include "views/record_table/record_view.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
 
 #ifdef USE_QTM
-#include "libraries/qtm/editing_window.h"
+#include "libraries/qtm/blogger.h"
 #endif
 
 extern std::shared_ptr<gl_para> gl_paras;
 extern std::shared_ptr<AppConfig> appconfig;
 
-namespace browser {
+namespace web {
 	class WebPage;
-	class BrowserDock;
+	class Docker;
 }
 
 #if QT_VERSION == 0x050600
@@ -58,8 +58,8 @@ W_OBJECT_IMPL(ClickableLabel)
 W_OBJECT_IMPL(MetaEditor)
 #endif
 
-EditorWrap::EditorWrap(FindScreen *find_screen, EditingWindow *editing_win, QStringList hide_editor_tools_, QStackedWidget *main_stack_, QString object_name)
-	: Editor(main_stack_, editing_win, (appconfig->interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, false, false)
+EditorWrap::EditorWrap(FindScreen *find_screen, Blogger *editing_win, std::shared_ptr<QSettings> topic_editor_config_, QStringList hide_editor_tools_, QStackedWidget *main_stack_, QString object_name)
+	: Editor(main_stack_, editing_win, topic_editor_config_, (appconfig->interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, false, false)
 	  , _editor_main_screen(new QWidget(this)) // Сборка виджета редактирования текста (основной виджет)
 	  , _editor_main_layer(new QGridLayout(_editor_main_screen))
 	  , _label_pin(new QLabel(_editor_main_screen))
@@ -80,7 +80,7 @@ EditorWrap::EditorWrap(FindScreen *find_screen, EditingWindow *editing_win, QStr
 	  , _meta_editor_join_layer(new QVBoxLayout(this))
 	  , _find_screen(find_screen)
 	  , _main_stack(main_stack_)
-	  , _editing_window(editing_win){ // , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint))
+	  , _blog(editing_win){ // , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint))
 	setObjectName(object_name);
 	_attachtable_screen->setHidden(true);
 
@@ -213,11 +213,11 @@ void EditorWrap::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
 						    // Q_UNUSED(home)
 						    assert(_item);
 						    // assert(_item->page_valid());
-						    browser::WebPage *page = _item->page();
+						    web::WebPage *page = _item->page();
 						    assert(page);
 						    QString home = _item->field<home_type>();
 						    QString url = _item->field<url_type>();
-						    if(home != browser::Browser::_defaulthome && url != home){
+						    if(home != web::Browser::_defaulthome && url != home){
 						            // _item->field("url", home);
 						            static_cast<QWebEnginePage *>(page)->setUrl(QUrl(home)); // item_bind(_item)->activate(); // page->load(_record, true);
 						            // _record->active();
@@ -370,7 +370,14 @@ void EditorWrap::pin(const QString &pin_){
 	auto set_pin = [&](bool checked){
 			       // if(checked != ("" != _string_from_check_state[_item_pin->checkState()])){
 			       // if(globalparameters.entrance()->activiated_browser()) {
-			       browser::TabWidget *_tabmanager = gl_paras->main_window()->activated_browser()->tabmanager();
+			       web::TabWidget *_tabmanager = [&] {
+				       web::TabWidget *tab = nullptr;
+				       if(_item){
+					       auto bro = gl_paras->main_window()->browser(_item);
+					       tab = bro->tabmanager();
+				       }
+				       return tab;
+			       } ();
 			       // record_screens()->record_controller();
 			       if(_tabmanager){
 				       RecordModel *source_model = _tabmanager->source_model();

@@ -15,7 +15,7 @@
 
 class Editor;
 class InfoFieldEnter;
-class EditingWindow;
+class Blogger;
 
 // Окно добавления новой записи
 
@@ -46,7 +46,7 @@ private:
 	// Ввод инфополей записи
 	InfoFieldEnter *infoField;
 
-	std::unique_ptr<EditingWindow> _editing_window;
+	Blogger *_blogger;
 	//// Ввод текста записи
 	// Editor *recordTextEditor;
 

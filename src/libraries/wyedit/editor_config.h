@@ -19,7 +19,7 @@ Q_OBJECT
 #endif
 
 public:
-	EditorConfig(const QString &config_file_name, QWidget *parent = 0);
+	EditorConfig(std::shared_ptr<QSettings> topic_editor_config_, QWidget *parent = 0);
 	~EditorConfig();
 
 	// Настройка стандартного шрифта
@@ -74,7 +74,7 @@ public:
 	void set_expand_tools_lines(bool i);
 
 private:
-	std::unique_ptr<QSettings> _editor_conf;
+	std::shared_ptr<QSettings> _editor_conf;
 
 	QString get_parameter(QString name);
 
