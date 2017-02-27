@@ -1482,7 +1482,7 @@ void Blogger::getAccounts(){
 void Blogger::getAccounts(const QString &title){
 	QList<AccountsDialog::Account> acctsList, returnedAccountsList;
 	AccountsDialog::Account acct;
-	QDomNodeList accountsList, thisAccountsAttribs;
+	QDomNodeList accounts_list, accounts_attributes;
 	QDomDocument newAccountsDom;
 	QDomElement newQTMAccounts, newAccount, detailElement, nameElement, serverElement, locationElement, portElement, loginElement, pwdElement, blogsElement, boolElement, attribsElement, hbtElement;
 	QString oldCurrentAccountId, oldBlogid, currentTitle, currentPort;
@@ -1494,19 +1494,19 @@ void Blogger::getAccounts(const QString &title){
 	purgeBlankAccounts();
 
 	// Extract accounts list from account tree
-	accountsList = _accounts_dom.elementsByTagName("account");
-	for(i = 0; i < accountsList.count(); i++){
-		thisAccountsAttribs = accountsList.at(i)
+	accounts_list = _accounts_dom.elementsByTagName("account");
+	for(i = 0; i < accounts_list.count(); i++){
+		accounts_attributes = accounts_list.at(i)
 		                      .toElement()
 		                      .firstChildElement("details")
 		                      .firstChildElement("attributes")
 		                      .elementsByTagName("attribute");
 		thisAccountsAttribStrings = QStringList();
-		for(j = 0; j < thisAccountsAttribs.count(); j++) thisAccountsAttribStrings
-			        << thisAccountsAttribs.at(j).toElement().attribute("name");
+		for(j = 0; j < accounts_attributes.count(); j++) thisAccountsAttribStrings
+				<< accounts_attributes.at(j).toElement().attribute("name");
 		acct = AccountsDialog::Account();
-		acct.id = accountsList.at(i).toElement().attribute("id");
-		detailElement = accountsList.at(i).firstChildElement("details");
+		acct.id = accounts_list.at(i).toElement().attribute("id");
+		detailElement = accounts_list.at(i).firstChildElement("details");
 		currentPort = detailElement.firstChildElement("port").text();
 
 		acct.name = detailElement.firstChildElement("title").text();
@@ -1542,10 +1542,10 @@ void Blogger::getAccounts(const QString &title){
 	int oldCurrentBlog = _control_tab->cbAccountSelector->currentIndex();
 	// accountsList = accountsDom.documentElement().elementsByTagName( "account" );
 
-	AccountsDialog acctsDialog(acctsList, oldCurrentBlog, this);
-	if(!title.isEmpty()) acctsDialog.setWindowTitle(title);
-	if(acctsDialog.exec()){
-		returnedAccountsList = acctsDialog.accounts();
+	AccountsDialog accounts_dialog(acctsList, oldCurrentBlog, this);
+	if(!title.isEmpty()) accounts_dialog.setWindowTitle(title);
+	if(accounts_dialog.exec()){
+		returnedAccountsList = accounts_dialog.accounts();
 		newQTMAccounts = newAccountsDom.createElement(program_title_qstring + "Accounts");
 		for(i = 0; i < returnedAccountsList.count(); i++){
 			newAccount = newAccountsDom.createElement("account");
@@ -1615,9 +1615,9 @@ void Blogger::getAccounts(const QString &title){
 			newAccount.appendChild(detailElement);
 			// Check if each account is matched from the old list; if it is,
 			// copy the blogs list
-			for(j = 0; j < accountsList.count(); j++){
-				if(accountsList.at(j).toElement().attribute("id") == returnedAccountsList.at(i).id){
-					blogsElement = accountsList.at(j)
+			for(j = 0; j < accounts_list.count(); j++){
+				if(accounts_list.at(j).toElement().attribute("id") == returnedAccountsList.at(i).id){
+					blogsElement = accounts_list.at(j)
 					               .toElement()
 					               .firstChildElement("blogs");
 					if(!blogsElement.isNull())
@@ -1638,19 +1638,19 @@ void Blogger::getAccounts(const QString &title){
 		_accounts_dom = newAccountsDom.cloneNode(true).toDocument();
 
 		_control_tab->cbAccountSelector->clear();
-		accountsList = _accounts_dom.documentElement().elementsByTagName("account");
-		for(i = 0; i < accountsList.count(); ++i){
-			currentTitle = decodeXmlEntities(accountsList.at(i).firstChildElement("details").firstChildElement("title").text());
+		accounts_list = _accounts_dom.documentElement().elementsByTagName("account");
+		for(i = 0; i < accounts_list.count(); ++i){
+			currentTitle = decodeXmlEntities(accounts_list.at(i).firstChildElement("details").firstChildElement("title").text());
 			if(currentTitle.isEmpty()) currentTitle = tr("(Unnamed account)");
 			_control_tab->cbAccountSelector->addItem(
-				currentTitle, accountsList.at(i).toElement().attribute("id"));
+				currentTitle, accounts_list.at(i).toElement().attribute("id"));
 		}
 		// Check if the old current account is in this list; if so, make it current
 		// again
-		for(i = 0; i < accountsList.count(); ++i){
-			if(accountsList.at(i).toElement().attribute("id") == oldCurrentAccountId){
+		for(i = 0; i < accounts_list.count(); ++i){
+			if(accounts_list.at(i).toElement().attribute("id") == oldCurrentAccountId){
 				_control_tab->cbAccountSelector->setCurrentIndex(i);
-				currentAccountElement = accountsList.at(i).toElement();
+				currentAccountElement = accounts_list.at(i).toElement();
 				extractAccountDetails();
 
 				QStringList accountStringNames(accountStrings.keys());
@@ -1671,10 +1671,10 @@ void Blogger::getAccounts(const QString &title){
 				}
 				break;
 			}
-			if(i == accountsList.count() - 1){
+			if(i == accounts_list.count() - 1){
 				// qDebug() << "reached end of account list";
 				_control_tab->cbAccountSelector->setCurrentIndex(0);
-				currentAccountElement = accountsList.at(0).toElement();
+				currentAccountElement = accounts_list.at(0).toElement();
 				currentAccountId = currentAccountElement.attribute("id");
 				extractAccountDetails();
 				refreshBlogList();
@@ -1693,7 +1693,7 @@ void Blogger::getPreferences(){
 
 void Blogger::getPreferences(const QString &title){
 	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
-	QPalette palette, widgetPalette;
+	QPalette palette, widget_palette;
 
 	PrefsDialog prefs_dialog(this);
 	assert(!gl_paras->editors_shared_full_path_name().isEmpty());

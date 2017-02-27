@@ -10,10 +10,10 @@
 #include <QObject>
 #include <QProgressBar>
 
-#include "utility/add_action.h"
 #include "controllers/record_table/record_controller.h"
 #include "libraries/flat_control.h"
 #include "libraries/global_parameters.h"
+#include "libraries/qtm/blogger.h"
 #include "libraries/window_switcher.h"
 #include "main.h"
 #include "models/app_config/app_config.h"
@@ -24,14 +24,14 @@
 #include "models/tree/tree_know_model.h"
 #include "record_screen.h"
 #include "record_view.h"
-#include "views/browser/webview.h"
+#include "utility/add_action.h"
 #include "views/browser/browser.h"
 #include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/toolbar_search.h"
+#include "views/browser/webview.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
-#include "libraries/qtm/blogger.h"
 #include "views/record/editor_wrap.h"
 #include "views/record_table/vertical_scrollarea.h"
 #include "views/tree/tree_screen.h"
@@ -48,11 +48,9 @@ extern const char *tree_screen_viewer_name;
 W_OBJECT_IMPL(rs_t)
 #endif
 
-rs_t::rs_t(HidableTab *vtab_record
-	   , Blogger *blogger_
-	   , web::Browser *browser_)
+rs_t::rs_t(HidableTab *vtab_record, Blogger *blogger_, web::Browser *browser_)
 	: QWidget(vtab_record) //
-	  , _vtab_record(vtab_record)
+//	  , _vtab_record(gl_paras->vtab_record())
 	  , _tree_screen(gl_paras->tree_screen())
 	  , _editor_docker(gl_paras->editor_docker())
 	  , _blogger(blogger_)
@@ -66,7 +64,7 @@ rs_t::rs_t(HidableTab *vtab_record
 	  , _addnew_before(new QAction(tr("Add note before"), this))
 	  , _addnew_after(new QAction(tr("Add note after"), this))
 #endif
-	  , _edit_field(new QAction(tr("Edit properties "), this))// (name, url, tags...)
+	  , _edit_field(new QAction(tr("Edit properties "), this)) // (name, url, tags...)
 #ifdef USE_BUTTON_CLOSE
 	  , _close(new QAction(tr("Close note(s)"), this))
 #endif
@@ -92,10 +90,53 @@ rs_t::rs_t(HidableTab *vtab_record
 	  , _extra_toolsline(new QToolBar(this))
 	  , _treepathlabel(new QLabel(this))
 	  , _browser(browser_)
-	  , _rctrl([&]() -> rctrl_t *{_rctrl = nullptr; auto r = new rctrl_t(blogger_, browser_->tabmanager(), this); return r;} ()) // , _tabmanager(_browser->tabmanager())
+	  , _rctrl([&]() -> rctrl_t * {_rctrl = nullptr; auto r = new rctrl_t(blogger_, browser_->tabmanager(), this); return r;} ()) // , _tabmanager(_browser->tabmanager())
 	  , _vertical_scrollarea(new VerticalScrollArea(_rctrl->view(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void *> > >(&RecordView::resizeEvent, _tabmanager->record_controller()->view())
 	  , _records_toolslayout(new QHBoxLayout())
 	  , _records_screenlayout(new QVBoxLayout()){
+	[&] {
+		auto _vtab_record = gl_paras->vtab_record();
+		bool found = false;
+		for(int i = 0; i < _vtab_record->count(); i++){
+			auto w	= _vtab_record->widget(i);
+			auto rs = dynamic_cast<rs_t *>(w);
+			if(rs)
+				if(rs == this){//->browser()
+					found = true;
+					break;
+				}
+		}
+		if(!found){
+			_vtab_record->setUpdatesEnabled(false);
+			_vtab_record->addTab(this, QIcon(":/resource/pic/three_leaves_clover.svg"), _blogger->topic().mid(0, 5)); // QString("Browser ") + QString::number(vtab_record->count())
+			// bool found = false;
+			// for(int i = 0; i < _vtab_record->count(); i++){
+			// auto r = _vtab_record->widget(i);
+			// if(r == _record_screen){
+//				auto this = _record_screen->browser();
+//				if(this){
+//				this->activateWindow();//recursively call in connect(_vtab_record, &::HidableTab::currentChanged
+
+//				_vtab_record->setCurrentWidget(_record_screen);
+			// found = true;
+//				}
+			// }
+			// }
+			// assert(found);
+			////    bool found = false;
+			////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+			////	if(*i == rs){
+			////	    found = true;
+			////	    break;
+			////	}
+			////    }
+			////    if(! found) _record_screens.insert(rs);
+			// _record_screens.insert(rs);
+//				this->adjustSize();
+			_vtab_record->setUpdatesEnabled(true);
+			// _record_screen->adjustSize();
+		}
+	} ();
 	assert(_rctrl);
 	// , _recordtree_search(new web::ToolbarSearch(this))
 	// Инициализируется контроллер списка записей
@@ -201,10 +242,11 @@ rs_t::rs_t(HidableTab *vtab_record
 	////    }
 	///
 
-	connect(this, &rs_t::close_request, _vtab_record, &::HidableTab::on_close_request);
+	connect(this, &rs_t::close_request, gl_paras->vtab_record(), &::HidableTab::on_close_request);
 
-	connect(_vtab_record, &::HidableTab::tabCloseRequested, [&](int index){
-			if(!_vtab_record) _vtab_record = gl_paras->vtab_record(); //?
+	connect(gl_paras->vtab_record(), &::HidableTab::tabCloseRequested, [](int index){
+			//			if(!_vtab_record)
+			auto _vtab_record = gl_paras->vtab_record(); //?
 			auto count = _vtab_record->count();
 			assert(index < count);
 			if(index != -1){
@@ -216,34 +258,35 @@ rs_t::rs_t(HidableTab *vtab_record
 							auto browser_ = rs->browser();
 							if(browser_){
 								browser_->close();
-//								emit browser_->close_request(browser_);
-								browser_->deleteLater();//
+								//								emit browser_->close_request(browser_);
+								browser_->deleteLater(); //
 								// if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-//			                        _browser->deleteLater();
+								//			                        _browser->deleteLater();
 							}
 							auto blogger_ = rs->blogger();
 							if(blogger_){
-								blogger_->close();//
-//								emit blogger_->close_request(blogger_);
+								blogger_->close(); //
+								//								emit blogger_->close_request(blogger_);
 								blogger_->deleteLater();
 							}
-							rs->close();//
-//							emit rs->close_request(rs);
+							rs->close(); //
+							//							emit rs->close_request(rs);
 							rs->deleteLater();
 						}
 					}else{
 						w->close();
-//			                w->deleteLater();
+						//			                w->deleteLater();
 					}
-//				_vtab_record->removeTab(index);// move into HidableTab
+					//				_vtab_record->removeTab(index);// move into HidableTab
 				}
 				w = nullptr;
 			}
 		});
 
-	connect(_vtab_record, &::HidableTab::tabBarClicked//currentChanged
-		, [&](int index){
-			if(gl_paras->vtab_record()->updatesEnabled()){//if(_vtab_record->updatesEnabled()){
+	connect(gl_paras->vtab_record(), &::HidableTab::tabBarClicked //currentChanged
+		, [](int index){
+			auto _vtab_record = gl_paras->vtab_record();
+			if(gl_paras->vtab_record()->updatesEnabled()){  //if(_vtab_record->updatesEnabled()){
 				if(index >= 0 && index < _vtab_record->count()){
 					QWidget *w = nullptr;
 					w = _vtab_record->widget(index);
@@ -253,14 +296,17 @@ rs_t::rs_t(HidableTab *vtab_record
 							if(current_rs){
 								auto blogger_ = current_rs->blogger();
 								if(blogger_){
-									if(blogger_ != _editor_docker->widget()){
-										blogger_->show();
-										blogger_->activateWindow();
-										if(!blogger_->isTopLevel()) blogger_->raise();
-										_editor_docker->prepend(blogger_);
-//									_editor_docker->setWidget(blogger_);
-//									blogger_->setParent(_editor_docker);
-										blogger_->adjustSize();
+									auto editor_docker_ = gl_paras->editor_docker();
+									if(editor_docker_){
+										if(blogger_ != editor_docker_->widget()){
+											blogger_->show();
+											blogger_->activateWindow();
+											if(!blogger_->isTopLevel()) blogger_->raise();
+											editor_docker_->prepend(blogger_);
+											//									_editor_docker->setWidget(blogger_);
+											//									blogger_->setParent(_editor_docker);
+											blogger_->adjustSize();
+										}
 									}
 								}
 								auto browser = current_rs->browser();
@@ -268,7 +314,7 @@ rs_t::rs_t(HidableTab *vtab_record
 									if(browser != gl_paras->browser_docker()->widget()){
 										// if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
 										browser->show();
-//							if(!browser->isActiveWindow())
+										//							if(!browser->isActiveWindow())
 										browser->activateWindow();
 										if(!browser->isTopLevel()) browser->raise();
 										browser->adjustSize();
@@ -276,22 +322,23 @@ rs_t::rs_t(HidableTab *vtab_record
 										if(_tabmanager->count() > 0){
 											auto v = browser->currentTab();
 											if(v){
-//			                                                if(!v->isActiveWindow())
-
-//									v->activateWindow();
-
+												//			                                                if(!v->isActiveWindow())
+												//									v->activateWindow();
 												auto p = v->page();
 												if(p){
 													auto it = p->host();
 													if(it){
-														if(_tree_screen->view()->current_item()->id() != it->id()){
-															//
-															_tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] {return _tree_screen->view()->source_model();}, it));
+														auto tree_screen_ = gl_paras->tree_screen();
+														if(tree_screen_){
+															if(tree_screen_->view()->current_item()->id() != it->id()){
+																//
+																tree_screen_->view()->select_as_current(TreeIndex::require_treeindex([&] {return tree_screen_->view()->source_model();}, it));
+															}
 														}
 														auto to_home = gl_paras->find_screen()->historyhome();
 														to_home->disconnect();
-														QObject::connect(to_home, &QAction::triggered, v
-															, [&](bool checked = true) -> void {
+														QObject::connect(
+															to_home, &QAction::triggered, v, [&](bool checked = true) -> void {
 																Q_UNUSED(checked)
 																if(p->binder()){
 																	QString home = it->field<home_type>();
@@ -350,11 +397,11 @@ rs_t::~rs_t(){
 	emit close_request(this);
 	// delete _recordtree_search;
 	if(_rctrl) _rctrl->deleteLater();
-//	if(_browser){
-//		_browser->close();
-//		_browser->deleteLater();
-//		_browser = nullptr;
-//	}
+	//	if(_browser){
+	//		_browser->close();
+	//		_browser->deleteLater();
+	//		_browser = nullptr;
+	//	}
 	_vertical_scrollarea->deleteLater();
 }
 
@@ -650,7 +697,6 @@ void rs_t::setup_actions(void){
 		);
 #endif
 
-
 	// едактирование записи
 	// _edit_field = new QAction(tr("Edit properties (pin, name, author, url, tags...)"), this);
 	_edit_field->setStatusTip(tr("Edit note properties")); // (pin, name, author, url, tags...)
@@ -717,7 +763,7 @@ void rs_t::setup_actions(void){
 	_editor->setIcon(QIcon(":/resource/pic/edit_switch.svg"));
 	_editor->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E));
 	connect(_editor, &QAction::triggered, [&](bool checked){
-//			if(checked){//
+			//			if(checked){//
 			(void) checked;
 			if(!(_editor_docker->isVisible())){
 				_editor_docker->show();
@@ -740,7 +786,7 @@ void rs_t::setup_actions(void){
 	_settings->setIcon(QIcon(":/resource/pic/cogwheel.svg"));
 	connect(_settings, &QAction::triggered, _rctrl, &rctrl_t::settings); // &web::TabWidget::settings
 
-//	assert(_record_controller);
+	//	assert(_record_controller);
 	// Перемещение записи вверх
 	// _action_move_up = new QAction(tr("&Move Up"), this);
 	_action_move_top->setStatusTip(tr("Move note to top"));
@@ -765,7 +811,7 @@ void rs_t::setup_actions(void){
 			gl_paras->tree_screen()->view()->know_model_save();
 		}); // _record_controller, &RecordController::move_up
 
-//	assert(_record_controller);
+	//	assert(_record_controller);
 	// Перемещение записи вверх
 	// _action_move_up = new QAction(tr("&Move Up"), this);
 	_action_move_up->setStatusTip(tr("Move note up"));
@@ -1134,13 +1180,13 @@ void rs_t::tools_update(){
 
 	// int		selected_rows	= item_selection_model->selectedIndexes().size();	// (item_selection_model->selectedRows()).size();// always crash because tabmanager inaccessible
 	bool has_selection = item_selection_model->hasSelection();
-//	if(_browser){
-//		auto tab = _browser->tabmanager();
-//		if(tab){
-//			auto it = tab->current_item();
-//			if(it) has_selection = true;
-//		}
-//	}
+	//	if(_browser){
+	//		auto tab = _browser->tabmanager();
+	//		if(tab){
+	//			auto it = tab->current_item();
+	//			if(it) has_selection = true;
+	//		}
+	//	}
 	bool sorting_enabled = _view->isSortingEnabled();
 #ifdef USE_BLANK_ITEM
 	// Добавление записи
@@ -1304,10 +1350,16 @@ web::Browser *rs_t::browser(){return _browser;}
 ts_t *rs_t::tree_screen(){return _tree_screen;}
 
 // QAction *rs_t::record_hide(){return _record_hide;}	// move to main_window::_vtab_record->tabBar()->tabBarClicked
-HidableTab *rs_t::vtab_record(){return _vtab_record;}
+//HidableTab *rs_t::vtab_record(){return _vtab_record;}
 
 Blogger *rs_t::blogger(){return _blogger;}
 
-void rs_t::on_blogger_close(){_blogger = nullptr; close();}
+void rs_t::on_blogger_close(){
+	_blogger = nullptr;
+	close();
+}
 
-void rs_t::on_browser_close_request(){_browser = nullptr; close();}
+void rs_t::on_browser_close_request(){
+	_browser = nullptr;
+	close();
+}

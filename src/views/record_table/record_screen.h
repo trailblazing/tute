@@ -87,7 +87,7 @@ public:
 	// QAction			*record_hide();	// move to main_window::_vtab_record->tabBar()->tabBarClicked
 	// void			restore_menubar();
 
-	HidableTab *vtab_record();
+//	HidableTab *vtab_record();
 	Blogger *blogger();
 public slots:
 
@@ -107,7 +107,7 @@ private slots:
 
 private:
 	// bool                _inited = false;
-	HidableTab *_vtab_record;
+//	HidableTab *_vtab_record;
 	ts_t *_tree_screen;
 	web::Docker *_editor_docker;
 	Blogger *_blogger;

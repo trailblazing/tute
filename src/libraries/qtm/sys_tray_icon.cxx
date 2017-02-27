@@ -65,6 +65,7 @@
 #include "sys_tray_icon.h"
 #include "views/main_window/hidable_tab.h"
 #include "views/main_window/main_window.h"
+#include "libraries/global_parameters.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -268,13 +269,13 @@ bool SysTrayIcon::handleArguments(){
 	if(failedFiles.size()){
 		if(failedFiles.size() == args.size() - 1){
 			if(QMessageBox::question(0, tr("Error"), tr("Could not load the following:\n\n%1")
-			                         .arg(failedFiles.join("\n"))
-			                        , tr("&Continue"), tr("E&xit"))) _dontStart = true;
+				   .arg(failedFiles.join("\n"))
+				   , tr("&Continue"), tr("E&xit"))) _dontStart = true;
 			else rv = false;
 		}else{
 			QMessageBox::information(0, tr("Error"), tr("Could not load the following:\n\n%1 ")
-			                         .arg(failedFiles.join("\n"))
-			                        , QMessageBox::Ok);
+				.arg(failedFiles.join("\n"))
+				, QMessageBox::Ok);
 			rv = true;
 		}
 	}
@@ -301,14 +302,14 @@ void SysTrayIcon::updateRecentFileMenu(){
 			if(j == 9)
 				text = tr("1&0 %1")
 				       .arg(recentFiles.value(j).title.isEmpty()
-				            ? recentFiles.value(j).filename.section("/", -1, -1)
-					    : t.replace('&', "&&"));
+					? recentFiles.value(j).filename.section("/", -1, -1)
+					: t.replace('&', "&&"));
 			else
 				text = tr("&%1 %2")
 				       .arg(j + 1)
 				       .arg(recentFiles.value(j).title.isEmpty()
-				            ? recentFiles.value(j).filename.section("/", -1, -1)
-					    : t.replace('&', "&&"));
+					? recentFiles.value(j).filename.section("/", -1, -1)
+					: t.replace('&', "&&"));
 #endif
 			recentFileActions[j]->setText(text);
 			recentFileActions[j]->setData(recentFiles.value(j).filename);
@@ -346,8 +347,8 @@ QStringList SysTrayIcon::templateTitles(){
 	int i;
 	for(i = 0; i < templateTitleList.count(); i++){
 		rv.append(QString("%1.%2")
-		          .arg(i)
-		          .arg(templateTitleList.value(i)));
+			.arg(i)
+			.arg(templateTitleList.value(i)));
 	}
 	return rv;
 }
@@ -361,9 +362,9 @@ QStringList SysTrayIcon::templates(){
 		                  .replace("\n", "\\n")
 		                  .replace("]", "\\]");
 		rv.append(QString("%1.[%2].[%3]")
-		          .arg(i)
-		          .arg(templateTitleList.value(i))
-		          .arg(currentTemplate));
+			.arg(i)
+			.arg(templateTitleList.value(i))
+			.arg(currentTemplate));
 	}
 	return rv;
 }
@@ -506,7 +507,7 @@ void SysTrayIcon::quickpost(QClipboard::Mode mode){
 #if !defined DONT_USE_SSL
 		  && !cbtext.startsWith("https://")
 #endif
-		  ){
+		     ){
 			// If it's not obviously an URL.
 			if(cbtext.startsWith("https")){
 #ifndef Q_OS_MAC
@@ -786,7 +787,7 @@ void SysTrayIcon::doQP(QString receivedText){
 					newPost = QString("<a title = \"%1\" href=\"%2\">%1</a>\n\n")
 					          .arg(newTitle)
 					          .arg(cbtext);
-			}else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // Post has no valid title
+			}else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                // Post has no valid title
 				newPost = QString(tr("<a href=\"%1\">Insert link text here</a>"))
 				          .arg(cbtext);
 		}
@@ -802,14 +803,14 @@ void SysTrayIcon::doQP(QString receivedText){
 		}
 		// Copy the title, if a quickpost
 		if(copyTitleStatusList[activeTemplate]){
-			if(!newTitle.isEmpty()) c->setWindowTitle(QString("%1 - QTM [*]").arg(newTitle));
+			if(!newTitle.isEmpty()) c->setWindowTitle(QString(QString("%1 - ") + gl_para::_program_instance_name + " [*]").arg(newTitle));
 			c->setPostTitle(newTitle);
 		}
 	}else{
 		if(_copyTitle){
 			// Copy the title, if not a quickpost
 			c->setPostTitle(newTitle);
-			if(!newTitle.isEmpty()) c->setWindowTitle(QString("%1 - QTM [*]").arg(newTitle));
+			if(!newTitle.isEmpty()) c->setWindowTitle(QString(QString("%1 - ") + gl_para::_program_instance_name + " [*]").arg(newTitle));
 		}
 	}
 #ifdef Q_OS_MAC
@@ -860,9 +861,9 @@ void SysTrayIcon::setupQuickpostTemplates(){
 		QFile file(templateFile);
 		if(!domDoc.setContent(&file, true, &errorString, &errorLine, &errorCol))
 			QMessageBox::warning(0, tr("Failed to read templates"), QString(tr("Error: %1\nLine %2, col %3"))
-			                     .arg(errorString)
-			                     .arg(errorLine)
-			                     .arg(errorCol));
+				.arg(errorString)
+				.arg(errorLine)
+				.arg(errorCol));
 		else{
 			templateNodes = domDoc.elementsByTagName("template");
 			titles = domDoc.elementsByTagName("title");

@@ -470,7 +470,7 @@ namespace web {
 						}
 					}
 #ifdef USE_EDITOR_WRAP
-	                                _editing_window->name(title);
+					_blogger->name(title);
 #endif //USE_EDITOR_WRAP
 				}
 			}
@@ -482,8 +482,8 @@ namespace web {
 	                        data_changed = true;
 #ifdef USE_EDITOR_WRAP
 	                        if(is_current){
-	                                _editing_window->url(url_str);
-	                                _editing_window->home(host_->field<home_type>());
+					_blogger->url(url_str);
+					_blogger->home(host_->field<home_type>());
 				}
 #endif //USE_EDITOR_WRAP
 			}
@@ -494,7 +494,7 @@ namespace web {
 	                        _record_controller->on_recordtable_configchange();
 			}
 #ifdef USE_EDITOR_WRAP
-	                if(_editing_window->item() != _binder->host() && is_current) metaeditor_sychronize(); // metaeditor->bind(_record);
+			if(_blogger->item() != _binder->host() && is_current) metaeditor_sychronize(); // metaeditor->bind(_record);
 #endif //USE_EDITOR_WRAP
 	                // auto _tree_screen = globalparameters.tree_screen();
 	                auto it = _binder->host();
@@ -531,7 +531,7 @@ namespace web {
 // record_index = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _record_controller->source_model()->sibling(current_item), current_item);
 // } catch(std::exception &) {}
 #ifdef USE_FILE_PER_TREEITEM // if(record_index) {
-	        if(_editing_window->item() != current_item) _editing_window->bind(current_item);
+		if(_blogger->item() != current_item) _blogger->bind(current_item);
 // int pos = indexOf(currentWebView());
 // Turns the reference to the table of final data   // Выясняется ссылка на таблицу конечных данных
 // std::shared_ptr<TableData> table = std::make_shared<TableData>();   // _source_model->table_data_internal();
@@ -562,8 +562,8 @@ namespace web {
 	        QString full_file_name = full_dir + "/" + current_file;
 	        qDebug() << " File " << full_file_name << "\n";
 	        // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
-	        if(  _editing_window->work_directory() == full_dir
-	          && _editing_window->file_name() == current_file){
+		if(  _blogger->work_directory() == full_dir
+		  && _blogger->file_name() == current_file){
 	                gl_paras->window_switcher()->recordtable_ro_record_editor();
 
 	                return;
@@ -572,12 +572,12 @@ namespace web {
 	        // Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
 	        // Before the opening of the editor it attempts to get the text records
 	        // This call will create a text file with the record if it is not already created (think remake)
-	        _editing_window->save_textarea(); // table->text(pos);    // ?
+		_blogger->save_textarea(); // table->text(pos);    // ?
 
 	        // едактору задаются имя файла и директории
 	        // И дается команда загрузки файла
-	        _editing_window->work_directory(full_dir);
-	        _editing_window->file_name(current_file);
+		_blogger->work_directory(full_dir);
+		_blogger->file_name(current_file);
 
 	        // Если идет работа с зашифрованной записью
 	        // И если имя директории или имя файла пусты, то это означает что
@@ -587,34 +587,34 @@ namespace web {
 	        qDebug() << "void WebPage::metaeditor_sychronize() : name " << current_item->field<name_type>(); // table->field(pos, "name");
 	        qDebug() << "void WebPage::metaeditor_sychronize() : crypt " << current_item->field<crypt_type>(); // table->field(pos, boost::mpl::c_str < crypt_type > ::value);
 		if(current_item->field<crypt_type>() == "1")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
-			if(full_dir.length() == 0 || current_file.length() == 0) _editing_window->dir_file_empty_reaction(EditorWrap::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
+			if(full_dir.length() == 0 || current_file.length() == 0) _blogger->dir_file_empty_reaction(EditorWrap::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 	        // _editentry->blog_editor()->editor()->clear_all_misc_field();
 	        // В редактор заносится информация, идет ли работа с зашифрованным текстом
-	        _editing_window->misc_field(boost::mpl::c_str<crypt_type>::value, current_item->field<crypt_type>()); // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
+		_blogger->misc_field(boost::mpl::c_str<crypt_type>::value, current_item->field<crypt_type>()); // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
 
 	        // В редакторе устанавливается функция обратного вызова для чтения данных
-	        _editing_window->load_callback(&Editor::editor_load_callback);
+		_blogger->load_callback(&Editor::editor_load_callback);
 
-	        _editing_window->load_textarea();
+		_blogger->load_textarea();
 	        // edView->set_textarea(table->get_text(index.row()));
 
 	        // Заполняются прочие инфо-поля
-	        _editing_window->pin(current_item->field<pin_type>()); // table->field(pos, "pin")
+		_blogger->pin(current_item->field<pin_type>()); // table->field(pos, "pin")
 
-	        _editing_window->name(current_item->field<name_type>()); // table->field(pos, "name")
+		_blogger->name(current_item->field<name_type>()); // table->field(pos, "name")
 
-	        _editing_window->author(current_item->field<author_type>()); // table->field(pos, "author")
+		_blogger->author(current_item->field<author_type>()); // table->field(pos, "author")
 
-	        _editing_window->home(current_item->field<home_type>()); // table->field(pos, "home")
+		_blogger->home(current_item->field<home_type>()); // table->field(pos, "home")
 
-	        _editing_window->url(current_item->field<url_type>()); // table->field(pos, "url")
+		_blogger->url(current_item->field<url_type>()); // table->field(pos, "url")
 
-	        _editing_window->tags(current_item->field<tags_type>()); // table->field(pos, "tags")
+		_blogger->tags(current_item->field<tags_type>()); // table->field(pos, "tags")
 
 	        auto id = id_value(current_item->field<id_type>()); // table->field(pos, "id");
-	        _editing_window->misc_field("id", id);
+		_blogger->misc_field("id", id);
 
-	        _editing_window->misc_field("title", current_item->field<name_type>()); // table->field(pos, "name")
+		_blogger->misc_field("title", current_item->field<name_type>()); // table->field(pos, "name")
 	        // should each record carry it's tree path?
 	        //// Set the path to the branch in which lies the record (in the form of the names of the branches)   // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
 	        // QString path = qobject_cast<TableScreen *>(parent())->getTreePath();
@@ -623,8 +623,8 @@ namespace web {
 	        // meta_editor->setTreePath(path);
 	        // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
 	        if(appconfig->remember_cursor_at_ordinary_selection()){
-	                _editing_window->cursor_position(walkhistory.cursor_position(id));
-	                _editing_window->scrollbar_position(walkhistory.scrollbar_position(id));
+			_blogger->cursor_position(walkhistory.cursor_position(id));
+			_blogger->scrollbar_position(walkhistory.scrollbar_position(id));
 		}
 #else
 		auto id = _blogger->topic();
@@ -1863,7 +1863,7 @@ namespace web {
 				.arg(_target_item_in_browser ? _target_item_in_browser->field<name_type>().toStdString().c_str() : ""));
 		}
 #ifdef USE_EDITOR_WRAP
-	        _page->_editing_window->name(_page->title());
+		_page->_blogger->name(_page->title());
 #endif //USE_EDITOR_WRAP
 	}
 

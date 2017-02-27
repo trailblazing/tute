@@ -593,49 +593,7 @@ namespace web {
 		_bookmarkstoolbar->hide();//:)
 		QMainWindow::statusBar()->hide();
 
-		[&] {
-			auto _vtab_record = gl_paras->vtab_record();
-			bool found = false;
-			for(int i = 0; i < _vtab_record->count(); i++){
-				auto w	= _vtab_record->widget(i);
-				auto rs = dynamic_cast<rs_t *>(w);
-				if(rs)
-					if(rs->browser() == this){
-						found = true;
-						break;
-					}
-			}
-			if(!found){
-				_vtab_record->setUpdatesEnabled(false);
-				_vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
-				// bool found = false;
-				// for(int i = 0; i < _vtab_record->count(); i++){
-				// auto r = _vtab_record->widget(i);
-				// if(r == _record_screen){
-//				auto this = _record_screen->browser();
-//				if(this){
-//				this->activateWindow();//recursively call in connect(_vtab_record, &::HidableTab::currentChanged
 
-//				_vtab_record->setCurrentWidget(_record_screen);
-				// found = true;
-//				}
-				// }
-				// }
-				// assert(found);
-				////    bool found = false;
-				////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
-				////	if(*i == rs){
-				////	    found = true;
-				////	    break;
-				////	}
-				////    }
-				////    if(! found) _record_screens.insert(rs);
-				// _record_screens.insert(rs);
-//				this->adjustSize();
-				_vtab_record->setUpdatesEnabled(true);
-				// _record_screen->adjustSize();
-			}
-		} ();
 
 		show();
 		_is_under_construction = false;
