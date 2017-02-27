@@ -147,7 +147,7 @@ ts_t::ts_t(QString object_name, web::Docker *editor_docker_, wn_t *main_window)/
 
 	setup_signals();
 	assembly(); // menubar_
-	assembly_context_menu();
+	init_context_menu();
 }
 
 ts_t::~ts_t(){
@@ -384,35 +384,35 @@ void ts_t::setup_actions(void){
 	ac->setIcon(QIcon(":/resource/pic/add_branch.svg"));
 	connect(ac, &QAction::triggered, [&]() mutable {
 			_tree_view->new_item(TreeIndex::require_treeindex([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item()) // tree_index
-			                    ,
-			                     std::bind(&tv_t::new_child, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<TreeIndex> _tree_index, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {
-						     auto _current_model = _tree_index->current_model();
-						     // auto _host_index = _modelindex->parent_index();
-						     boost::intrusive_ptr<TreeItem> result;
-						     auto host_parent = _tree_index->host()->parent();
-						     assert(host_parent);
-						     QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
-						     if(host_parent){
-						             _alternative_items = host_parent->children_direct([&](boost::intrusive_ptr<const Linker> il){return il->host()->name() == _name && il->host()->id() == _id;});
-						     }
-						     // auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
-						     if(_alternative_items.size() > 0){  // && _item_has_no_child_first
-						             // assert(_item_has_no_child_first->name() == _name);
-						             // result = _item_has_no_child_first;
+				,
+				std::bind(&tv_t::new_child, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<TreeIndex> _tree_index, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {
+					auto _current_model = _tree_index->current_model();
+					// auto _host_index = _modelindex->parent_index();
+					boost::intrusive_ptr<TreeItem> result;
+					auto host_parent = _tree_index->host()->parent();
+					assert(host_parent);
+					QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
+					if(host_parent){
+						_alternative_items = host_parent->children_direct([&](boost::intrusive_ptr<const Linker> il){return il->host()->name() == _name && il->host()->id() == _id;});
+					}
+					// auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
+					if(_alternative_items.size() > 0){  // && _item_has_no_child_first
+						// assert(_item_has_no_child_first->name() == _name);
+						// result = _item_has_no_child_first;
 
-						             QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
-						             result = it.next();
-						             while(it.hasNext())
-								     result = TreeLevel::instance(TreeIndex::require_treeindex(_current_model, result), it.next())->merge(); // TreeIndex::instance(_current_model, result, result->parent()), it.next());
-						             // children_transfer(_new_item, _current_model);
-						     }else{
-						             // Вставка новых данных в модель дерева записей
-						             result = _current_model()->new_child(TreeIndex::require_treeindex([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item()->parent()) // _tree_index
-						                                                 ,
-						                                                  _id, _name);
-						     }
-						     return result;
-					     });
+						QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
+						result = it.next();
+						while(it.hasNext())
+							result = TreeLevel::instance(TreeIndex::require_treeindex(_current_model, result), it.next())->merge(); // TreeIndex::instance(_current_model, result, result->parent()), it.next());
+						// children_transfer(_new_item, _current_model);
+					}else{
+						// Вставка новых данных в модель дерева записей
+						result = _current_model()->new_child(TreeIndex::require_treeindex([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item()->parent()) // _tree_index
+							,
+							_id, _name);
+					}
+					return result;
+				});
 		});
 	_actionlist[action_insert_branch] = ac;
 
@@ -623,9 +623,9 @@ void ts_t::edit_field_context(QModelIndex index_current){
 	auto edit_field
 	        = [&](boost::intrusive_ptr<TreeItem> item
 	#ifdef USE_EDITOR_WRAP
-	             , rctrl_t *_record_controller
+		      , rctrl_t *_record_controller
 	#endif//USE_EDITOR_WRAP
-	             , QString pin, QString name, QString author, QString home, QString url, QString tags){
+		      , QString pin, QString name, QString author, QString home, QString url, QString tags){
 			  qDebug() << "In edit_field()";
 
 			  // Выясняется ссылка на таблицу конечных данных
@@ -684,9 +684,9 @@ void ts_t::edit_field_context(QModelIndex index_current){
 	// Измененные данные записываются
 	edit_field(item
 	   #ifdef USE_EDITOR_WRAP
-	          , _record_controller
+		, _record_controller
 	   #endif//USE_EDITOR_WRAP
-	          , edit_record_dialog.getField("pin"), edit_record_dialog.getField("name"), edit_record_dialog.getField("author"), edit_record_dialog.getField("home"), edit_record_dialog.getField("url"), edit_record_dialog.getField("tags"));
+		, edit_record_dialog.getField("pin"), edit_record_dialog.getField("name"), edit_record_dialog.getField("author"), edit_record_dialog.getField("home"), edit_record_dialog.getField("url"), edit_record_dialog.getField("tags"));
 }
 
 // void TreeScreen::restore_menubar(){
@@ -920,7 +920,7 @@ void ts_t::assembly_menubar(){//QMenu *_filemenu, QMenu *_toolsmenu
 	// }
 }
 
-void ts_t::assembly_context_menu(){
+void ts_t::init_context_menu(){
 	_context_menu->addAction(_actionlist[action_hide_tree_screen]);
 	// _context_menu->addAction(_actionlist[action_set_as_session_root]);
 
@@ -950,13 +950,16 @@ void ts_t::assembly_context_menu(){
 	_context_menu->addSeparator();
 	_context_menu->addAction(_actionlist[action_encrypt_branch]);
 	_context_menu->addAction(_actionlist[action_decrypt_branch]);
+
+}
+
+
+void ts_t::append_main_menu(){
 	_context_menu->addSeparator();
-	{
-		// auto main_menu_action = _context_menu->addSection("main menu");
-		// main_menu_action->setMenu(_main_menu_in_button);            // _context_menu->addAction(_main_menu_action);
-		// _context_menu->addAction(_actionlist[action_main_menu]);
-		for(auto menu : _main_window->main_menu_map()) _context_menu->addMenu(menu.second);
-	}
+	// auto main_menu_action = _context_menu->addSection("main menu");
+	// main_menu_action->setMenu(_main_menu_in_button);            // _context_menu->addAction(_main_menu_action);
+	// _context_menu->addAction(_actionlist[action_main_menu]);
+	for(auto menu : _main_window->main_menu_map()) _context_menu->addMenu(menu.second);
 }
 
 void ts_t::assembly(){

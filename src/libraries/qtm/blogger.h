@@ -420,7 +420,7 @@ public slots:
 	void file_print_preview();
 	void file_print();
 	void file_print_pdf();
-	void on_topic_changed(QLineEdit *lineedit_topic, const QString &tp);
+	void on_topic_changed(const QString &tp);
 
 	void on_record_screen_close();
 	void on_browser_close_request();
@@ -640,6 +640,7 @@ public:
 	QString title() const;
 	SuperMenu *super_menu();
 	web::Browser *browser();
+	SideTabWidget *control_tab();
 };
 
 

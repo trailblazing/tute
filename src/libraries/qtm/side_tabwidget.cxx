@@ -14,7 +14,7 @@ SideTabWidget::SideTabWidget(web::Docker *editor_docker_, Blogger *blogger_, std
 	// , tabWidget(new HidableTabWidget(_tree_screen, _find_screen, _editentry, _entrance, _main_window, _profile, style_source_, this))
 	setupUi();
 	connect(_lineedit_topic, &QLineEdit::textChanged, [&](const QString &tp){
-			_blogger->on_topic_changed(_lineedit_topic, tp);
+			_blogger->on_topic_changed(tp);
 		});
 }
 
@@ -476,8 +476,8 @@ void SideTabWidget::retranslateUi(){
 	// );
 	cbStatus->clear();
 	cbStatus->insertItems(0, QStringList()
-	                        << QApplication::translate("CategoryWidget", "Draft", 0)
-	                        << QApplication::translate("CategoryWidget", "Publish", 0));
+			<< QApplication::translate("CategoryWidget", "Draft", 0)
+			<< QApplication::translate("CategoryWidget", "Publish", 0));
 #ifndef QT_NO_WHATSTHIS
 	cbStatus->setWhatsThis(QApplication::translate("CategoryWidget", "Whether the entry is to be published immediately, or just stored in the blog database for publication later", 0));
 #endif // QT_NO_WHATSTHIS
@@ -637,8 +637,13 @@ void SideTabWidget::retranslateUi(){
 }
 
 void SideTabWidget::title(const QString &title_){leTitle->setText(title_);}
+
 QString SideTabWidget::title() const {return leTitle->text();}
+
 void SideTabWidget::topic(const QString &topic_){_lineedit_topic->setText(topic_);}
+
 QString SideTabWidget::topic() const {return _lineedit_topic->text();}
+
+QLineEdit *SideTabWidget::lineedit_topic(){return _lineedit_topic;}
 
 

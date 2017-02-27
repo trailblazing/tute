@@ -143,8 +143,8 @@ public:
 	typedef std::function<boost::intrusive_ptr<TreeItem>(TreeIndex, boost::intrusive_ptr<TreeItem>, const substitute_condition &)>	paste_strategy;
 
 	ts_t(QString object_name
-	    , web::Docker *editor_docker_
-	    , wn_t *main_window = 0);
+	     , web::Docker *editor_docker_
+	     , wn_t *main_window = 0);
 	virtual ~ts_t();
 
 	QMap<QString, QAction *> _actionlist;
@@ -225,7 +225,9 @@ public slots:
 	// QString session_root_id();
 	// void session_root_id(QString root_id);
 	// QString session_root();
+	void init_context_menu();
 
+	void append_main_menu();
 protected:
 	void resizeEvent(QResizeEvent *e);
 private slots:
@@ -313,7 +315,7 @@ private:
 
 	// bool is_index_localized(const QModelIndexList _origin_index_list)const;
 	// QModelIndexList index_localize(const QModelIndexList _origin_index_list);
-	void assembly_context_menu();
+
 
 	// KnowModel *know_model_board();    // don't recommand to operate on this know_model directly
 

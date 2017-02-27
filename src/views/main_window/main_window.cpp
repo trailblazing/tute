@@ -88,14 +88,14 @@ wn_t::wn_t(web::Profile *profile, QString style_source)// std::shared_ptr<gl_par
 	  , _h_record_splitter([&]() -> QSplitter * {auto hrs = new QSplitter(Qt::Horizontal); hrs->setSizes(appconfig->h_record_splitter_sizelist()); gl_paras->h_record_splitter(hrs); return hrs;} ())
 	  , _h_tree_splitter([&]() -> QSplitter * {auto hls = new QSplitter(Qt::Horizontal); hls->setSizes(appconfig->h_tree_splitter_sizelist()); gl_paras->h_tree_splitter(hls); return hls;} ()) // Qt::Vertical
 	  // , _h_splitter(new QSplitter(Qt::Horizontal))
-	  , _filemenu([&]() -> QMenu *{auto fm = new QMenu(tr("&File"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_file_menu_name] = fm; return fm;} ())
-	  , _editmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Edit"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_edit_menu_name] = fm; return fm;} ())
-	  , _viewmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&View"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_view_menu_name] = fm; return fm;} ())
-	  , _histrymenu([&]() -> web::HistoryMenu *{auto fm = new web::HistoryMenu(this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_history_menu_name] = fm; return fm;} ())
-	  , _bookmarkmenu([&]() -> web::BookmarksMenu *{auto fm = new web::BookmarksMenu(this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_bookmark_menu_name] = fm; return fm;} ())
-	  , _windowmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Window"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_window_menu_name] = fm; return fm;} ())
-	  , _toolsmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Tools"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_tools_menu_name] = fm; return fm;} ())
-	  , _helpmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Help"), this); fm->setContentsMargins(0, 0, 0, 0); _main_menu_map[gl_para::_help_menu_name] = fm; return fm;} ())
+	  , _filemenu([&]() -> QMenu *{auto fm = new QMenu(tr("&File"), this); fm->setContentsMargins(0, 0, 0, 0); return fm;} ())//_main_menu_map[gl_para::_file_menu_name] = fm;
+	  , _editmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Edit"), this); fm->setContentsMargins(0, 0, 0, 0); return fm;} ())//_main_menu_map[gl_para::_edit_menu_name] = fm;
+	  , _viewmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&View"), this); fm->setContentsMargins(0, 0, 0, 0); return fm;} ())//_main_menu_map[gl_para::_view_menu_name] = fm;
+	  , _histrymenu([&]() -> web::HistoryMenu *{auto fm = new web::HistoryMenu(this); fm->setContentsMargins(0, 0, 0, 0); return fm;} ())//_main_menu_map[gl_para::_history_menu_name] = fm;
+	  , _bookmarkmenu([&]() -> web::BookmarksMenu *{auto fm = new web::BookmarksMenu(this); fm->setContentsMargins(0, 0, 0, 0); return fm;} ())//_main_menu_map[gl_para::_bookmark_menu_name] = fm;
+	  , _windowmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Window"), this); fm->setContentsMargins(0, 0, 0, 0); return fm;} ())//_main_menu_map[gl_para::_window_menu_name] = fm;
+	  , _toolsmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Tools"), this); fm->setContentsMargins(0, 0, 0, 0); return fm;} ())//_main_menu_map[gl_para::_tools_menu_name] = fm;
+	  , _helpmenu([&]() -> QMenu *{auto fm = new QMenu(tr("&Help"), this); fm->setContentsMargins(0, 0, 0, 0); return fm;} ())//_main_menu_map[gl_para::_help_menu_name] = fm;
 	  , _browser_docker([&]() -> web::Docker * {_browser_docker = nullptr; auto bd = new web::Docker(browser_docker_singleton_name, this, Qt::Widget); gl_paras->browser_docker(bd); return bd;} ()) // Qt::MaximizeUsingFullscreenGeometryHint
 	  , _vtab_record([&]() -> HidableTab *{_vtab_record = nullptr; auto vr = new HidableTab(this, _h_record_splitter, std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_record_splitter_sizelist", "collapsed", this); gl_paras->vtab_record(vr); return vr;} ())
 	  , _editor_docker([&]() -> web::Docker * {_editor_docker = nullptr; auto ed = new web::Docker(editor_docker_singleton_name, this, Qt::Widget); gl_paras->editor_docker(ed); return ed;} ())
@@ -243,7 +243,7 @@ wn_t::wn_t(web::Profile *profile, QString style_source)// std::shared_ptr<gl_par
 ////	_filemenu->addAction(_quit_action);
 //}
 
-QAction *wn_t::quit_action() const{return _quit_action;}
+QAction *wn_t::quit_action() const {return _quit_action;}
 
 wn_t::~wn_t(){
 	save_all_state();
@@ -1337,6 +1337,7 @@ void wn_t::init_tools_menu(void){
 		QMenu *menu = new QMenu(tr("Main &preferences"), this);
 		init_preferences_menu(menu);
 	}
+	_main_menu_map[gl_para::_tools_menu_name] = _toolsmenu;
 }
 
 // Заполнение подраздела меню Preferences

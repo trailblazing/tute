@@ -921,7 +921,7 @@ bool Blogger::handleArguments(){
 	QStringList args = QApplication::arguments();
 	if(args.size() > 1){
 		for(i = 1; i < args.size(); i++){
-			if(create_)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // if there is a current new window
+			if(create_)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   // if there is a current new window
 				d = create_;
 			create_ = new Blogger();
 #ifdef Q_OS_MAC
@@ -931,7 +931,7 @@ bool Blogger::handleArguments(){
 #ifdef USE_SYSTRAYICON
 				create_->setSTI(sti);
 #endif
-				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             // if there's an old window
+				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // if there's an old window
 					positionWidget(create_, d);
 				create_->show();
 				rv = false;
@@ -3520,7 +3520,20 @@ void Blogger::exportEntry(){
 	saveAs(true);
 }
 
-void Blogger::on_topic_changed(QLineEdit *lineedit_topic, const QString &tp){
+void Blogger::topic(const QString &topic_){
+	if(topic_ != _control_tab->topic()) _control_tab->topic(topic_);
+}
+
+QString Blogger::topic() const {return _control_tab->topic();}
+
+void Blogger::title(const QString &title_){
+	if(title_ != _control_tab->title()) _control_tab->title(title_);
+}
+
+QString Blogger::title() const {return _control_tab->title();}
+
+void Blogger::on_topic_changed(const QString &tp){
+	QLineEdit *lineedit_topic_ = _control_tab->lineedit_topic();
 	auto topic = tp;
 	// deal with folder name change
 	auto original_topic_name = _current_topic_name;
@@ -3590,6 +3603,15 @@ void Blogger::on_topic_changed(QLineEdit *lineedit_topic, const QString &tp){
 				  _browser->save_state();
 			  }
 		  };
+	auto synchronize_to_vtab_record = [&] {
+		for(int i = 0; i < _vtab_record->count(); i++){
+			auto w = _vtab_record->widget(i);
+			if(w){
+				auto rs = dynamic_cast<rs_t *>(w);
+				if(rs) if(rs == _record_screen) _vtab_record->setTabText(i, new_topic);
+			}
+		}
+	};
 	if(original_topic_folder != dest_topic_folder){
 		if(original_topic_folder == gl_paras->editors_shared_full_path_name() + "/undefined"){
 			point_to_new_folder();
@@ -3606,12 +3628,13 @@ void Blogger::on_topic_changed(QLineEdit *lineedit_topic, const QString &tp){
 					assert(!QDir(original_topic_folder).exists());
 				}
 			}else{
-				lineedit_topic->setText(original_topic_name);
+				lineedit_topic_->setText(original_topic_name);
 //				auto new_dest = dest_topic_folder + "_backup";//+ get_unical_id()
 //				if(QDir(new_dest).exists()) QDir(new_dest).removeRecursively();
 //				if(!dir.rename(dest_topic_folder, new_dest)) critical_error("Move folder \"" + dest_topic_folder + "\" to folder \"" + new_dest + "\" failed");
 			}
 		}
+		synchronize_to_vtab_record();
 	}
 }
 
@@ -5499,17 +5522,7 @@ void Blogger::restore_editor_scrollbar_position(void){
 	scrollbar_position(n);
 }
 
-void Blogger::topic(const QString &topic_){
-	if(topic_ != _control_tab->topic()) _control_tab->topic(topic_);
-}
 
-QString Blogger::topic() const {return _control_tab->topic();}
-
-void Blogger::title(const QString &title_){
-	if(title_ != _control_tab->title()) _control_tab->title(title_);
-}
-
-QString Blogger::title() const {return _control_tab->title();}
 
 QString Blogger::current_topic_folder_name() const {return _current_topic_full_folder_name;}
 
@@ -5520,3 +5533,5 @@ web::Browser *Blogger::browser(){return _browser;}
 void Blogger::on_record_screen_close(){_record_screen = nullptr; close();}
 
 void Blogger::on_browser_close_request(){_browser = nullptr; close();}
+
+SideTabWidget *Blogger::control_tab(){return _control_tab;}

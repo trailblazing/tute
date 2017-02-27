@@ -562,7 +562,7 @@ namespace web {
 				  return t;
 			  } ()) // (_record_screen->tabmanager())
 		  , _record_screen([&]() -> rs_t *{
-				   // before construct record_screen, we need final browser menu set up, for record_view will need it to set up content menu
+				  // before construct record_screen, we need final browser menu set up, for record_view will need it to set up content menu
 				  init_main_menu();
 				  reset_find_screen_tool_bar();
 				  _record_screen = nullptr;
@@ -908,8 +908,10 @@ namespace web {
 		reset_main_menu();
 
 		auto button = _tree_screen->menus_in_button();
-//		button->clear();
-		for(auto menu : _main_window->main_menu_map()) button->addMenu(menu.second);
+		button->clear();
+		for(auto menu : _main_window_menu_map) button->addMenu(menu.second);
+		_tree_screen->init_context_menu();
+		_tree_screen->append_main_menu();
 		setMenuBar(_main_window->menuBar());
 	}
 
@@ -1243,6 +1245,8 @@ namespace web {
 		auto button = _tree_screen->menus_in_button();
 		button->clear();
 		for(auto menu : _main_window_menu_map) button->addMenu(menu.second);
+		_tree_screen->init_context_menu();
+		_tree_screen->append_main_menu();
 		setMenuBar(_main_window->menuBar());
 
 		reset_find_screen_tool_bar();

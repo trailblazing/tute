@@ -60,6 +60,7 @@ public:
 	void topic(const QString &topic_);
 	QString topic() const;
 
+	QLineEdit *lineedit_topic();
 private:
 //	web::Docker *_editor_docker;
 	Blogger *_blogger;
