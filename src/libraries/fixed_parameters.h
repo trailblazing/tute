@@ -13,10 +13,14 @@
 #include <boost/mpl/push_back_fwd.hpp>
 #include <boost/mpl/set.hpp>
 #include <boost/mpl/map.hpp>
+#include <boost/mpl/fold.hpp>
 #include <boost/fusion/tuple.hpp>
+#include <boost/fusion/mpl.hpp>
 #include <boost/mpl/string.hpp>
 #include <boost/units/detail/prevent_redefinition.hpp>
 #include <boost/mpl/contains.hpp>
+#include <boost/mpl/equal.hpp>
+#include <boost/mpl/assert.hpp>
 // #include <boost/mpl/set/set0.hpp>
 // #include <boost/mpl/set/set20.hpp>
 #include <tuple>
@@ -88,11 +92,31 @@ typedef std::tuple<id_type, rating_type, ctime_type, dir_type, file_type, crypt_
 typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type>	natural_field_set;
 typedef std::tuple<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type>		natural_field_tuple;
 
+#ifdef USE_COMPILE_TIME_CACULATION
+//using natural_field_fold = boost::mpl::fold <
+//			   crypt_field_set
+//      , boost::mpl::set0<>
+//      , boost::mpl::insert<boost::mpl::_1, boost::mpl::_2>::type;
+
+typedef boost::mpl::copy<crypt_field_set, boost::mpl::back_inserter<append_to_crypt_set> >::type natural_field_concatenated;
+
+typedef boost::mpl::joint_view<
+	crypt_field_set
+	, append_to_crypt_set
+	> natural_field_concatenated_view;
+natural_field_concatenated::dog;
+natural_field_set::fish;
+natural_field_concatenated_view::pig;
+BOOST_MPL_ASSERT((boost::mpl::equal<natural_field_concatenated_view, natural_field_concatenated> ));
+
+static_assert(sd::STATIC_SAME<natural_field_concatenated, natural_field_set>::value == true, "types are not euqal");
+//
 //typedef Unify<
 //	std::tuple
 //	, natural_field_set
 //	, boost::mpl::size<natural_field_set>::type::value
 //	>::type natural_field_tuple;
+#endif // USE_COMPILE_TIME_CACULATION
 
 typedef boost::mpl::set<has_attach_type, attach_size_type, dynamic_name_type>	calculable_field_set;
 typedef std::tuple<has_attach_type, attach_size_type, dynamic_name_type>	calculable_field_tuple;
@@ -136,15 +160,17 @@ public:
 
 
 	// boost::mpl::set<has_attach_type, attach_count_type> _record_calculable_field_static;
+	static constexpr const calculable_field_tuple _record_calculable_field_tuple = calculable_field_tuple();
 	QStringList _record_calculable_field;
 
 	boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type> _record_field_crypted_static;
+	static constexpr const crypt_field_tuple _record_field_crypted_tuple = crypt_field_tuple();
 	QStringList _record_field_crypted;
 
 	bool is_record_field_available(QString name) const;
 //	bool is_record_field_natural(QString name) const;
 	template<typename concrete>
-	static bool is_record_field_natural(){  //const//QString name
+	static constexpr bool is_record_field_natural(){  //const//QString name
 		// if(_record_natural_field.contains(name))
 		// return true;
 		// else

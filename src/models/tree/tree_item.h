@@ -342,6 +342,8 @@ public:
 	boost::intrusive_ptr<const TreeItem> is_ancestor_of(boost::intrusive_ptr<const TreeItem> reference);
 	int distance(boost::intrusive_ptr<const TreeItem> reference);
 
+public slots:
+	void topic_append(QString new_topic);
 protected:
 	// bind_helper     _binder;
 	// activate_helper   _activator;

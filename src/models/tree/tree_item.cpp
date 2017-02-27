@@ -2729,3 +2729,17 @@ int TreeItem::distance(boost::intrusive_ptr<const TreeItem> reference){ // const
 	}
 	return distance_;
 }
+
+
+void TreeItem::topic_append(QString new_topic){
+	auto tags_ = this->field<tags_type>();
+	if(tags_.size() > 0)
+		while(tags_.at(0) == ',' || tags_.at(0) == ';') tags_.remove(0, 1);
+	auto tag_list = tags_.split(QRegExp("[,:]+"), QString::SkipEmptyParts);
+//	auto new_topic = new_topic;//_toolbarsearch->text();
+	if(tag_list.size() > 0){
+		if(!tag_list.contains(new_topic)) tags_ += "," + new_topic;
+	}else // (tag_list.size() == 0)
+		tags_ += new_topic;
+	this->field<tags_type>(tags_);
+}

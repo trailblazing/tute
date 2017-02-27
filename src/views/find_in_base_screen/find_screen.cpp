@@ -999,16 +999,17 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 
 							auto alternative = final_result->contains_direct([&](boost::intrusive_ptr<const Linker> il){return il->host() == candidate || il->host()->field<id_type>() == candidate->field<id_type>() || url_equal(il->host()->field<home_type>().toStdString(), candidate->field<home_type>().toStdString()) || url_equal(il->host()->field<url_type>().toStdString(), candidate->field<url_type>().toStdString());});
 							if(!alternative){
-								auto tags_ = candidate->field<tags_type>();
-								if(tags_.size() > 0)
-									while(tags_.at(0) == ',' || tags_.at(0) == ';') tags_.remove(0, 1);
-								auto tag_list = tags_.split(QRegExp("[,:]+"), QString::SkipEmptyParts);
-								auto search_topic = _toolbarsearch->text();
-								if(tag_list.size() > 0){
-									if(!tag_list.contains(search_topic)) tags_ += "," + search_topic;
-								}else // (tag_list.size() == 0)
-									tags_ += search_topic;
-								candidate->field<tags_type>(tags_);
+//								auto tags_ = candidate->field<tags_type>();
+//								if(tags_.size() > 0)
+//									while(tags_.at(0) == ',' || tags_.at(0) == ';') tags_.remove(0, 1);
+//								auto tag_list = tags_.split(QRegExp("[,:]+"), QString::SkipEmptyParts);
+//								auto search_topic = _toolbarsearch->text();
+//								if(tag_list.size() > 0){
+//									if(!tag_list.contains(search_topic)) tags_ += "," + search_topic;
+//								}else // (tag_list.size() == 0)
+//									tags_ += search_topic;
+//								candidate->field<tags_type>(tags_);
+								candidate->topic_append(_toolbarsearch->text());
 								final_result << candidate; // result->linker();
 							}
 							//else if(alternative != candidate) TreeLevel::instance(TreeIndex::require_treeindex(current_model_, alternative), candidate)->merge();

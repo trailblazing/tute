@@ -127,7 +127,7 @@ public:
 			: _this(_this)
 		{}
 
-		QString operator ()() const {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_set, field_type > ::type > ::value];}
+		QString operator ()() const {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at<append_to_crypt_set, field_type > ::type > ::value];}
 	};
 
 	template <typename field_type>

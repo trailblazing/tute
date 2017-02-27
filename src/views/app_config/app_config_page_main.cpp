@@ -14,6 +14,7 @@
 #include <QString>
 #include <QWidget>
 
+#include "utility/add_action.h"
 #include "app_config_page_main.h"
 #include "libraries/disk_helper.h"
 #include "libraries/flat_control.h"
@@ -66,6 +67,7 @@ void AppConfigPageMain::setup_ui(void){
 
 	_rootdir_button = new FlatToolButton("", this);
 	_rootdir_button->setText(tr("..."));
+	_rootdir_button->setIcon(QIcon(":/resource/pic/more.svg"));
 
 	_datadir_input = new QLineEdit(this);
 	_datadir_input->setMinimumWidth(50);
@@ -73,7 +75,7 @@ void AppConfigPageMain::setup_ui(void){
 
 	_datadir_button = new FlatToolButton("", this);
 	_datadir_button->setText(tr("..."));
-
+	_datadir_button->setIcon(QIcon(":/resource/pic/more.svg"));
 	// Блок работы с путем до корзины
 	_trashdir_label = new QLabel(this);
 	_trashdir_label->setText(tr("Trash directory"));
@@ -84,7 +86,7 @@ void AppConfigPageMain::setup_ui(void){
 
 	_trashdir_button = new FlatToolButton("", this);
 	_trashdir_button->setText(tr("..."));
-
+	_trashdir_button->setIcon(QIcon(":/resource/pic/more.svg"));
 	// Блок работы с размером корзины
 	_trashsize_label = new QLabel(this);
 	_trashsize_label->setText(tr("Trash size"));
@@ -246,15 +248,18 @@ void AppConfigPageMain::assembly(void){
 // Действия при нажатии кнопки выбора директории данных
 void AppConfigPageMain::open_rootdir_select_dialog(void){
 	_original_root_state = std::tuple<const bool, const QString>(true, _rootdir_input->text());
-	QFileDialog rootdirSelectDialog(this);
-	rootdirSelectDialog.setFileMode(QFileDialog::Directory);
-	rootdirSelectDialog.setWindowTitle(tr("Select root directory"));
-	rootdirSelectDialog.setDirectory(_rootdir_input->text());
 
-	rootdirSelectDialog.exec();
-	auto root_path_ = rootdirSelectDialog.directory().absolutePath();
-	_rootdir_input->setText(root_path_);
+	_rootdir_input->setText(get_root_path(_rootdir_input->text()));
+	{
+//		QFileDialog rootdirSelectDialog(this);
+//		rootdirSelectDialog.setFileMode(QFileDialog::Directory);
+//		rootdirSelectDialog.setWindowTitle(tr("Select root directory"));
+//		rootdirSelectDialog.setDirectory(_rootdir_input->text());
 
+//		rootdirSelectDialog.exec();
+//		auto root_path_ = rootdirSelectDialog.directory().absolutePath();
+//		_rootdir_input->setText(root_path_);
+	}
 	// _datadir_input->setText(root_path_ + "/" + QDir(_datadir_input->text()).dirName());
 	// _trashdir_input->setText(root_path_ + "/" + QDir(_trashdir_input->text()).dirName());
 
@@ -318,7 +323,8 @@ void AppConfigPageMain::on_enable_custom_datetime_format_toggle(bool checked){
 }
 
 void AppConfigPageMain::on_datetime_format_help_button(void){
-	QString text = "Format symbols:\n\
+	QString text
+		= "Format symbols:\n\
 \n\
 d: day 1-31, dd: day 01-31,\n\
 ddd: day short name, dddd: day long name,\n\
@@ -450,4 +456,19 @@ int AppConfigPageMain::apply_changes(void){
 	} // else difficult_changes = 0;
 	  // }
 	return difficult_changes;
+}
+
+
+QString AppConfigPageMain::get_root_path(const QString &initia_path){
+	QFileDialog select_root(nullptr);
+	select_root.setFileMode(QFileDialog::Directory);
+	select_root.setWindowTitle(tr("Specific the applications\'s data center path"));//"Select root directory"
+	select_root.setDirectory(initia_path);
+	select_root.setOption(QFileDialog::ShowDirsOnly);
+	select_root.setViewMode(QFileDialog::Detail);
+
+	select_root.exec();
+//			auto root_path_ =
+	return select_root.directory().absolutePath();
+//			_rootdir_input->setText(root_path_);
 }

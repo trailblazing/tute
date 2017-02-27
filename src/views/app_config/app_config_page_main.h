@@ -38,6 +38,7 @@ public:
 
 	int apply_changes(void);
 
+	static QString get_root_path(const QString &initia_path);
 private slots:
 	void open_rootdir_select_dialog(void);
 	void open_datadir_select_dialog(void);
