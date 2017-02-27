@@ -160,7 +160,8 @@ public:
 	// QMap<QString, QString>	editorconf() const;
 
 	// static constexpr const char *_defaulthome = "about:blank";
-	static constexpr const char *_program_instance_name = "tute"; // QCoreApplication::applicationName();// won't work
+	static constexpr const char *_program_root_dir_name	= "rootdir";
+	static constexpr const char *_program_instance_name	= "tute"; // QCoreApplication::applicationName();// won't work
 	static constexpr const char *_index_xml_file_name = "index.xml";
 	static constexpr const char *_mode_filename	= "mode.ini";//static constexpr char _mode_filename[]	= "mode.ini";
 	static constexpr const char *_conf_filename	= "conf.ini";//static constexpr char _conf_filename[]	= "conf.ini";
@@ -196,7 +197,7 @@ public:
 	void global_home(const QUrl &url_);
 	QUrl global_home() const;
 	QString editors_shared_full_path_name() const;
-	QString root_path_given_by_system() const;
+	QString app_data_path_system() const;
 private:
 #define STANDARD_MODE	true
 #define PORTABLE_MODE	false
@@ -206,11 +207,11 @@ private:
 	// void create_root_standard(void);
 	// void create_root_portable(void);
 	// void initialize_root_impl(const QString &root_dir);
-	QString _root_path_given_by_system = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation); // QDir::homePath() + "/.config/" + gl_para::_program_instance_name;
+	QString _app_data_path_system = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation); // QDir::homePath() + "/.config/" + gl_para::_program_instance_name;
 #ifdef USE_ALTERNATIVE_PATH
 	std::pair<QString, QString> _candidate_mode_paths_by_system = {QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + gl_para::_program_instance_name, QDir::homePath() + "/." + gl_para::_program_instance_name};
 #endif // USE_ALTERNATIVE_PATH
-	std::function<QString()> mode_file_full_name_by_system;
+	std::function<QString()> mode_full_name_in_app_data_path_system;
 	std::function<std::tuple<const bool, const QString>()> init;
 	QString _editors_shared_full_path_name = "";
 	web::Profile *_profile = nullptr;

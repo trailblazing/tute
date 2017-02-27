@@ -97,13 +97,13 @@ QString AppConfig::get_parameter(QString name) const {
 // bool AppConfig::root_dir(QString dirName){
 // QDir directory(dirName);
 // if(directory.exists() && directory.isReadable()){
-// _app_conf->setValue("rootdir", dirName);
+// _app_conf->setValue(gl_para::_program_root_dir_name, dirName);
 
 // return true;
 // }else return false;
 // }
 
-// QString AppConfig::root_dir(void) const {return get_parameter("rootdir");}
+// QString AppConfig::root_dir(void) const {return get_parameter(gl_para::_program_root_dir_name);}
 
 // Установка имени директории с данными (в которой находится index.xml)
 bool AppConfig::data_dir(QString dirName){

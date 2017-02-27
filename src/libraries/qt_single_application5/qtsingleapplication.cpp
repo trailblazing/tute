@@ -1177,7 +1177,7 @@ void QtSingleApplication::quitBrowser(){
  */
 void sapp_t::postLaunch(){
 	QString directory = gl_paras->root_path(); // QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-	if(directory.isEmpty())	directory = gl_paras->root_path_given_by_system(); // QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
+	if(directory.isEmpty())	directory = gl_paras->app_data_path_system(); // QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
 #if defined(QWEBENGINESETTINGS_PATHS)
 	QWebEngineSettings::setIconDatabasePath(directory);
 	QWebEngineSettings::setOfflineStoragePath(directory);
