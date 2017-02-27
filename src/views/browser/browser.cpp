@@ -909,7 +909,7 @@ namespace web {
 
 		auto button = _tree_screen->menus_in_button();
 		button->clear();
-		for(auto menu : _main_window_menu_map) button->addMenu(menu.second);
+		for(auto menu : _main_window->main_menu_map()) button->addMenu(menu.second);
 		_tree_screen->init_context_menu();
 		_tree_screen->append_main_menu();
 		setMenuBar(_main_window->menuBar());
