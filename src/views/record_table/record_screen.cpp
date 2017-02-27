@@ -204,7 +204,7 @@ rs_t::rs_t(HidableTab *vtab_record
 	connect(this, &rs_t::close_request, _vtab_record, &::HidableTab::on_close_request);
 
 	connect(_vtab_record, &::HidableTab::tabCloseRequested, [&](int index){
-			assert(_vtab_record);
+			if(!_vtab_record) _vtab_record = gl_paras->vtab_record(); //?
 			auto count = _vtab_record->count();
 			assert(index < count);
 			if(index != -1){
