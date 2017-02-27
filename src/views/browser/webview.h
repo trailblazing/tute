@@ -267,7 +267,7 @@ namespace web {
 		Qt::MouseButtons _pressedbuttons = Qt::NoButton;
 
 		QUrl _loadingurl = QUrl();
-		QString _hovered_url = Browser::_defaulthome;
+		QString _hovered_url;// = Browser::_defaulthome;
 
 		boost::intrusive_ptr<::Binder> _binder;
 
@@ -345,7 +345,7 @@ namespace web {
 
 	public:
 		WebView(boost::intrusive_ptr<TreeItem> host_, Profile *profile // , bool openinnewtab
-		       , ts_t *tree_screen, Blogger *editentry, Docker *entrance, Browser *browser, TabWidget *tabmanager, rctrl_t *record_controller);
+			, ts_t *tree_screen, Blogger *editentry, Docker *entrance, Browser *browser, TabWidget *tabmanager, rctrl_t *record_controller);
 
 		~WebView();
 		WebPage *page() const;

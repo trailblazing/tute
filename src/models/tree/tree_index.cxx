@@ -21,6 +21,7 @@
 #include "views/record/editor_wrap.h"
 #include "views/record_table/record_screen.h"
 #include "views/tree/tree_view.h"
+#include "views/browser/browser.h"
 
 // boost::intrusive_ptr<TreeIndex> TreeIndex::instance(const std::function<km_t *()> &current_model, boost::intrusive_ptr<TreeItem> host_parent, int sibling_order){
 // return new TreeIndex(current_model, host_parent, sibling_order);

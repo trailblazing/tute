@@ -24,6 +24,7 @@
 #include "models/tree/tree_know_model.h"
 #include "record_screen.h"
 #include "record_view.h"
+#include "views/browser/webview.h"
 #include "views/browser/browser.h"
 #include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"

@@ -100,12 +100,12 @@ Q_OBJECT
 #endif
 
 public:
-	wn_t(
-		// std::shared_ptr<gl_para> gl_paras_
-		// , std::shared_ptr<AppConfig> appconfig_
-		// , std::shared_ptr<DataBaseConfig> databaseconfig_
-		// ,
-		web::Profile *profile, QString style_source);
+	wn_t(web::Profile *profile, QString style_source);
+	// std::shared_ptr<gl_para> gl_paras_
+	// , std::shared_ptr<AppConfig> appconfig_
+	// , std::shared_ptr<DataBaseConfig> databaseconfig_
+	// ,
+
 
 	~wn_t();
 
@@ -157,6 +157,7 @@ public:
 
 
 
+	QAction *quit_action() const;
 public slots:
 	void application_exit(void);
 	void application_fast_exit(void);
@@ -182,13 +183,15 @@ private slots:
 
 	void on_focus_changed(QWidget *, QWidget *);
 
+
+	void slotAboutApplication();
 private:
 	void setup_ui(void);
 	void setup_signals(void);
 	void assembly(void);
 
 	void init_file_menu(void);
-	void append_quit_menu();
+//	void append_quit_menu();
 	void init_tools_menu(void);
 	void init_preferences_menu(QMenu *menu);
 	void init_help_menu(void);
@@ -246,6 +249,7 @@ private:
 	QStatusBar *_statusbar;
 	WindowSwitcher *_switcher;
 	SysTrayIcon *_tray_icon = nullptr;
+	QAction *_quit_action;
 	// QMenu *_tray_icon_menu;
 	// bool _treetable_hidden;       // = globalparameters.getTreeScreen()->isHidden();
 	// bool _recordtable_hidden;     // = globalparameters.getRecordTableScreen()->isHidden();

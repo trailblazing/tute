@@ -41,11 +41,11 @@
 #define QTSINGLEAPPLICATION_H
 
 
-
+//#include "utility/expose.h"
 #include "libraries/global_parameters.h"
 #include "models/app_config/app_config.h"
 #include "models/database_config/database_config.h"
-#include "views/browser/browser.h"
+//#include "views/browser/browser.h"
 #include <QApplication>
 #include <memory>
 
@@ -116,6 +116,7 @@ namespace web {
 
 class wn_t;
 class Blogger;
+class sapp_t;
 
 class QT_QTSINGLEAPPLICATION_EXPORT sapp_t // : public BrowserApplication { //
 	: public QApplication {
@@ -148,10 +149,7 @@ public:
 	QWidget *activationWindow() const;
 
 	// Obsolete:
-	void initialize(bool dummy = true){
-		isRunning();
-		Q_UNUSED(dummy)
-	}
+	void initialize(bool dummy = true);
 
 public Q_SLOTS:
 	bool sendMessage(const QString &message, int timeout = 5000);
@@ -316,5 +314,15 @@ private slots:
 // };
 #endif
 };
+
+//typedef sapp_t::RecentFile RecentFile;
+
+
+//EXPOSE_INNER(ExposedSappRecentFile, sapp_t::RecentFile)
+
+
+
+
+
 
 #endif // QTSINGLEAPPLICATION_H

@@ -87,8 +87,7 @@ void TrashMonitoring::init(QString _trash_path){
 	_dir.setPath(_trash_path);
 	if(!_dir.exists()){
 		DiskHelper::create_directory(gl_paras->root_path() // full_current_path
-		                            ,
-		                             "trash");
+			, "trash");
 		// critical_error("Can not open trash directory " + _trash_path);
 		// exit(1);
 	}
@@ -149,7 +148,7 @@ void TrashMonitoring::update(void){
 	// условие что количество файлов слишком велико или
 	// суммарный размер файлов превышает предельно допустимый размер корзины
 	while(_files_table.size() > appconfig->trash_max_file_count() || _dir_size > appconfig->trash_size() * 1000000){
-		if(_files_table.size() <= 10)                                                                                                                                       // Оставляется последний файл, какого бы размера он не был
+		if(_files_table.size() <= 10)                                                                                                                                                                                      // Оставляется последний файл, какого бы размера он не был
 			break;
 		else remove_oldest_file();
 	}
@@ -215,19 +214,19 @@ TrashMonitoring::FileData::FileData(TrashMonitoring *tm, const QString &n)
 		  }
 	          ())
 	  , _size([&] {
-	                  std::ifstream::pos_type _file_size = 0;
-	                  if(_name != ""){
-	                          // QFileInfo	currentFile(_trashmonitoring->_path + "/" + _name);
-	                          // _file_size = currentFile.size();
+			  std::ifstream::pos_type _file_size = 0;
+			  if(_name != ""){
+				  // QFileInfo	currentFile(_trashmonitoring->_path + "/" + _name);
+				  // _file_size = currentFile.size();
 
-	                          // QFile file_from(_trashmonitoring->_path + "/" + _name);
-	                          // if(file_from.open(QIODevice::ReadOnly)){
-	                          // _file_size = file_from.size();	// when file does open.
-	                          _file_size = filesize(QString(_trashmonitoring->_path + "/" + _name).toStdString().c_str());
-	                          // file_from.close();
-	                          // }
+				  // QFile file_from(_trashmonitoring->_path + "/" + _name);
+				  // if(file_from.open(QIODevice::ReadOnly)){
+				  // _file_size = file_from.size();	// when file does open.
+				  _file_size = filesize(QString(_trashmonitoring->_path + "/" + _name).toStdString().c_str());
+				  // file_from.close();
+				  // }
 			  }
-	                  return _file_size;
+			  return _file_size;
 		  } ())
 {}
 
@@ -235,4 +234,25 @@ std::ifstream::pos_type TrashMonitoring::FileData::size() const {
 	// QFile			currentFile(_trashmonitoring->_path + "/" + _name);
 	// unsigned int	_file_size = currentFile.size();
 	return const_cast<FileData *>(this)->_size = filesize(QString(_trashmonitoring->_path + "/" + _name).toStdString().c_str()); // const_cast<FileData *>(this)->_size = _file_size;
+}
+
+bool operator ==(const TrashMonitoring::FileData &fd0, const TrashMonitoring::FileData &fd1){
+    return fd0._name == fd1._name && fd0._time == fd1._time && fd0._size == fd1._size && fd0._trashmonitoring == fd1._trashmonitoring;
+}
+
+TrashMonitoring::FileData::FileData(const TrashMonitoring::FileData &fd){
+    _name	= fd._name;
+    _time	= fd._time;
+    _size	= fd.size();
+    _trashmonitoring = fd._trashmonitoring;
+}
+
+const TrashMonitoring::FileData &TrashMonitoring::FileData::operator =(const TrashMonitoring::FileData &fd){
+    if(&fd != this){
+	    _name	= fd._name;
+	    _time	= fd._time;
+	    _size	= fd.size();
+	    _trashmonitoring = fd._trashmonitoring;
+	}
+    return *this;
 }

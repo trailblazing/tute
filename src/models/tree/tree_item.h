@@ -143,12 +143,15 @@ public:
 	// );
 
 	TreeItem(boost::intrusive_ptr<TreeItem> host_parent // = nullptr
-	        , QMap<QString, QString> field_data = QMap<QString, QString>(), const QDomElement &_dom_element = QDomElement(), int pos = 0, int mode = add_new_record_before);
+		 , QMap<QString, QString> field_data = QMap<QString, QString>()
+		 , const QDomElement &_dom_element = QDomElement()
+		 , int pos = 0
+		 , int mode = add_new_record_before);
 
 #ifdef _with_record_table
 	TreeItem(boost::intrusive_ptr<TreeItem> _parent_item // = nullptr
-	        , boost::intrusive_ptr<Record> _record // = nullptr
-	        , const QDomElement &_dom_element = QDomElement());
+		 , boost::intrusive_ptr<Record> _record // = nullptr
+		 , const QDomElement &_dom_element = QDomElement());
 #endif
 
 	// TreeItem(const TreeItem &item);

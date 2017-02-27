@@ -416,7 +416,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 		////    if(index == static_cast<QModelIndex>(source_model()->index([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == source_model()->session_id();})))optionV4.text = "<b>" + optionV4.text + "</b>";
 		// optionV4->text = (it == _view->current_item()) ? "<b>" + it->field<name_type>() + "</b>" : it->field<name_type>();	// (it == _view->current_item()) ? "<b>" + option.text + "</b>" : option.text;
 		doc.setHtml((it == _view->current_item()) ? "<b>" + it->field<name_type>() + "</b>" // [&] {auto rctrl = _view->record_controller();rctrl->select_as_current(rctrl->index<pos_proxy>(it));return "<b>" + it->field<name_type>() + "</b>";} ()
-			    : it->field<name_type>()); // doc.setHtml(optionV4.text);
+			: it->field<name_type>()); // doc.setHtml(optionV4.text);
 
 		///// Painting item without text
 		// optionV4->text = QString();
@@ -510,7 +510,7 @@ QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewIte
 
 #endif
 
-		return result;                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // return QStyledItemDelegate::createEditor(parent, option, index);
+		return result;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                // return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
 void ViewDelegation::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
@@ -602,7 +602,7 @@ bool ViewDelegation::editorEvent(QEvent *event, QAbstractItemModel *model, const
 					// QDialog *d = new QDialog();
 					// d->setGeometry(0, 0, 100, 100);
 					// d->show();
-					if(_view->_is_field_type_column(boost::mpl::c_str<rating_type>::value, index.column())){
+					if(_view->is_field_type_column(boost::mpl::c_str<rating_type>::value, index.column())){
 						////                auto widget = new FlatToolButton(this);
 						////                setIndexWidget(next_index, widget);
 						////                connect(widget, &FlatToolButton::clicked, _record_controller, &RecordController::close_context);
@@ -664,21 +664,21 @@ W_OBJECT_IMPL(rv_t)
 
 rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 	: QTableView(record_screen_)
-	  , rating_width([&] {return _rating_width;})
-	  , _context_menu(new QMenu(this))
-	  , _record_screen(record_screen_)
-	  , _rctrl(record_controller_)
-	  , _layout(new QVBoxLayout(this))
-	  , _delegate(new ViewDelegation(this)) // (new ButtonColumnDelegate(this))//
-	  , _rating_width(_delegate->_rating_width) // , _enable_move_section(true)
-	  , _is_field_type_column(
+	  , is_field_type_column(
 		  [&](const QString &type_name, int index) -> bool {
 			  // QString _type_name = boost::mpl::c_str<field_type>::value;
 			  auto header_title = _rctrl->source_model()->headerData(index, Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
 			  auto rating_field_description = fixedparameters.record_field_description(QStringList() << type_name)[type_name];
 
 			  return header_title == rating_field_description;
-		  }){
+		  })
+	  , rating_width([&] {return _rating_width;})
+	  , _context_menu(new QMenu(this))
+	  , _record_screen(record_screen_)
+	  , _rctrl(record_controller_)
+	  , _layout(new QVBoxLayout(this))
+	  , _delegate(new ViewDelegation(this)) // (new ButtonColumnDelegate(this))//
+	  , _rating_width(_delegate->_rating_width){ // , _enable_move_section(true)
 	// ViewDelegation *delegate = new ViewDelegation(this);
 	setItemDelegate(_delegate);
 	// setItemDelegateForColumn(2, delegate);
@@ -1216,7 +1216,7 @@ void rv_t::mousePressEvent(QMouseEvent *event){
 	// setSelectionMode(QAbstractItemView::ExtendedSelection);
 	_mouse_start_position = event->pos();
 	QModelIndex next_index = indexAt(_mouse_start_position);
-	if(next_index.isValid() && !_is_field_type_column(boost::mpl::c_str<rating_type>::value, next_index.column())){
+	if(next_index.isValid() && !is_field_type_column(boost::mpl::c_str<rating_type>::value, next_index.column())){
 		//////        // Если нажата левая кнопка мыши
 		//////        if(mouse_button == Qt::LeftButton){ // || mouse_button == Qt::RightButton
 
@@ -1513,17 +1513,17 @@ void rv_t::resizeEvent(QResizeEvent *e){
 		for(auto w : show_fields_width) required_width += w.toInt(); // columnWidth(i ++);
 		for(int i = 0; i < show_fields.size(); i++){
 			if(required_width >= real_capacity){  // if((columnWidth(0) + columnWidth(1)) >= real_width){
-				if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i)) setColumnWidth(i, _pin_width);
-				else if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i)) setColumnWidth(i, rating_width());
-				else if(!_is_field_type_column(boost::mpl::c_str<name_type>::value, i)) suggest_others_width += columnWidth(i);
+				if(is_field_type_column(boost::mpl::c_str<pin_type>::value, i)) setColumnWidth(i, _pin_width);
+				else if(is_field_type_column(boost::mpl::c_str<rating_type>::value, i)) setColumnWidth(i, rating_width());
+				else if(!is_field_type_column(boost::mpl::c_str<name_type>::value, i)) suggest_others_width += columnWidth(i);
 				// if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
 				// setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
 				////		    horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
 				// }
 			}else{
-				if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i)) setColumnWidth(i, _pin_width);
-				else if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i)) setColumnWidth(i, rating_width());
-				else if(!_is_field_type_column(boost::mpl::c_str<name_type>::value, i)) suggest_others_width += columnWidth(i);
+				if(is_field_type_column(boost::mpl::c_str<pin_type>::value, i)) setColumnWidth(i, _pin_width);
+				else if(is_field_type_column(boost::mpl::c_str<rating_type>::value, i)) setColumnWidth(i, rating_width());
+				else if(!is_field_type_column(boost::mpl::c_str<name_type>::value, i)) suggest_others_width += columnWidth(i);
 				// real_capacity = this->contentsRect().width();
 				////            if(real_capacity >= 300){
 				////                if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, 300 - adjust_width);					// restoreColumnWidth();
@@ -1537,13 +1537,13 @@ void rv_t::resizeEvent(QResizeEvent *e){
 		}
 		for(int i = 0; i < show_fields.size(); i++){
 			if(required_width >= real_capacity){
-				if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
+				if(is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
 					setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
 					// horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
 				}
 			}else{
 				real_capacity = this->contentsRect().width();
-				if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
+				if(is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
 					setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
 					// horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
 				}

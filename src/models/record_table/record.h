@@ -96,8 +96,8 @@ friend class Attach;
 friend class AttachTableData;
 
 public:
-	Record();
-	Record(QMap<QString, QString> field_data_);
+//	Record();
+	Record(QMap<QString, QString> field_data_ = QMap<QString, QString>());
 
 #ifdef _with_record_table
 	Record(boost::intrusive_ptr<Record> obj);
@@ -121,27 +121,27 @@ public:
 	struct field_read;
 
 	template <typename field_type>
-	struct field_read<field_type, append_to_crypt_type> {
+	struct field_read<field_type, append_to_crypt_set> {
 		const Record *_this;
 		field_read(const Record *_this)
 			: _this(_this)
 		{}
 
-		QString operator ()() const {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_type, field_type > ::type > ::value];}
+		QString operator ()() const {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_set, field_type > ::type > ::value];}
 	};
 
 	template <typename field_type>
-	struct field_read<field_type, crypt_field_type> {
+	struct field_read<field_type, crypt_field_set> {
 		const Record *_this;
 		field_read(const Record *_this)
 			: _this(_this)
 		{}
 
-		QString operator ()(){return _this->read_crypt_field(boost::mpl::c_str<typename boost::mpl::at<crypt_field_type, field_type>::type>::value);} // {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
+		QString operator ()(){return _this->read_crypt_field(boost::mpl::c_str<typename boost::mpl::at<crypt_field_set, field_type>::type>::value);} // {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
 	};
 
 	template <typename field_type>
-	struct field_read<field_type, calculable_field_type> {
+	struct field_read<field_type, calculable_field_set> {
 		const Record *_this;
 		field_read(const Record *_this)
 			: _this(_this)
@@ -154,27 +154,27 @@ public:
 	struct field_write;
 
 	template <typename field_type>
-	struct field_write<field_type, append_to_crypt_type> {
+	struct field_write<field_type, append_to_crypt_set> {
 		Record *const _this;
 		field_write(Record *const _this)
 			: _this(_this)
 		{}
 
-		void operator ()(const QString &value){_this->_field_data[boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_type, field_type > ::type > ::value] = value;}
+		void operator ()(const QString &value){_this->_field_data[boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_set, field_type > ::type > ::value] = value;}
 	};
 
 	template <typename field_type>
-	struct field_write<field_type, crypt_field_type> {
+	struct field_write<field_type, crypt_field_set> {
 		Record *const _this;
 		field_write(Record *const _this)
 			: _this(_this)
 		{}
 
-		void operator ()(const QString &value){return _this->write_crypt_field(boost::mpl::c_str<typename boost::mpl::at<crypt_field_type, field_type>::type>::value, value);} // {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
+		void operator ()(const QString &value){return _this->write_crypt_field(boost::mpl::c_str<typename boost::mpl::at<crypt_field_set, field_type>::type>::value, value);} // {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
 	};
 
 	template <typename field_type>
-	struct field_write<field_type, calculable_field_type> {
+	struct field_write<field_type, calculable_field_set> {
 		Record *const _this;
 		field_write(Record *const _this)
 			: _this(_this)
@@ -193,38 +193,15 @@ public:
 	}
 	bool is_natural_field_exists(QString name) const;
 	// QString crypt_field(const QString &name) const;
-//	tempalte<typename InputRange>
-	struct element_fullfill {
-		QDomElement	&elem;
-		Record *const	_this;
 
-		element_fullfill(QDomElement &elem_, Record *const this_) : elem(elem_), _this(this_){}
-
-		template<typename index_type>
-		int operator ()(index_type index_type_value) const {
-			(void) index_type_value;
-//			typedef boost::mpl::at<InputRange, indices>::type index_type;
-			const QString &field_name = //index_type_value;//
-						    boost::mpl::c_str<index_type>::value;//index_type is mpl_::void_?
-//						    boost::mpl::c_str<typename boost::mpl::at<natural_field_set, index_type>::type>::value;
-			auto internal_field
-				= [&](QString name){if(_this->_field_data.contains(name)) return _this->_field_data[name]; else return QString(); };
-			auto internal_field_write
-				= [&](QString key, QString value){_this->_field_data.insert(key, value);};
-			// = available_field_list.at(j);
-			auto dir = internal_field(boost::mpl::c_str<dir_type>::value);
-			if(field_name == boost::mpl::c_str<id_type>::value && _this->field<id_type>() == "") internal_field_write(field_name, dir.length() > 0 ? dir : get_unical_id());
-			// Устанавливается значение поля как атрибут DOM-узла
-			if(_this->_field_data.contains(field_name)) elem.setAttribute(field_name, internal_field(field_name));
-			return 0;
-		}
-	};
 	// Setting and reading data without transformation. Used to generate / XML readers    // Установка и чтение данных без преобразований. Используется при генерации/чтении XML
 	template<typename concrete>
 	QString natural_field_source() const {//QString name
 		// Если имя поля недопустимо
+#ifdef TEST
 		BOOST_MPL_ASSERT_RELATION((boost::mpl::contains<natural_field_set, concrete>::type::value), ==, true);// critical_error("Record::natural_field_source() : get unavailable field " + name);
 		BOOST_MPL_ASSERT((boost::mpl::has_key<natural_field_set, concrete>));
+#endif //TEST
 		BOOST_MPL_ASSERT((boost::mpl::contains<natural_field_set, concrete>));
 		// Если поле с таким названием есть
 		if(_field_data.contains(boost::mpl::c_str<concrete>::value)) return _field_data[boost::mpl::c_str < concrete > ::value]; // Возвращается значение поля
@@ -234,8 +211,10 @@ public:
 	void natural_field_source(QString value){//QString name,, concrete cc
 //		(void) cc;
 		// Если имя поля недопустимо
+#ifdef TEST
 		BOOST_MPL_ASSERT_RELATION((boost::mpl::contains<natural_field_set, concrete>::type::value), ==, true);//if(fixedparameters.is_record_field_natural(name) == false) critical_error("In Record::natural_field_source() unavailable field name " + name + " try set to " + value);
 		BOOST_MPL_ASSERT((boost::mpl::has_key<natural_field_set, concrete>));
+#endif //TEST
 		BOOST_MPL_ASSERT((boost::mpl::contains<natural_field_set, concrete>));
 		// Устанавливается значение поля
 		_field_data.insert(boost::mpl::c_str<concrete>::value, value);
@@ -363,13 +342,16 @@ private:
 	friend class FindScreen;
 	friend class RecordModel;
 	friend class ts_t;
+
+	friend struct element_fullfill;
+	friend struct full_fill_natural_list;
 };
 
 // template<> QString Record::field<has_attach_type>() const;
 // template<> QString Record::field<attach_count_type>() const;
 
 template <>
-struct Record::field_read<has_attach_type, calculable_field_type> {
+struct Record::field_read<has_attach_type, calculable_field_set> {
 	const Record *_this;
 	field_read(const Record *_this)
 		: _this(_this)
@@ -379,7 +361,7 @@ struct Record::field_read<has_attach_type, calculable_field_type> {
 };
 
 template <>
-struct Record::field_read<attach_count_type, calculable_field_type> {
+struct Record::field_read<attach_size_type, calculable_field_set> {
 	const Record *_this;
 	field_read(const Record *_this)
 		: _this(_this)

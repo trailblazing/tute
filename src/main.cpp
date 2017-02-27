@@ -6,7 +6,7 @@
 #include <chrono>
 #include <ctime>
 #include <sstream>
-
+#include <QObject>
 #include <QSplashScreen>
 #include <QToolButton>
 #include <QTranslator>
@@ -96,20 +96,20 @@ bool url_equal(const std::string &url_compare_stored, const std::string &url_com
 std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get){
 	std::string compare = "";
 	if(url_compare_stored.size() >= url_compare_get.size()){
-		for(std::string::size_type i = 0; i < url_compare_get.size(); i++)                                                                                                                                                                                                                                                                                                                                          // url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		for(std::string::size_type i = 0; i < url_compare_get.size(); i++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      // url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
 			if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i); // url_compare_stored.erase(i, 1);
 		for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i++) compare += url_compare_stored.at(i);
 	}else{
 		// url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
-		for(std::string::size_type i = 0; i < url_compare_stored.size(); i++)                                                                                                                                                                                                                                                                                                                                                      // url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		for(std::string::size_type i = 0; i < url_compare_stored.size(); i++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           // url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
 			if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i); // url_compare_get.erase(i, 1);
 		for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i++) compare += url_compare_get.at(i);
 	}
 	// std::string::size_type pos;
 	// while((pos = compare.find_first_of(" ")) != compare.npos)compare.erase(pos, 1);
 	compare.erase(std::remove_if(compare.begin(), compare.end(), ::isspace // [](char ch){return std::isspace<char>(ch, std::locale::classic());}	//
-	                            )
-	             , compare.end());
+			)
+		, compare.end());
 	return compare;
 }
 
@@ -179,21 +179,17 @@ QString xml_node_to_qstring(QDomNode xmlData){
 }
 
 // Преобразование из QString в обычный char
-char *qstring_to_char(const QString &str){
-	/*
-	           char *tmpC=new char [str.size() + 1];
-	           QVariant var;
+char *qc_str(const QString &str){
+//	char *tmpC = new char[str.size() + 1];
+//	QVariant var;
+//	for(int i = 0; i < str.length(); i++){
+//		var = str.at(i);
+//		tmpC[i] = var.toChar().toAscii();
+//	}
+//	tmpC[str.size()] = 0;
 
-	           for(int i=0;i<str.length();i++)
-	           {
-	           var=str.at(i);
-	           tmpC[i] = var.toChar().toAscii();
-	           }
+//	return tmpC;
 
-	           tmpC[str.size()] = 0;
-
-	           return tmpC;
-	 */
 
 	return str.toLocal8Bit().data();
 }
@@ -211,8 +207,8 @@ void print_object_tree_recurse(QObject *pobj){
 
 		QString indentline = ".";
 		for(int j = 0; j < indent; j++) indentline = indentline + ".";
-		if((currobj->objectName()).length() == 0) qDebug("%s%s", qstring_to_char(indentline), currobj->metaObject()->className());
-		else qDebug("%s%s, NAME %s", qstring_to_char(indentline), currobj->metaObject()->className(), qstring_to_char(currobj->objectName()));
+		if((currobj->objectName()).length() == 0) qDebug("%s%s", qc_str(indentline), currobj->metaObject()->className());
+		else qDebug("%s%s, NAME %s", qc_str(indentline), currobj->metaObject()->className(), qc_str(currobj->objectName()));
 		indent++;
 		print_object_tree_recurse(currobj);
 		indent--;
@@ -506,8 +502,8 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
 		// Поведение прокрутки на краях списка (сейчас не пружинит)
 		QScrollerProperties properties = scroller->scrollerProperties();
 		QVariant overshootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(QScrollerProperties::
-		                                                                                     OvershootWhenScrollable // OvershootAlwaysOff
-		                                                                                    );
+			OvershootWhenScrollable // OvershootAlwaysOff
+			);
 		properties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, overshootPolicy);
 		properties.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, overshootPolicy);
 		scroller->setScrollerProperties(properties); // QScrollerProperties::OvershootAlwaysOff
@@ -524,8 +520,8 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
 		// "QScrollBar::up-arrow, QScrollBar::down-arrow {width: 0px; height: 0px;}"
 
 		object->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {width:3px; border: none; background: transparent; margin: 0;}"
-		                                           "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {width: 0px; height: 0px; border: none;  background: transparent; image: url(:/resource/pic/transparent_dot.png); }"
-		                                           "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical { image: url(:/resource/pic/transparent_dot.png); }");
+							   "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {width: 0px; height: 0px; border: none;  background: transparent; image: url(:/resource/pic/transparent_dot.png); }"
+							   "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical { image: url(:/resource/pic/transparent_dot.png); }");
 
 		// object->horizontalScrollBar()->setStyleSheet("QScrollBar:horizontal {border: 2px solid black; background: grey; height: 15px;}"
 		// "QScrollBar::add-line:horizontal {border none; background: none;}"
@@ -613,7 +609,7 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
 				// "subcontrol-origin: margin;"
 				// "}"
 
-			                 ));
+				));
 
 		object->horizontalScrollBar()->setStyleSheet(
 			QString::fromUtf8(
@@ -696,7 +692,7 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
 				// "subcontrol-origin: margin; "
 				// "}"
 
-			                 ));
+				));
 		object->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
 		object->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -704,7 +700,8 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
 #endif
 }
 
-QStringList text_delimiter_decompose(QString text){
+QString purify(QString text){
+	text = QObject::tr(text.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str());
 	text.replace('"', ' ');
 	text.replace("'", " ");
 	text.replace('.', ' ');
@@ -714,6 +711,23 @@ QStringList text_delimiter_decompose(QString text){
 	text.replace('-', ' ');
 	text.replace('?', ' ');
 	text.replace('!', ' ');
+
+//	QStringList list = text.split(QRegExp("\\W + "), QString::SkipEmptyParts);
+
+	return text;
+}
+
+QStringList text_delimiter_decompose(QString text){
+//	text.replace('"', ' ');
+//	text.replace("'", " ");
+//	text.replace('.', ' ');
+//	text.replace(',', ' ');
+//	text.replace(';', ' ');
+//	text.replace(':', ' ');
+//	text.replace('-', ' ');
+//	text.replace('?', ' ');
+//	text.replace('!', ' ');
+	text = purify(text);
 
 	QStringList list = text.split(QRegExp("\\W + "), QString::SkipEmptyParts);
 
@@ -872,10 +886,10 @@ int main(int argc, char * *argv){
 	// appconfig	= std::make_shared<AppConfig>(gl_paras);
 	// databaseconfig = std::make_shared<DataBaseConfig>(gl_paras, appconfig);
 	return sapp_t(argc, argv
-	              // , gl_paras
-	              // , appconfig
-	              // , databaseconfig
-	             )
+		// , gl_paras
+		// , appconfig
+		// , databaseconfig
+		)
 	       .exec(); // application.exec();
 }
 

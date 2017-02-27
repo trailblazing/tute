@@ -40,15 +40,15 @@
 
 #include "blogger.h"
 
-XmlRpcHandler::XmlRpcHandler(Blogger::HttpBusinessType x){
-	reqType = x;
-	_fault	= false;
+XmlRpcHandler::XmlRpcHandler(Blogger::HttpBusinessType x) : _request_type(x){
+//	_request_type = x;
+	_fault = false;
 	methodResponseFinished	= false;
 	receivingArgumentName	= false;
 	insideStruct = false;
 	receivingFaultString = false;
-	if(reqType == _BLOGGER_GETUSERSBLOGS) returnElement = doc.createElement("blogs");
-	if(reqType == _MT_GETCATEGORYLIST) returnElement = doc.createElement("categories");
+	if(_request_type == _BLOGGER_GETUSERSBLOGS) returnElement = doc.createElement("blogs");
+	if(_request_type == _MT_GETCATEGORYLIST) returnElement = doc.createElement("categories");
 }
 
 XmlRpcHandler::XmlRpcHandler(){
@@ -59,7 +59,7 @@ XmlRpcHandler::XmlRpcHandler(){
 }
 
 void XmlRpcHandler::setProtocol(Blogger::HttpBusinessType x){
-	reqType = x;
+	_request_type = x;
 }
 
 bool XmlRpcHandler::startElement(const QString &, const QString &, const QString &qName, const QXmlAttributes &attr){
@@ -71,8 +71,8 @@ bool XmlRpcHandler::startElement(const QString &, const QString &, const QString
 	    currentString = "";*/
 	if((qName == "struct")){
 		insideStruct = true;
-		if(((reqType == _BLOGGER_GETUSERSBLOGS) || (reqType == _MT_GETCATEGORYLIST))){
-			switch(reqType){
+		if(((_request_type == _BLOGGER_GETUSERSBLOGS) || (_request_type == _MT_GETCATEGORYLIST))){
+			switch(_request_type){
 				case _BLOGGER_GETUSERSBLOGS:
 					superElementName = QString("blog");
 					break;
@@ -99,22 +99,22 @@ bool XmlRpcHandler::startElement(const QString &, const QString &, const QString
 
 bool XmlRpcHandler::characters(const QString &str){
 	QString stringToAdd;
-	if(str.startsWith("http://", Qt::CaseInsensitive) && reqType != _METAWEBLOG_NEWMEDIAOBJECT) currentString += str.section("//", 1);
+	if(str.startsWith("http://", Qt::CaseInsensitive) && _request_type != _METAWEBLOG_NEWMEDIAOBJECT) currentString += str.section("//", 1);
 	else currentString += str;
 	if(receivingArgumentName){
 		currentRpcArgumentName = str;
-		if((reqType == _BLOGGER_GETUSERSBLOGS) || (reqType == _MT_GETCATEGORYLIST)){
+		if((_request_type == _BLOGGER_GETUSERSBLOGS) || (_request_type == _MT_GETCATEGORYLIST)){
 			// qDebug() << "Naming current element: " << str.toAscii().data();
 			currentElement.setTagName(currentRpcArgumentName);
 		}
 	}else{
 		if(receivingData){
-			if(str.startsWith("http://", Qt::CaseInsensitive) && reqType != _METAWEBLOG_NEWMEDIAOBJECT) stringToAdd = str.section("//", 1);
+			if(str.startsWith("http://", Qt::CaseInsensitive) && _request_type != _METAWEBLOG_NEWMEDIAOBJECT) stringToAdd = str.section("//", 1);
 			// returnDataList[currentRpcArgumentName].append( str.section( "//", 1 ) );
 			else stringToAdd = str;
 			returnDataList[currentRpcArgumentName].append(stringToAdd);
 			// returnDataList[currentRpcArgumentName].append( str );
-			if((reqType == _BLOGGER_GETUSERSBLOGS) || (reqType == _MT_GETCATEGORYLIST))
+			if((_request_type == _BLOGGER_GETUSERSBLOGS) || (_request_type == _MT_GETCATEGORYLIST))
 				if(!currentElement.isNull()){
 					// qDebug() << "Appending text: " << str.toAscii().data();
 					currentElement.appendChild(QDomText(doc.createTextNode(stringToAdd)));
@@ -180,9 +180,9 @@ bool XmlRpcHandler::endElement(const QString &, const QString &, const QString &
 bool XmlRpcHandler::fatalError(const QXmlParseException &exc){
 	qWarning("Line %d, column %d: %s", exc.lineNumber(), exc.columnNumber(), exc.message().toLatin1().data());
 	_faultString.append(QString("Line %1, column %2: %3")
-	                    .arg(exc.lineNumber())
-	                    .arg(exc.columnNumber())
-	                    .arg(exc.message()));
+		.arg(exc.lineNumber())
+		.arg(exc.columnNumber())
+		.arg(exc.message()));
 	methodResponseFinished = true;
 	return false;
 }

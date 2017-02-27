@@ -62,10 +62,11 @@ CONFIG  +=      qt      \
 
 CONFIG  +=      c++14
 CONFIG  +=      gnu++14
-CONFIG  +=      -Wno-multichar
+#CONFIG  +=      -Wno-multichar
 #CONFIG  +=  staticlib static
-
-QMAKE_CXXFLAGS += -std=c++14 -std=gnu++14
+#QMAKE_CFLAGS    +=      -Wno-multichar -Wfour-char-constants
+QMAKE_CXXFLAGS  +=       -std=c++14 -std=gnu++14
+#QMAKE_CXXFLAGS  +=       -Wno-multichar -Wfour-char-constants
 #QMAKE_LFLAGS += -static-libgcc
 
 DEFINES += "STI_SUPERCLASS=QSystemTrayIcon"
@@ -338,7 +339,8 @@ HEADERS     =   \
     src/views/browser/docker.h \
     src/libraries/qtm/blogger.h \
     src/utility/variant.h \
-    src/utility/for_each.h
+    src/utility/for_each.h \
+    src/utility/expose.h
 
 
 

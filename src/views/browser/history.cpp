@@ -66,7 +66,7 @@
 #include <QWebEngineSettings>
 
 #include <QtCore/QDebug>
-
+extern std::shared_ptr<gl_para> gl_paras;
 namespace web {
 // W_OBJECT_IMPL(HistoryItem)
 
@@ -821,8 +821,8 @@ namespace web {
 			if(index.row() % 2){
 				QUrl url	= urlString;
 				QString s	= url.toString(QUrl::RemoveScheme
-				                               | QUrl::RemoveUserInfo
-				                               | QUrl::StripTrailingSlash);
+					| QUrl::RemoveUserInfo
+					| QUrl::StripTrailingSlash);
 
 				return s.mid(2); // strip // from the front
 			}

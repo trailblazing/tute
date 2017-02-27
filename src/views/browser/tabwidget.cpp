@@ -71,13 +71,14 @@
 #include "history.h"
 #include "urllineedit.h"
 #include "webview.h"
-
+//#include "views/browser/webview.h"
 #include "libraries/global_parameters.h"
 #include "models/record_table/linker.hxx"
 #include "models/record_table/record.h"
 #include "models/record_table/record_index.hxx"
 #include "models/tree/tree_index.hxx"
 #include "views/record_table/record_screen.h"
+#include "views/browser/history.h"
 // #include "models/record_table/record_index.hxx"
 #include "docker.h"
 #include "libraries/disk_helper.h"
@@ -805,7 +806,7 @@ namespace web {
 		_newtabaction->setShortcuts(QKeySequence::AddTab);
 		_newtabaction->setIconVisibleInMenu(false);
 		connect(_newtabaction, &QAction::triggered // , this
-		       , [&](bool make_current){
+			, [&](bool make_current){
 				Q_UNUSED(make_current)
 
 				auto it = TreeIndex::activate([&] {return _tree_screen->view()->source_model();}, _tree_screen->view()->current_item(), QUrl(web::Browser::_defaulthome), std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), web::Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), web::Browser::_defaulthome);});
@@ -950,9 +951,10 @@ namespace web {
 // auto it = this->_tabmanager->current_item();
 					if(page->title() != it->field<name_type>()) page->record_info_update(page->url(), page->title());
 					_main_window->setWindowTitle(tr(QString(QString("%1 - ") + program_title).toStdString().c_str())
-					                             .arg(it ? it->field<name_type>().toStdString().c_str() : ""));
+						.arg(it ? it->field<name_type>().toStdString().c_str() : ""));
 					// it->field<name_type>()
 				}
+				it->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
 			}else closeTab(index);
 		}
 		return currentWebView();
@@ -1006,29 +1008,29 @@ namespace web {
 				  view_current->setFocus();
 
 				  // auto controller = webView->recordtablecontroller();
-				  auto _target_in_browser = view_current->page()->host();
-				  if(_target_in_browser){  // controller != nullptr &&
+				  auto _target_item = view_current->page()->host();
+				  if(_target_item){  // controller != nullptr &&
 					  // QModelIndex proxyindex = controller->convertIdToProxyIndex(record->getField("id"));
 					  // int position = controller->convertProxyIndexToPos(proxyindex);
 					  // RecordTableView *recordtableview = controller->getView();
 					  // if(recordtableview)recordtableview->setSelectionToPos(position); // work
 					  view_current->setFocus();
-					  _target_in_browser->add_rating();
+					  _target_item->add_rating();
 					  auto _tree_view = _tree_screen->view();
-					  QModelIndex index_on_tree = _tree_view->source_model()->index(_target_in_browser);
+					  QModelIndex index_on_tree = _tree_view->source_model()->index(_target_item);
 					  if(!index_on_tree.isValid()){
-						  if(!static_cast<QModelIndex>(_tree_view->know_model_board()->index(_target_in_browser)).isValid()){
-							  auto _url = QUrl(_target_in_browser->field<url_type>()); //
-							  _target_in_browser = TreeIndex::require_item(_target_in_browser->field<url_type>(), std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toString().toStdString());}); // instance([&] {return _tree_view->source_model();}, _tree_view->current_item())->
+						  if(!static_cast<QModelIndex>(_tree_view->know_model_board()->index(_target_item)).isValid()){
+							  auto _url = QUrl(_target_item->field<url_type>()); //
+							  _target_item = TreeIndex::require_item(_target_item->field<url_type>(), std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toString().toStdString());}); // instance([&] {return _tree_view->source_model();}, _tree_view->current_item())->
 						  }
-						  _tree_view->cursor_focus(_target_in_browser);
-						  index_on_tree = _tree_view->source_model()->index(_target_in_browser);
+						  _tree_view->cursor_focus(_target_item);
+						  index_on_tree = _tree_view->source_model()->index(_target_item);
 						  assert(index_on_tree.isValid());
 					  }
 					  if(index_on_tree.isValid()){
-						  if(_target_in_browser != _tree_view->current_item()) _tree_view->select_as_current(TreeIndex::require_treeindex([&] {return _tree_view->source_model();}, _target_in_browser));
+						  if(_target_item != _tree_view->current_item()) _tree_view->select_as_current(TreeIndex::require_treeindex([&] {return _tree_view->source_model();}, _target_item));
 						  if(!_rctrl) _rctrl = _browser->record_screen()->record_controller();
-						  if((_rctrl->view()->current_item() != _target_in_browser) || (currentWebView() != _target_in_browser->page()->view())) _rctrl->select_as_current(_rctrl->index<pos_proxy>(_target_in_browser));
+						  if((_rctrl->view()->current_item() != _target_item) || (currentWebView() != _target_item->page()->view())) _rctrl->select_as_current(_rctrl->index<pos_proxy>(_target_item));
 					  }
 					  // else{
 					  // auto _tree_it_current = _tree_view->current_item();
@@ -1056,14 +1058,15 @@ namespace web {
 						  if(page && it){
 							  if(page->title() != it->field<name_type>()) page->record_info_update(page->url(), page->title());
 							  _main_window->setWindowTitle(tr(QString(QString("%1 - ") + program_title).toStdString().c_str())
-							                               .arg(it ? it->field<name_type>().toStdString().c_str() : ""));
+								  .arg(it ? it->field<name_type>().toStdString().c_str() : ""));
 						  }
 					  }
 					  // EditorDock *_editing_window = globalparameters.editor_dock(); // find_object<MetaEditor>(meta_editor_singleton_name);
 					  assert(_blogger);
 #ifdef USE_EDITOR_WRAP
-					  if(_editing_window->item() != _target_in_browser) view_current->page()->metaeditor_sychronize(); // metaeditor->bind(record);
+					  if(_editing_window->item() != _target_item) view_current->page()->metaeditor_sychronize(); // metaeditor->bind(record);
 #endif//USE_EDITOR_WRAP
+					  select_as_current(view_current);
 				  }
 			  };
 
@@ -1351,7 +1354,7 @@ namespace web {
 							   ////				      && h->field<pin_type>() != _string_from_check_state[Qt::Checked]
 							   // && v != currentWebView()
 							   // && v != webView(0)
-							  ){
+							   ){
 								//
 								bool found = false;
 								// [&] {for(auto &j : list) if(j->id() == h->id()){found = true;break;}return;} ();
@@ -1381,19 +1384,19 @@ namespace web {
 				// });
 
 				qSort(list_v.begin(), list_v.end(), [&](WebView *v0, WebView *v1) -> int {
-					      // auto _e = list.end();
-					      // auto _re = _e.base();
-					      // auto _se = _re->get();
-					      return // &t0 != _re ? &t1 != _re ?
-					      v0 // && t0 != *list.end()
-					      ? v1 // && t1 != *list.end()
-					      ? (current->distance(v0->page()->host()) != -1 && current->distance(v0->page()->host()) < current->distance(v1->page()->host()))
-					      || (-1 == current->distance(v1->page()->host()))
-					      || (v0->page()->host()->field<rating_type>().toInt() > v1->page()->host()->field<rating_type>().toInt())
-					      : true
-					      : false // : true : false
-					      ;
-				      });
+						// auto _e = list.end();
+						// auto _re = _e.base();
+						// auto _se = _re->get();
+						return // &t0 != _re ? &t1 != _re ?
+						v0 // && t0 != *list.end()
+						? v1 // && t1 != *list.end()
+						? (current->distance(v0->page()->host()) != -1 && current->distance(v0->page()->host()) < current->distance(v1->page()->host()))
+						|| (-1 == current->distance(v1->page()->host()))
+						|| (v0->page()->host()->field<rating_type>().toInt() > v1->page()->host()->field<rating_type>().toInt())
+						: true
+						: false // : true : false
+						;
+					});
 				// while(list.size() > 30) list.pop_back();
 				while(list_v.size() > 30)
 					list_v.pop_back();
@@ -1471,7 +1474,7 @@ namespace web {
 				// ) {
 
 				view = new WebView(result_item, _profile // use record for return
-						  , _tree_screen, _blogger, _browser_docker, _browser, this, _rctrl);
+					, _tree_screen, _blogger, _browser_docker, _browser, this, _rctrl);
 				// } else {
 				// view = record->unique_page()->view();
 				// }
@@ -1710,7 +1713,7 @@ namespace web {
 					closeConfirmation.setWindowFlags(Qt::Sheet);
 					closeConfirmation.setWindowTitle(tr("Do you really want to close this page?"));
 					closeConfirmation.setInformativeText(tr("You have modified this page and when closing it you would lose the modification.\n"
-					                                        "Do you really want to close this page?\n"));
+										"Do you really want to close this page?\n"));
 					closeConfirmation.setIcon(QMessageBox::Question);
 					closeConfirmation.addButton(QMessageBox::Yes);
 					closeConfirmation.addButton(QMessageBox::No);
@@ -2386,7 +2389,7 @@ namespace web {
 				QAction *exitFullScreenAction = new QAction(_fullscreenview);
 				exitFullScreenAction->setShortcut(Qt::Key_Escape);
 				connect(exitFullScreenAction, &QAction::triggered, [webPage] {
-				                webPage->triggerAction(QWebEnginePage::ExitFullScreen);
+						webPage->triggerAction(QWebEnginePage::ExitFullScreen);
 					});
 				_fullscreenview->addAction(exitFullScreenAction);
 			}

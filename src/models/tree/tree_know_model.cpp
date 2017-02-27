@@ -25,6 +25,7 @@
 #include "models/tree/binder.hxx"
 #include "models/tree/tree_index.hxx"
 #include "views/app_config/app_config_dialog.h"
+#include "views/browser/tabwidget.h"
 #include "views/browser/browser.h"
 #include "views/browser/docker.h"
 #include "views/browser/webview.h"

@@ -51,6 +51,7 @@
 #include "views/main_window/main_window.h"
 #include "views/record/editor_wrap.h"
 #include "views/browser/docker.h"
+#include "views/browser/browser.h"
 #include "main.h"
 
 

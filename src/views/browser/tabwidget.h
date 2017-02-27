@@ -47,7 +47,7 @@
 #include "boost/format.hpp"
 #include <exception>
 
-#include "utility/delegate.h"
+//#include "utility/delegate.h"
 #include "utility/util.hxx"
 #include <utility>
 
@@ -68,10 +68,6 @@
 #include "libraries/disk_helper.h"
 #include "libraries/global_parameters.h"
 
-#include "views/browser/history.h"
-
-#include "views/browser/webview.h"
-
 // #include "models/tree/TreeModel.h"
 
 // #include "views/tree/KnowView.h"
@@ -89,6 +85,8 @@ extern std::shared_ptr<gl_para> gl_paras;
 extern QMap<Qt::CheckState, QString> _string_from_check_state;
 extern QMap<QString, Qt::CheckState> _state_check_from_string;
 extern QString get_unical_id(void);
+extern const char *custom_widget_style;
+
 
 QT_BEGIN_NAMESPACE
 class QWebEngineDownloadItem;

@@ -29,6 +29,7 @@
 #include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
+#include "views/browser/browser.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/hidable_tab.h"
 #include "views/main_window/main_window.h"

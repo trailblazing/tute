@@ -101,6 +101,8 @@ namespace web {
 	class ToolbarSearch;
 	class WebView;
 	class Docker;
+	class HistoryMenu;
+	class BookmarksMenu;
 
 	class UrlRequestInterceptor
 		: // public boost::intrusive_ref_counter<UrlRequestInterceptor, boost::thread_safe_counter>,
@@ -137,8 +139,8 @@ namespace web {
 #endif
 	public:
 		Browser(Blogger *blogger_
-		       , const QByteArray &state_ = QByteArray()
-		       , Qt::WindowFlags flags = Qt::MaximizeUsingFullscreenGeometryHint);
+			, const QByteArray &state_ = QByteArray()
+			, Qt::WindowFlags flags = Qt::MaximizeUsingFullscreenGeometryHint);
 
 		// Browser(QUrl const &url         // Record *const record
 		// , TreeScreen        *_tree_screen
@@ -177,7 +179,7 @@ namespace web {
 		QSize sizeHint() const;
 
 		static constexpr const char *_defaulthome = "about:blank";
-
+		template<typename T> struct initialize_prior_to {static constexpr bool value = true;};
 	public:
 		// typedef Binder coupler_delegation;
 		// typedef Binder::bind_interface          bind_interface;
@@ -294,14 +296,14 @@ namespace web {
 
 		void run_script(const QString &style_source);
 		void load_default_state();
-		void reset_file_menu();
-		void reset_edit_menu();
-		void reset_view_menu();
-		void reset_history_menu();
-		void reset_bookmark_menu();
-		void reset_window_menu();
-		void reset_tools_menu();
-		void reset_help_menu();
+
+
+
+
+
+
+
+
 		void reset_main_menu();
 		void reset_find_screen_tool_bar();
 		void update_statusbar_action_text(bool visible);
@@ -321,20 +323,28 @@ namespace web {
 		// QToolBar      *navigater;
 		// ToolbarSearch       *_toolbarsearch;
 		BookmarksToolBar *_bookmarkstoolbar;
+
+		QMenu *_file_menu;
+		QMenu *_edit_menu;
+		QMenu *_view_menu;
+//		QMenu *_help_menu;
+		QMenu *_tools_menu;
+		BookmarksMenu *_bookmarks_menu;
 		ChaseWidget *_chasewidget;
-
-		AutoSaver *_autosaver;
-
+		HistoryMenu *_history_menu;
 		QAction *_historyhome;
 		QAction *_historyback;
-		QMenu *_historybackmenu;
 		QAction *_historyforward;
+
+		QMenu *_historybackmenu;
 		QMenu *_historyforwardmenu;
 		QMenu *_windowmenu;
 
 		QAction *_stop;
 		QAction *_reload;
 		QAction *_stopreload;
+
+		AutoSaver *_autosaver;
 		QAction *_viewmenubar;
 		QAction *_viewbookmarkbar;
 		QAction *_viewtoolbar;
@@ -361,9 +371,20 @@ namespace web {
 		friend class web::Docker;
 		friend class WebView;
 		friend class ::Blogger;
+		void init_history_menu();
+		void init_main_menu();
+		void init_file_menu();
+		void init_edit_menu();
+		void init_view_menu();
+//		void init_help_menu();
+		void init_tools_menu();
+		void init_bookmark_menu();
+		void init_window_menu();
 	signals:
 		void close_request(QWidget *);
 	};
+
+	template<> struct Browser::initialize_prior_to<Blogger> {static constexpr bool value = false;};
 }
 
 // QT_END_NAMESPACE

@@ -49,7 +49,7 @@ public:
 	QDomDocumentFragment returnXml();
 
 private:
-	Blogger::HttpBusinessType reqType;
+	Blogger::HttpBusinessType _request_type;
 	QString currentString;
 	QString currentRpcArgumentName;
 	QString _faultString;

@@ -10,6 +10,7 @@
 #include "models/app_config/app_config.h"
 #include "models/tree/tree_know_model.h"
 #include "views/browser/docker.h"
+#include "views/browser/webview.h"
 #include "views/browser/tabwidget.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/hidable_tab.h"
@@ -19,6 +20,8 @@
 #include "views/record_table/record_screen.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
+#include "views/browser/browser.h"
+#include "views/record_table/record_screen.h"
 #include <QSplitter>
 
 extern const char *record_screen_multi_instance_name;

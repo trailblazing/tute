@@ -15,7 +15,7 @@
 // #include "views/record/MetaEditor.h"
 // #include "models/tree/TreeItem.h"
 
-#include "views/browser/tabwidget.h"
+//#include "views/browser/tabwidget.h"
 
 #if QT_VERSION == 0x050600
 #include <QObject>

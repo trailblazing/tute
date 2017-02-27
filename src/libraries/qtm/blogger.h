@@ -28,6 +28,7 @@
 //#include "ui_SideWidget.h"
 //#include "ui_aboutbox.h"
 // #include "ui_account_form.h"
+#include "utility/expose.h"
 #include "accounts_dialog.h"
 #include "highlighter.h"
 #include "libraries/flat_control.h"
@@ -39,11 +40,12 @@
 #include "ui_NewCategoryForm.h"
 #include "ui_password-form.h"
 #include "utility/add_action.h"
-
+#include "libraries/global_parameters.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 // #include "ui_ListDialog.h"
-#ifdef USE_SYSTRAYICON
-#include "sys_tray_icon.h"
-#endif
+//#ifdef USE_SYSTRAYICON
+//#include "sys_tray_icon.h"
+//#endif
 // #include "Application.h"
 
 #include <QColor>
@@ -84,6 +86,12 @@ class sapp_t;
 class SideTabWidget;
 class EditorTextArea;
 class rs_t;
+class SysTrayIcon;
+class HidableTab;
+
+//class sapp_t::RecentFile;
+//class ExposedSappRecentFile;
+
 using namespace Ui;
 
 #ifdef Q_OS_WIN
@@ -117,10 +125,10 @@ public:
 	/*  Catkin( QList<QString>, QList<QString>, int,
 	       QWidget *parent = 0 );*/
 	Blogger(QString new_post_topic = gl_para::_default_topic// global_root_id// get_unical_id()
-	       , QString new_post_content = gl_para::_default_post// (std::string("Welcome to \"") + gl_para::_default_topic + "\" topic").c_str() // = QString()
-	       , QStringList hide_editor_tools_ = appconfig->hide_editor_tools()
-	       , const QByteArray &state_ = QByteArray()
-	       , Qt::WindowFlags flags = Qt::Widget);
+		, QString new_post_content = gl_para::_default_post// (std::string("Welcome to \"") + gl_para::_default_topic + "\" topic").c_str() // = QString()
+		, QStringList hide_editor_tools_ = appconfig->hide_editor_tools()
+		, const QByteArray &state_ = QByteArray()
+		, Qt::WindowFlags flags = Qt::Widget);
 	~Blogger();
 	template<typename T> struct initialize_prior_to {static constexpr bool value = true;};
 #ifdef USE_SYSTRAYICON
@@ -151,7 +159,7 @@ public:
 
 //	rs_t *record_screen();
 	web::Docker *editor_docker();
-	static QString purify_topic(const QString &topic);
+//	static QString purify_topic(const QString &topic);
 private:
 	void doUiSetup();
 	void checkForEmptySettings();
@@ -633,5 +641,7 @@ public:
 	SuperMenu *super_menu();
 	web::Browser *browser();
 };
+
+
 
 #endif

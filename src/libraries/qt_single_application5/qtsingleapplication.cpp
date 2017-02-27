@@ -995,6 +995,11 @@ QWidget *sapp_t::activationWindow() const {
 	return _act_window;
 }
 
+void sapp_t::initialize(bool dummy){
+    isRunning();
+    Q_UNUSED(dummy)
+}
+
 /*!
    De-minimizes, raises, and activates this application's activation window.
    This function does nothing if no activation window has been set.

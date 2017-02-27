@@ -79,6 +79,8 @@
 #include "views/main_window/main_window.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
+#include "views/browser/webview.h"
+#include "views/browser/browser.h"
 
 namespace web {
 #if QT_VERSION == 0x050600
@@ -334,7 +336,7 @@ namespace web {
 
 	void ToolbarSearch::text(const QString &text){_findtext->setText(text);}
 
-	QString ToolbarSearch::text() const {return Blogger::purify_topic(_findtext->text());}
+	QString ToolbarSearch::text() const {return purify(_findtext->text());}
 
 	void WorkerThread::run(){
 		// QString result;

@@ -1,7 +1,7 @@
 
 
 #include "variant.h"
-
+#ifdef TEST
 int test_variant(){
 	typedef fusion::result_of::as_vector<fusion::joint_view<mpl::vector<bool, std::string>, A> >::type	types1;
 	typedef boost::make_variant_over<types1>::type								variant1;
@@ -44,3 +44,5 @@ int test_unify(){
 //	Set2::asdfl;
 	return 0;
 }
+
+#endif //TEST

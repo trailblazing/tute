@@ -161,9 +161,9 @@ namespace web {
 			msgBox.setIcon(QMessageBox::Warning);
 			msgBox.setText(error.errorDescription());
 			msgBox.setInformativeText(tr("If you wish so, you may continue with an unverified certificate. "
-			                             "Accepting an unverified certificate means "
-			                             "you may not be connected with the host you tried to connect to.\n"
-			                             "Do you wish to override the security check and continue?"));
+						     "Accepting an unverified certificate means "
+						     "you may not be connected with the host you tried to connect to.\n"
+						     "Do you wish to override the security check and continue?"));
 			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 			msgBox.setDefaultButton(QMessageBox::No);
 
@@ -324,7 +324,8 @@ namespace web {
 		  , _browser(browser)
 		  , _tabmanager(tabmanager)
 		  , _record_controller(record_controller)
-		  , _view(parent){
+		  , _view(parent)
+		  , _hovered_url(Browser::_defaulthome){
 		// This signal is emitted with the URL of the main frame when the main frame's title is received. The new URL is specified by url.
 		onUrlChanged
 		        = [&](const QUrl &url)->void {
@@ -362,7 +363,7 @@ namespace web {
 					  assert(_blogger);
 					  if(  title != ""
 					    && title != host_->field<name_type>() // && !QUrl(title).isValid()
-					    ){
+					       ){
 						  record_info_update(url(), title);
 						  // record_view_synchronize(_binder->host());
 					  }
@@ -465,7 +466,7 @@ namespace web {
 	                                        auto it = this->host();
 	                                        if(it){
 	                                                _main_window->setWindowTitle(tr(QString(QString("%1 - ") + program_title).toStdString().c_str())
-	                                                                             .arg(it ? it->field<name_type>().toStdString().c_str() : ""));
+								.arg(it ? it->field<name_type>().toStdString().c_str() : ""));
 						}
 					}
 #ifdef USE_EDITOR_WRAP
@@ -585,7 +586,7 @@ namespace web {
 	        qDebug() << "void WebPage::metaeditor_sychronize() : id " << current_item->field<id_type>(); // table->field(pos, "id");
 	        qDebug() << "void WebPage::metaeditor_sychronize() : name " << current_item->field<name_type>(); // table->field(pos, "name");
 	        qDebug() << "void WebPage::metaeditor_sychronize() : crypt " << current_item->field<crypt_type>(); // table->field(pos, boost::mpl::c_str < crypt_type > ::value);
-		if(current_item->field<crypt_type>() == "1")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
+		if(current_item->field<crypt_type>() == "1")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
 			if(full_dir.length() == 0 || current_file.length() == 0) _editing_window->dir_file_empty_reaction(EditorWrap::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 	        // _editentry->blog_editor()->editor()->clear_all_misc_field();
 	        // В редактор заносится информация, идет ли работа с зашифрованным текстом
@@ -634,7 +635,7 @@ namespace web {
 		}
 #endif // USE_FILE_PER_TREEITEM
 	        // Обновление иконки аттачей
-		if(current_item->attach_table()->size() == 0)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    // table->record(pos)->getAttachTablePointer()->size()
+		if(current_item->attach_table()->size() == 0)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   // table->record(pos)->getAttachTablePointer()->size()
 			_blogger->to_attach()->setIcon(_blogger->icon_attach_not_exists());
 	        // Если нет приаттаченных файлов
 		else _blogger->to_attach()->setIcon(_blogger->icon_attach_exists()); // Есть приаттаченные файлы
@@ -682,7 +683,7 @@ namespace web {
 	        if(  _view // && _loadingurl.isValid()     // && url().isValid()    // && url().toString() != _url_str
 		     // && _url_str != web::Browser::_defaulthome		// url() may be nothing
 	          && _url != _loadingurl // lead loading stop
-	          ){
+		     ){
 	                // triggerAction(QWebEnginePage::Stop);
 	                QWebEnginePage::setUrl(_url);
 	                // QWebEnginePage::load(_url);
@@ -866,9 +867,9 @@ namespace web {
 	                msgBox.setIcon(QMessageBox::Warning);
 	                msgBox.setText(error.errorDescription());
 	                msgBox.setInformativeText(tr("If you wish so, you may continue with an unverified certificate. "
-	                                             "Accepting an unverified certificate means "
-	                                             "you may not be connected with the host you tried to connect to.\n"
-	                                             "Do you wish to override the security check and continue?"));
+						     "Accepting an unverified certificate means "
+						     "you may not be connected with the host you tried to connect to.\n"
+						     "Do you wish to override the security check and continue?"));
 	                msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 	                msgBox.setDefaultButton(QMessageBox::No);
 
@@ -946,7 +947,7 @@ namespace web {
 	                        assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
 	                        auto it = this_treeindex->bind(target_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) // std::placeholders::_1
-							      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());});
+					, [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());});
 	                        // page = it ? it->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page() : nullptr;
 	                        page = it ? it->page() : nullptr;
 				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
@@ -981,7 +982,7 @@ namespace web {
 	                        assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
 	                        auto it = this_treeindex->bind(target_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) // std::placeholders::_1
-							      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());});
+					, [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());});
 				page = it ? it->activate(std::bind(&wn_t::find, gl_paras->main_window(), find_binder))->page() : nullptr; // std::placeholders::_1
 
 				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
@@ -991,14 +992,14 @@ namespace web {
 #ifdef USE_POPUP_WINDOW
 	        else{  // type == WebDialog
 	                PopupWindow *popup = new PopupWindow(_browser
-	                                                     // view()->tabmanager()
-	                                                    ,
-	                                                     _profile
-							     // , QUrl(web::Browser::_defaulthome)
-	                                                     // , _record_controller
-	                                                     // , _page_controller
-	                                                     // , view()->tabmanager()->browser()
-	                                                    );
+				// view()->tabmanager()
+				,
+				_profile
+				// , QUrl(web::Browser::_defaulthome)
+				// , _record_controller
+				// , _page_controller
+				// , view()->tabmanager()->browser()
+				);
 
 	                popup->setAttribute(Qt::WA_DeleteOnClose);
 	                popup->show();
@@ -1443,7 +1444,7 @@ namespace web {
 #endif
 
 	WebView::WebView(boost::intrusive_ptr<TreeItem> host_, Profile *profile // , bool openinnewtab
-			, ts_t *tree_screen, Blogger *editing_window, web::Docker *browser_docker_, Browser *browser, TabWidget *tabmanager, rctrl_t *table_controller)
+			 , ts_t *tree_screen, Blogger *editing_window, web::Docker *browser_docker_, Browser *browser, TabWidget *tabmanager, rctrl_t *table_controller)
 		: QWebEngineView(static_cast<QWidget *>(tabmanager)) // ->parent()
 		  , _browser(browser)
 		  , _tabmanager(tabmanager) // , _record(record)
@@ -1557,8 +1558,8 @@ namespace web {
 	                connect(page(), &WebPage::statusBarMessage, &WebPage::setStatusBarText);
 #endif
 	                connect(this->_page, &WebPage::loadingUrl, this // &WebView::urlChanged
-	                       ,
-	                        [&](const QUrl &url){
+				,
+				[&](const QUrl &url){
 					auto _binder = this->_page->binder();
 					if(_binder->host()){
 					        if(  url.toString() != ""
@@ -1576,11 +1577,11 @@ namespace web {
 
 	                connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::loadFinished, this, &WebView::onLoadFinished);
 	                connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::titleChanged // , this->_page	// &WebPage::onTitleChanged
-	                       ,
-	                        [&](const QString &title){this->_page->onTitleChanged(title);});
+				,
+				[&](const QString &title){this->_page->onTitleChanged(title);});
 	                connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::urlChanged // , this->_page	// &WebPage::onUrlChanged
-	                       ,
-	                        [&](const QUrl &url){this->_page->onUrlChanged(url);});
+				,
+				[&](const QUrl &url){this->_page->onUrlChanged(url);});
 		}
 	}
 
@@ -1593,18 +1594,18 @@ namespace web {
 		auto to_home = _browser->_historyhome;
 		to_home->disconnect();
 		QObject::connect(to_home, &QAction::triggered, this, [&](bool checked = true) -> void {
-					 Q_UNUSED(checked)
-					 if(_page->binder()){
-						 boost::intrusive_ptr<TreeItem> _item = _page->binder()->host();
-						 assert(_item);
-						 QString home = _item->field<home_type>();
-						 QUrl homeurl = QUrl(home);
-						 if(homeurl.isValid() && homeurl != _page->url()){
-							 _item->field<url_type>(home); // "url",
-							 _page->load(_item, true);
-						 }
-					 }
-				 });
+				Q_UNUSED(checked)
+				if(_page->binder()){
+					boost::intrusive_ptr<TreeItem> _item = _page->binder()->host();
+					assert(_item);
+					QString home = _item->field<home_type>();
+					QUrl homeurl = QUrl(home);
+					if(homeurl.isValid() && homeurl != _page->url()){
+						_item->field<url_type>(home); // "url",
+						_page->load(_item, true);
+					}
+				}
+			});
 
 
 
@@ -1856,7 +1857,7 @@ namespace web {
 	        if(!_main_window->windowTitle().contains(_page->title())){
 	                if(_page->title() != _target_item_in_browser->field<name_type>()) _page->record_info_update(_page->url(), _page->title());
 	                _main_window->setWindowTitle(tr(QString(QString("%1 - ") + program_title).toStdString().c_str())
-	                                             .arg(_target_item_in_browser ? _target_item_in_browser->field<name_type>().toStdString().c_str() : ""));
+				.arg(_target_item_in_browser ? _target_item_in_browser->field<name_type>().toStdString().c_str() : ""));
 		}
 #ifdef USE_EDITOR_WRAP
 	        _page->_editing_window->name(_page->title());

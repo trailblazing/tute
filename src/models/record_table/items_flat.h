@@ -32,8 +32,8 @@ extern const int add_new_record_after;
 class ItemsFlat {
 public:
 	// RecordTable(boost::intrusive_ptr<TreeItem> _tree_item); // a kind of copy constructor
-	ItemsFlat(const QDomElement &_dom_element, const bool is_crypt = false);
-	ItemsFlat(const bool is_crypt = false);
+	ItemsFlat(const QDomElement &_dom_element = QDomElement(), const bool is_crypt = false);
+//	ItemsFlat(const bool is_crypt = false);
 
 #ifdef _with_record_table
 	ItemsFlat(const ItemsFlat &obj);

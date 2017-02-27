@@ -80,7 +80,7 @@ FixedParameters::FixedParameters(QObject *parent)
 	_description[boost::mpl::c_str < file_type > ::value]	= tr("File name");
 	_description[boost::mpl::c_str < crypt_type > ::value]	= tr("Is crypt");
 	_description[boost::mpl::c_str < has_attach_type > ::value] = tr("Has attachs");
-	_description[boost::mpl::c_str < attach_count_type > ::value]	= tr("Attachs count");
+	_description[boost::mpl::c_str < attach_size_type > ::value]	= tr("Attachs count");
 	_description[boost::mpl::c_str < dynamic_name_type > ::value]	= tr("Dynamic name");
 
 	_record_field = (QStringList()
@@ -97,26 +97,26 @@ FixedParameters::FixedParameters(QObject *parent)
 	                        << boost::mpl::c_str<file_type>::value
 	                        << boost::mpl::c_str<crypt_type>::value
 	                        << boost::mpl::c_str<has_attach_type>::value
-	                        << boost::mpl::c_str<attach_count_type>::value
+				<< boost::mpl::c_str<attach_size_type>::value
 	                        << boost::mpl::c_str<dynamic_name_type>::value);
 
-	_record_natural_field = (QStringList()
-	                                << boost::mpl::c_str<id_type>::value
-	                                << boost::mpl::c_str<pin_type>::value
-	                                << boost::mpl::c_str<rating_type>::value
-	                                << boost::mpl::c_str<name_type>::value
-	                                << boost::mpl::c_str<author_type>::value
-	                                << boost::mpl::c_str<home_type>::value
-	                                << boost::mpl::c_str<url_type>::value
-	                                << boost::mpl::c_str<tags_type>::value
-	                                << boost::mpl::c_str<ctime_type>::value
-	                                << boost::mpl::c_str<dir_type>::value
-	                                << boost::mpl::c_str<file_type>::value
-	                                << boost::mpl::c_str<crypt_type>::value);
+//	_record_natural_field = (QStringList()
+//	                                << boost::mpl::c_str<id_type>::value
+//	                                << boost::mpl::c_str<pin_type>::value
+//	                                << boost::mpl::c_str<rating_type>::value
+//	                                << boost::mpl::c_str<name_type>::value
+//	                                << boost::mpl::c_str<author_type>::value
+//	                                << boost::mpl::c_str<home_type>::value
+//	                                << boost::mpl::c_str<url_type>::value
+//	                                << boost::mpl::c_str<tags_type>::value
+//	                                << boost::mpl::c_str<ctime_type>::value
+//	                                << boost::mpl::c_str<dir_type>::value
+//	                                << boost::mpl::c_str<file_type>::value
+//	                                << boost::mpl::c_str<crypt_type>::value);
 
 	_record_calculable_field = (QStringList()
 	                                << boost::mpl::c_str<has_attach_type>::value
-	                                << boost::mpl::c_str<attach_count_type>::value
+					<< boost::mpl::c_str<attach_size_type>::value
 	                                << boost::mpl::c_str<dynamic_name_type>::value);
 
 	_record_field_crypted = (QStringList()

@@ -14,7 +14,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
-
+#include <QTreeView>
 #include "global_parameters.h"
 #include "main.h"
 
@@ -28,7 +28,8 @@
 #include "views/record/editor_wrap.h"
 #include "views/record_table/record_screen.h"
 #include "views/tree/tree_screen.h"
-
+#include "libraries/qt_single_application5/qtsingleapplication.h"
+#include "libraries/disk_helper.h"
 // #include "utility/config_ini.h"
 
 //extern const char *index_xml_file_name;

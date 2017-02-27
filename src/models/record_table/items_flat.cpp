@@ -78,83 +78,83 @@ ItemsFlat::ItemsFlat(const QDomElement &_dom_element, const bool is_crypt) // , 
 	else this->to_decrypt(); // table_data->to_decrypt();
 }
 
-// Конструктор
-ItemsFlat::ItemsFlat(const bool is_crypt)
-	:
+//// Конструктор
+//ItemsFlat::ItemsFlat(const bool is_crypt)
+//	: dom_from_itemsflat_impl(
+//		  [&](std::shared_ptr<QDomDocument> doc) -> QDomElement { // Преобразование таблицы конечных записей в Dom документ
+//			  // Если у ветки нет таблицы конечных записей, возвращается пустой документ
+//			  QDomElement item_flat_dom;
+//			  if(_child_linkers.size() != 0){  // if(_child_linkers.size() == 0)return QDomElement();
+//				  item_flat_dom = doc->createElement("recordtable");
+//				  // Пробегаются все записи в таблице
+//				  for(int i = 0; i < _child_linkers.size(); i++){
+//					  if(_child_linkers.at(i)->host() != this){  // history error
+//						  item_flat_dom.appendChild(_child_linkers.at(i)->host()->dom_from_treeitem_impl(doc)); // boost::static_pointer_cast<Record>(_child_items.at(i))->dom_from_record(doc)
+//						  // К элементу recordtabledata прикрепляются конечные записи
+//					  }
+//				  }
+//			  }
+//			  // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
 
-	// : _tree_item(_tree_item)
-	// , _workpos(-1)
-	// _parent_item([ & ]()
-	// {
-	// if(parent_item) {
-	// QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
-	// QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
-	////        QString crypt_value = "1";
-	// QString crypt_key(QString::null); crypt_key = QLatin1String(boost::mpl::c_str < crypt_type > ::value);
-	// QString crypt_value(QString::null); crypt_value = (parent_item->_field_data.size() > 0
-	// && parent_item->_field_data.contains(crypt_key)
-	// && (parent_item->_field_data[crypt_key] == crypt_value)) ? crypt_1 : crypt_0;
+//			  return item_flat_dom;
+//		  })
 
-	////        field(crypt_key, crypt_value);
+//	// : _tree_item(_tree_item)
+//	// , _workpos(-1)
+//	// _parent_item([ & ]()
+//	// {
+//	// if(parent_item) {
+//	// QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
+//	// QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
+//	////        QString crypt_value = "1";
+//	// QString crypt_key(QString::null); crypt_key = QLatin1String(boost::mpl::c_str < crypt_type > ::value);
+//	// QString crypt_value(QString::null); crypt_value = (parent_item->_field_data.size() > 0
+//	// && parent_item->_field_data.contains(crypt_key)
+//	// && (parent_item->_field_data[crypt_key] == crypt_value)) ? crypt_1 : crypt_0;
 
-	// if(crypt_1 == crypt_value
-	////           && !table_data->crypt()
-	// ) {
-	// this->to_encrypt(); // table_data->to_encrypt();
-	// } else if(crypt_0 == crypt_value
-	////                  && table_data->crypt()
-	// ) {
-	// this->to_decrypt(); // table_data->to_decrypt();
-	// }
-	// }
+//	////        field(crypt_key, crypt_value);
 
-	// return parent_item;
-	// }())
+//	// if(crypt_1 == crypt_value
+//	////           && !table_data->crypt()
+//	// ) {
+//	// this->to_encrypt(); // table_data->to_encrypt();
+//	// } else if(crypt_0 == crypt_value
+//	////                  && table_data->crypt()
+//	// ) {
+//	// this->to_decrypt(); // table_data->to_decrypt();
+//	// }
+//	// }
 
-	// , _field_data([ & ]()
-	// {
-	// if(_parent_item)
-	// _field_data[boost::mpl::c_str < crypt_type > ::value] = (_parent_item->_field_data.contains(boost::mpl::c_str < crypt_type > ::value) && _parent_item->_field_data[boost::mpl::c_str < crypt_type > ::value] == "1") ? "1" : "0";
+//	// return parent_item;
+//	// }())
 
-	// return _field_data;
-	// }())
-	// , _record_table()
+//	// , _field_data([ & ]()
+//	// {
+//	// if(_parent_item)
+//	// _field_data[boost::mpl::c_str < crypt_type > ::value] = (_parent_item->_field_data.contains(boost::mpl::c_str < crypt_type > ::value) && _parent_item->_field_data[boost::mpl::c_str < crypt_type > ::value] == "1") ? "1" : "0";
 
-	// ,
+//	// return _field_data;
+//	// }())
+//	// , _record_table()
 
-	  dom_from_itemsflat_impl(
-		  [&](std::shared_ptr<QDomDocument> doc) -> QDomElement { // Преобразование таблицы конечных записей в Dom документ
-			  // Если у ветки нет таблицы конечных записей, возвращается пустой документ
-			  QDomElement item_flat_dom;
-			  if(_child_linkers.size() != 0){  // if(_child_linkers.size() == 0)return QDomElement();
-				  item_flat_dom = doc->createElement("recordtable");
-				  // Пробегаются все записи в таблице
-				  for(int i = 0; i < _child_linkers.size(); i++){
-					  if(_child_linkers.at(i)->host() != this){  // history error
-						  item_flat_dom.appendChild(_child_linkers.at(i)->host()->dom_from_treeitem_impl(doc)); // boost::static_pointer_cast<Record>(_child_items.at(i))->dom_from_record(doc)
-						  // К элементу recordtabledata прикрепляются конечные записи
-					  }
-				  }
-			  }
-			  // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
+//	// ,
 
-			  return item_flat_dom;
-		  })
-	  , _is_crypt(is_crypt){
-	// treeItem = nullptr;
-	// workPos = -1;
-	// init(i_dom_element);  // i_dom_element
-	//// Создание таблицы
-	// if(!i_dom_element.isNull()) {
-	////        QDomElement *dom_element = &i_dom_element;
-	// import_from_dom(
-	// i_dom_element  // dom_element
-	// );
-	// }
-	if(is_crypt) this->to_encrypt(); // table_data->to_encrypt();
-	else this->to_decrypt(); // table_data->to_decrypt();
-	// return;
-}
+
+//	  , _is_crypt(is_crypt){
+//	// treeItem = nullptr;
+//	// workPos = -1;
+//	// init(i_dom_element);  // i_dom_element
+//	//// Создание таблицы
+//	// if(!i_dom_element.isNull()) {
+//	////        QDomElement *dom_element = &i_dom_element;
+//	// import_from_dom(
+//	// i_dom_element  // dom_element
+//	// );
+//	// }
+//	if(is_crypt) this->to_encrypt(); // table_data->to_encrypt();
+//	else this->to_decrypt(); // table_data->to_decrypt();
+//	// return;
+//}
 
 #ifdef _with_record_table
 
@@ -221,7 +221,7 @@ QList<boost::intrusive_ptr<TreeItem> > ItemsFlat::children_direct(const std::fun
 
 QList<boost::intrusive_ptr<TreeItem> > ItemsFlat::children_direct(const QString &name) const {
 	QList<boost::intrusive_ptr<TreeItem> > results;
-	for(auto il : _child_linkers)                                                                                                                                                                                                                                        // for(int i = 0; i < count_direct(); i++) {
+	for(auto il : _child_linkers)                                                                                                                                                                                                                                                                               // for(int i = 0; i < count_direct(); i++) {
 		if(il->host()->field<name_type>() == name) results.push_back(il->host()); // return i;
 	return results; // -1;
 }

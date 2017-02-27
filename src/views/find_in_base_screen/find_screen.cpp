@@ -42,7 +42,10 @@
 #include "views/browser/docker.h"
 #include "views/browser/chasewidget.h"
 #include "views/browser/tabwidget.h"
+#include "views/browser/browser.h"
 #include "views/browser/toolbar_search.h"
+#include "views/record_table/record_screen.h"
+#include "views/browser/webview.h"
 #include "views/record/editor_wrap.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_screen.h"
@@ -469,7 +472,7 @@ void FindScreen::assembly(void){
 	// centralDesktopLayout->addWidget(_findtable, 10);
 	_central_desktop_layout->setContentsMargins(0, 0, 0, 0); // Boundaries removed // Границы убираются
 	_central_desktop_layout->setSizeConstraint(QLayout:: // SetFixedSize // this setting will lead TableScreen can not resize!!!
-	                                           SetNoConstraint);
+		SetNoConstraint);
 	_central_desktop_layout->setMargin(0);
 	_central_desktop_layout->setSpacing(0);
 
@@ -741,8 +744,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 #endif
 
 	auto final_search = [&](boost::intrusive_ptr<TreeItem> &final_result // QList<boost::intrusive_ptr<Linker> >    &_result_list
-			       , boost::intrusive_ptr<TreeItem> &_session_root_item// std::shared_ptr<RecordTable> &resultset_data
-			       , boost::intrusive_ptr<TreeItem> &_start_item) -> boost::intrusive_ptr<TreeItem> & {
+				, boost::intrusive_ptr<TreeItem> &_session_root_item// std::shared_ptr<RecordTable> &resultset_data
+				, boost::intrusive_ptr<TreeItem> &_start_item) -> boost::intrusive_ptr<TreeItem> & {
 				    qDebug() << "Start finding in " << _candidate_records << " records";
 
 				    _total_progress_counter = 0;
@@ -998,7 +1001,7 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 							if(!alternative){
 								auto tags_ = candidate->field<tags_type>();
 								if(tags_.size() > 0)
-									if(tags_.at(0) == ',' || tags_.at(0) == ';') tags_.remove(0, 1);
+									while(tags_.at(0) == ',' || tags_.at(0) == ';') tags_.remove(0, 1);
 								auto tag_list = tags_.split(QRegExp("[,:]+"), QString::SkipEmptyParts);
 								auto search_topic = _toolbarsearch->text();
 								if(tag_list.size() > 0){

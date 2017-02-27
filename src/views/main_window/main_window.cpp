@@ -33,7 +33,10 @@
 #include "views/record/editor_wrap.h"
 #include "views/record_table/record_screen.h"
 #include "views/tree/tree_screen.h"
-
+#include "views/browser/webview.h"
+#include "views/browser/toolbar_search.h"
+#include "views/browser/tabwidget.h"
+#include "views/browser/browser.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "libraries/qtm/blogger.h"
 #include "libraries/qtm/sys_tray_icon.h"
@@ -102,6 +105,12 @@ wn_t::wn_t(web::Profile *profile, QString style_source)// std::shared_ptr<gl_par
 	  , _statusbar([&] {auto st = new QStatusBar(this); gl_paras->status_bar(st); return st;} ())
 	  , _switcher([&] {auto sw = new WindowSwitcher(windowswitcher_singleton_name, this); gl_paras->window_switcher(sw); return sw;} ())
 	  , _tray_icon([&] {auto ti = new SysTrayIcon(_vtab_record, _editor_docker, this, _profile, _style_source, true); gl_paras->tray_icon(ti); return ti;} ())
+	  , _quit_action([&]() -> QAction *{
+			  auto q = new QAction(tr("&Quit"), this);
+			  q->setShortcut(Qt::CTRL + Qt::Key_Q);
+			  connect(q, &QAction::triggered, this, &wn_t::application_exit);
+			  return q;
+		  } ())
 	  , _enable_real_close(false){
 	// _page_screen->setVisible(false);
 	// _page_screen->hide();
@@ -153,7 +162,7 @@ wn_t::wn_t(web::Profile *profile, QString style_source)// std::shared_ptr<gl_par
 	{
 		menuBar()->addMenu(_filemenu);
 		init_file_menu();
-		append_quit_menu();
+//		append_quit_menu();
 	}
 	{
 		menuBar()->addMenu(_toolsmenu);
@@ -228,13 +237,13 @@ wn_t::wn_t(web::Profile *profile, QString style_source)// std::shared_ptr<gl_par
 	}
 }
 
-void wn_t::append_quit_menu(){
-	QAction *quit = new QAction(tr("&Quit"), this);
+//void wn_t::append_quit_menu(){
+//	_quit_action->setShortcut(Qt::CTRL + Qt::Key_Q);
+//	connect(_quit_action, &QAction::triggered, this, &wn_t::application_exit);
+////	_filemenu->addAction(_quit_action);
+//}
 
-	quit->setShortcut(Qt::CTRL + Qt::Key_Q);
-	connect(quit, &QAction::triggered, this, &wn_t::application_exit);
-	_filemenu->addAction(quit);
-}
+QAction *wn_t::quit_action() const{return _quit_action;}
 
 wn_t::~wn_t(){
 	save_all_state();
@@ -1295,6 +1304,7 @@ void wn_t::init_tools_menu(void){
 
 	a = new QAction(tr("Find in ba&se"), this);
 	connect(a, &QAction::triggered, this, &wn_t::tools_find);
+	a->setShortcut(QKeySequence(tr("Ctrl+K", "Web Search")));
 	_toolsmenu->addAction(a);
 
 	auto b = new QAction(tr("Editor open/close"), this);
@@ -1370,6 +1380,8 @@ void wn_t::init_help_menu(void){
 	a = new QAction(tr("About Qt"), this);
 	connect(a, &QAction::triggered, this, &wn_t::on_click_help_about_qt);
 	_helpmenu->addAction(a);
+
+	_helpmenu->addAction(tr("About &Embedded Browser"), this, &wn_t::slotAboutApplication);
 }
 
 // Новая коллекция
@@ -1463,9 +1475,12 @@ void wn_t::application_fast_exit(void){
 
 void wn_t::tools_find(void){
 	// Определяется ссылка на виджет поиска
-	FindScreen *findScreenRel = gl_paras->find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
-	if(!(findScreenRel->isVisible())) findScreenRel->show();
-	else findScreenRel->hide();
+	FindScreen *_find_screen = gl_paras->find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
+	if(!(_find_screen->isVisible())){
+		_find_screen->show();
+		_find_screen->toolbarsearch()->lineEdit()->selectAll();
+		_find_screen->toolbarsearch()->lineEdit()->setFocus();
+	}else _find_screen->hide();
 }
 
 void wn_t::tools_preferences(void){
@@ -1979,4 +1994,16 @@ template<> web::Browser *wn_t::browser<QString>(const QString &topic, bool force
 
 std::map<std::string, QMenu *> &wn_t::main_menu_map(){
 	return _main_menu_map;
+}
+
+
+void wn_t::slotAboutApplication(){
+	QMessageBox::about(this, tr("About"), tr(
+			"Version %1"
+			"<p>This demo demonstrates the facilities "
+			"of Qt WebEngine in action, providing an note with "
+			"browser for you to experiment with.<p>"
+			"<p>Qt WebEngine is based on the Chromium open source project "
+			"developed at <a href=\"http://www.chromium.org/\">http://www.chromium.org/</a>.")
+		.arg(QCoreApplication::applicationVersion()));
 }

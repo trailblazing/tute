@@ -31,6 +31,7 @@
 #include "tree_view.h"
 #include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
+#include "views/browser/browser.h"
 #include "views/browser/webview.h"
 #include "views/main_window/main_window.h"
 #include "views/record/editor_wrap.h"

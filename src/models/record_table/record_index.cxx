@@ -23,6 +23,7 @@
 #include "views/record_table/record_screen.h"
 #include "views/record_table/record_view.h"
 #include "views/tree/tree_screen.h"
+#include "views/browser/webview.h"
 
 boost::intrusive_ptr<TreeItem> RecordIndex::bind( // const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_,
 	bool make_current) noexcept {

@@ -10,7 +10,7 @@
 #include <boost/fusion/iterator.hpp>
 #include <boost/mpl/int.hpp>
 
-#include "utility/variant.h"
+//#include "utility/variant.h"
 #include "utility/for_each.h"
 
 #include <QDomElement>
@@ -37,91 +37,116 @@ extern std::shared_ptr<AppConfig> appconfig;
 extern FixedParameters fixedparameters;
 extern std::shared_ptr<gl_para> gl_paras;
 
+//	tempalte<typename InputRange>
+struct element_fullfill {
+	QDomElement	&elem;
+	Record *const	_this;
+
+	element_fullfill(QDomElement &elem_, Record *const this_) : elem(elem_), _this(this_){}
+
+	template<typename index_type>
+	int operator ()(index_type index_type_value) const {
+		(void) index_type_value;
+//			typedef boost::mpl::at<InputRange, indices>::type index_type;
+		const QString &field_name = //index_type_value;//
+					    boost::mpl::c_str<index_type>::value;//index_type is mpl_::void_?
+//						    boost::mpl::c_str<typename boost::mpl::at<natural_field_set, index_type>::type>::value;
+		auto internal_field
+			= [&](QString name){if(_this->_field_data.contains(name)) return _this->_field_data[name]; else return QString(); };
+		auto internal_field_write
+			= [&](QString key, QString value){_this->_field_data.insert(key, value);};
+		// = available_field_list.at(j);
+		auto dir = internal_field(boost::mpl::c_str<dir_type>::value);
+		if(field_name == boost::mpl::c_str<id_type>::value && _this->field<id_type>() == "") internal_field_write(field_name, dir.length() > 0 ? dir : get_unical_id());
+		// Устанавливается значение поля как атрибут DOM-узла
+		if(_this->_field_data.contains(field_name)) elem.setAttribute(field_name, internal_field(field_name));
+		return 0;
+	}
+};
+
+//Record::Record() // boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
+//	: _lite_flag(true)
+//	  , _text("")
+//#ifdef USE_STAR_RATING
+//	  , _star_rating(new StarRating(1, 5))
+//#endif
+//	  , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this)))) // {
+//	  // liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
+//	  , dom_from_record_impl(
+//		  [&](std::shared_ptr<QDomDocument> doc) -> QDomElement {
+//			  QDomElement elem = doc->createElement("record");
 
 
-Record::Record() // boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
-	: _lite_flag(true)
-	  , _text("")
-#ifdef USE_STAR_RATING
-	  , _star_rating(new StarRating(1, 5))
-#endif
-	  , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this)))) // {
-	  // liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
-	  , dom_from_record_impl(
-		  [&](std::shared_ptr<QDomDocument> doc) -> QDomElement {
-			  QDomElement elem = doc->createElement("record");
+////			  auto dst = FixedParameters::_record_natural_field_static;
+//			  // Перебираются допустимые имена полей, доступных для сохранения
+////			  QStringList available_field_list;//= FixedParameters::_record_natural_field_static;
+////			  natural_field_type::item_ iti;
+////			  boost::mpl::begin<natural_field_type> te;
+//			  // int available_field_list_size = available_field_list.size();
+////			  void (Record::*func)(QString, QString) = &Record::natural_field_source;
+//			  Apply<boost::mpl::size<natural_field_set>::type::value
+//				  , element_fullfill//std::bind(func, this)//<boost::mpl::at<natural_field_type, boost::mpl::_1> >
+//				  >(element_fullfill(elem, this))(FixedParameters::_record_natural_field_tuple);//_record_natural_field_static
+////					 for(int j = 0; j < available_field_list.size(); ++j){
+////					         QString field_name = available_field_list.at(j);
+////					         if(field_name == boost::mpl::c_str<id_type>::value && natural_field_source(field_name) == "") natural_field_source(field_name, natural_field_source(boost::mpl::c_str<dir_type>::value).length() > 0 ? natural_field_source(boost::mpl::c_str<dir_type>::value) : get_unical_id());
+////					         // Устанавливается значение поля как атрибут DOM-узла
+////					         if(is_natural_field_exists(field_name)) elem.setAttribute(field_name, natural_field_source(field_name));
+////					 }
+//			  // К элементу записи прикрепляется элемент таблицы приаттаченных файлов, если таковые есть
+//			  if(_attach_table_data->size() > 0) elem.appendChild(_attach_table_data->dom_from_data(doc));
+//			  return elem;
+//		  })
+//	  , read_crypt_field(
+//		  [&](const QString &name){
+//			  // QString name = boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_type, field_type >::type >::value;
+//			  QString result = "";
 
+//			  auto crypt_field_name = boost::mpl::c_str<crypt_type>::value;
+//			  if(name == "home" && _field_data[name] == "" && _field_data[boost::mpl::c_str < url_type > ::value] != "") _field_data[name] = _field_data[boost::mpl::c_str < url_type > ::value]; // for history reason
+//			  if(_field_data.contains(crypt_field_name)){  // boost::mpl::c_str < crypt_type > ::value
+//				  if(_field_data[crypt_field_name] == "1"){
+//					  if(_field_data[name].length() > 0 && gl_paras->crypt_key().length() > 0){
+//						  // is_crypt = true;
+//						  // Поле расшифровывается
+//						  result = CryptService::decryptString(gl_paras->crypt_key(), _field_data[name]);
+//					  }
+//				  }else result = _field_data[name];
+//			  }else result = _field_data[name];
+//			  return result;
+//		  })
+//	  , write_crypt_field(
+//		  [&](const QString &_name, const QString &value) -> void { // template <typename field_type>void Record::field_write<field_type, crypt_field_type>::operator()(const QString &value){// template<typename field_type> void Record::field(const QString &value){
+//			  // QString _name = boost::mpl::c_str < typename boost::mpl::at < crypt_field_type, field_type >::type >::value;
+//			  //// Если имя поля недопустимо (установить значение можно только для натурального поля)
+//			  // if(fixedparameters.is_record_field_natural(_name) == false)critical_error("In Record::field() unavailable field name " + _name + " try set to " + value);
+//			  bool is_crypt = false;
+//			  // Если имя поля принадлежит списку полей, которые могут шифроваться
+//			  // и в наборе полей есть поле crypt
+//			  // и поле crypt установлено в 1
+//			  // и поле не пустое (пустые данные ненужно шифровать)
+//			  // if(fixedparameters._record_field_crypted.contains(_name)){
+//			  if(_field_data.contains(boost::mpl::c_str<crypt_type>::value)){
+//				  if(_field_data[boost::mpl::c_str < crypt_type > ::value] == "1"){
+//					  if(value.length() > 0){
+//						  if(gl_paras->crypt_key().length() > 0) is_crypt = true;
+//						  else critical_error("In Record::field() can not set data to crypt field " + _name + ". Password not setted");
+//					  }
+//				  }
+//			  }
+//			  // }
+//			  QString _value = value;
+//			  // Если нужно шифровать, поле шифруется
+//			  if(is_crypt == true) _value = CryptService::encryptString(gl_paras->crypt_key(), value);
+//			  // Устанавливается значение поля
 
-//			  auto dst = FixedParameters::_record_natural_field_static;
-			  // Перебираются допустимые имена полей, доступных для сохранения
-//			  QStringList available_field_list;//= FixedParameters::_record_natural_field_static;
-//			  natural_field_type::item_ iti;
-//			  boost::mpl::begin<natural_field_type> te;
-			  // int available_field_list_size = available_field_list.size();
-//			  void (Record::*func)(QString, QString) = &Record::natural_field_source;
-			  Apply<boost::mpl::size<natural_field_set>::type::value
-				  , element_fullfill//std::bind(func, this)//<boost::mpl::at<natural_field_type, boost::mpl::_1> >
-				  >(element_fullfill(elem, this))(FixedParameters::_record_natural_field_tuple);//_record_natural_field_static
-//					 for(int j = 0; j < available_field_list.size(); ++j){
-//					         QString field_name = available_field_list.at(j);
-//					         if(field_name == boost::mpl::c_str<id_type>::value && natural_field_source(field_name) == "") natural_field_source(field_name, natural_field_source(boost::mpl::c_str<dir_type>::value).length() > 0 ? natural_field_source(boost::mpl::c_str<dir_type>::value) : get_unical_id());
-//					         // Устанавливается значение поля как атрибут DOM-узла
-//					         if(is_natural_field_exists(field_name)) elem.setAttribute(field_name, natural_field_source(field_name));
-//					 }
-			  // К элементу записи прикрепляется элемент таблицы приаттаченных файлов, если таковые есть
-			  if(_attach_table_data->size() > 0) elem.appendChild(_attach_table_data->dom_from_data(doc));
-			  return elem;
-		  })
-	  , read_crypt_field(
-		  [&](const QString &name){
-			  // QString name = boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_type, field_type >::type >::value;
-			  QString result = "";
+//			  _field_data.insert(_name, _value); // _field_data[_name] = value; //
 
-			  auto crypt_field_name = boost::mpl::c_str<crypt_type>::value;
-			  if(name == "home" && _field_data[name] == "" && _field_data[boost::mpl::c_str < url_type > ::value] != "") _field_data[name] = _field_data[boost::mpl::c_str < url_type > ::value]; // for history reason
-			  if(_field_data.contains(crypt_field_name)){  // boost::mpl::c_str < crypt_type > ::value
-				  if(_field_data[crypt_field_name] == "1"){
-					  if(_field_data[name].length() > 0 && gl_paras->crypt_key().length() > 0){
-						  // is_crypt = true;
-						  // Поле расшифровывается
-						  result = CryptService::decryptString(gl_paras->crypt_key(), _field_data[name]);
-					  }
-				  }else result = _field_data[name];
-			  }else result = _field_data[name];
-			  return result;
-		  })
-	  , write_crypt_field(
-		  [&](const QString &_name, const QString &value) -> void { // template <typename field_type>void Record::field_write<field_type, crypt_field_type>::operator()(const QString &value){// template<typename field_type> void Record::field(const QString &value){
-			  // QString _name = boost::mpl::c_str < typename boost::mpl::at < crypt_field_type, field_type >::type >::value;
-			  //// Если имя поля недопустимо (установить значение можно только для натурального поля)
-			  // if(fixedparameters.is_record_field_natural(_name) == false)critical_error("In Record::field() unavailable field name " + _name + " try set to " + value);
-			  bool is_crypt = false;
-			  // Если имя поля принадлежит списку полей, которые могут шифроваться
-			  // и в наборе полей есть поле crypt
-			  // и поле crypt установлено в 1
-			  // и поле не пустое (пустые данные ненужно шифровать)
-			  // if(fixedparameters._record_field_crypted.contains(_name)){
-			  if(_field_data.contains(boost::mpl::c_str<crypt_type>::value)){
-				  if(_field_data[boost::mpl::c_str < crypt_type > ::value] == "1"){
-					  if(value.length() > 0){
-						  if(gl_paras->crypt_key().length() > 0) is_crypt = true;
-						  else critical_error("In Record::field() can not set data to crypt field " + _name + ". Password not setted");
-					  }
-				  }
-			  }
-			  // }
-			  QString _value = value;
-			  // Если нужно шифровать, поле шифруется
-			  if(is_crypt == true) _value = CryptService::encryptString(gl_paras->crypt_key(), value);
-			  // Устанавливается значение поля
-
-			  _field_data.insert(_name, _value); // _field_data[_name] = value; //
-
-			  // qDebug() << "Record::set_field : pos" << pos << "name" << name << "value" << value;
-		  })
-	  , has_attach_field([&] {return this->_attach_table_data->size() > 0 ? "1" : "0";})
-	  , attach_count_field([&] {return QString::number(this->_attach_table_data->size());})
-{}
+//			  // qDebug() << "Record::set_field : pos" << pos << "name" << name << "value" << value;
+//		  })
+//	  , has_attach_field([&] {return this->_attach_table_data->size() > 0 ? "1" : "0";})
+//	  , attach_count_field([&] {return QString::number(this->_attach_table_data->size());})
+//{}
 
 Record::Record(QMap<QString, QString> field_data_)
 	: _lite_flag(true) // boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
@@ -148,7 +173,7 @@ Record::Record(QMap<QString, QString> field_data_)
 
 			  Apply<boost::mpl::size<natural_field_set>::type::value
 				  , element_fullfill//std::bind(func, this)//<boost::mpl::at<natural_field_type, boost::mpl::_1> >
-				  >(element_fullfill(elem, this))(FixedParameters::_record_natural_field_tuple);
+				  >(element_fullfill(elem, this))(std::forward<natural_field_tuple const>(FixedParameters::_record_natural_field_tuple));
 			  // К элементу записи прикрепляется элемент таблицы приаттаченных файлов, если таковые есть
 			  if(_attach_table_data->size() > 0) elem.appendChild(_attach_table_data->dom_from_data(doc));
 			  return elem;
@@ -684,14 +709,37 @@ bool Record::is_natural_field_exists(QString name) const {return _field_data.con
 
 
 
+struct full_fill_natural_list {
+	const Record *const _this;
+	QMap<QString, QString> &_result_field_list;
+	bool _is_crypt;
 
+	full_fill_natural_list(const Record *const this_, QMap<QString, QString> &resultFieldList, bool isCrypt) : _this(this_), _result_field_list(resultFieldList), _is_crypt(isCrypt){}
+	template<typename field_type>
+	void operator ()(field_type field_type_value) const {
+		(void) field_type_value;
+		QString currName = boost::mpl::c_str<field_type>::value;//fieldNames.at(i);
+		// Если поле с таким именем существует
+		if(_this->_field_data.contains(currName)){
+			QString result = "";
+			if(_is_crypt == false) result = _this->_field_data[currName]; // Напрямую значение поля
+			else{
+				// Присутствует шифрование
+				// Если поле не подлежит шифрованию (не все поля в зашифрованной ветке шифруются. Например, не шифруется ID записи)
+				if(fixedparameters._record_field_crypted.contains(currName) == false) result = _this->_field_data[currName]; // Напрямую значение поля
+				else if(gl_paras->crypt_key().length() > 0 && fixedparameters._record_field_crypted.contains(currName)) result = CryptService::decryptString(gl_paras->crypt_key(), _this->_field_data[currName]); // асшифровывается значение поля
+			}
+			_result_field_list[currName] = result;
+		}
+	}
+};
 
 // Получение значений всех натуральных (невычислимых) полей
 // Поля, которые могут быть у записи, но не заданы, не передаются
 // Поля, которые зашифрованы, расшифровываются
 QMap<QString, QString> Record::natural_field_list() const {
 	// Список имен инфополей
-	QStringList fieldNames = fixedparameters._record_natural_field;
+//	QStringList fieldNames = fixedparameters._record_natural_field;
 
 	QMap<QString, QString> resultFieldList;
 
@@ -700,23 +748,25 @@ QMap<QString, QString> Record::natural_field_list() const {
 	if(_field_data.contains(boost::mpl::c_str<crypt_type>::value))
 		if(_field_data[boost::mpl::c_str < crypt_type > ::value] == "1") isCrypt = true;
 	// Перебираются названия полей
-	for(int i = 0; i < fieldNames.size(); ++i){
-		QString currName = fieldNames.at(i);
-		// Если поле с таким именем существует
-		if(_field_data.contains(currName)){
-			QString result = "";
-			if(isCrypt == false) result = _field_data[currName]; // Напрямую значение поля
-			else{
-				// Присутствует шифрование
-				// Если поле не подлежит шифрованию (не все поля в зашифрованной ветке шифруются. Например, не шифруется ID записи)
-				if(fixedparameters._record_field_crypted.contains(currName) == false) result = _field_data[currName]; // Напрямую значение поля
-				else if(gl_paras->crypt_key().length() > 0 && fixedparameters._record_field_crypted.contains(currName)) result = CryptService::decryptString(gl_paras->crypt_key(), _field_data[currName]); // асшифровывается значение поля
-			}
-			resultFieldList[currName] = result;
-		}
-	}
-	qDebug() << "Record::getFieldList() : " << resultFieldList;
+	Apply<boost::mpl::size<natural_field_set>::type::value, full_fill_natural_list>(full_fill_natural_list(this, resultFieldList, isCrypt))(std::forward<natural_field_tuple const>(FixedParameters::_record_natural_field_tuple));
 
+//	for(int i = 0; i < boost::mpl::size<natural_field_tuple>::type::value; ++i){//for(int i = 0; i < fieldNames.size(); ++i){
+//		QString currName = fieldNames.at(i);
+//		// Если поле с таким именем существует
+//		if(_field_data.contains(currName)){
+//			QString result = "";
+//			if(isCrypt == false) result = _field_data[currName]; // Напрямую значение поля
+//			else{
+//				// Присутствует шифрование
+//				// Если поле не подлежит шифрованию (не все поля в зашифрованной ветке шифруются. Например, не шифруется ID записи)
+//				if(fixedparameters._record_field_crypted.contains(currName) == false) result = _field_data[currName]; // Напрямую значение поля
+//				else if(gl_paras->crypt_key().length() > 0 && fixedparameters._record_field_crypted.contains(currName)) result = CryptService::decryptString(gl_paras->crypt_key(), _field_data[currName]); // асшифровывается значение поля
+//			}
+//			resultFieldList[currName] = result;
+//		}
+//	}
+	qDebug() << "Record::getFieldList() : " << resultFieldList;
+///
 	return resultFieldList;
 }
 
@@ -780,7 +830,7 @@ QString Record::text_from_fat() const {
 	if(!(_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1" && gl_paras->crypt_key().length() == 0)){  // return "";
 		// Если шифровать ненужно
 		if(_field_data.value(boost::mpl::c_str<crypt_type>::value).length() == 0 || _field_data.value(boost::mpl::c_str<crypt_type>::value) == "0") result = QString(_text); // Текст просто преобразуется из QByteArray
-		else if(_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      // Если нужно шифровать
+		else if(_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  // Если нужно шифровать
 			result = CryptService::decryptStringFromByteArray(gl_paras->crypt_key(), _text);
 		else critical_error("Record::text_from_fat() : Unavailable crypt field value \"" + _field_data.value(boost::mpl::c_str<crypt_type>::value) + "\"");
 	}
@@ -822,7 +872,7 @@ void Record::text_to_fat(QString _text_source){
 	if(_lite_flag == true) critical_error("Can\'t set text for lite record object" + id_and_name());
 	// Если шифровать ненужно
 	if(_field_data.value(boost::mpl::c_str<crypt_type>::value).length() == 0 || _field_data.value(boost::mpl::c_str<crypt_type>::value) == "0") _text = _text_source.toUtf8(); // Текст просто запоминается в виде QByteArray
-	else if(_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          // Если нужно шифровать
+	else if(_field_data.value(boost::mpl::c_str<crypt_type>::value) == "1")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      // Если нужно шифровать
 		_text = CryptService::encryptStringToByteArray(gl_paras->crypt_key(), _text_source);
 	else critical_error("Record::text_to_fat() : Unavailable crypt field value \"" + _field_data.value(boost::mpl::c_str<crypt_type>::value) + "\"");
 }

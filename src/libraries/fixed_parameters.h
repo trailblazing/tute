@@ -12,6 +12,8 @@
 #include <boost/mpl/push_back.hpp>
 #include <boost/mpl/push_back_fwd.hpp>
 #include <boost/mpl/set.hpp>
+#include <boost/mpl/map.hpp>
+#include <boost/fusion/tuple.hpp>
 #include <boost/mpl/string.hpp>
 #include <boost/units/detail/prevent_redefinition.hpp>
 #include <boost/mpl/contains.hpp>
@@ -30,7 +32,10 @@
 #endif
 
 #include "utility/delegate.h"
-#include "utility/variant.h"
+//#include "utility/variant.h" // for Unify template
+
+
+
 // extern const char *id_field;
 // extern const char *pin_field;
 // extern const char *rating_field;
@@ -46,44 +51,64 @@
 // extern const char *has_attach_field;
 // extern const char *attach_count_field;
 
-typedef boost::mpl::string<'i','d'>		id_type;
-typedef boost::mpl::string<'p','i','n'>		pin_type;
-typedef boost::mpl::string<'r','a','t','i', 'n','g'>	rating_type;
-typedef boost::mpl::string<'n','a','m','e'>		name_type;
-typedef boost::mpl::string<'a','u','t','h', 'o','r'>	author_type;
-typedef boost::mpl::string<'h','o','m','e'>		home_type;
-typedef boost::mpl::string<'u','r','l'>		url_type;
-typedef boost::mpl::string<'t','a','g','s'>		tags_type;
-typedef boost::mpl::string<'c','t','i','m', 'e'>		ctime_type;
-typedef boost::mpl::string<'d','i','r'>		dir_type;
-typedef boost::mpl::string<'f','i','l','e'>		file_type;
-typedef boost::mpl::string<'c','r','y','p', 't'>		crypt_type;
-//typedef boost::mpl::string<'h', 's', 't', 'c', 'h'>		has_attach_type; //
-typedef boost::mpl::string<'has_', 'atta', 'ch'> has_attach_type;    // with "-Wmultichar" parameter for make // -Wno-multichar to disable it
-//typedef boost::mpl::string<'t', 'c', 'h', 'c', 'n', 't'>	attach_count_type; //
-typedef boost::mpl::string<'atta', 'ch_c', 'ount'>	attach_count_type;
-typedef boost::mpl::string<'dyna', 'mic_', 'name'>	dynamic_name_type;
+#ifndef BOOST_MPL_LIMIT_STRING_SIZE
+//# define BOOST_MPL_LIMIT_STRING_SIZE 64
+# define BOOST_MPL_LIMIT_STRING_SIZE 256
+#endif
 
-typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type>	crypt_field_type;
-typedef boost::mpl::set<id_type, rating_type, ctime_type, dir_type, file_type, crypt_type>	append_to_crypt_type;
+typedef boost::mpl::string<'i', 'd'>					id_type;
+typedef boost::mpl::string<'p', 'i', 'n'>				pin_type;
+typedef boost::mpl::string<'r', 'a', 't', 'i', 'n', 'g'>		rating_type;
+typedef boost::mpl::string<'n', 'a', 'm', 'e'>				name_type;
+typedef boost::mpl::string<'a', 'u', 't', 'h', 'o', 'r'>		author_type;
+typedef boost::mpl::string<'h', 'o', 'm', 'e'>				home_type;
+typedef boost::mpl::string<'u', 'r', 'l'>				url_type;
+typedef boost::mpl::string<'t', 'a', 'g', 's'>				tags_type;
+typedef boost::mpl::string<'c', 't', 'i', 'm', 'e'>			ctime_type;
+typedef boost::mpl::string<'d', 'i', 'r'>				dir_type;
+typedef boost::mpl::string<'f', 'i', 'l', 'e'>				file_type;
+typedef boost::mpl::string<'c', 'r', 'y', 'p', 't'>			crypt_type;
+typedef boost::mpl::string<'h', 'a', 's', '_', 'a', 't', 'c', 'h'>	has_attach_type; //
+//typedef boost::mpl::string<'has_', 'a','t','t','a', 'c','h'> has_attach_type;
+// http://stackoverflow.com/questions/37606999/boostmplstring-size-error-messages
+// with "-Wmultichar" parameter for make // -Wno-multichar won't disable it
+typedef boost::mpl::string<'a', 't', 'c', 'h', 's', 'i', 'z', 'e'> attach_size_type; //
+//typedef boost::mpl::string<'atta', 'c','h','_','c', 'o','u','n','t'>	attach_count_type;// error: too many template arguments for class template 'string'
+
+typedef boost::mpl::string<'d', 'y', 'n', '_', 'n', 'a', 'm', 'e'> dynamic_name_type;
+//typedef boost::mpl::string<'dyna', 'm','i','c','_', 'n','a','m','e'>	dynamic_name_type;
+
+typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type>	crypt_field_set;
+typedef boost::mpl::map<pin_type, name_type, author_type, home_type, url_type, tags_type>	crypt_field_map;
+typedef std::tuple<pin_type, name_type, author_type, home_type, url_type, tags_type>		crypt_field_tuple;
+
+typedef boost::mpl::set<id_type, rating_type, ctime_type, dir_type, file_type, crypt_type>	append_to_crypt_set;
+typedef std::tuple<id_type, rating_type, ctime_type, dir_type, file_type, crypt_type>		append_to_crypt_tuple;
 // typedef boost::mpl::push_back<crypt_field_type, append_to_crypt_type> natural_field_type;
-typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type> natural_field_set;
+typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type>	natural_field_set;
+typedef std::tuple<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type>		natural_field_tuple;
 
-typedef Unify<
-	std::tuple
-	, natural_field_set
-	, boost::mpl::size<natural_field_set>::type::value
-	>::type natural_field_tuple;
+//typedef Unify<
+//	std::tuple
+//	, natural_field_set
+//	, boost::mpl::size<natural_field_set>::type::value
+//	>::type natural_field_tuple;
 
-typedef boost::mpl::set<has_attach_type, attach_count_type, dynamic_name_type> calculable_field_type;
-
+typedef boost::mpl::set<has_attach_type, attach_size_type, dynamic_name_type>	calculable_field_set;
+typedef std::tuple<has_attach_type, attach_size_type, dynamic_name_type>	calculable_field_tuple;
 // typedef boost::mpl::push_back<natural_field_type, calculable_field_type> full_field_type;
-typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type, has_attach_type, attach_count_type, dynamic_name_type> full_field_type;
+typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type, has_attach_type, attach_size_type, dynamic_name_type>	full_field_set;
+typedef std::tuple<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type, has_attach_type, attach_size_type, dynamic_name_type>		full_field_tuple;
 
 struct null_type;
 template <typename field_type>
 struct switch_type {
-	typedef typename sd::static_if<boost::mpl::has_key<append_to_crypt_type, field_type>::value, append_to_crypt_type, typename sd::static_if<boost::mpl::has_key<crypt_field_type, field_type>::value, crypt_field_type, typename sd::static_if<boost::mpl::has_key<calculable_field_type, field_type>::value, calculable_field_type, null_type // boost::units::detail::
+	typedef typename sd::static_if<boost::mpl::has_key<append_to_crypt_set, field_type>::value
+		, append_to_crypt_set
+		, typename sd::static_if<boost::mpl::has_key<crypt_field_set, field_type>::value
+			, crypt_field_set
+			, typename sd::static_if<boost::mpl::has_key<calculable_field_set, field_type>::value
+				, calculable_field_set, null_type // boost::units::detail::
 				>::type>::type>::type type;
 };
 
@@ -104,10 +129,10 @@ public:
 	// boost::mpl::set<id_type, pin_type, rating_type, name_type, author_type, home_type, url_type, tags_type, ctime_type, dir_type,  file_type, crypt_type, has_attach_type, attach_count_type> _record_field_static;
 	QStringList _record_field;
 
-	static constexpr const natural_field_set _record_natural_field_static = natural_field_set();
+//	static constexpr const natural_field_set _record_natural_field_static = natural_field_set();
 
 	static constexpr const natural_field_tuple _record_natural_field_tuple = natural_field_tuple();
-	QStringList _record_natural_field;
+//	QStringList _record_natural_field;
 
 
 	// boost::mpl::set<has_attach_type, attach_count_type> _record_calculable_field_static;

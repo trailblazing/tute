@@ -7,6 +7,7 @@
 #include <boost/serialization/strong_typedef.hpp>
 #include <QModelIndex>
 // #include "models/record_table/RecordModel.h"
+#include "models/tree/tree_item.h"
 
 class TreeItem;
 class RecordModel;

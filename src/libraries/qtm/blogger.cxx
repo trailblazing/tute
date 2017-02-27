@@ -93,28 +93,40 @@
 
 #endif
 #ifdef USE_WYEDIT
-#include "libraries/global_parameters.h"
-#include "libraries/walk_history.h"
-#include "views/record/editor_wrap.h"
-#include "views/tree/tree_view.h"
 
-extern WalkHistory walkhistory;
-extern std::shared_ptr<gl_para> gl_paras;
-extern const char *program_title;
+#include "libraries/wyedit/editor.h"
+
 #endif
 
 #include "xml_rpc_handler.h"
 // #include "libraries/flat_control.h"
 #include "blogger.h"
-#include "libraries/qt_single_application5/qtsingleapplication.h"
+
+#include "libraries/global_parameters.h"
+#include "libraries/walk_history.h"
+#include "libraries/wyedit/editor.h"
+#include "views/tree/tree_view.h"
+
+
 #include "views/main_window/hidable_tab.h"
 #include "views/main_window/main_window.h"
 #include "views/print_preview/print_preview.h"
 #include "views/record_table/record_screen.h"
 #include "views/attach_table/attach_table_screen.h"
 #include "views/browser/docker.h"
+#include "views/browser/autosaver.h"
+#include "libraries/disk_helper.h"
+#include "views/browser/webview.h"
+#include "views/browser/tabwidget.h"
+#include "views/browser/browser.h"
 
+// extern std::shared_ptr<AppConfig> appconfig;
+
+extern WalkHistory walkhistory;
+extern std::shared_ptr<gl_para> gl_paras;
+extern const char *program_title;
 extern const std::string editor_prefix;
+
 
 #ifdef USE_SYSTRAYICON
 #include "sys_tray_icon.h"
@@ -178,17 +190,15 @@ extern const std::string editor_prefix;
 // #include "macFunctions.h"
 #endif
 
-#include "views/browser/autosaver.h"
 
-// extern std::shared_ptr<AppConfig> appconfig;
 
-#define editor_object _editor
+//#define editor_object _editor
 
 Blogger::Blogger(QString new_post_topic
-		, QString new_post_content
-		, QStringList hide_editor_tools_
-		, const QByteArray &state_
-		, Qt::WindowFlags flags)// , QWidget *parent
+		 , QString new_post_content
+		 , QStringList hide_editor_tools_
+		 , const QByteArray &state_
+		 , Qt::WindowFlags flags)// , QWidget *parent
 	: super(nullptr, flags)
 //	  , _app(sapp_t::instance())//qobject_cast<sapp_t *>(qApp)
 //	  , _editors_shared_full_path_name(
@@ -200,7 +210,7 @@ Blogger::Blogger(QString new_post_topic
 //				  if(!QDir::root().mkpath(path)) critical_error("Can not create directory: \"" + path + "\"");
 //			  return path;
 //		  } ())
-	  , _current_topic_name(tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()))
+	  , _current_topic_name(purify(new_post_topic))//(tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()))
 	  , _current_topic_full_folder_name([&]() -> QString {assert(gl_paras->editors_shared_full_path_name() != ""); auto fn = gl_paras->editors_shared_full_path_name() + "/" + _current_topic_name; assert(fn != ""); return fn;} ())
 	  , _current_topic_full_config_name(_current_topic_full_folder_name + "/" + gl_para::_editor_conf_filename)
 	  , _topic_editor_config(
@@ -235,14 +245,14 @@ Blogger::Blogger(QString new_post_topic
 #ifdef USE_WYEDIT
 
 	  , _editor([&]() -> TEXTEDIT *{
-			    _editor = nullptr; auto e = new TEXTEDIT(
+			  _editor = nullptr; auto e = new TEXTEDIT(
 	#ifdef USE_EDITOR_WRAP
-				    find_screen, this, hide_editor_tools_, _main_stack, ""
+				  find_screen, this, hide_editor_tools_, _main_stack, ""
 	#else
-				    _main_stack, this, _topic_editor_config, (appconfig->interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, true, true
+				  _main_stack, this, _topic_editor_config, (appconfig->interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, true, true
 	#endif //USE_EDITOR_WRAP
-			                                            ); return e;
-		    } ())
+				  ); return e;
+		  } ())
 
 
 
@@ -250,7 +260,7 @@ Blogger::Blogger(QString new_post_topic
 	  , _editor([&]() -> TEXTEDIT *{_editor = nullptr; auto e = new TEXTEDIT(_main_stack); return e;} ())
 #endif
 //	  , _record_screen([&]() -> rs_t *{_record_screen = nullptr; auto rs = new rs_t(editor_docker_, this, vtab_record, style_source, profile, state_); return rs;} ())
-	  , _browser(new web::Browser(this, state_))
+	  , _browser([&]() -> web::Browser *{_browser = nullptr; auto b = new web::Browser(this, state_); return b;} ())
 	  , _record_screen(_browser->record_screen())
 	  , _editor_docker(gl_paras->editor_docker()->prepend<Blogger>(this))
 	  , _super_menu([&]() -> SuperMenu * {_super_menu = nullptr; auto sm = new SuperMenu(this); return sm;} ()){
@@ -396,14 +406,14 @@ Blogger::Blogger(QString new_post_topic
 			_accounts_dom.insertBefore(
 				_accounts_dom.createProcessingInstruction(
 					"xml", "version=\"1.0\"")
-				                  , _accounts_dom.firstChild());
+				, _accounts_dom.firstChild());
 			QHostInfo::lookupHost(server, this, SLOT(handleInitialLookup(QHostInfo)));
 		}
 	}
 	checkForEmptySettings();
 
 #ifdef USE_WYEDIT
-	editor_object->textarea(new_post_content);
+	_editor->textarea(new_post_content);
 #else
 	editor_object->setPlainText(new_post_content);
 #endif
@@ -768,7 +778,7 @@ void Blogger::doUiSetup(){
 
 	// Set up search widget
 	_main_layout_with_search = new QVBoxLayout(_central_widget);
-	_search_widget = new QijSearchWidget(editor_object, this);
+	_search_widget = new QijSearchWidget(_editor, this);
 	_search_widget->hide();
 	// mainWindowLayoutWithSearch->setSpacing(1);
 	// mainWindowLayoutWithSearch->setContentsMargins(5, 5, 5, 5);
@@ -841,7 +851,7 @@ void Blogger::doUiSetup(){
 	_clean_save = false;
 	loadAutoLinkDictionary();
 	connect(this->_editor->_close_button, &FlatToolButton::clicked
-	       , [&](bool checked){
+		, [&](bool checked){
 			(void) checked;
 			_editor_docker->hide();
 			appconfig->editor_show(false);
@@ -911,7 +921,7 @@ bool Blogger::handleArguments(){
 	QStringList args = QApplication::arguments();
 	if(args.size() > 1){
 		for(i = 1; i < args.size(); i++){
-			if(create_)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            // if there is a current new window
+			if(create_)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // if there is a current new window
 				d = create_;
 			create_ = new Blogger();
 #ifdef Q_OS_MAC
@@ -921,7 +931,7 @@ bool Blogger::handleArguments(){
 #ifdef USE_SYSTRAYICON
 				create_->setSTI(sti);
 #endif
-				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            // if there's an old window
+				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             // if there's an old window
 					positionWidget(create_, d);
 				create_->show();
 				rv = false;
@@ -931,14 +941,14 @@ bool Blogger::handleArguments(){
 					QMessageBox::information(
 						this, tr("Error"), tr("Could not load the following:\n\n%1")
 						.arg(failedFiles.join("\n"))
-						                , QMessageBox::Ok);
+						, QMessageBox::Ok);
 					rv = false;
 				}else{
 					if(QMessageBox::question(
 						   0, tr("Error"), tr("Could not load the "
-						                      "following:\n\n%1")
+								      "following:\n\n%1")
 						   .arg(failedFiles.join("\n"))
-						                , tr("&Open blank window"), tr("E&xit"), 0)) QApplication::exit();
+						   , tr("&Open blank window"), tr("E&xit"), 0)) QApplication::exit();
 					else rv = false;
 				}
 			}
@@ -991,7 +1001,7 @@ void Blogger::closeEvent(QCloseEvent *event){
 void Blogger::showEvent(QShowEvent *event){
 	// If the document is empty, the window unedited and the entry never saved,
 	// chances are it's new
-	if(editor_object->document()->isEmpty() && !_dirty_indicator->isVisible() && !event->spontaneous() && !_entry_ever_saved) _control_tab->leTitle->setFocus(Qt::ActiveWindowFocusReason);
+	if(_editor->document()->isEmpty() && !_dirty_indicator->isVisible() && !event->spontaneous() && !_entry_ever_saved) _control_tab->leTitle->setFocus(Qt::ActiveWindowFocusReason);
 	super::showEvent(event);
 }
 
@@ -1016,10 +1026,10 @@ void Blogger::checkForEmptySettings(){
 	if(gl_paras->editors_shared_full_path_name().isEmpty() || server.isEmpty()){
 		if(QMessageBox::question(
 			   0, tr("Welcome to QTM"), tr("You do not have any preferences set, and QTM "
-			                               "needs to know where to find your blog, and where "
-			                               "to store your data.\n\n"
-			                               "Set these preferences now?")
-			                , QMessageBox::Yes | QMessageBox::Default, QMessageBox::No)
+						       "needs to know where to find your blog, and where "
+						       "to store your data.\n\n"
+						       "Set these preferences now?")
+			   , QMessageBox::Yes | QMessageBox::Default, QMessageBox::No)
 		   == QMessageBox::Yes){
 			getPreferences(tr("Stage 1 of 2: Preferences"));
 			getAccounts(tr("Stage 2 of 2: Accounts"));
@@ -1032,10 +1042,10 @@ void Blogger::setEditorColors(){
 	QTextCharFormat tagFormat, entityFormat, commentFormat, linkFormat;
 
 	// Set colours
-	widgetPalette = editor_object->palette();
+	widgetPalette = _editor->palette();
 	widgetPalette.setColor(QPalette::Base, editorBgColor);
 	widgetPalette.setColor(QPalette::Text, editorFgColor);
-	editor_object->setPalette(widgetPalette);
+	_editor->setPalette(widgetPalette);
 
 	widgetPalette = _preview_window->palette();
 	widgetPalette.setColor(QPalette::Base, previewBgColor);
@@ -1076,9 +1086,9 @@ void Blogger::setTextFonts(){
 	QFont f, g, h;
 	if(editorFontString != ""){
 		f.fromString(editorFontString);
-		editor_object->setFont(f);
+		_editor->setFont(f);
 	}else{
-		f = editor_object->font();
+		f = _editor->font();
 		editorFontString = f.toString();
 	}
 	if(previewFontString != ""){
@@ -1099,7 +1109,7 @@ void Blogger::setTextFonts(){
 	if(enableHighlighting){
 		// setDirtySignals( false );
 		if(_super_menu) _super_menu->setHighlightingChecked(true);
-		_highlighter->setDocument(editor_object->document());
+		_highlighter->setDocument(_editor->document());
 		// setDirtySignals( true );
 	}else if(_super_menu) _super_menu->setHighlightingChecked(false);
 }
@@ -1366,9 +1376,9 @@ void Blogger::callRefreshCategories(){
 			statusWidget->showMessage(
 				tr("changeBlog: All HTTP requests are blocked"), 2000);
 			addToConsole(QString("changeBlog %1 failed - HTTP job of type %2 "
-			                     "ongoing")
-			             .arg(b)
-			             .arg((int) currentHttpBusiness));
+					     "ongoing")
+				.arg(b)
+				.arg((int) currentHttpBusiness));
 		}
 #else
 		if(_current_http_business != _mt_getCategoryList) _status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
@@ -1735,7 +1745,7 @@ void Blogger::getPreferences(const QString &title){
 	prefs_dialog.tabWidget->setTabText(2, tr("Syntax highlighting"));
 	prefs_dialog.tabWidget->setCurrentIndex(0);
 
-	QFont editorFont	= editor_object->font();
+	QFont editorFont	= _editor->font();
 	QFont previewFont	= _preview_window->font();
 	QFont consoleFont	= _console->font();
 	prefs_dialog.fcbComposer->setCurrentFont(editorFont);
@@ -1827,7 +1837,7 @@ void Blogger::getPreferences(const QString &title){
 		QFont ef = prefs_dialog.fcbComposer->currentFont();
 		ef.setPointSize(prefs_dialog.sbComposer->value());
 		editorFontString = ef.toString();
-		editor_object->setFont(ef);
+		_editor->setFont(ef);
 		QFont pf = prefs_dialog.fcbPreview->currentFont();
 		pf.setPointSize(prefs_dialog.sbPreview->value());
 		previewFontString = pf.toString();
@@ -1980,9 +1990,9 @@ void Blogger::setHighlighting(bool hl){
 	// QSettings _topic_editor_config(_current_topic_config_name, QSettings::IniFormat);
 
 	enableHighlighting = hl;
-	disconnect(editor_object->document(), 0, this, SLOT(dirtify()));
+	disconnect(_editor->document(), 0, this, SLOT(dirtify()));
 	if(enableHighlighting){
-		if(_highlighter->document() == 0) _highlighter->setDocument(editor_object->document());
+		if(_highlighter->document() == 0) _highlighter->setDocument(_editor->document());
 	}else _highlighter->setDocument(0);
 	_topic_editor_config->setValue("account/enableHighlighting", enableHighlighting);
 	QTimer::singleShot(250, this, SLOT(reenableDirty()));
@@ -1991,7 +2001,7 @@ void Blogger::setHighlighting(bool hl){
 }
 
 void Blogger::reenableDirty(){
-	connect(editor_object->document(), SIGNAL(contentsChanged()), this, SLOT(dirtify()));
+	connect(_editor->document(), SIGNAL(contentsChanged()), this, SLOT(dirtify()));
 }
 
 
@@ -2233,7 +2243,7 @@ void Blogger::handleDone(QNetworkReply *reply){
 		_status_widget->showMessage(
 			QString(tr("The request succeeded; %1 bytes received"))
 			.arg(responseData.size())
-			                   , 2000);
+			, 2000);
 		switch(_current_http_business){
 			case _blogger_getUsersBlogs:
 				blogger_getUsersBlogs(responseData);
@@ -2464,7 +2474,7 @@ void Blogger::handleConsole(bool isChecked){
 	}
 	if(!isChecked){
 		_main_stack->setCurrentIndex(_editor_id);
-		_search_widget->setTextEdit(editor_object);
+		_search_widget->setTextEdit(_editor);
 		if(menuConsoleAction) menuConsoleAction->setText(tr("&Console"));
 		if(menuPreviewAction) menuPreviewAction->setEnabled(true);
 	}else{
@@ -2486,34 +2496,34 @@ void Blogger::clearConsole(){
 // }
 
 void Blogger::makeBold(){
-	editor_object->insertPlainText(QString("<strong>%1</strong>").arg(editor_object->textCursor().selectedText()));
+	_editor->insertPlainText(QString("<strong>%1</strong>").arg(_editor->textCursor().selectedText()));
 }
 
 void Blogger::makeItalic(){
-	editor_object->insertPlainText(QString("<em>%1</em>").arg(editor_object->textCursor().selectedText()));
+	_editor->insertPlainText(QString("<em>%1</em>").arg(_editor->textCursor().selectedText()));
 }
 
 void Blogger::makeUnderline(){
-	editor_object->insertPlainText(QString("<u>%1</u>").arg(editor_object->textCursor().selectedText()));
+	_editor->insertPlainText(QString("<u>%1</u>").arg(_editor->textCursor().selectedText()));
 }
 
 void Blogger::insertMore(){
-	if(!editor_object->toPlainText().contains("<!--more-->")) editor_object->insertPlainText("<!--more-->");
+	if(!_editor->toPlainText().contains("<!--more-->")) _editor->insertPlainText("<!--more-->");
 	else _status_widget->showMessage(tr("A 'more' tag already exists."), 2000);
 }
 
 void Blogger::makeBlockquote(){
-	editor_object->insertPlainText(QString("<blockquote>%1</blockquote>").arg(editor_object->textCursor().selectedText()));
+	_editor->insertPlainText(QString("<blockquote>%1</blockquote>").arg(_editor->textCursor().selectedText()));
 }
 
 void Blogger::makePara(){
-	editor_object->insertPlainText(QString("<p>%1</p>").arg(editor_object->textCursor().selectedText()));
+	_editor->insertPlainText(QString("<p>%1</p>").arg(_editor->textCursor().selectedText()));
 }
 
 void Blogger::insertLink(bool isAutoLink){
 	QString linkString, titleString;
 	QString insertionString = "";
-	QString selectedString	= editor_object->textCursor().selectedText();
+	QString selectedString	= _editor->textCursor().selectedText();
 	QString selectedStringLC;
 	QDialog linkEntry(this);
 	Ui::LinkEntry leui;
@@ -2546,7 +2556,7 @@ void Blogger::insertLink(bool isAutoLink){
 			}
 		}
 		insertionString += ">";
-		editor_object->insertPlainText(QString("%1%2</a>").arg(insertionString).arg(leui.leLinkText->text()));
+		_editor->insertPlainText(QString("%1%2</a>").arg(insertionString).arg(leui.leLinkText->text()));
 	}
 	if(leui.cbMakeAutoLink->isChecked()){
 		selectedStringLC = selectedString.toLower().trimmed();
@@ -2560,17 +2570,17 @@ void Blogger::insertLink(bool isAutoLink){
 
 void Blogger::insertLinkFromClipboard(){
 	QString linkString(QApplication::clipboard()->text());
-	editor_object->insertPlainText(QString("<a href=\"%1\">%2</a>").arg(linkString).arg(editor_object->textCursor().selectedText()));
+	_editor->insertPlainText(QString("<a href=\"%1\">%2</a>").arg(linkString).arg(_editor->textCursor().selectedText()));
 }
 
 void Blogger::insertSelfLink(){
-	QString linkString(editor_object->textCursor().selectedText());
-	if(QUrl(linkString, QUrl::StrictMode).isValid()) editor_object->insertPlainText(QString("<a href=\"%1\">%1</a>").arg(linkString));
+	QString linkString(_editor->textCursor().selectedText());
+	if(QUrl(linkString, QUrl::StrictMode).isValid()) _editor->insertPlainText(QString("<a href=\"%1\">%1</a>").arg(linkString));
 	else _status_widget->showMessage(tr("The selection is not a valid URL."), 2000);
 }
 
 void Blogger::insertAutoLink(){
-	QString selectedText = editor_object->textCursor().selectedText();
+	QString selectedText = _editor->textCursor().selectedText();
 	QString selectedTextLC = selectedText.toLower().trimmed();
 	QString titleString, targetString;
 	QList<QString> targets;
@@ -2580,7 +2590,7 @@ void Blogger::insertAutoLink(){
 	if(autoLinkDictionary.contains(selectedTextLC)){
 		titleString = QString(" title=\"%1\"").arg(autoLinkTitleDictionary.value(selectedTextLC));
 		if(autoLinkTargetDictionary.contains(selectedTextLC)) targetString = QString(" target=\"%1\"").arg(targets.value(autoLinkTargetDictionary.value(selectedTextLC)));
-		editor_object->insertPlainText(QString("<a href=\"%1\"%2%3>%4</a>").arg(autoLinkDictionary.value(selectedTextLC)).arg(titleString).arg(targetString).arg(selectedText));
+		_editor->insertPlainText(QString("<a href=\"%1\"%2%3>%4</a>").arg(autoLinkDictionary.value(selectedTextLC)).arg(titleString).arg(targetString).arg(selectedText));
 	}else insertLink(true);
 }
 
@@ -2619,13 +2629,13 @@ void Blogger::insertImage(){
 		// Insert style string into main insertion string
 		if(!styleString.isEmpty()) insertionString += QString(" style=\"%1\"").arg(styleString.trimmed());
 		insertionString += " />";
-		editor_object->insertPlainText(insertionString);
+		_editor->insertPlainText(insertionString);
 	}
 }
 
 void Blogger::insertImageFromClipboard(){
 	QString linkString(QApplication::clipboard()->text());
-	editor_object->insertPlainText(QString("<img src=\"%1\">%2</img>").arg(linkString).arg(editor_object->textCursor().selectedText()));
+	_editor->insertPlainText(QString("<img src=\"%1\">%2</img>").arg(linkString).arg(_editor->textCursor().selectedText()));
 }
 
 // void EditingWindow::cut(){
@@ -2634,7 +2644,7 @@ void Blogger::insertImageFromClipboard(){
 
 void Blogger::copy(){
 	if(_main_stack->currentIndex() == _preview_id) _preview_window->copy();
-	else editor_object->copy();
+	else _editor->copy();
 }
 
 QString Blogger::removeReadMore(QString &source){
@@ -2662,8 +2672,8 @@ QString Blogger::removeReadMore(QString &source){
 
 void Blogger::paste(){
 	QString pastedText = QApplication::clipboard()->text();
-	editor_object->insertPlainText(removeReadMore(pastedText));
-	editor_object->ensureCursorVisible();
+	_editor->insertPlainText(removeReadMore(pastedText));
+	_editor->ensureCursorVisible();
 }
 
 void Blogger::tidyPaste(){
@@ -2671,8 +2681,8 @@ void Blogger::tidyPaste(){
 	pastedText = removeReadMore(pastedText);
 	pastedText.replace(QRegExp(" {2,}"), " ");
 	pastedText.replace(QRegExp(" *\n{1} *"), " ");
-	editor_object->insertPlainText(pastedText);
-	editor_object->ensureCursorVisible();
+	_editor->insertPlainText(pastedText);
+	_editor->ensureCursorVisible();
 }
 
 // void EditingWindow::undo(){
@@ -2684,13 +2694,13 @@ void Blogger::tidyPaste(){
 // }
 
 void Blogger::makeUnorderedList(){
-	QString listString = editor_object->textCursor().selection().toPlainText();
-	if(!listString.isEmpty()) editor_object->insertPlainText(getHTMLList(QString("ul"), listString));
+	QString listString = _editor->textCursor().selection().toPlainText();
+	if(!listString.isEmpty()) _editor->insertPlainText(getHTMLList(QString("ul"), listString));
 }
 
 void Blogger::makeOrderedList(){
-	QString listString = editor_object->textCursor().selection().toPlainText();
-	if(!listString.isEmpty()) editor_object->insertPlainText(getHTMLList(QString("ol"), listString));
+	QString listString = _editor->textCursor().selection().toPlainText();
+	if(!listString.isEmpty()) _editor->insertPlainText(getHTMLList(QString("ol"), listString));
 }
 
 QString &Blogger::getHTMLList(QString tag, QString &text){
@@ -2716,8 +2726,8 @@ void Blogger::pasteAsMarkedParagraphs(){
 		insertion.replace(QRegExp("\n+"), "</p>\n<p>");
 		insertion.prepend("<p>");
 		insertion.append("</p>");
-		editor_object->insertPlainText(insertion);
-		editor_object->ensureCursorVisible();
+		_editor->insertPlainText(insertion);
+		_editor->ensureCursorVisible();
 	}
 }
 
@@ -2726,9 +2736,9 @@ void Blogger::pasteAsBlockquote(){
 	insertion = removeReadMore(insertion);
 	if(!insertion.isEmpty()){
 		insertion.replace(QRegExp("\n{1,2}"), "\n\n");
-		editor_object->insertPlainText(
+		_editor->insertPlainText(
 			QString("<blockquote>%1</blockquote>").arg(insertion));
-		editor_object->ensureCursorVisible();
+		_editor->ensureCursorVisible();
 	}
 }
 
@@ -2739,8 +2749,8 @@ void Blogger::pasteAsMarkdownBlockquote(){
 	if(!insertion.isEmpty()){
 		insertion.prepend(">");
 		insertion.replace(QRegExp("\n{1,2}"), "\n>\n>");
-		editor_object->insertPlainText(insertion);
-		editor_object->ensureCursorVisible();
+		_editor->insertPlainText(insertion);
+		_editor->ensureCursorVisible();
 	}
 }
 
@@ -2749,8 +2759,8 @@ void Blogger::pasteAsUnorderedList(){
 	insertion = removeReadMore(insertion);
 	insertion.replace(QRegExp("\n{2,}"), "\n");
 	if(!insertion.isEmpty()){
-		editor_object->insertPlainText(getHTMLList(QString("ul"), insertion));
-		editor_object->ensureCursorVisible();
+		_editor->insertPlainText(getHTMLList(QString("ul"), insertion));
+		_editor->ensureCursorVisible();
 	}
 }
 
@@ -2759,8 +2769,8 @@ void Blogger::pasteAsOrderedList(){
 	insertion = removeReadMore(insertion);
 	insertion.replace(QRegExp("\n{2,}"), "\n");
 	if(!insertion.isEmpty()){
-		editor_object->insertPlainText(getHTMLList(QString("ol"), insertion));
-		editor_object->ensureCursorVisible();
+		_editor->insertPlainText(getHTMLList(QString("ol"), insertion));
+		_editor->ensureCursorVisible();
 	}
 }
 
@@ -2780,7 +2790,7 @@ void Blogger::doPreview(bool isChecked, bool markdownFailed){
 	}
 	if(isChecked){
 		if(useMarkdown && !markdownFailed){
-			conversionStringB = processWithMarkdown(editor_object->toPlainText());
+			conversionStringB = processWithMarkdown(_editor->toPlainText());
 			if(conversionStringB.isNull()){
 				qDebug() << "Markdown conversion failed";
 				doPreview(isChecked, true);
@@ -2794,7 +2804,7 @@ void Blogger::doPreview(bool isChecked, bool markdownFailed){
 			_preview_window->setHtml(conversionStringB);
 		}else{   // i.e. if not Markdown or Markdown failed
 			conversionString	+= QString("<b>%1</b>\n\n").arg(_control_tab->leTitle->text().size() ? _control_tab->leTitle->text() : "<i>Untitled</i>");
-			conversionString	+= editor_object->toPlainText();
+			conversionString	+= _editor->toPlainText();
 			QTextStream a(&conversionString);
 			QRegExp re("^(<table|thead|tfoot|caption|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|select|form|blockquote|address|math|p|h[1-6])>");
 			do {
@@ -2833,7 +2843,7 @@ void Blogger::doPreview(bool isChecked, bool markdownFailed){
 		 // mainStack->setCurrentIndex( previousRaisedLSWidget );
 		_main_stack->setCurrentIndex(_editor_id);
 		_preview_window->disconnect(SIGNAL(highlighted(const QString&)));
-		_search_widget->setTextEdit(editor_object);
+		_search_widget->setTextEdit(_editor);
 		_editor->_action_preview->setText(tr("Entry in p&review"));
 		// action_Preview->setIconText(tr("Entry in preview"));
 		_editor->_action_preview->setToolTip(tr("Entry in preview"));
@@ -2886,11 +2896,11 @@ void Blogger::newMTPost(){
 	QList<QString> tblist;
 	if(!_current_http_business){
 		if(!entryBlogged){
-			if(editor_object->toPlainText().contains("<!--more-->")){
-				description = QString(editor_object->toPlainText()).section("<!--more-->", 0, 0);
-				extEntry = QString(editor_object->toPlainText()).section("<!--more-->", -1, -1);
+			if(_editor->toPlainText().contains("<!--more-->")){
+				description = QString(_editor->toPlainText()).section("<!--more-->", 0, 0);
+				extEntry = QString(_editor->toPlainText()).section("<!--more-->", -1, -1);
 			}else{
-				description = QString(editor_object->toPlainText());
+				description = QString(_editor->toPlainText());
 				extEntry = "";
 			}
 			if(doMarkdownWhenPosting){
@@ -3017,7 +3027,7 @@ void Blogger::newWPPost(){
 	int count, tags;
 	QList<QString> catList, tagList;
 	if(!_current_http_business){
-		entryText = editor_object->toPlainText();
+		entryText = _editor->toPlainText();
 		// Do Markdown, if enabled
 		if(doMarkdownWhenPosting){
 			convertedString = processWithMarkdown(entryText);
@@ -3144,11 +3154,11 @@ void Blogger::submitMTEdit(){
 	bool takeComms = _control_tab->chAllowComments->isChecked();
 	bool takeTB = _control_tab->chAllowTB->isChecked();
 	QList<QString> tblist;
-	if((!useWordpressAPI) && editor_object->toPlainText().contains("<!--more-->")){
-		description = QString(editor_object->toPlainText()).section("<!--more-->", 0, 0);
-		extEntry = QString(editor_object->toPlainText()).section("<!--more-->", -1, -1);
+	if((!useWordpressAPI) && _editor->toPlainText().contains("<!--more-->")){
+		description = QString(_editor->toPlainText()).section("<!--more-->", 0, 0);
+		extEntry = QString(_editor->toPlainText()).section("<!--more-->", -1, -1);
 	}else{
-		description = QString(editor_object->toPlainText());
+		description = QString(_editor->toPlainText());
 		extEntry = "";
 	}
 	if(doMarkdownWhenPosting){
@@ -3174,9 +3184,9 @@ void Blogger::submitMTEdit(){
 		techTagString = "<p style=\"text-align:right;font-size:10px;\">Technorati Tags: ";
 		for(count = 0; count < tags; count++){
 			techTagString.append(QString("<a href=\"http://technorati.com/tag/%1\" rel=\"tag\">%2</a>%3")
-			                     .arg(_control_tab->lwTags->item(count)->text())
-			                     .arg(_control_tab->lwTags->item(count)->text().replace("+", " "))
-			                     .arg((count == tags - 1) ? "</p>" : ", "));
+				.arg(_control_tab->lwTags->item(count)->text())
+				.arg(_control_tab->lwTags->item(count)->text().replace("+", " "))
+				.arg((count == tags - 1) ? "</p>" : ", "));
 		}
 		if(_control_tab->rbStartOfMainEntry->isChecked()) description.insert(0, techTagString);
 		else description.append(techTagString);
@@ -3255,7 +3265,7 @@ void Blogger::submitWPEdit(){
 	int count, tags;
 	QList<QString> catList, tagList;
 	if(!_current_http_business){
-		entryText = editor_object->toPlainText();
+		entryText = _editor->toPlainText();
 		// Do Markdown, if enabled
 		if(doMarkdownWhenPosting){
 			convertedString = processWithMarkdown(entryText);
@@ -3274,9 +3284,9 @@ void Blogger::submitWPEdit(){
 			techTagString = "<p style=\"text-align:right;font-size:10px;\">Technorati Tags: ";
 			for(count = 0; count < tags; count++){
 				techTagString.append(QString("<a href=\"http://technorati.com/tag/%1\" rel=\"tag\">%2</a>%3")
-				                     .arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'))
-				                     .arg(_control_tab->lwTags->item(count)->text().replace("+", " "))
-				                     .arg((count == tags - 1) ? "</p>\n\n" : ", "));
+					.arg(_control_tab->lwTags->item(count)->text().replace(' ', '+'))
+					.arg(_control_tab->lwTags->item(count)->text().replace("+", " "))
+					.arg((count == tags - 1) ? "</p>\n\n" : ", "));
 			}
 			// Whether to put the Technorati tags at beginning or end
 			if(_control_tab->rbStartOfMainEntry->isChecked()) entryText.insert(0, techTagString);
@@ -3515,7 +3525,7 @@ void Blogger::on_topic_changed(QLineEdit *lineedit_topic, const QString &tp){
 	// deal with folder name change
 	auto original_topic_name = _current_topic_name;
 	QString original_topic_folder = _current_topic_full_folder_name;
-	QString new_topic = tr(topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).trimmed().toStdString().c_str());
+	QString new_topic = purify(topic);//tr(topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).trimmed().toStdString().c_str());
 	QString dest_topic_folder = gl_paras->editors_shared_full_path_name() + "/" + new_topic;
 	auto point_to_new_folder
 	        = [&]() -> void {
@@ -3533,11 +3543,52 @@ void Blogger::on_topic_changed(QLineEdit *lineedit_topic, const QString &tp){
 				    } ();
 			  _local_storage_file_extension = _topic_editor_config->value("local_storage_file_ext", "cqt").toString();
 			  if(new_topic != _control_tab->topic()) _control_tab->topic(new_topic);
-			  editor_object->work_directory(_current_topic_full_folder_name);
+			  _editor->work_directory(_current_topic_full_folder_name);
 
 			  _filename = _current_topic_full_folder_name + "/" + _default_filename + "." + _local_storage_file_extension;
 
 			  _entry_ever_saved = false;
+			  if(_browser){
+				  auto original_config_name = original_topic_folder + "/" + gl_para::_browser_conf_filename;
+				  _browser->configuration_full_name(original_config_name);
+				  _browser->configuration( // std::make_unique<QSettings>(_current_topic_folder_name + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat)
+					  [&]() -> std::unique_ptr<QSettings> {
+						  if(!QDir(_current_topic_full_folder_name).exists())
+							  if(!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
+						  auto _current_topic_config_name = _current_topic_full_folder_name + "/" + gl_para::_browser_conf_filename;
+						  if(!QFile(_current_topic_config_name).exists()){
+							  if(QFile(original_config_name).exists()){
+								  //
+								  if(!QFile::copy(original_config_name, _current_topic_config_name)) critical_error(QString("Can not copy \"") + original_config_name + "\"");
+							  }else{
+								  //
+								  if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+							  }
+						  }
+						  if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
+						  return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
+					  } ());
+				  auto tab = _browser->tabmanager();
+				  if(tab){
+					  for(int idx = 0; idx < tab->count(); idx++){
+						  auto v = tab->webView(idx);
+						  if(v){
+							  auto p = v->page();
+							  if(p){
+								  auto h = p->host();
+								  if(h){
+									  auto tags = h->field<tags_type>();
+									  if(tags.length() > 0 && tags.contains(_current_topic_name)){
+										  tags.replace(_current_topic_name, new_topic);
+										  h->field<tags_type>(tags);
+									  }
+								  }
+							  }
+						  }
+					  }
+				  }
+				  _browser->save_state();
+			  }
 		  };
 	if(original_topic_folder != dest_topic_folder){
 		if(original_topic_folder == gl_paras->editors_shared_full_path_name() + "/undefined"){
@@ -3550,28 +3601,7 @@ void Blogger::on_topic_changed(QLineEdit *lineedit_topic, const QString &tp){
 				if(!dir.rename(original_topic_folder, dest_topic_folder)) critical_error("Move folder \"" + original_topic_folder + "\" to folder \"" + dest_topic_folder + "\" failed");
 				else{
 					point_to_new_folder();
-					if(_browser){
-						auto original_config_name = original_topic_folder + "/" + gl_para::_browser_conf_filename;
-						_browser->configuration_full_name(original_config_name);
-						_browser->configuration( // std::make_unique<QSettings>(_current_topic_folder_name + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat)
-							[&]() -> std::unique_ptr<QSettings> {
-								if(!QDir(_current_topic_full_folder_name).exists())
-									if(!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
-								auto _current_topic_config_name = _current_topic_full_folder_name + "/" + gl_para::_browser_conf_filename;
-								if(!QFile(_current_topic_config_name).exists()){
-									if(QFile(original_config_name).exists()){
-										//
-										if(!QFile::copy(original_config_name, _current_topic_config_name)) critical_error(QString("Can not copy \"") + original_config_name + "\"");
-									}else{
-										//
-										if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
-									}
-								}
-								if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
-								return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
-							} ());
-						_browser->save_state();
-					}
+
 					// load(_filename);
 					assert(!QDir(original_topic_folder).exists());
 				}
@@ -3666,7 +3696,7 @@ void Blogger::save_impl(const QString &file_name_with_full_path, bool exp){
 		}else out << "PrimaryID:none\n";
 		if(_control_tab->teExcerpt->toPlainText().length() > 0) out << QString("Excerpt:%1\n").arg(_control_tab->teExcerpt->toPlainText().replace(QChar('\n'), "\\n"));
 #ifdef LOAD_TEXT_BY_WYEDITOR
-		editor_object->save_textarea();
+		_editor->save_textarea();
 #else
 		out << QString("Text:\n%1").arg(text);
 #endif // LOAD_TEXT_BY_WYEDITOR
@@ -3975,7 +4005,7 @@ bool Blogger::load(const QString &fname, bool fromSTI){
 	if(emap.contains("Excerpt")) _control_tab->teExcerpt->setPlainText(
 			QString(emap.value("Excerpt")).replace("\\n", "\n"));
 #ifdef LOAD_TEXT_BY_WYEDITOR
-	editor_object->load_textarea();
+	_editor->load_textarea();
 #else
 	while(!t.atEnd())
 		fetchedText += QString("%1\n").arg(t.readLine());
@@ -3996,13 +4026,13 @@ bool Blogger::load(const QString &fname, bool fromSTI){
 				// i.e. if it gets to the end of the accounts tree without
 				// finding the account
 				QMessageBox::information(0, tr((program_title_string + " - No such account").c_str()), tr((program_title_string + " could not find this account (perhaps it was "
-				                                                                                                                  "deleted).\n\n"
-				                                                                                                                  "Will set up a blank default account; you will "
-				                                                                                                                  "need to fill in the access "
-				                                                                                                                  "details by choosing Accounts from the File "
-				                                                                                                                  "menu.")
-				                                                                                          .c_str())
-				                        , QMessageBox::Ok);
+																		  "deleted).\n\n"
+																		  "Will set up a blank default account; you will "
+																		  "need to fill in the access "
+																		  "details by choosing Accounts from the File "
+																		  "menu.")
+						.c_str())
+					, QMessageBox::Ok);
 				QDomElement newDefaultAccount = _accounts_dom.createElement("account");
 				newDefaultAccount.setAttribute("id", QString("newAccount_%1").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
 				QDomElement newDetailElement = _accounts_dom.createElement("details");
@@ -4042,13 +4072,13 @@ bool Blogger::load(const QString &fname, bool fromSTI){
 				_control_tab->cbBlogSelector->clear();
 				for(hh = 0; hh < blogNodeList.count(); hh++){
 					_control_tab->cbBlogSelector->addItem(decodeXmlEntities(blogNodeList.at(hh)
-					                                                        .toElement()
-					                                                        .firstChildElement("blogName")
-					                                                        .text())
-					                                     , blogNodeList.at(hh)
-					                                      .toElement()
-					                                      .firstChildElement("blogid")
-					                                      .text());
+							.toElement()
+							.firstChildElement("blogName")
+							.text())
+						, blogNodeList.at(hh)
+						.toElement()
+						.firstChildElement("blogid")
+						.text());
 					if(blogNodeList.at(hh).firstChildElement("blogid").text()
 					   == currentBlogid) currentBlogElement = blogNodeList.at(hh).toElement();
 				}
@@ -4084,8 +4114,8 @@ bool Blogger::load(const QString &fname, bool fromSTI){
 						_control_tab->lwOtherCats->clear();
 						for(int j = 0; j < b; j++){
 							catName = decodeXmlEntities(catNodeList.at(j)
-							                            .firstChildElement("categoryName")
-							                            .text());
+								.firstChildElement("categoryName")
+								.text());
 							_control_tab->cbMainCat->addItem(catName, QVariant(catNodeList.at(j).firstChildElement("categoryId").text()));
 							_control_tab->lwOtherCats->addItem(catName);
 						}
@@ -4166,9 +4196,9 @@ bool Blogger::load(const QString &fname, bool fromSTI){
 		if(pwd.exec()) password = pui.lePassword->text();
 		else
 			QMessageBox::warning(0, tr("No password"), tr("This entry was saved without a password.\n"
-			                                              "You will need to set one, using the\n"
-			                                              "Preferences window.")
-			                    , QMessageBox::Ok, QMessageBox::NoButton);
+								      "You will need to set one, using the\n"
+								      "Preferences window.")
+				, QMessageBox::Ok, QMessageBox::NoButton);
 	}
 	// This is an old-style account which isn't in the database
 	// qDebug() << "old-style, not found";
@@ -4644,7 +4674,7 @@ void Blogger::dirtify(){
 }
 
 void Blogger::dirtifyIfText(){
-	if(!editor_object->document()->isEmpty()){
+	if(!_editor->document()->isEmpty()){
 		_dirty_indicator->show();
 		setWindowModified(true);
 		setDirtySignals(false);
@@ -4654,13 +4684,13 @@ void Blogger::dirtifyIfText(){
 
 void Blogger::setDirtySignals(bool d){
 	QList<QWidget *> widgetList;
-	widgetList	<< editor_object << _control_tab->cbAccountSelector
+	widgetList	<< _editor << _control_tab->cbAccountSelector
 	                << _control_tab->cbBlogSelector << _control_tab->cbStatus
 	                << _control_tab->chAllowComments << _control_tab->chAllowTB
 	                << _control_tab->cbMainCat << _control_tab->lwOtherCats
 	                << _control_tab->teExcerpt;
 	if(d){
-		connect(editor_object->document(), SIGNAL(contentsChanged()), this, SLOT(dirtify()));
+		connect(_editor->document(), SIGNAL(contentsChanged()), this, SLOT(dirtify()));
 		connect(_control_tab->leTitle, SIGNAL(textEdited(const QString&)), this, SLOT(dirtifyIfText()));
 		connect(_control_tab->cbAccountSelector, SIGNAL(activated(int)), this, SLOT(dirtifyIfText()));
 		connect(_control_tab->cbBlogSelector, SIGNAL(activated(int)), this, SLOT(dirtifyIfText()));
@@ -4676,7 +4706,7 @@ void Blogger::setDirtySignals(bool d){
 			disconnect(w, 0, this, SLOT(dirtifyIfText()));
 		}
 
-		disconnect(editor_object->document(), 0, this, SLOT(dirtify()));
+		disconnect(_editor->document(), 0, this, SLOT(dirtify()));
 	}
 }
 
@@ -4941,9 +4971,9 @@ void Blogger::loadAutoLinkDictionary(){
 		QFile file(dictionaryFileName);
 		if(!dictDoc.setContent(&file, true, &errorString, &errorLine, &errorCol))
 			QMessageBox::warning(0, tr("Failed to read templates"), QString(tr("Error: %1\nLine %2, col %3"))
-			                     .arg(errorString)
-			                     .arg(errorLine)
-			                     .arg(errorCol));
+				.arg(errorString)
+				.arg(errorLine)
+				.arg(errorCol));
 		else{
 			QDomNodeList entryList = dictDoc.elementsByTagName("entry");
 			for(int i = 0; i < entryList.count(); i++){
@@ -5038,8 +5068,8 @@ void Blogger::addToConsole(const QString &t){
 	_console->setTextCursor(cursor);
 	if(text.contains("<base64>"))
 		_console->insertPlainText(text.section("<base64>", 0, 0, QString::SectionIncludeTrailingSep)
-		                          .append(tr(" ... base64 encoded file omitted ... "))
-		                          .append(text.section("</base64>", 1, 1, QString::SectionIncludeLeadingSep)));
+			.append(tr(" ... base64 encoded file omitted ... "))
+			.append(text.section("</base64>", 1, 1, QString::SectionIncludeLeadingSep)));
 	else _console->insertPlainText(text);
 }
 
@@ -5124,7 +5154,7 @@ bool Blogger::event(QEvent *event){
 }
 
 bool Blogger::eventFilter(QObject *obj, QEvent *event){
-	if(obj == editor_object){
+	if(obj == _editor){
 		if(event->type() == QEvent::KeyPress){
 			QKeyEvent *kpevent = static_cast<QKeyEvent *>(event);
 			if(kpevent->key() == Qt::Key_V && kpevent->modifiers() == Qt::ControlModifier){
@@ -5186,7 +5216,12 @@ QStackedWidget *Blogger::main_stack(){
 
 web::Docker *Blogger::editor_docker(){return _editor_docker;}
 
-QString Blogger::purify_topic(const QString &topic){auto new_topic = topic; return tr(new_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str());}
+//QString Blogger::purify_topic(const QString &topic){
+//	auto new_topic = topic;
+//	new_topic	= tr(new_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str());
+//	new_topic	= purify(new_topic);
+//	return tr(new_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str());
+//}
 
 #ifdef USE_EDITOR_WRAP
 void EditingWindow::name(const QString &nm){_editor->name(nm);}
@@ -5350,8 +5385,8 @@ void Blogger::save_text_context(void){
 	// _editor_screen->save_textarea();
 
 	walkhistory.add<WALK_HISTORY_GO_NONE>(static_cast<id_value>(_control_tab->topic()) // id
-					     , cursor_position() // _editor_screen->cursor_position()
-					     , scrollbar_position()); // _editor_screen->scrollbar_position());
+		, cursor_position() // _editor_screen->cursor_position()
+		, scrollbar_position()); // _editor_screen->scrollbar_position());
 }
 
 void Blogger::save_editor_cursor_position(void){
@@ -5373,9 +5408,9 @@ void Blogger::go_walk_history_previous(void){
 	              id_value(misc_field("id")); // _editor_screen->misc_field("id")
 
 	walkhistory.add<WALK_HISTORY_GO_PREVIOUS>(id, cursor_position() // _editor_screen->cursor_position()
-	                                         ,
-	                                          scrollbar_position() // _editor_screen->scrollbar_position()
-	                                         );
+		,
+		scrollbar_position() // _editor_screen->scrollbar_position()
+		);
 	walkhistory.set_drop(true);
 
 	go_walk_history();
@@ -5388,9 +5423,9 @@ void Blogger::go_walk_history_next(void){
 	              id_value(misc_field("id")); // _editor_screen->misc_field("id")
 
 	walkhistory.add<WALK_HISTORY_GO_NEXT>(id, cursor_position() // _editor_screen->cursor_position()
-	                                     ,
-	                                      scrollbar_position() // _editor_screen->scrollbar_position()
-	                                     );
+		,
+		scrollbar_position() // _editor_screen->scrollbar_position()
+		);
 	walkhistory.set_drop(true);
 
 	go_walk_history();

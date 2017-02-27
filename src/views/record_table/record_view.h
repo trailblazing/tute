@@ -18,7 +18,7 @@
 
 #include <QStyledItemDelegate> // #include <QItemDelegate>
 
-#include "libraries/fixed_parameters.h"
+//#include "libraries/fixed_parameters.h"
 #include "libraries/flat_control.h"
 
 extern const int add_new_record_to_end;
@@ -232,8 +232,9 @@ public:
 	rctrl_t *record_controller();
 
 	// void on_parent_resizevent(QResizeEvent *e);
-	template <typename field_type>
-	bool is_field_type_column(int index){return _is_field_type_column(boost::mpl::c_str<field_type>::value, index);}
+//	template <typename field_type>
+//	bool is_field_type_column(int index){return _is_field_type_column(boost::mpl::c_str<field_type>::value, index);}
+	std::function<bool (const QString &, int)> is_field_type_column;
 
 	std::function<int()> rating_width;
 signals:
@@ -316,7 +317,7 @@ protected:
 	void resizeEvent(QResizeEvent *e);
 
 private:
-	std::function<bool (const QString &, int)> _is_field_type_column;
+
 	void start_drag();
 	friend class rs_t;
 	friend class VerticalScrollArea;

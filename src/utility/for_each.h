@@ -36,14 +36,15 @@ struct Apply<I, Functor, std::index_sequence<Indices ...> >
 //	}
 
 	template <typename InputRange>
-	void operator ()(const InputRange &lhs) const {
+	void operator ()(const InputRange &&lhs) const {
 		(void) std::initializer_list<int>
 		{
 //			(std::get<Indices>(dst) =
 //			(std::get<0>(*this)(*boost::mpl::advance<boost::mpl::int_<Indices> >(lhs)), 0) ...
 //			(std::get<0>(*this)(boost::fusion::get<Indices>(lhs)), 0) ...	// work
 //			(std::get<0>(*this)(boost::fusion::at<boost::mpl::int_<Indices>>(lhs)), 0) ...	// work
-			(std::get<0>(*this)(std::get<Indices>(lhs)), 0) ...
+			(std::get<0>(*this)(std::get<Indices>(std::forward<InputRange const>(lhs))), 0) ...
+//			(std::get<0>(*this)(boost::fusion::get<Indices>(lhs)), 0) ...
 		};
 	}
 };

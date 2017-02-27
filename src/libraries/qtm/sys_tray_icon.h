@@ -51,6 +51,8 @@ class QNetworkReply;
 class sapp_t;
 class rs_t;
 class HidableTab;
+//class ExposedSappRecentFile;
+
 
 #ifdef Q_OS_MAC
 #if QT_VERSION >= 0x050000 // This function is in QMenu in Qt 5.2

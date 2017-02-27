@@ -12,6 +12,7 @@
 #include "models/record_table/record_model.h"
 #include "tree_item.h"
 #include "views/browser/docker.h"
+#include "views/browser/browser.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "views/main_window/main_window.h"
@@ -103,8 +104,8 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem> host_parent, QMap<QString, QSt
 
 	  , _linker([&] {auto l = new Linker(host_parent, this); return l;} ()){ // , pos, mode
 	// , _position(PosSource(-1))
-	assert(_linker->host().get() == this);
-	assert(_linker->host_parent().get() != this);
+	assert(_linker->host() == this);
+	assert(_linker->host_parent() != this);
 	// record_to_item();
 	// if(_parent_item->_record_linker != _record_linker)_parent_item->_record_linker = _record_linker;
 

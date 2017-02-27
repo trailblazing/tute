@@ -33,6 +33,9 @@
 #include "super_menu.h"
 #include "views/main_window/main_window.h"
 #include "xml_rpc_handler.h"
+#include "libraries/global_parameters.h"
+
+extern std::shared_ptr<gl_para> gl_paras;
 
 void Blogger::blogger_getUsersBlogs(QByteArray response){
 	QXmlInputSource xis;
