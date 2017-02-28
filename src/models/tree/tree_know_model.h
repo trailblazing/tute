@@ -45,7 +45,7 @@ public:
 	tkm_t(boost::intrusive_ptr<TreeItem> root_item, tv_t *parent = 0);
 	~tkm_t();
 
-	std::shared_ptr<XmlTree> init_from_xml();
+	std::shared_ptr<XmlTree> init_from_xml(bool force_recover = false);
 //	std::shared_ptr<XmlTree> init_from_xml(std::shared_ptr<XmlTree> xmlt);
 	void reload(void);
 

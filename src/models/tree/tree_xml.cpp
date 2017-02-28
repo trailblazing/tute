@@ -35,6 +35,7 @@ XmlTree::~XmlTree(void){
 }
 
 bool XmlTree::load(QString _file_path){
+	bool result = false;
 	// Загрузка файла дерева разделов
 	QFile xmlFile(_file_path);
 	// Если файл не может быть открыт
@@ -55,10 +56,10 @@ bool XmlTree::load(QString _file_path){
 			.arg(errorColumn)
 			.arg(errorStr));
 
-		return false;
-	}
+//		result = false;
+	}else result = true;
 	xmlFile.close();
-	return true;
+	return result;
 }
 
 QDomDocument *XmlTree::dom_model(void){

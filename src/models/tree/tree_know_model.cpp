@@ -101,7 +101,7 @@ tkm_t::tkm_t(boost::intrusive_ptr<TreeItem> root_item, tv_t *parent)
 // дереву элементов и удалить их
 tkm_t::~tkm_t(){} // delete rootItem;
 
-std::shared_ptr<XmlTree> tkm_t::init_from_xml(){
+std::shared_ptr<XmlTree> tkm_t::init_from_xml(bool force_recover){
 	auto init = [&](QDomDocument *dom_model) -> int {
 			    // Проверка формата XML-файла
 			    if(!format_check(dom_model->documentElement().firstChildElement("format"))){
@@ -144,12 +144,20 @@ std::shared_ptr<XmlTree> tkm_t::init_from_xml(){
 		    };
 //	QString _xml_file_path;
 	auto target_file = std::make_shared<QFileInfo>(_xml_file_path);
-	while(!QFile::exists(_xml_file_path) || 0 >= filesize(_xml_file_path.toStdString().c_str())){
+
+	bool succeeded = false;
+	while(  !QFile::exists(_xml_file_path)
+	     || 0 >= filesize(_xml_file_path.toStdString().c_str())
+	     || force_recover
+		){
+//		bool existance = QFile::exists(_xml_file_path);
+
 		// AppConfigDialog appconfigdialog(nullptr	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
 		// , "pageMain"	// "pageRecordTable"
 		// );
 		////	appconfigdialog.changePage("pageMain");
 		// appconfigdialog.show();
+
 		assert(trashmonitoring.is_inited());
 		if(!trashmonitoring.recover_from_trash(target_file)){
 			// _file_name		=;
@@ -160,10 +168,15 @@ std::shared_ptr<XmlTree> tkm_t::init_from_xml(){
 			// _file_name =;
 		}
 	}
+	if(_xml_tree->dom_model()->isNull() || force_recover){
+		if(!_xml_tree->dom_model()->isNull()) _xml_tree->dom_model()->clear();
+		succeeded = _xml_tree->load(_xml_file_path);
+	}
 //	_xml_file_path = _xml_file_path;
 	// Загрузка файла и преобразование его в DOM модель
 //	std::shared_ptr<XmlTree> _xml_tree = std::make_shared<XmlTree>();
-	if(_xml_tree->load(_xml_file_path)) assert(0 == init(_xml_tree->dom_model())); // return xmlt;
+	if(!succeeded) init_from_xml(true);
+	else assert(0 == init(_xml_tree->dom_model())); // return xmlt;
 
 	return _xml_tree;
 }
@@ -442,7 +455,7 @@ bool tkm_t::format_check(QDomElement elementFormat){
 	// В настоящий момент поддерживается формат 1.2
 	// В настоящий момент предполагается, что номер версии всегда 1, поэтому вся работа идет по номеру подверсии
 	if(baseSubVersion <= 1)
-		if(update_sub_version_from_1_to_2() == false)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       // Смена формата с 1.1 на 1.2
+		if(update_sub_version_from_1_to_2() == false)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    // Смена формата с 1.1 на 1.2
 			return false;
 	// На будущее, для перехода с подверии 2 на подверсию 3, эти строки надо добавлять к существующим (а не заменять)
 	// if(baseSubVersion<=2)
