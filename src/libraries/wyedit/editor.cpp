@@ -482,12 +482,12 @@ void Editor::setup_buttons(void){
 	// Кнопка Clear
 	_clear
 	        = add_action(_tools_line_0, this, tr((editor_prefix + "clear").c_str()), tr("Reset format (Ctrl+K). When selected whole paragraph both "
-	                                                                                    "text and paragraph format is reset to default or just "
-	                                                                                    "text format in other case.")
-	                    , tr("Reset format (Ctrl+K). When selected whole paragraph both "
-	                         "text and paragraph format is reset to default or just "
-	                         "text format in other case.")
-	                    , QIcon(":/resource/pic/edit_clear.svg"), [&](bool){on_clear_clicked();}, QKeySequence(tr("Ctrl+K")));
+											    "text and paragraph format is reset to default or just "
+											    "text format in other case.")
+		, tr("Reset format (Ctrl+K). When selected whole paragraph both "
+		     "text and paragraph format is reset to default or just "
+		     "text format in other case.")
+		, QIcon(":/resource/pic/edit_clear.svg"), [&](bool){on_clear_clicked();}, QKeySequence(tr("Ctrl+K")));
 
 	// Кнопка нумерованного списка
 	_numeric_list
@@ -530,26 +530,26 @@ void Editor::setup_buttons(void){
 
 	_action_link
 	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Link").c_str()), tr("Link"), tr("Inserts a link to another page, the location to be specified now"), QIcon(":/resource/pic/link.svg") // QPixmap(linkIcon_xpm)
-	                    ,
-			     _blog, &Blogger::insertLink);
+		,
+		_blog, &Blogger::insertLink);
 	_action_image
 	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Image").c_str()), tr("Image"), tr(std::string(std::string("Insert an image into the text, the location, alignment and alternate \n") + "text to be specified now").c_str()), QIcon(":/resource/pic/flip.svg") // QPixmap(imgIcon_xpm)
-	                    ,
-			     [&](bool){_blog->insertImage();});
+		,
+		[&](bool){_blog->insertImage();});
 	_action_more
 	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "More").c_str()), tr("More"), tr((std::string("Set this as the end of the main entry (which appears on the index) \n") + "and the beginning of the extended entry (which appears " + "when you click More, \n" + "Extended entry or view the entry on its own page).").c_str()), QIcon(":/resource/pic/more.svg") // QPixmap(more_xpm)
-	                    ,
-			     [&](bool){_blog->insertMore();});
+		,
+		[&](bool){_blog->insertMore();});
 	_action_preview
 	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Entry in preview").c_str()), tr("Entry in preview"), tr("Preview the entry in this window"), QIcon(":/resource/pic/preview.svg") // QPixmap(previewIcon_xpm)
-	                    ,
-			     [&](bool checked){_blog->doPreview(checked);});
+		,
+		[&](bool checked){_blog->doPreview(checked);});
 	_action_preview->setCheckable(true);
 	_action_preview->setChecked(false);
 	_action_blog_this
 	        = add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Blog this!").c_str()), tr("Blog this!"), tr("Post this entry to the blog"), QIcon(":/resource/pic/pull.svg") // pentalpha.svg//QPixmap(blogThisIcon_xpm)
-	                    ,
-			     [&](bool){_blog->blogThis();});
+		,
+		[&](bool){_blog->blogThis();});
 
 	_tools_line_0->addSeparator();
 	_tools_line_0->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
@@ -921,8 +921,8 @@ bool Editor::work_directory(QString dir_name){
 		bool result = directory.mkdir(child_dir); // _work_directory // short_dir()
 		if(!result)
 			critical_error("Editor::work_directory(QString dir_name) : Can't create "
-			               "directory '"
-			               + _work_directory + "'");
+				       "directory '"
+				+ _work_directory + "'");
 		_work_directory = dir_name;
 
 		// critical_error("WyEdit: Can not set work directory to " + dirName
@@ -1145,7 +1145,7 @@ void Editor::save_textarea(void){
 		                << work_directory();
 		if(QFileInfo(full_path).exists()){
 			qDebug() << "File exists. Remove it.";
-			DiskHelper::remove_file_to_trash(full_path);
+			if(0 < filesize(full_path.toStdString().c_str())) DiskHelper::backup(full_path);
 		}else qDebug() << "Cant remove file. File not exists.";
 		// Если происходит прямая работа с файлом текста
 		if(load_callback_func == nullptr){
@@ -2076,7 +2076,7 @@ void Editor::on_custom_contextmenu_requested(const QPoint &_position){
 
 	_context_menu->exec(
 		_text_area->viewport()->mapToGlobal(_position) // mapToGlobal(_position)
-	                   ); // this->point()->mapToGlobal(_position)
+		); // this->point()->mapToGlobal(_position)
 }
 
 void Editor::on_settings_clicked(void){
@@ -2175,8 +2175,8 @@ void Editor::on_createtable_clicked(void){
 	tableFormat.setAlignment(Qt::AlignHCenter);
 	tableFormat.setBorder(1);
 	tableFormat.setBorderStyle(QTextFrameFormat::
-	                           // BorderStyle_None //
-	                           BorderStyle_Solid);
+		// BorderStyle_None //
+		BorderStyle_Solid);
 	tableFormat.setPadding(0);
 	tableFormat.setCellPadding(0);
 	tableFormat.setCellSpacing(-1);

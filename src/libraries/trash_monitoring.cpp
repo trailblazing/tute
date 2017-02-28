@@ -60,10 +60,11 @@ std::shared_ptr<QFileInfo> TrashMonitoring::recover_from_trash(std::shared_ptr<Q
 		// else{
 		auto file_data = [&] {
 			decltype(_files_table)left;
-			for(auto f : _files_table)
+			for(auto f : _files_table){
 				// if(f->size() >= r->size()) r = f;
 				// else
 				if(f->size() > 0) left.append(f); // r = f;
+			}
 			std::shared_ptr<FileData> r(nullptr);
 			if(left.size() > 0){
 				r = std::make_shared<FileData>(this, left[0]->_name);
@@ -148,7 +149,7 @@ void TrashMonitoring::update(void){
 	// условие что количество файлов слишком велико или
 	// суммарный размер файлов превышает предельно допустимый размер корзины
 	while(_files_table.size() > appconfig->trash_max_file_count() || _dir_size > appconfig->trash_size() * 1000000){
-		if(_files_table.size() <= 10)                                                                                                                                                                                      // Оставляется последний файл, какого бы размера он не был
+		if(_files_table.size() <= 10)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // Оставляется последний файл, какого бы размера он не был
 			break;
 		else remove_oldest_file();
 	}
@@ -167,37 +168,56 @@ void TrashMonitoring::remove_file_fullpath(QString file_name_){
 }
 
 void TrashMonitoring::remove_oldest_file(QString file_name_){
-	std::shared_ptr<FileData> found(nullptr);
-	bool got = false;
-	if(file_name_ != ""){
-		for(auto f : _files_table){
-			if(file_name_ == f->_name){
-				found = f;
-				got = true;
-				break;
+	if(_files_table.size() > 10){
+		std::shared_ptr<FileData> found(_files_table.last());
+		bool got = false;
+		if(file_name_ != ""){
+			for(auto f : _files_table){
+				if(file_name_ == f->_name){
+					found = f;
+					got = true;
+					break;
+				}
 			}
-		}
-	}
-	QString _file_found = got ? _path + "/" + found->_name : _path + "/" + _files_table.last()->_name;
-
-	qDebug() << "Remove file " << _file_found << " from trash";
-	if(QFile::exists(_file_found)){
-		if(QFile::remove(_file_found)){  // Файл физически удаляется
-			// асчетный размер директории уменьшается на размер файла
-			_dir_size = _dir_size - _files_table.last()->size();
-			//
-			QMutableListIterator<std::shared_ptr<FileData> > iter(_files_table);
-			while(iter.hasNext()){
-				auto it = iter.next();
-				if(it->_name == _file_found) _files_table.removeOne(it);
-			}
-			// Файл удаляется из списка
-			// _files_table.removeLast();
 		}else{
-			critical_error("In remove_oldest_file. Can not delete file " + _file_found);
-			exit(0);
+			for(auto f : _files_table){
+				if(0 == f->size()){
+					found = f;
+					got = true;
+					break;
+				}
+			}
 		}
-	}else if(_files_table.size() > 10) _files_table.removeLast();
+		QString _file_found = _path + "/" + found->_name;//got ? _path + "/" + found->_name : _path + "/" + _files_table.last()->_name;
+
+		qDebug() << "Remove file " << _file_found << " from trash";
+		if(0 == found->size()){
+			if(QFile::exists(_file_found)){
+				if(QFile::remove(_file_found)){  // Файл физически удаляется
+					if(_files_table.removeOne(found)) _dir_size = _dir_size - found->size();
+				}else{
+					critical_error("In remove_oldest_file. Can not delete file \"" + _file_found + "\" which file size is zero");
+//				exit(0);
+				}
+			}
+		}else if(QFile::exists(_file_found)){
+			if(QFile::remove(_file_found)){  // Файл физически удаляется
+				// асчетный размер директории уменьшается на размер файла
+//				//
+//				QMutableListIterator<std::shared_ptr<FileData> > iter(_files_table);
+//				while(iter.hasNext()){
+//					auto it = iter.next();
+//					if(it->_name == _file_found) _files_table.removeOne(it);
+//				}
+				if(_files_table.removeOne(found)) _dir_size = _dir_size - found->size();
+				// Файл удаляется из списка
+				// _files_table.removeLast();
+			}else{
+				critical_error("In remove_oldest_file. Can not delete file \"" + _file_found + "\"");
+				exit(0);
+			}
+		}//else if(_files_table.size() > 10) _files_table.removeLast();
+	}
 }
 
 TrashMonitoring::FileData::FileData(TrashMonitoring *tm, const QString &n)
@@ -237,22 +257,22 @@ std::ifstream::pos_type TrashMonitoring::FileData::size() const {
 }
 
 bool operator ==(const TrashMonitoring::FileData &fd0, const TrashMonitoring::FileData &fd1){
-    return fd0._name == fd1._name && fd0._time == fd1._time && fd0._size == fd1._size && fd0._trashmonitoring == fd1._trashmonitoring;
+	return fd0._name == fd1._name && fd0._time == fd1._time && fd0._size == fd1._size && fd0._trashmonitoring == fd1._trashmonitoring;
 }
 
 TrashMonitoring::FileData::FileData(const TrashMonitoring::FileData &fd){
-    _name	= fd._name;
-    _time	= fd._time;
-    _size	= fd.size();
-    _trashmonitoring = fd._trashmonitoring;
+	_name	= fd._name;
+	_time	= fd._time;
+	_size	= fd.size();
+	_trashmonitoring = fd._trashmonitoring;
 }
 
 const TrashMonitoring::FileData &TrashMonitoring::FileData::operator =(const TrashMonitoring::FileData &fd){
-    if(&fd != this){
-	    _name	= fd._name;
-	    _time	= fd._time;
-	    _size	= fd.size();
-	    _trashmonitoring = fd._trashmonitoring;
+	if(&fd != this){
+		_name	= fd._name;
+		_time	= fd._time;
+		_size	= fd.size();
+		_trashmonitoring = fd._trashmonitoring;
 	}
-    return *this;
+	return *this;
 }

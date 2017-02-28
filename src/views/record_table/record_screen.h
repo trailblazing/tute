@@ -66,7 +66,7 @@ Q_OBJECT
 #endif
 
 public:
-	rs_t(HidableTab *vtab_record, Blogger *blogger_, web::Browser *browser_);
+	rs_t(Blogger *blogger_, web::Browser *browser_);
 
 	virtual ~rs_t();
 
@@ -96,6 +96,7 @@ public slots:
 
 	void on_blogger_close();
 	void on_browser_close_request();
+	void topic(const QString &new_topic_);
 protected:
 	void resizeEvent(QResizeEvent *e);
 private slots:

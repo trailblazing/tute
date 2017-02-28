@@ -48,7 +48,8 @@ W_OBJECT_IMPL(tkm_t)
 // Конструктор модели дерева, состоящего из Item элементов
 tkm_t::tkm_t(tv_t *parent)//const QString &index_xml_file_name_,
 	: tm_t(parent)
-	  , _xml_file_path(gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + gl_para::_index_xml_file_name){ // , _root_item(nullptr)
+	  , _xml_file_path(gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + gl_para::_index_xml_file_name)
+	  , _xml_tree(std::make_shared<XmlTree>()){ // , _root_item(nullptr)
 	// xmlFileName = "";
 	// rootItem = nullptr;
 
@@ -70,15 +71,15 @@ tkm_t::tkm_t(tv_t *parent)//const QString &index_xml_file_name_,
 	// assert(_root_item->linker()->host_parent().get() != _root_item.get());
 //	_xml_file_path = gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + index_xml_file_name_;
 	init_from_xml(); // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
-	int all_count = count_records_all();
-	while(all_count <= 0){
+//	int all_count = count_records_all();
+	while(_xml_tree->dom_model()->isNull()){//(all_count <= 0){
 		assert(trashmonitoring.is_inited());
 		auto target_file = std::make_shared<QFileInfo>(_xml_file_path);
 		if(trashmonitoring.recover_from_trash(target_file)){
 			////	throw std::runtime_error("database load failure");
 
 			init_from_xml();
-			all_count = count_records_all();
+//			all_count = count_records_all();
 		}else{
 			AppConfigDialog appconfigdialog("pageMain"); // globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
 			appconfigdialog.show();
@@ -91,6 +92,8 @@ tkm_t::tkm_t(tv_t *parent)//const QString &index_xml_file_name_,
 
 tkm_t::tkm_t(boost::intrusive_ptr<TreeItem> root_item, tv_t *parent)
 	: tm_t(root_item, parent)
+	  , _xml_file_path(gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + gl_para::_index_xml_file_name)
+	  , _xml_tree(std::make_shared<XmlTree>())
 {} // intercept(_root_item);
 
 // Деструктор Item модели.
@@ -99,19 +102,59 @@ tkm_t::tkm_t(boost::intrusive_ptr<TreeItem> root_item, tv_t *parent)
 tkm_t::~tkm_t(){} // delete rootItem;
 
 std::shared_ptr<XmlTree> tkm_t::init_from_xml(){
+	auto init = [&](QDomDocument *dom_model) -> int {
+			    // Проверка формата XML-файла
+			    if(!format_check(dom_model->documentElement().firstChildElement("format"))){
+				    critical_error(tr(std::string("Unsupported format version for data base.\nPlease upgrade your " + program_title_string + " application.").c_str()));
+
+				    return 1;
+			    }
+			    assert(_root_item);
+			    // QMap<QString, QString> root_data;
+			    //// Определяется одно поле в корневом объекте
+			    //// то есть на экране будет один столбец
+			    // root_data["id"] = global_root_id;
+			    // root_data["name"] = "";
+			    if(gl_paras->main_window()) gl_paras->main_window()->setDisabled(true);
+			    beginResetModel();
+
+			    //// Создание корневого Item объекта
+			    // if(_root_item) _root_item.reset();
+
+			    // _root_item = boost::intrusive_ptr<TreeItem>(new TreeItem(root_data, nullptr)); // ?
+			    //// , std::make_shared<RecordTable>(QDomElement())
+
+			    //// Динамическое создание дерева из Item объектов на основе DOM модели
+			    // setup_modeldata(dom_model, _root_item);
+			    assert(dom_model);
+			    QDomElement dom_content_root_as_record = dom_model->documentElement().firstChildElement("content").firstChildElement("record"); // "node"
+			    if(dom_content_root_as_record.isNull()){
+				    qDebug() << "Unable load xml tree, first content node not found.";
+
+				    return 1;
+			    }
+			    // assert(_root_item->linker()->host().get() == _root_item.get());
+			    // assert(_root_item->linker()->host_parent().get() != _root_item.get());
+			    _root_item->dom_to_records(dom_content_root_as_record);
+
+			    endResetModel();
+			    if(gl_paras->main_window()) gl_paras->main_window()->setEnabled(true);
+			    // save(); // temporary
+			    return 0;
+		    };
 //	QString _xml_file_path;
 	auto target_file = std::make_shared<QFileInfo>(_xml_file_path);
-	while(!QFile::exists(_xml_file_path)){
+	while(!QFile::exists(_xml_file_path) || 0 >= filesize(_xml_file_path.toStdString().c_str())){
 		// AppConfigDialog appconfigdialog(nullptr	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
 		// , "pageMain"	// "pageRecordTable"
 		// );
 		////	appconfigdialog.changePage("pageMain");
 		// appconfigdialog.show();
 		assert(trashmonitoring.is_inited());
-		if(trashmonitoring.recover_from_trash(target_file)){
+		if(!trashmonitoring.recover_from_trash(target_file)){
 			// _file_name		=;
 //			_xml_file_path = _xml_file_path;
-		}else{
+//		}else{
 			AppConfigDialog appconfigdialog("pageMain"); // globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
 			appconfigdialog.show();
 			// _file_name =;
@@ -119,57 +162,19 @@ std::shared_ptr<XmlTree> tkm_t::init_from_xml(){
 	}
 //	_xml_file_path = _xml_file_path;
 	// Загрузка файла и преобразование его в DOM модель
-	std::shared_ptr<XmlTree> xmlt = std::make_shared<XmlTree>();
-	if(xmlt->load(_xml_file_path)) init(xmlt->dom_model()); // return xmlt;
+//	std::shared_ptr<XmlTree> _xml_tree = std::make_shared<XmlTree>();
+	if(_xml_tree->load(_xml_file_path)) assert(0 == init(_xml_tree->dom_model())); // return xmlt;
 
-	return xmlt;
+	return _xml_tree;
 }
 
-std::shared_ptr<XmlTree> tkm_t::init_from_xml(std::shared_ptr<XmlTree> xmlt){
-	init(xmlt->dom_model());
+//std::shared_ptr<XmlTree> tkm_t::init_from_xml(std::shared_ptr<XmlTree> xmlt){
+//	init(xmlt->dom_model());
 
-	return xmlt;
-}
+//	return xmlt;
+//}
 
-void tkm_t::init(QDomDocument *dom_model){
-	// Проверка формата XML-файла
-	if(!format_check(dom_model->documentElement().firstChildElement("format"))){
-		critical_error(tr(std::string("Unsupported format version for data base.\nPlease upgrade your " + program_title_string + " application.").c_str()));
 
-		return;
-	}
-	assert(_root_item);
-	// QMap<QString, QString> root_data;
-	//// Определяется одно поле в корневом объекте
-	//// то есть на экране будет один столбец
-	// root_data["id"] = global_root_id;
-	// root_data["name"] = "";
-	if(gl_paras->main_window()) gl_paras->main_window()->setDisabled(true);
-	beginResetModel();
-
-	//// Создание корневого Item объекта
-	// if(_root_item) _root_item.reset();
-
-	// _root_item = boost::intrusive_ptr<TreeItem>(new TreeItem(root_data, nullptr)); // ?
-	//// , std::make_shared<RecordTable>(QDomElement())
-
-	//// Динамическое создание дерева из Item объектов на основе DOM модели
-	// setup_modeldata(dom_model, _root_item);
-	assert(dom_model);
-	QDomElement dom_content_root_as_record = dom_model->documentElement().firstChildElement("content").firstChildElement("record"); // "node"
-	if(dom_content_root_as_record.isNull()){
-		qDebug() << "Unable load xml tree, first content node not found.";
-
-		return;
-	}
-	// assert(_root_item->linker()->host().get() == _root_item.get());
-	// assert(_root_item->linker()->host_parent().get() != _root_item.get());
-	_root_item->dom_to_records(dom_content_root_as_record);
-
-	endResetModel();
-	if(gl_paras->main_window()) gl_paras->main_window()->setEnabled(true);
-	// save(); // temporary
-}
 
 //// Разбор DOM модели и преобразование ее в Item модель
 // void TreeKnowModel::setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> self)
@@ -437,7 +442,7 @@ bool tkm_t::format_check(QDomElement elementFormat){
 	// В настоящий момент поддерживается формат 1.2
 	// В настоящий момент предполагается, что номер версии всегда 1, поэтому вся работа идет по номеру подверсии
 	if(baseSubVersion <= 1)
-		if(update_sub_version_from_1_to_2() == false)                                                                                                                                                                                                                                                                                                                                                                                    // Смена формата с 1.1 на 1.2
+		if(update_sub_version_from_1_to_2() == false)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       // Смена формата с 1.1 на 1.2
 			return false;
 	// На будущее, для перехода с подверии 2 на подверсию 3, эти строки надо добавлять к существующим (а не заменять)
 	// if(baseSubVersion<=2)
@@ -466,7 +471,7 @@ void tkm_t::save(){
 	// Если имя файла небыло проинициализировано
 	if(_xml_file_path == "") critical_error(tr("In KnowTreeModel can't set file name for XML file"));
 	// Коструирование DOM документа для записи в файл
-	QDomDocument doc("tutedoc");
+	QDomDocument doc((std::string(gl_para::_program_instance_name) + "doc").c_str());
 
 	// Установка заголовка
 	doc.appendChild(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""));
@@ -496,10 +501,8 @@ void tkm_t::save(){
 		if(doc.hasChildNodes()){
 			// аспечатка на экран, что будет выводиться в XML файл
 			// qDebug() << "Doc document for write " << doc.toString();
-
 			// Перенос текущего файла дерева в корзину
-			DiskHelper::remove_file_to_trash(_xml_file_path);
-
+			if(0 < filesize(_xml_file_path.toStdString().c_str())) DiskHelper::backup(_xml_file_path);
 			// Запись DOM данных в файл
 			QFile wfile(_xml_file_path);
 			if(!wfile.open(QIODevice::WriteOnly | QIODevice::Text)){
@@ -669,9 +672,9 @@ boost::intrusive_ptr<TreeItem> tkm_t::new_child(boost::intrusive_ptr<TreeIndex> 
 	int pos = _modelindex->sibling_order();
 	auto index_parent = index(parent);
 	beginInsertRows(index_parent, pos // parent->count_direct()
-	               ,
-	                pos // parent->count_direct()
-	               );
+		,
+		pos // parent->count_direct()
+		);
 
 	QMap<QString, QString> data;
 	data["id"] = id;
@@ -877,9 +880,9 @@ boost::intrusive_ptr<TreeItem> tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree
 		////        }
 		if(static_cast<QModelIndex>(_index_new_parent).isValid() || to_be_host == _root_item){
 			beginInsertRows(_index_new_parent, pos // parent->count_direct()
-			               ,
-			                pos // (pos + 1 < parent->count_direct()) ? pos + 1 : parent->count_direct()
-			               );
+				,
+				pos // (pos + 1 < parent->count_direct()) ? pos + 1 : parent->count_direct()
+				);
 
 			_to_be_operated = move_impl(pos, mode); // source_item->parent(host, pos, mode)->host();				// add_new_branch(parent, id, name);  // parent->count_direct()
 			endInsertRows();
@@ -1177,7 +1180,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::lock_child_add(boost::intrusive_ptr<Re
 
 // Перемещение ветки вверх или вниз
 QModelIndex tkm_t::move_up_dn(const QModelIndex &_index, int (TreeItem::*_move)() // int direction
-                             ){
+			      ){
 	QModelIndex _new_index;
 	// Получение ссылки на Item элемент по QModelIndex
 	boost::intrusive_ptr<TreeItem> current = child(_index);
@@ -1242,7 +1245,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 
 	auto model_delete_permantent_impl = [&]( // boost::intrusive_ptr<TreeItem> parent_item,
 		boost::intrusive_ptr<Linker> delete_target_linker // , int position, int rows, const QModelIndex &parent
-	                                       ) -> boost::intrusive_ptr<TreeItem> {
+		) -> boost::intrusive_ptr<TreeItem> {
 						    boost::intrusive_ptr<TreeItem> result(nullptr);
 						    // boost::intrusive_ptr<TreeItem> host = delete_target_linker->host();  // item(parent);
 						    boost::intrusive_ptr<TreeItem> parent_of_delete = delete_target_linker->host_parent(); // item(parent);
@@ -1333,7 +1336,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent_recursive(boost::intrusiv
 
 	std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<Linker>)> model_delete_permantent_impl = [&]( // boost::intrusive_ptr<TreeItem> parent_item,
 		boost::intrusive_ptr<Linker> delete_target_linker // , int position, int rows, const QModelIndex &parent
-	                                                                                                              ) mutable -> boost::intrusive_ptr<TreeItem> {
+		) mutable -> boost::intrusive_ptr<TreeItem> {
 															   boost::intrusive_ptr<TreeItem> result(nullptr);
 															   auto host = [&] {return delete_target_linker->host();};
 															   auto host_parent = [&] {return delete_target_linker->host_parent();}; // item(parent);
@@ -1521,11 +1524,11 @@ boost::intrusive_ptr<TreeItem> tkm_t::merge(boost::intrusive_ptr<TreeLevel> _tre
 		// auto _index_origin = index(source);
 
 		beginInsertColumns(_index_target // .parent()
-		                  ,
-		                   0 // target->count_direct() - 1 // target->sibling_order()    // 0
-		                  ,
-		                   result->count_direct() - 1 // target->sibling_order()    // target->count_direct() - 1
-		                  );
+			,
+			0 // target->count_direct() - 1 // target->sibling_order()    // 0
+			,
+			result->count_direct() - 1 // target->sibling_order()    // target->count_direct() - 1
+			);
 
 		result = result->merge(source); // not a pure insertion, move removerows to below: _view_delete_permantent
 
@@ -1990,7 +1993,7 @@ void TreeModelKnow::record_to_item(){
 	record_to_item_recurse = [&](
 		boost::intrusive_ptr<TreeItem> item
 		// , boost::intrusive_ptr<TreeItem> parent
-	                            ){
+		){
 					 // if(!is_item_id_exists(item->id())) {
 					 // add_child(item, parent);
 					 // }

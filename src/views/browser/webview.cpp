@@ -369,7 +369,7 @@ namespace web {
 					  }
 					  // }
 				  }
-				  if(_blogger->topic() == gl_para::_default_topic) _blogger->on_topic_changed(title_);
+				  if(_blogger->topic() == gl_para::_default_topic) _blogger->topic(title_);
 			  };
 		// , _keyboardmodifiers(Qt::NoModifier)
 		// , _pressedbuttons(Qt::NoButton)

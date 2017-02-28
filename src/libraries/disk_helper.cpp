@@ -63,7 +63,7 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom){
 }
 
 // Удаление файла с копированием его копии в корзину
-void DiskHelper::remove_file_to_trash(QString file_name_from){
+void DiskHelper::backup(QString file_name_from){
 	// Получение короткого имени исходного файла
 	QFileInfo file_info(file_name_from);
 	QString file_name_from_short = file_info.fileName();
@@ -74,10 +74,12 @@ void DiskHelper::remove_file_to_trash(QString file_name_from){
 
 	qDebug() << "Move file from " << file_name_from << " to " << file_name_to;
 	if(QFile::exists(file_name_from)){
-		// Файл перемещается в корзину
-		if(QFile::rename(file_name_from, file_name_to) == true) trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
-		else{
-			// critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
+		if(0 < filesize(file_name_from.toStdString().c_str())){
+			// Файл перемещается в корзину
+			if(QFile::rename(file_name_from, file_name_to) == true) trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
+			else{
+				// critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
+			}
 		}
 	}
 }

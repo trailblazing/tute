@@ -278,7 +278,7 @@ void AttachTableController::on_edit_file_name(void){
 	QString newFileName = QInputDialog::getText(_view, tr("File name editing"), tr("File name:"), QLineEdit::Normal, fileName, &isOk);
 	if(!isOk) return; // Была нажата кнопка Cancel
 	if(newFileName.size() == 0){
-		show_message_box(tr("Cant save file with empty name."));
+		show_message_box(tr("Can\'t save file with empty name."));
 
 		return;
 	}

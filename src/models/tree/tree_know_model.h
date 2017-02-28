@@ -46,7 +46,7 @@ public:
 	~tkm_t();
 
 	std::shared_ptr<XmlTree> init_from_xml();
-	std::shared_ptr<XmlTree> init_from_xml(std::shared_ptr<XmlTree> xmlt);
+//	std::shared_ptr<XmlTree> init_from_xml(std::shared_ptr<XmlTree> xmlt);
 	void reload(void);
 
 	// QDomElement dom_from_treeitem(boost::intrusive_ptr<TreeItem> root_item);
@@ -105,7 +105,7 @@ public:
 	boost::intrusive_ptr<TreeItem> merge(boost::intrusive_ptr<TreeLevel> _tree_merge, const view_delete_permantent_strategy &_view_delete_permantent); // boost::intrusive_ptr<TreeItem> target
 
 private:
-	void init(QDomDocument *dom_model);
+//	int init(QDomDocument *dom_model);
 	boost::intrusive_ptr<TreeItem> move(boost::intrusive_ptr<TreeLevel> _tree_level, int mode = add_new_record_after);
 	//// Функция заполнения дерева из DOM-документа
 	// void setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> self);
@@ -177,9 +177,11 @@ private:
 
 private:
 	// QModelIndex get_item_index_recurse(QModelIndex currindex, TreeItem *finditem, int mode);
-	QString _xml_file_path =  gl_para::_index_xml_file_name;
+	QString _xml_file_path = gl_para::_index_xml_file_name;
 
 	bool _synchronized = false;
+
+	std::shared_ptr<XmlTree> _xml_tree;
 
 	// bool _is_global_root = false;
 	friend class tv_t;

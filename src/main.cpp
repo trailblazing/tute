@@ -96,12 +96,12 @@ bool url_equal(const std::string &url_compare_stored, const std::string &url_com
 std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get){
 	std::string compare = "";
 	if(url_compare_stored.size() >= url_compare_get.size()){
-		for(std::string::size_type i = 0; i < url_compare_get.size(); i++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      // url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		for(std::string::size_type i = 0; i < url_compare_get.size(); i++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  // url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
 			if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i); // url_compare_stored.erase(i, 1);
 		for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i++) compare += url_compare_stored.at(i);
 	}else{
 		// url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
-		for(std::string::size_type i = 0; i < url_compare_stored.size(); i++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           // url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		for(std::string::size_type i = 0; i < url_compare_stored.size(); i++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                // url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
 			if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i); // url_compare_get.erase(i, 1);
 		for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i++) compare += url_compare_get.at(i);
 	}
@@ -885,12 +885,8 @@ int main(int argc, char * *argv){
 	// gl_paras	= std::make_shared<gl_para>();
 	// appconfig	= std::make_shared<AppConfig>(gl_paras);
 	// databaseconfig = std::make_shared<DataBaseConfig>(gl_paras, appconfig);
-	return sapp_t(argc, argv
-		// , gl_paras
-		// , appconfig
-		// , databaseconfig
-		)
-	       .exec(); // application.exec();
+	return sapp_t(argc, argv).exec();               // , gl_paras		// , appconfig		// , databaseconfig
+	// application.exec();
 }
 
 std::ifstream::pos_type filesize(const char *filename){

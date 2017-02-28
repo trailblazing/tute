@@ -40,8 +40,8 @@ bool XmlTree::load(QString _file_path){
 	// Если файл не может быть открыт
 	if(!xmlFile.open(QIODevice::ReadOnly | QIODevice::Text)){
 		QMessageBox::information(0, tr("Error"), tr("Cannot read file %1:\n%2.")
-		                         .arg(_file_path)
-		                         .arg(xmlFile.errorString()));
+			.arg(_file_path)
+			.arg(xmlFile.errorString()));
 
 		return false;
 	}
@@ -51,12 +51,13 @@ bool XmlTree::load(QString _file_path){
 	int errorColumn;
 	if(!_dom_model->setContent(&xmlFile, true, &errorStr, &errorLine, &errorColumn)){
 		QMessageBox::information(0, tr("Error converting to DOM"), tr("Parse error at line %1, column %2:\n%3")
-		                         .arg(errorLine)
-		                         .arg(errorColumn)
-		                         .arg(errorStr));
+			.arg(errorLine)
+			.arg(errorColumn)
+			.arg(errorStr));
 
 		return false;
 	}
+	xmlFile.close();
 	return true;
 }
 

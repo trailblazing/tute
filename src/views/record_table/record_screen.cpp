@@ -48,8 +48,8 @@ extern const char *tree_screen_viewer_name;
 W_OBJECT_IMPL(rs_t)
 #endif
 
-rs_t::rs_t(HidableTab *vtab_record, Blogger *blogger_, web::Browser *browser_)
-	: QWidget(vtab_record) //
+rs_t::rs_t(Blogger *blogger_, web::Browser *browser_)
+	: QWidget(gl_paras->vtab_record()) //
 //	  , _vtab_record(gl_paras->vtab_record())
 	  , _tree_screen(gl_paras->tree_screen())
 	  , _editor_docker(gl_paras->editor_docker())
@@ -283,7 +283,7 @@ rs_t::rs_t(HidableTab *vtab_record, Blogger *blogger_, web::Browser *browser_)
 			}
 		});
 
-	connect(gl_paras->vtab_record(), &::HidableTab::tabBarClicked //currentChanged
+	connect(gl_paras->vtab_record(), &::HidableTab::currentChanged
 		, [](int index){
 			auto _vtab_record = gl_paras->vtab_record();
 			if(gl_paras->vtab_record()->updatesEnabled()){  //if(_vtab_record->updatesEnabled()){
@@ -1362,4 +1362,25 @@ void rs_t::on_blogger_close(){
 void rs_t::on_browser_close_request(){
 	_browser = nullptr;
 	close();
+}
+
+void rs_t::topic(const QString &new_topic_){
+	QString new_topic_short = new_topic_.mid(0, 5);
+
+	auto _vtab_record = gl_paras->vtab_record();
+	if(_vtab_record){
+
+		auto index = _vtab_record->indexOf(this);
+		_vtab_record->setTabText(index, new_topic_short);
+
+//		auto tab_bar = _vtab_record->tabBar();
+//		if(tab_bar){
+//			tab_bar->setTabText(index, new_topic_short);
+//			auto result = tab_bar->tabText(index);
+//			assert(result == new_topic_short);
+//		}
+		_vtab_record->update();
+		auto result = _vtab_record->tabText(index);
+		assert(result == new_topic_short);
+	}
 }

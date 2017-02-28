@@ -566,7 +566,7 @@ namespace web {
 				  init_main_menu();
 				  reset_find_screen_tool_bar();
 				  _record_screen = nullptr;
-				  auto rs = new rs_t(_vtab_record, _blogger, this);
+				  auto rs = new rs_t(_blogger, this);
 				  _tabmanager->record_controller(rs->record_controller());
 				  return rs;
 			  } ())
@@ -834,12 +834,12 @@ namespace web {
 						if(!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
 					auto _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_browser_conf_filename;
 					if(!QFile(_current_topic_config_name).exists()){
-					        if(QFile(this->_configuration_full_name).exists()){
-					                //
-					                if(!QFile::copy(this->_configuration_full_name, _current_topic_config_name)) critical_error(QString("Can not copy \"") + this->_configuration_full_name + "\"");
+						if(QFile(this->_configuration_full_name).exists()){
+							//
+							if(!QFile::copy(this->_configuration_full_name, _current_topic_config_name)) critical_error(QString("Can not copy \"") + this->_configuration_full_name + "\"");
 						}else{
-					                //
-					                if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+							//
+							if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
 						}
 					}
 					if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
@@ -848,6 +848,7 @@ namespace web {
 				} ());
 			//
 		}
+		if(_record_screen) _record_screen->topic(topic);
 		resize(size);
 
 		_find_screen->setVisible(showToolbar);

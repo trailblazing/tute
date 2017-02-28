@@ -259,9 +259,9 @@ Blogger::Blogger(QString new_post_topic
 #else
 	  , _editor([&]() -> TEXTEDIT *{_editor = nullptr; auto e = new TEXTEDIT(_main_stack); return e;} ())
 #endif
-//	  , _record_screen([&]() -> rs_t *{_record_screen = nullptr; auto rs = new rs_t(editor_docker_, this, vtab_record, style_source, profile, state_); return rs;} ())
-	  , _browser([&]() -> web::Browser *{_browser = nullptr; auto b = new web::Browser(this, state_); return b;} ())
-	  , _record_screen(_browser->record_screen())
+
+	  , _browser([&]() -> web::Browser *{_record_screen = nullptr; _browser = nullptr; auto b = new web::Browser(this, state_); return b;} ())
+	  , _record_screen([&]() -> rs_t *{auto rs = _browser->record_screen(); return rs;} ())
 	  , _editor_docker(gl_paras->editor_docker()->prepend<Blogger>(this))
 	  , _super_menu([&]() -> SuperMenu * {_super_menu = nullptr; auto sm = new SuperMenu(this); return sm;} ()){
 	//
@@ -921,7 +921,7 @@ bool Blogger::handleArguments(){
 	QStringList args = QApplication::arguments();
 	if(args.size() > 1){
 		for(i = 1; i < args.size(); i++){
-			if(create_)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   // if there is a current new window
+			if(create_)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          // if there is a current new window
 				d = create_;
 			create_ = new Blogger();
 #ifdef Q_OS_MAC
@@ -931,7 +931,7 @@ bool Blogger::handleArguments(){
 #ifdef USE_SYSTRAYICON
 				create_->setSTI(sti);
 #endif
-				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // if there's an old window
+				if(d)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      // if there's an old window
 					positionWidget(create_, d);
 				create_->show();
 				rv = false;
@@ -3533,108 +3533,102 @@ void Blogger::title(const QString &title_){
 QString Blogger::title() const {return _control_tab->title();}
 
 void Blogger::on_topic_changed(const QString &tp){
-	QLineEdit *lineedit_topic_ = _control_tab->lineedit_topic();
-	auto topic = tp;
-	// deal with folder name change
-	auto original_topic_name = _current_topic_name;
-	QString original_topic_folder = _current_topic_full_folder_name;
-	QString new_topic = purify(topic);//tr(topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).trimmed().toStdString().c_str());
-	QString dest_topic_folder = gl_paras->editors_shared_full_path_name() + "/" + new_topic;
-	auto point_to_new_folder
-	        = [&]() -> void {
-			  _current_topic_name = topic;
-			  _current_topic_full_folder_name	= dest_topic_folder;
-			  _current_topic_full_config_name	= _current_topic_full_folder_name + "/" + gl_para::_editor_conf_filename;
-			  _topic_editor_config
-			          = [&]() -> std::unique_ptr<QSettings> {
-					    if(!QDir(_current_topic_full_folder_name).exists())
-						    if(!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
-					    if(!QFile(_current_topic_full_config_name).exists())
-						    if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_full_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
-					    if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_full_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_full_config_name, QFile::ReadUser | QFile::WriteUser);
-					    return std::make_unique<QSettings>(_current_topic_full_config_name, QSettings::IniFormat);
-				    } ();
-			  _local_storage_file_extension = _topic_editor_config->value("local_storage_file_ext", "cqt").toString();
-			  if(new_topic != _control_tab->topic()) _control_tab->topic(new_topic);
-			  _editor->work_directory(_current_topic_full_folder_name);
+	if(_control_tab){
+		QLineEdit *lineedit_topic_ = _control_tab->lineedit_topic();
+		auto topic = tp;
+		// deal with folder name change
+		auto original_topic_name = _current_topic_name;
+		QString original_topic_folder = _current_topic_full_folder_name;
+		QString new_topic = purify(topic);//tr(topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).trimmed().toStdString().c_str());
+		QString dest_topic_folder = gl_paras->editors_shared_full_path_name() + "/" + new_topic;
+		auto point_to_new_folder
+			= [&]() -> void {
+				  _current_topic_name = topic;
+				  _current_topic_full_folder_name	= dest_topic_folder;
+				  _current_topic_full_config_name	= _current_topic_full_folder_name + "/" + gl_para::_editor_conf_filename;
+				  _topic_editor_config
+					  = [&]() -> std::unique_ptr<QSettings> {
+						    if(!QDir(_current_topic_full_folder_name).exists())
+							    if(!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
+						    if(!QFile(_current_topic_full_config_name).exists())
+							    if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_full_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+						    if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_full_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_full_config_name, QFile::ReadUser | QFile::WriteUser);
+						    return std::make_unique<QSettings>(_current_topic_full_config_name, QSettings::IniFormat);
+					    } ();
+				  _local_storage_file_extension = _topic_editor_config->value("local_storage_file_ext", "cqt").toString();
+				  if(new_topic != _control_tab->topic()) _control_tab->topic(new_topic);
+				  _editor->work_directory(_current_topic_full_folder_name);
 
-			  _filename = _current_topic_full_folder_name + "/" + _default_filename + "." + _local_storage_file_extension;
+				  _filename = _current_topic_full_folder_name + "/" + _default_filename + "." + _local_storage_file_extension;
 
-			  _entry_ever_saved = false;
-			  if(_browser){
-				  auto original_config_name = original_topic_folder + "/" + gl_para::_browser_conf_filename;
-				  _browser->configuration_full_name(original_config_name);
-				  _browser->configuration( // std::make_unique<QSettings>(_current_topic_folder_name + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat)
-					  [&]() -> std::unique_ptr<QSettings> {
-						  if(!QDir(_current_topic_full_folder_name).exists())
-							  if(!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
-						  auto _current_topic_config_name = _current_topic_full_folder_name + "/" + gl_para::_browser_conf_filename;
-						  if(!QFile(_current_topic_config_name).exists()){
-							  if(QFile(original_config_name).exists()){
-								  //
-								  if(!QFile::copy(original_config_name, _current_topic_config_name)) critical_error(QString("Can not copy \"") + original_config_name + "\"");
-							  }else{
-								  //
-								  if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+				  _entry_ever_saved = false;
+				  if(_browser){
+					  auto original_config_name = original_topic_folder + "/" + gl_para::_browser_conf_filename;
+					  _browser->configuration_full_name(original_config_name);
+					  _browser->configuration( // std::make_unique<QSettings>(_current_topic_folder_name + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat)
+						  [&]() -> std::unique_ptr<QSettings> {
+							  if(!QDir(_current_topic_full_folder_name).exists())
+								  if(!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
+							  auto _current_topic_config_name = _current_topic_full_folder_name + "/" + gl_para::_browser_conf_filename;
+							  if(!QFile(_current_topic_config_name).exists()){
+								  if(QFile(original_config_name).exists()){
+									  //
+									  if(!QFile::copy(original_config_name, _current_topic_config_name)) critical_error(QString("Can not copy \"") + original_config_name + "\"");
+								  }else{
+									  //
+									  if(!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(QString("Can not copy default \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+								  }
 							  }
-						  }
-						  if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
-						  return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
-					  } ());
-				  auto tab = _browser->tabmanager();
-				  if(tab){
-					  for(int idx = 0; idx < tab->count(); idx++){
-						  auto v = tab->webView(idx);
-						  if(v){
-							  auto p = v->page();
-							  if(p){
-								  auto h = p->host();
-								  if(h){
-									  auto tags = h->field<tags_type>();
-									  if(tags.length() > 0 && tags.contains(_current_topic_name)){
-										  tags.replace(_current_topic_name, new_topic);
-										  h->field<tags_type>(tags);
+							  if((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
+							  return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
+						  } ());
+					  auto tab = _browser->tabmanager();
+					  if(tab){
+						  for(int idx = 0; idx < tab->count(); idx++){
+							  auto v = tab->webView(idx);
+							  if(v){
+								  auto p = v->page();
+								  if(p){
+									  auto h = p->host();
+									  if(h){
+										  auto tags = h->field<tags_type>();
+										  if(tags.length() > 0 && tags.contains(_current_topic_name)){
+											  tags.replace(_current_topic_name, new_topic);
+											  h->field<tags_type>(tags);
+										  }
 									  }
 								  }
 							  }
 						  }
 					  }
+					  _browser->save_state();
 				  }
-				  _browser->save_state();
-			  }
-		  };
-	auto synchronize_to_vtab_record = [&] {
-		for(int i = 0; i < _vtab_record->count(); i++){
-			auto w = _vtab_record->widget(i);
-			if(w){
-				auto rs = dynamic_cast<rs_t *>(w);
-				if(rs) if(rs == _record_screen) _vtab_record->setTabText(i, new_topic);
-			}
-		}
-	};
-	if(original_topic_folder != dest_topic_folder){
-		if(original_topic_folder == gl_paras->editors_shared_full_path_name() + "/undefined"){
-			point_to_new_folder();
-			if(QDir(original_topic_folder).exists())
-				if(!QDir(original_topic_folder).removeRecursively()) critical_error("Can\'t remove folder \"" + original_topic_folder + "\"");
-		}else{
-			QDir dir;
-			if(!QDir(dest_topic_folder).exists()){
-				if(!dir.rename(original_topic_folder, dest_topic_folder)) critical_error("Move folder \"" + original_topic_folder + "\" to folder \"" + dest_topic_folder + "\" failed");
-				else{
-					point_to_new_folder();
+			  };
 
-					// load(_filename);
-					assert(!QDir(original_topic_folder).exists());
-				}
+		if(original_topic_folder != dest_topic_folder){
+			if(original_topic_folder == gl_paras->editors_shared_full_path_name() + "/undefined"){
+				point_to_new_folder();
+				if(QDir(original_topic_folder).exists())
+					if(!QDir(original_topic_folder).removeRecursively()) critical_error("Can\'t remove folder \"" + original_topic_folder + "\"");
 			}else{
-				lineedit_topic_->setText(original_topic_name);
+				QDir dir;
+				if(!QDir(dest_topic_folder).exists()){
+					if(!dir.rename(original_topic_folder, dest_topic_folder)) critical_error("Move folder \"" + original_topic_folder + "\" to folder \"" + dest_topic_folder + "\" failed");
+					else{
+						point_to_new_folder();
+
+						// load(_filename);
+						assert(!QDir(original_topic_folder).exists());
+					}
+				}else{
+					lineedit_topic_->setText(original_topic_name);
 //				auto new_dest = dest_topic_folder + "_backup";//+ get_unical_id()
 //				if(QDir(new_dest).exists()) QDir(new_dest).removeRecursively();
 //				if(!dir.rename(dest_topic_folder, new_dest)) critical_error("Move folder \"" + dest_topic_folder + "\" to folder \"" + new_dest + "\" failed");
+				}
 			}
+			if(_record_screen) _record_screen->topic(new_topic);
 		}
-		synchronize_to_vtab_record();
 	}
 }
 

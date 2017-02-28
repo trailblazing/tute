@@ -221,7 +221,7 @@ void CryptService::encDecFileSmart(QByteArray key, QString fileName, int mode){
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	QFile file(fileName);
-	if(!file.open(QIODevice::ReadOnly)) critical_error("encDecFileSmart() : Cant open binary file " + fileName + " for reading.");
+	if(!file.open(QIODevice::ReadOnly)) critical_error("encDecFileSmart() : Can\'t open binary file " + fileName + " for reading.");
 	vector<unsigned char> vectorKey;
 	convertByteArrayToVector(key, vectorKey);
 
@@ -239,7 +239,7 @@ void CryptService::encDecFileSmart(QByteArray key, QString fileName, int mode){
 	else rc5.RC5_Decrypt(vectorDataIn, vectorDataOut);
 	QByteArray result;
 	convertVectorToByteArray(vectorDataOut, result);
-	if(!file.open(QIODevice::WriteOnly)) critical_error("encryptFile() : Cant open binary file " + fileName + " for write.");
+	if(!file.open(QIODevice::WriteOnly)) critical_error("encryptFile() : Can\'t open binary file " + fileName + " for write.");
 	file.write(result);
 
 	QApplication::restoreOverrideCursor();
