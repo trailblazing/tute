@@ -167,14 +167,14 @@ For Tute:
 
 * master            - the main branch with the latest stable release;
 * develop           - branch to develop.
-* code beautifier   - uncrustify (recommended)
+* code beautifier   - uncrustify (deprecated)
 ```
         find . -iname "*.h" -or -iname "*.cpp" -or -iname "*.cxx" > files.txt
         uncrustify -c src/uncrustify.cfg  -l CPP --replace --no-backup -F ./files.txt
 ```
 * code beautifier   - clang-format::WebKit (to save time)
 ```
-        find . -iname "*.h" -or -iname "*.cpp" -or -iname "*.cxx" | xargs clang-format -i -style=WebKit
+        find . -iname "*.h" -or -iname "*.hxx" -or -iname "*.inl" -or -iname "*.cpp" -or -iname "*.cxx" | xargs clang-format -i -style=WebKit
 ```
 
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.

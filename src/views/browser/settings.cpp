@@ -60,276 +60,287 @@
 #include <QtWidgets/QtWidgets>
 
 namespace web {
-	class WebView;
-	class TabWidget;
+class WebView;
+class TabWidget;
 
 #if QT_VERSION == 0x050600
-	W_OBJECT_IMPL(SettingsDialog)
+W_OBJECT_IMPL(SettingsDialog)
 #endif
 
-	SettingsDialog::SettingsDialog(QWidget *parent)
-		: QDialog(parent){
-		setupUi(this);
-		connect(setHomeToCurrentPageButton, &QPushButton::clicked, this, &SettingsDialog::setHomeToCurrentPage);
-		connect(standardFontButton, &QPushButton::clicked, this, &SettingsDialog::chooseFont);
-		connect(fixedFontButton, &QPushButton::clicked, this, &SettingsDialog::chooseFixedFont);
+SettingsDialog::SettingsDialog(QWidget* parent)
+    : QDialog(parent)
+{
+    setupUi(this);
+    connect(setHomeToCurrentPageButton, &QPushButton::clicked, this, &SettingsDialog::setHomeToCurrentPage);
+    connect(standardFontButton, &QPushButton::clicked, this, &SettingsDialog::chooseFont);
+    connect(fixedFontButton, &QPushButton::clicked, this, &SettingsDialog::chooseFixedFont);
 
-		loadDefaults();
-		loadFromSettings();
-	}
+    loadDefaults();
+    loadFromSettings();
+}
 
-	void SettingsDialog::loadDefaults(){
-		QWebEngineSettings *defaultSettings = QWebEngineSettings::globalSettings();
-		QString standardFontFamily = defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
-		int standardFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
-		standardFont = QFont(standardFontFamily, standardFontSize);
-		standardLabel->setText(QString(QLatin1String("%1 %2")).arg(standardFont.family()).arg(standardFont.pointSize()));
+void SettingsDialog::loadDefaults()
+{
+    QWebEngineSettings* defaultSettings = QWebEngineSettings::globalSettings();
+    QString standardFontFamily = defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
+    int standardFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
+    standardFont = QFont(standardFontFamily, standardFontSize);
+    standardLabel->setText(QString(QLatin1String("%1 %2")).arg(standardFont.family()).arg(standardFont.pointSize()));
 
-		QString fixedFontFamily = defaultSettings->fontFamily(QWebEngineSettings::FixedFont);
-		int fixedFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFixedFontSize);
-		fixedFont = QFont(fixedFontFamily, fixedFontSize);
-		fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(fixedFont.family()).arg(fixedFont.pointSize()));
+    QString fixedFontFamily = defaultSettings->fontFamily(QWebEngineSettings::FixedFont);
+    int fixedFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFixedFontSize);
+    fixedFont = QFont(fixedFontFamily, fixedFontSize);
+    fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(fixedFont.family()).arg(fixedFont.pointSize()));
 
-		downloadsLocation->setText(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)); // DesktopLocation
+    downloadsLocation->setText(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)); // DesktopLocation
 
-		enableJavascript->setChecked(defaultSettings->testAttribute(QWebEngineSettings::JavascriptEnabled));
-		// #if defined(QTWEBENGINE_PLUGINS)
-		enablePlugins->setChecked(defaultSettings->testAttribute(QWebEngineSettings::PluginsEnabled));
-		// #endif
+    enableJavascript->setChecked(defaultSettings->testAttribute(QWebEngineSettings::JavascriptEnabled));
+    // #if defined(QTWEBENGINE_PLUGINS)
+    enablePlugins->setChecked(defaultSettings->testAttribute(QWebEngineSettings::PluginsEnabled));
+    // #endif
 
-		enableScrollAnimator->setChecked(defaultSettings->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled));
-		auto profile = gl_paras->profile();
-		persistentDataPath->setText(profile->persistentStoragePath()); // QWebEngineProfile::defaultProfile()
-		sessionCookiesCombo->setCurrentIndex(profile->persistentCookiesPolicy()); // QWebEngineProfile::defaultProfile()
-		httpUserAgent->setText(profile->httpUserAgent()); // QWebEngineProfile::defaultProfile()
-	}
+    enableScrollAnimator->setChecked(defaultSettings->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled));
+    auto profile = gl_paras->profile();
+    persistentDataPath->setText(profile->persistentStoragePath()); // QWebEngineProfile::defaultProfile()
+    sessionCookiesCombo->setCurrentIndex(profile->persistentCookiesPolicy()); // QWebEngineProfile::defaultProfile()
+    httpUserAgent->setText(profile->httpUserAgent()); // QWebEngineProfile::defaultProfile()
+}
 
-	void SettingsDialog::loadFromSettings(){
-		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
-		settings.beginGroup(QLatin1String("MainWindow"));
-		const QString default_home_ = QLatin1String(Browser::_defaulthome);
-		homeLineEdit->setText(settings.value(QLatin1String("home"), default_home_).toString());
-		settings.endGroup();
+void SettingsDialog::loadFromSettings()
+{
+    QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+    settings.beginGroup(QLatin1String("MainWindow"));
+    const QString default_home_ = QLatin1String(Browser::_defaulthome);
+    homeLineEdit->setText(settings.value(QLatin1String("home"), default_home_).toString());
+    settings.endGroup();
 
-		settings.beginGroup(QLatin1String("history"));
-		int historyExpire = settings.value(QLatin1String("historyExpire")).toInt();
-		int idx = 0;
-		switch(historyExpire){
-			case 1:
-				idx = 0;
-				break;
+    settings.beginGroup(QLatin1String("history"));
+    int historyExpire = settings.value(QLatin1String("historyExpire")).toInt();
+    int idx = 0;
+    switch (historyExpire) {
+    case 1:
+        idx = 0;
+        break;
 
-			case 7:
-				idx = 1;
-				break;
+    case 7:
+        idx = 1;
+        break;
 
-			case 14:
-				idx = 2;
-				break;
+    case 14:
+        idx = 2;
+        break;
 
-			case 30:
-				idx = 3;
-				break;
+    case 30:
+        idx = 3;
+        break;
 
-			case 365:
-				idx = 4;
-				break;
+    case 365:
+        idx = 4;
+        break;
 
-			case -1:
-				idx = 5;
-				break;
+    case -1:
+        idx = 5;
+        break;
 
-			default:
-				idx = 5;
-		}
-		expireHistory->setCurrentIndex(idx);
-		settings.endGroup();
+    default:
+        idx = 5;
+    }
+    expireHistory->setCurrentIndex(idx);
+    settings.endGroup();
 
-		settings.beginGroup(QLatin1String("downloadmanager"));
-		QString downloadDirectory = settings.value(QLatin1String("downloadDirectory"), downloadsLocation->text()).toString();
-		downloadsLocation->setText(downloadDirectory);
-		settings.endGroup();
+    settings.beginGroup(QLatin1String("downloadmanager"));
+    QString downloadDirectory = settings.value(QLatin1String("downloadDirectory"), downloadsLocation->text()).toString();
+    downloadsLocation->setText(downloadDirectory);
+    settings.endGroup();
 
-		settings.beginGroup(QLatin1String("general"));
-		openLinksIn->setCurrentIndex(settings.value(QLatin1String("openLinksIn"), openLinksIn->currentIndex()).toInt());
+    settings.beginGroup(QLatin1String("general"));
+    openLinksIn->setCurrentIndex(settings.value(QLatin1String("openLinksIn"), openLinksIn->currentIndex()).toInt());
 
-		settings.endGroup();
+    settings.endGroup();
 
-		// Appearance
-		settings.beginGroup(QLatin1String("websettings"));
-		fixedFont = qvariant_cast<QFont>(settings.value(QLatin1String("fixedFont"), fixedFont));
-		standardFont = qvariant_cast<QFont>(settings.value(QLatin1String("standardFont"), standardFont));
+    // Appearance
+    settings.beginGroup(QLatin1String("websettings"));
+    fixedFont = qvariant_cast<QFont>(settings.value(QLatin1String("fixedFont"), fixedFont));
+    standardFont = qvariant_cast<QFont>(settings.value(QLatin1String("standardFont"), standardFont));
 
-		standardLabel->setText(QString(QLatin1String("%1 %2")).arg(standardFont.family()).arg(standardFont.pointSize()));
-		fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(fixedFont.family()).arg(fixedFont.pointSize()));
+    standardLabel->setText(QString(QLatin1String("%1 %2")).arg(standardFont.family()).arg(standardFont.pointSize()));
+    fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(fixedFont.family()).arg(fixedFont.pointSize()));
 
-		enableJavascript->setChecked(settings.value(QLatin1String("enableJavascript"), enableJavascript->isChecked()).toBool());
-		enablePlugins->setChecked(settings.value(QLatin1String("enablePlugins"), enablePlugins->isChecked()).toBool());
-		userStyleSheet->setPlainText(settings.value(QLatin1String("userStyleSheet")).toString());
-		enableScrollAnimator->setChecked(settings.value(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked()).toBool());
-		httpUserAgent->setText(settings.value(QLatin1String("httpUserAgent"), httpUserAgent->text()).toString());
-		settings.endGroup();
+    enableJavascript->setChecked(settings.value(QLatin1String("enableJavascript"), enableJavascript->isChecked()).toBool());
+    enablePlugins->setChecked(settings.value(QLatin1String("enablePlugins"), enablePlugins->isChecked()).toBool());
+    userStyleSheet->setPlainText(settings.value(QLatin1String("userStyleSheet")).toString());
+    enableScrollAnimator->setChecked(settings.value(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked()).toBool());
+    httpUserAgent->setText(settings.value(QLatin1String("httpUserAgent"), httpUserAgent->text()).toString());
+    settings.endGroup();
 
-		// Privacy
-		settings.beginGroup(QLatin1String("cookies"));
+    // Privacy
+    settings.beginGroup(QLatin1String("cookies"));
 
-		int persistentCookiesPolicy = settings.value(QLatin1String("persistentCookiesPolicy"), sessionCookiesCombo->currentIndex()).toInt();
-		sessionCookiesCombo->setCurrentIndex(persistentCookiesPolicy);
+    int persistentCookiesPolicy = settings.value(QLatin1String("persistentCookiesPolicy"), sessionCookiesCombo->currentIndex()).toInt();
+    sessionCookiesCombo->setCurrentIndex(persistentCookiesPolicy);
 
-		QString pdataPath = settings.value(QLatin1String("persistentDataPath"), persistentDataPath->text()).toString();
-		persistentDataPath->setText(pdataPath);
+    QString pdataPath = settings.value(QLatin1String("persistentDataPath"), persistentDataPath->text()).toString();
+    persistentDataPath->setText(pdataPath);
 
-		settings.endGroup();
+    settings.endGroup();
 
-		// Proxy
-		settings.beginGroup(QLatin1String("proxy"));
-		proxySupport->setChecked(settings.value(QLatin1String("enabled"), false).toBool());
-		proxyType->setCurrentIndex(settings.value(QLatin1String("type"), 0).toInt());
-		proxyHostName->setText(settings.value(QLatin1String("hostName")).toString());
-		proxyPort->setValue(settings.value(QLatin1String("port"), 1080).toInt());
-		proxyUserName->setText(settings.value(QLatin1String("userName")).toString());
-		proxyPassword->setText(settings.value(QLatin1String("password")).toString());
-		settings.endGroup();
-	}
+    // Proxy
+    settings.beginGroup(QLatin1String("proxy"));
+    proxySupport->setChecked(settings.value(QLatin1String("enabled"), false).toBool());
+    proxyType->setCurrentIndex(settings.value(QLatin1String("type"), 0).toInt());
+    proxyHostName->setText(settings.value(QLatin1String("hostName")).toString());
+    proxyPort->setValue(settings.value(QLatin1String("port"), 1080).toInt());
+    proxyUserName->setText(settings.value(QLatin1String("userName")).toString());
+    proxyPassword->setText(settings.value(QLatin1String("password")).toString());
+    settings.endGroup();
+}
 
-	void SettingsDialog::saveToSettings(){
-		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
-		settings.beginGroup(QLatin1String("MainWindow"));
-		settings.setValue(QLatin1String("home"), homeLineEdit->text());
-		settings.endGroup();
+void SettingsDialog::saveToSettings()
+{
+    QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+    settings.beginGroup(QLatin1String("MainWindow"));
+    settings.setValue(QLatin1String("home"), homeLineEdit->text());
+    settings.endGroup();
 
-		settings.beginGroup(QLatin1String("general"));
-		settings.setValue(QLatin1String("openLinksIn"), openLinksIn->currentIndex());
-		settings.endGroup();
+    settings.beginGroup(QLatin1String("general"));
+    settings.setValue(QLatin1String("openLinksIn"), openLinksIn->currentIndex());
+    settings.endGroup();
 
-		settings.beginGroup(QLatin1String("downloadmanager"));
-		settings.setValue(QLatin1String("downloadDirectory"), downloadsLocation->text());
-		settings.endGroup();
+    settings.beginGroup(QLatin1String("downloadmanager"));
+    settings.setValue(QLatin1String("downloadDirectory"), downloadsLocation->text());
+    settings.endGroup();
 
-		settings.beginGroup(QLatin1String("history"));
-		int historyExpire = expireHistory->currentIndex();
-		int idx = -1;
-		switch(historyExpire){
-			case 0:
-				idx = 1;
-				break;
+    settings.beginGroup(QLatin1String("history"));
+    int historyExpire = expireHistory->currentIndex();
+    int idx = -1;
+    switch (historyExpire) {
+    case 0:
+        idx = 1;
+        break;
 
-			case 1:
-				idx = 7;
-				break;
+    case 1:
+        idx = 7;
+        break;
 
-			case 2:
-				idx = 14;
-				break;
+    case 2:
+        idx = 14;
+        break;
 
-			case 3:
-				idx = 30;
-				break;
+    case 3:
+        idx = 30;
+        break;
 
-			case 4:
-				idx = 365;
-				break;
+    case 4:
+        idx = 365;
+        break;
 
-			case 5:
-				idx = -1;
-				break;
-		}
-		settings.setValue(QLatin1String("historyExpire"), idx);
-		settings.endGroup();
+    case 5:
+        idx = -1;
+        break;
+    }
+    settings.setValue(QLatin1String("historyExpire"), idx);
+    settings.endGroup();
 
-		// Appearance
-		settings.beginGroup(QLatin1String("websettings"));
-		settings.setValue(QLatin1String("fixedFont"), fixedFont);
-		settings.setValue(QLatin1String("standardFont"), standardFont);
-		settings.setValue(QLatin1String("enableJavascript"), enableJavascript->isChecked());
-		settings.setValue(QLatin1String("enablePlugins"), enablePlugins->isChecked());
-		settings.setValue(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked());
-		settings.setValue(QLatin1String("userStyleSheet"), userStyleSheet->toPlainText());
-		settings.setValue(QLatin1String("httpUserAgent"), httpUserAgent->text());
-		settings.endGroup();
+    // Appearance
+    settings.beginGroup(QLatin1String("websettings"));
+    settings.setValue(QLatin1String("fixedFont"), fixedFont);
+    settings.setValue(QLatin1String("standardFont"), standardFont);
+    settings.setValue(QLatin1String("enableJavascript"), enableJavascript->isChecked());
+    settings.setValue(QLatin1String("enablePlugins"), enablePlugins->isChecked());
+    settings.setValue(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked());
+    settings.setValue(QLatin1String("userStyleSheet"), userStyleSheet->toPlainText());
+    settings.setValue(QLatin1String("httpUserAgent"), httpUserAgent->text());
+    settings.endGroup();
 
-		// Privacy
-		settings.beginGroup(QLatin1String("cookies"));
+    // Privacy
+    settings.beginGroup(QLatin1String("cookies"));
 
-		int persistentCookiesPolicy = sessionCookiesCombo->currentIndex();
-		settings.setValue(QLatin1String("persistentCookiesPolicy"), persistentCookiesPolicy);
+    int persistentCookiesPolicy = sessionCookiesCombo->currentIndex();
+    settings.setValue(QLatin1String("persistentCookiesPolicy"), persistentCookiesPolicy);
 
-		QString pdataPath = persistentDataPath->text();
+    QString pdataPath = persistentDataPath->text();
 
-		settings.setValue(QLatin1String("persistentDataPath"), pdataPath);
+    settings.setValue(QLatin1String("persistentDataPath"), pdataPath);
 
-		settings.endGroup();
+    settings.endGroup();
 
-		// proxy
-		settings.beginGroup(QLatin1String("proxy"));
-		settings.setValue(QLatin1String("enabled"), proxySupport->isChecked());
-		settings.setValue(QLatin1String("type"), proxyType->currentIndex());
-		settings.setValue(QLatin1String("hostName"), proxyHostName->text());
-		settings.setValue(QLatin1String("port"), proxyPort->text());
-		settings.setValue(QLatin1String("userName"), proxyUserName->text());
-		settings.setValue(QLatin1String("password"), proxyPassword->text());
-		settings.endGroup();
+    // proxy
+    settings.beginGroup(QLatin1String("proxy"));
+    settings.setValue(QLatin1String("enabled"), proxySupport->isChecked());
+    settings.setValue(QLatin1String("type"), proxyType->currentIndex());
+    settings.setValue(QLatin1String("hostName"), proxyHostName->text());
+    settings.setValue(QLatin1String("port"), proxyPort->text());
+    settings.setValue(QLatin1String("userName"), proxyUserName->text());
+    settings.setValue(QLatin1String("password"), proxyPassword->text());
+    settings.endGroup();
 
-		sapp_t::instance()->loadSettings();
+    sapp_t::instance()->loadSettings();
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-		QtSingleApplication::networkAccessManager()->loadSettings();
-		QtSingleApplication::cookieJar()->loadSettings();
+    QtSingleApplication::networkAccessManager()->loadSettings();
+    QtSingleApplication::cookieJar()->loadSettings();
 #endif
-		sapp_t::historyManager()->loadSettings();
-	}
+    sapp_t::historyManager()->loadSettings();
+}
 
-	void SettingsDialog::accept(){
-		QString pdataPath = persistentDataPath->text();
-		if(QFile::exists(pdataPath)){
-			saveToSettings();
-			QDialog::accept();
-		}else{
-			QMessageBox msgBox;
-			msgBox.setText(tr("The location can\'t be write."));
-			msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-			msgBox.setDefaultButton(QMessageBox::Cancel);
-			// int ret =
-			msgBox.exec();
-			// if(ret != QMessageBox::Ok) return;
-			return;
-		}
-	}
+void SettingsDialog::accept()
+{
+    QString pdataPath = persistentDataPath->text();
+    if (QFile::exists(pdataPath)) {
+        saveToSettings();
+        QDialog::accept();
+    } else {
+        QMessageBox msgBox;
+        msgBox.setText(tr("The location can\'t be write."));
+        msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+        // int ret =
+        msgBox.exec();
+        // if(ret != QMessageBox::Ok) return;
+        return;
+    }
+}
 
-	void SettingsDialog::showCookies(){
+void SettingsDialog::showCookies()
+{
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-		CookiesDialog *dialog = new CookiesDialog(QtSingleApplication::cookieJar(), this);
-		dialog->exec();
+    CookiesDialog* dialog = new CookiesDialog(QtSingleApplication::cookieJar(), this);
+    dialog->exec();
 #endif
-	}
+}
 
-	void SettingsDialog::showExceptions(){
+void SettingsDialog::showExceptions()
+{
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-		CookiesExceptionsDialog *dialog = new CookiesExceptionsDialog(QtSingleApplication::cookieJar(), this);
-		dialog->exec();
+    CookiesExceptionsDialog* dialog = new CookiesExceptionsDialog(QtSingleApplication::cookieJar(), this);
+    dialog->exec();
 #endif
-	}
+}
 
-	void SettingsDialog::chooseFont(){
-		bool ok;
-		QFont font = QFontDialog::getFont(&ok, standardFont, this);
-		if(ok){
-			standardFont = font;
-			standardLabel->setText(QString(QLatin1String("%1 %2")).arg(font.family()).arg(font.pointSize()));
-		}
-	}
+void SettingsDialog::chooseFont()
+{
+    bool ok;
+    QFont font = QFontDialog::getFont(&ok, standardFont, this);
+    if (ok) {
+        standardFont = font;
+        standardLabel->setText(QString(QLatin1String("%1 %2")).arg(font.family()).arg(font.pointSize()));
+    }
+}
 
-	void SettingsDialog::chooseFixedFont(){
-		bool ok;
-		QFont font = QFontDialog::getFont(&ok, fixedFont, this);
-		if(ok){
-			fixedFont = font;
-			fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(font.family()).arg(font.pointSize()));
-		}
-	}
+void SettingsDialog::chooseFixedFont()
+{
+    bool ok;
+    QFont font = QFontDialog::getFont(&ok, fixedFont, this);
+    if (ok) {
+        fixedFont = font;
+        fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(font.family()).arg(font.pointSize()));
+    }
+}
 
-	void SettingsDialog::setHomeToCurrentPage(){
-		Browser *mw = static_cast<Browser *>(parent());
-		WebView *webView = mw->currentTab();
-		if(webView) homeLineEdit->setText(webView->page()->url().toString());
-	}
+void SettingsDialog::setHomeToCurrentPage()
+{
+    Browser* mw = static_cast<Browser*>(parent());
+    WebView* webView = mw->currentTab();
+    if (webView)
+        homeLineEdit->setText(webView->page()->url().toString());
+}
 }

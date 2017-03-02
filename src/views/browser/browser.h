@@ -42,7 +42,6 @@
 #ifndef BROWSERWINDOW_H
 #define BROWSERWINDOW_H
 
-
 #include <tuple>
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -61,11 +60,10 @@
 #include "controllers/record_table/record_controller.h"
 
 // #include "models/tree/TreeItem.h"
-#include "models/tree/tree_model.h"
-#include "views/tree/tree_screen.h"
 #include "libraries/global_parameters.h"
 #include "models/app_config/app_config.h"
-
+#include "models/tree/tree_model.h"
+#include "views/tree/tree_screen.h"
 
 #if QT_VERSION == 0x050600
 #include <QObject>
@@ -87,304 +85,302 @@ struct RecordIndex;
 class EditorDock;
 class Blogger;
 
-
 extern std::shared_ptr<AppConfig> appconfig;
-extern const char *profile_storage_name;
+extern const char* profile_storage_name;
 
 // QT_BEGIN_NAMESPACE
 
 namespace web {
-	class AutoSaver;
-	class BookmarksToolBar;
-	class ChaseWidget;
-	class TabWidget;
-	class ToolbarSearch;
-	class WebView;
-	class Docker;
-	class HistoryMenu;
-	class BookmarksMenu;
+class AutoSaver;
+class BookmarksToolBar;
+class ChaseWidget;
+class TabWidget;
+class ToolbarSearch;
+class WebView;
+class Docker;
+class HistoryMenu;
+class BookmarksMenu;
 
-	class UrlRequestInterceptor
-		: // public boost::intrusive_ref_counter<UrlRequestInterceptor, boost::thread_safe_counter>,
-		public QWebEngineUrlRequestInterceptor {
-	public:
-		UrlRequestInterceptor(QObject *p);
-		virtual void interceptRequest(QWebEngineUrlRequestInfo &info);
-	};
+class UrlRequestInterceptor
+    : // public boost::intrusive_ref_counter<UrlRequestInterceptor, boost::thread_safe_counter>,
+      public QWebEngineUrlRequestInterceptor {
+public:
+    UrlRequestInterceptor(QObject* p);
+    virtual void interceptRequest(QWebEngineUrlRequestInfo& info);
+};
 
-	class Profile
-		: // public boost::intrusive_ref_counter<Profile, boost::thread_safe_counter>,
-		public QWebEngineProfile { // QQuickWebEngineProfile
-	public:
-		Profile(const QString &name, QObject *p);
-		~Profile();
+class Profile
+    : // public boost::intrusive_ref_counter<Profile, boost::thread_safe_counter>,
+      public QWebEngineProfile { // QQuickWebEngineProfile
+public:
+    Profile(const QString& name, QObject* p);
+    ~Profile();
 
-	private:
-		UrlRequestInterceptor *_urlrequestinterceptor;
-	};
+private:
+    UrlRequestInterceptor* _urlrequestinterceptor;
+};
 
 /*!
             The MainWindow of the Browser Application.
 
             Handles the tab widget and all the actions
  */
-	class Browser
-		: public QMainWindow
+class Browser
+    : public QMainWindow
 // , public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>
-	{
+{
 #if QT_VERSION == 0x050600
-	W_OBJECT(Browser)
+    W_OBJECT(Browser)
 #else
-	Q_OBJECT
+    Q_OBJECT
 #endif
-	public:
-		Browser(Blogger *blogger_
-			, const QByteArray &state_ = QByteArray()
-			, Qt::WindowFlags flags = Qt::MaximizeUsingFullscreenGeometryHint);
+public:
+    Browser(Blogger* blogger_, const QByteArray& state_ = QByteArray(), Qt::WindowFlags flags = Qt::MaximizeUsingFullscreenGeometryHint);
 
-		// Browser(QUrl const &url         // Record *const record
-		// , TreeScreen        *_tree_screen
-		// , FindScreen        *_find_screen
-		// , MetaEditor        *_editor_screen
-		// , HidableTabWidget  *_vtabwidget
-		// , MainWindow        *_main_window
-		// , Entrance          *_entrance   //, QDockWidget *parent
-		// , const QString     &style_source
-		// , Qt::WindowFlags   flags = 0
-		// );
+    // Browser(QUrl const &url         // Record *const record
+    // , TreeScreen        *_tree_screen
+    // , FindScreen        *_find_screen
+    // , MetaEditor        *_editor_screen
+    // , HidableTabWidget  *_vtabwidget
+    // , MainWindow        *_main_window
+    // , Entrance          *_entrance   //, QDockWidget *parent
+    // , const QString     &style_source
+    // , Qt::WindowFlags   flags = 0
+    // );
 
-		// Browser(const QByteArray    &state
-		// , TreeScreen        *_tree_screen
-		// , FindScreen        *_find_screen
-		// , MetaEditor        *_editor_screen
-		// , HidableTabWidget  *_vtabwidget
-		// , MainWindow        *_main_window
-		// , Entrance          *_entrance   //, QDockWidget *parent
-		// , const QString     &style_source
-		// , Qt::WindowFlags   flags = 0
-		// );
+    // Browser(const QByteArray    &state
+    // , TreeScreen        *_tree_screen
+    // , FindScreen        *_find_screen
+    // , MetaEditor        *_editor_screen
+    // , HidableTabWidget  *_vtabwidget
+    // , MainWindow        *_main_window
+    // , Entrance          *_entrance   //, QDockWidget *parent
+    // , const QString     &style_source
+    // , Qt::WindowFlags   flags = 0
+    // );
 
-		// Browser(boost::intrusive_ptr<TreeItem> item
-		// , TreeScreen        *_tree_screen
-		// , FindScreen        *_find_screen
-		// , MetaEditor        *_editor_screen  //, RecordController *record_controller
-		// , HidableTabWidget  *_vtabwidget
-		// , MainWindow        *_main_window
-		// , Entrance          *_entrance   //, QDockWidget *parent
-		// , const QString     &style_source
-		// , Qt::WindowFlags   flags = 0
-		// );
+    // Browser(boost::intrusive_ptr<TreeItem> item
+    // , TreeScreen        *_tree_screen
+    // , FindScreen        *_find_screen
+    // , MetaEditor        *_editor_screen  //, RecordController *record_controller
+    // , HidableTabWidget  *_vtabwidget
+    // , MainWindow        *_main_window
+    // , Entrance          *_entrance   //, QDockWidget *parent
+    // , const QString     &style_source
+    // , Qt::WindowFlags   flags = 0
+    // );
 
-		~Browser();
-		QSize sizeHint() const;
+    ~Browser();
+    QSize sizeHint() const;
 
-		static constexpr const char *_defaulthome = "about:blank";
-		template<typename T> struct initialize_prior_to {static constexpr bool value = true;};
-	public:
-		// typedef Binder coupler_delegation;
-		// typedef Binder::bind_interface          bind_interface;
-		// typedef Binder::activate_interface      activate_interface;
-		// typedef Binder::item_interface  bounded_item_interface;
-		// typedef Binder::page_interface  bounded_page_interface;
+    static constexpr const char* _defaulthome = "about:blank";
+    template <typename T>
+    struct initialize_prior_to {
+        static constexpr bool value = true;
+    };
 
-		// typedef Binder::bind_helper         bind_helper;
-		// typedef Binder::activate_helper     activate_helper;
-		// typedef Binder::item_helper bounded_item_helper;
-		// typedef Binder::page_helper bounded_page_helper;
+public:
+    // typedef Binder coupler_delegation;
+    // typedef Binder::bind_interface          bind_interface;
+    // typedef Binder::activate_interface      activate_interface;
+    // typedef Binder::item_interface  bounded_item_interface;
+    // typedef Binder::page_interface  bounded_page_interface;
 
-		TabWidget *tabWidget();
-		TabWidget *tabWidget() const;
-		TabWidget *tabmanager();
-		TabWidget *tabmanager() const;
+    // typedef Binder::bind_helper         bind_helper;
+    // typedef Binder::activate_helper     activate_helper;
+    // typedef Binder::item_helper bounded_item_helper;
+    // typedef Binder::page_helper bounded_page_helper;
 
-		WebView *currentTab() const;
-		QByteArray save_state(bool withTabs = true) const;
-		bool restore_state(const QByteArray &state_);
-		QAction *action_restore_last_session();
-		// Q_INVOKABLE
-		void runScriptOnOpenViews(const QString &);
-		void setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled);
-		QString &lastsearch();
-		const QString &lastsearch() const;
+    TabWidget* tabWidget();
+    TabWidget* tabWidget() const;
+    TabWidget* tabmanager();
+    TabWidget* tabmanager() const;
 
-		void activateWindow();
-		bool is_under_construction() const;
-		QAction *historyback();
-		QStatusBar *statusBar() = delete;
-		// QStatusBar *status_bar();
-		// QStatusBar *status_bar() const;
-		boost::intrusive_ptr<TreeItem> bind(boost::intrusive_ptr<RecordIndex> record_index, bool make_current = true);
-		// boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
-		rs_t *record_screen();
-//		web::Docker *browser_docker();
-		void configuration(std::unique_ptr<QSettings> &&conf);
-		void configuration_full_name(const QString &conf_name);
-		static std::tuple<qint32, qint32, QString, QString, QSize, bool, bool, bool, bool, std::tuple<qint32, qint32, QStringList, QString> > state(const QByteArray &state_);
-		Blogger *blogger();
-	public slots:
-		// void loadPage(const QString &url) = delete;
-		void slotHome();
-		void updateToolbarActionText(bool visible); // void updateToolbarActionText(bool visible);
+    WebView* currentTab() const;
+    QByteArray save_state(bool withTabs = true) const;
+    bool restore_state(const QByteArray& state_);
+    QAction* action_restore_last_session();
+    // Q_INVOKABLE
+    void runScriptOnOpenViews(const QString&);
+    void setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled);
+    QString& lastsearch();
+    const QString& lastsearch() const;
 
-		void on_blogger_close();
-		void on_record_screen_close();
-	protected:
-		void closeEvent(QCloseEvent *event);
-		void resizeEvent(QResizeEvent *);
-		void focusOutEvent(QFocusEvent *event);
-	private slots:
-		void save();
+    void activateWindow();
+    bool is_under_construction() const;
+    QAction* historyback();
+    QStatusBar* statusBar() = delete;
+    // QStatusBar *status_bar();
+    // QStatusBar *status_bar() const;
+    boost::intrusive_ptr<i_t> bind(boost::intrusive_ptr<RecordIndex> record_index, bool make_current = true);
+    // boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
+    rs_t* record_screen();
+    //		web::Docker *browser_docker();
+    void configuration(std::unique_ptr<QSettings>&& conf);
+    void configuration_full_name(const QString& conf_name);
+    static std::tuple<qint32, qint32, QString, QString, QSize, bool, bool, bool, bool, std::tuple<qint32, qint32, QStringList, QString> > state(const QByteArray& state_);
+    Blogger* blogger();
+public slots:
+    // void loadPage(const QString &url) = delete;
+    void slotHome();
+    void updateToolbarActionText(bool visible); // void updateToolbarActionText(bool visible);
 
-		void slotLoadProgress(int);
-		void slotUpdateStatusbar(const QString &string);
-		void slotUpdateWindowTitle(const QString &title = QString());
+    void on_blogger_close();
+    void on_record_screen_close();
 
-		// void loadUrl(const QUrl &url) = delete;
-		void slotPreferences();
+protected:
+    void closeEvent(QCloseEvent* event);
+    void resizeEvent(QResizeEvent*);
+    void focusOutEvent(QFocusEvent* event);
+private slots:
+    void save();
 
-		void slotFileNew();
-		void slotFileOpen();
-		void slotFilePrintPreview();
-		void slotFilePrint();
-		void slotPrivateBrowsing();
-		void slotFileSaveAs();
-		void slotEditFind();
-		void slotEditFindNext();
-		void slotEditFindPrevious();
-		void slotShowBookmarksDialog();
-		void slotAddBookmark();
-		void slotViewZoomIn();
-		void slotViewZoomOut();
-		void slotViewResetZoom();
-		void slotViewToolbar();
-		void slotViewBookmarksBar();
-		void slotViewStatusbar();
-		void slotViewPageSource();
-		void slotViewFullScreen(bool enable);
+    void slotLoadProgress(int);
+    void slotUpdateStatusbar(const QString& string);
+    //		void slotUpdateWindowTitle(const QString &title = QString());
 
-		void slotWebSearch();
-		void slotToggleInspector(bool enable);
-		void slotAboutApplication();
-		void slotDownloadManager();
-		void slotSelectLineEdit();
+    // void loadUrl(const QUrl &url) = delete;
+    void slotPreferences();
 
-		void slotAboutToShowBackMenu();
-		void slotAboutToShowForwardMenu();
-		void slotAboutToShowWindowMenu();
-		void slotOpenActionUrl(QAction *action);
-		void slotShowWindow();
-		void slotSwapFocus();
+    void slotFileNew();
+    void slotFileOpen();
+    void slotFilePrintPreview();
+    void slotFilePrint();
+    void slotPrivateBrowsing();
+    void slotFileSaveAs();
+    void slotEditFind();
+    void slotEditFindNext();
+    void slotEditFindPrevious();
+    void slotShowBookmarksDialog();
+    void slotAddBookmark();
+    void slotViewZoomIn();
+    void slotViewZoomOut();
+    void slotViewResetZoom();
+    void slotViewToolbar();
+    void slotViewBookmarksBar();
+    void slotViewStatusbar();
+    void slotViewPageSource();
+    void slotViewFullScreen(bool enable);
+
+    void slotWebSearch();
+    void slotToggleInspector(bool enable);
+    void slotAboutApplication();
+    void slotDownloadManager();
+    void slotSelectLineEdit();
+
+    void slotAboutToShowBackMenu();
+    void slotAboutToShowForwardMenu();
+    void slotAboutToShowWindowMenu();
+    void slotOpenActionUrl(QAction* action);
+    void slotShowWindow();
+    void slotSwapFocus();
 
 #if defined(QWEBENGINEPAGE_PRINT)
-		void printRequested(QWebEngineFrame *frame);
+    void printRequested(QWebEngineFrame* frame);
 #endif
-		void geometry_change_requested(const QRect &geometry);
+    void geometry_change_requested(const QRect& geometry);
 
-		void update_bookmarks_toolbar_action_text(bool visible);
+    void update_bookmarks_toolbar_action_text(bool visible);
 
-	private:
-		void init();
-		// boost::intrusive_ptr<TreeItem> item_request_from_tree(QUrl const &url
-		// , const TreeScreen::paste_strategy &_view_paste_strategy
-		// , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-		// );
+private:
+    void init();
+    // boost::intrusive_ptr<TreeItem> item_request_from_tree(QUrl const &url
+    // , const TreeScreen::paste_strategy &_view_paste_strategy
+    // , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+    // );
 
-		// boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item
-		// , const TreeScreen::paste_strategy &_view_paste_strategy
-		// , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-		// );
+    // boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item
+    // , const TreeScreen::paste_strategy &_view_paste_strategy
+    // , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+    // );
 
-		void run_script(const QString &style_source);
-		void load_default_state();
+    void run_script(const QString& style_source);
+    void load_default_state();
 
+    void reset_main_menu();
+    void reset_find_screen_tool_bar();
+    void update_statusbar_action_text(bool visible);
+    void handle_find_text_result(bool found);
+    // void initUrl();
+private:
+    QByteArray _state;
+    bool _is_under_construction = true;
+    HidableTab* _vtab_record;
+    ts_t* _tree_screen;
+    FindScreen* _find_screen;
+    wn_t* _main_window;
 
+    // RecordController    *_record_controller;
 
+    // QDockWidget   *dock_widget;
+    // QToolBar      *navigater;
+    // ToolbarSearch       *_toolbarsearch;
+    BookmarksToolBar* _bookmarkstoolbar;
 
+    QMenu* _file_menu;
+    QMenu* _edit_menu;
+    QMenu* _view_menu;
+    //		QMenu *_help_menu;
+    QMenu* _tools_menu;
+    BookmarksMenu* _bookmarks_menu;
+    ChaseWidget* _chasewidget;
+    HistoryMenu* _history_menu;
+    QAction* _historyhome;
+    QAction* _historyback;
+    QAction* _historyforward;
 
+    QMenu* _historybackmenu;
+    QMenu* _historyforwardmenu;
+    QMenu* _windowmenu;
 
+    QAction* _stop;
+    QAction* _reload;
+    QAction* _stopreload;
 
+    AutoSaver* _autosaver;
+    QAction* _viewmenubar;
+    QAction* _viewbookmarkbar;
+    QAction* _viewtoolbar;
+    QAction* _viewstatusbar;
+    QAction* _restorelastsession;
+    QAction* _addbookmark;
+    QIcon _reloadicon;
+    QIcon _stopicon;
+    QString _lastsearch;
 
-		void reset_main_menu();
-		void reset_find_screen_tool_bar();
-		void update_statusbar_action_text(bool visible);
-		void handle_find_text_result(bool found);
-		// void initUrl();
-	private:
-		QByteArray _state;
-		bool _is_under_construction = true;
-		HidableTab *_vtab_record;
-		ts_t *_tree_screen;
-		FindScreen *_find_screen;
-		wn_t *_main_window;
+    QWebEngineSettings::WebAttribute _webattribute;
+    bool _webattributeenabled;
+    QWidget* _centralwidget;
+    QVBoxLayout* _layout;
+    Blogger* _blogger;
 
-		// RecordController    *_record_controller;
+    TabWidget* _tabmanager;
+    rs_t* _record_screen;
 
-		// QDockWidget   *dock_widget;
-		// QToolBar      *navigater;
-		// ToolbarSearch       *_toolbarsearch;
-		BookmarksToolBar *_bookmarkstoolbar;
+    web::Docker* _browser_docker;
+    QString _configuration_full_name = "";
+    std::unique_ptr<QSettings> _configuration;
+    friend class sapp_t; // QtSingleApplication;
+    friend class web::Docker;
+    friend class WebView;
+    friend class ::Blogger;
+    void init_history_menu();
+    void init_main_menu();
+    void init_file_menu();
+    void init_edit_menu();
+    void init_view_menu();
+    //		void init_help_menu();
+    void init_tools_menu();
+    void init_bookmark_menu();
+    void init_window_menu();
+signals:
+    void close_request(QWidget*);
+};
 
-		QMenu *_file_menu;
-		QMenu *_edit_menu;
-		QMenu *_view_menu;
-//		QMenu *_help_menu;
-		QMenu *_tools_menu;
-		BookmarksMenu *_bookmarks_menu;
-		ChaseWidget *_chasewidget;
-		HistoryMenu *_history_menu;
-		QAction *_historyhome;
-		QAction *_historyback;
-		QAction *_historyforward;
-
-		QMenu *_historybackmenu;
-		QMenu *_historyforwardmenu;
-		QMenu *_windowmenu;
-
-		QAction *_stop;
-		QAction *_reload;
-		QAction *_stopreload;
-
-		AutoSaver *_autosaver;
-		QAction *_viewmenubar;
-		QAction *_viewbookmarkbar;
-		QAction *_viewtoolbar;
-		QAction *_viewstatusbar;
-		QAction *_restorelastsession;
-		QAction *_addbookmark;
-		QIcon _reloadicon;
-		QIcon _stopicon;
-		QString _lastsearch;
-
-		QWebEngineSettings::WebAttribute _webattribute;
-		bool _webattributeenabled;
-		QWidget *_centralwidget;
-		QVBoxLayout *_layout;
-		Blogger *_blogger;
-
-		TabWidget *_tabmanager;
-		rs_t *_record_screen;
-
-		web::Docker *_browser_docker;
-		QString _configuration_full_name = "";
-		std::unique_ptr<QSettings> _configuration;
-		friend class sapp_t; // QtSingleApplication;
-		friend class web::Docker;
-		friend class WebView;
-		friend class ::Blogger;
-		void init_history_menu();
-		void init_main_menu();
-		void init_file_menu();
-		void init_edit_menu();
-		void init_view_menu();
-//		void init_help_menu();
-		void init_tools_menu();
-		void init_bookmark_menu();
-		void init_window_menu();
-	signals:
-		void close_request(QWidget *);
-	};
-
-	template<> struct Browser::initialize_prior_to<Blogger> {static constexpr bool value = false;};
+template <>
+struct Browser::initialize_prior_to<Blogger> {
+    static constexpr bool value = false;
+};
 }
 
 // QT_END_NAMESPACE

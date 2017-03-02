@@ -32,34 +32,34 @@
 
 class XmlRpcHandler : public QXmlDefaultHandler {
 public:
-	XmlRpcHandler(Blogger::HttpBusinessType x);
-	XmlRpcHandler();
+    XmlRpcHandler(Blogger::HttpBusinessType x);
+    XmlRpcHandler();
 
-	void setProtocol(Blogger::HttpBusinessType x);
+    void setProtocol(Blogger::HttpBusinessType x);
 
-	bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &attr);
-	bool endElement(const QString &nu, const QString &localName, const QString &qName);
-	bool characters(const QString &str);
-	bool fatalError(const QXmlParseException &exc);
-	bool isMethodResponseFinished();
-	QStringList returnList(const QString &);
-	// QString returnFirstEntry();
-	bool fault();
-	QString faultString();
-	QDomDocumentFragment returnXml();
+    bool startElement(const QString& namespaceURI, const QString& localName, const QString& qName, const QXmlAttributes& attr);
+    bool endElement(const QString& nu, const QString& localName, const QString& qName);
+    bool characters(const QString& str);
+    bool fatalError(const QXmlParseException& exc);
+    bool isMethodResponseFinished();
+    QStringList returnList(const QString&);
+    // QString returnFirstEntry();
+    bool fault();
+    QString faultString();
+    QDomDocumentFragment returnXml();
 
 private:
-	Blogger::HttpBusinessType _request_type;
-	QString currentString;
-	QString currentRpcArgumentName;
-	QString _faultString;
-	QDomDocument doc;
-	QDomElement returnElement, currentSuperElement, currentElement;
-	// QList<QString> returnData;
-	QMap<QString, QStringList> returnDataList;
-	bool _fault;
-	bool methodResponseFinished;
-	bool receivingArgumentName, insideStruct, receivingData, receivingFaultString;
+    Blogger::HttpBusinessType _request_type;
+    QString currentString;
+    QString currentRpcArgumentName;
+    QString _faultString;
+    QDomDocument doc;
+    QDomElement returnElement, currentSuperElement, currentElement;
+    // QList<QString> returnData;
+    QMap<QString, QStringList> returnDataList;
+    bool _fault;
+    bool methodResponseFinished;
+    bool receivingArgumentName, insideStruct, receivingData, receivingFaultString;
 };
 
 #endif

@@ -25,16 +25,16 @@ class QWidget;
 class QContextMenuEvent;
 
 class LocationLineEdit : public QLineEdit {
-Q_OBJECT
+    Q_OBJECT
 
 public:
-	LocationLineEdit(QWidget *parent = 0);
+    LocationLineEdit(QWidget* parent = 0);
 
 protected:
-	virtual void contextMenuEvent(QContextMenuEvent *event);
+    virtual void contextMenuEvent(QContextMenuEvent* event);
 
 private slots:
-	void addMT();
-	void addWordpress();
-	void addTextpattern();
+    void addMT();
+    void addWordpress();
+    void addTextpattern();
 };

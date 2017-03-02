@@ -14,13 +14,16 @@
 W_OBJECT_IMPL(ConfigPage)
 #endif
 
-ConfigPage::ConfigPage(QWidget *parent)
-	: QWidget(parent)
-{}
+ConfigPage::ConfigPage(QWidget* parent)
+    : QWidget(parent)
+{
+}
 
 ConfigPage::~ConfigPage()
-{}
+{
+}
 
-int ConfigPage::apply_changes(void){
-	return 0;
+int ConfigPage::apply_changes(void)
+{
+    return 0;
 }

@@ -17,27 +17,27 @@
 
 class ReduceMessageBox : public QDialog {
 #if QT_VERSION == 0x050600
-W_OBJECT(ReduceMessageBox)
+    W_OBJECT(ReduceMessageBox)
 #else
-Q_OBJECT
+    Q_OBJECT
 #endif
 
 public:
-	ReduceMessageBox(QWidget *parent = 0);
+    ReduceMessageBox(QWidget* parent = 0);
 
-	void setText(QString iText);
-	void setDetailedText(QString iDetailedText);
-	void setDetailedTextReadOnly(bool iReadOnly);
-	void setStandardButtons(QFlags<QDialogButtonBox::StandardButton> buttons);
+    void setText(QString iText);
+    void setDetailedText(QString iDetailedText);
+    void setDetailedTextReadOnly(bool iReadOnly);
+    void setStandardButtons(QFlags<QDialogButtonBox::StandardButton> buttons);
 
 protected:
-	void setupSignals(void);
-	void setupUI(void);
-	void assembly(void);
+    void setupSignals(void);
+    void setupUI(void);
+    void assembly(void);
 
-	QLabel text;
-	QTextEdit detailedText;
-	QDialogButtonBox buttonBox;
+    QLabel text;
+    QTextEdit detailedText;
+    QDialogButtonBox buttonBox;
 };
 
 #endif // __REDUCEMESSAGEBOX_H__

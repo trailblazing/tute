@@ -70,52 +70,53 @@ class QtLocalPeer;
 #endif
 
 namespace qt4 {
-	class QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication : public QApplication {
-	// #if QT_VERSION == 0x050600
-	// W_OBJECT(QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication)
-	// #else
-	// Q_OBJECT
-	// #endif
-	Q_OBJECT
-	public:
-		QtSingleApplication(int &argc, char * *argv, bool GUIenabled = true);
-		QtSingleApplication(const QString &id, int &argc, char * *argv);
+class QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication : public QApplication {
+    // #if QT_VERSION == 0x050600
+    // W_OBJECT(QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication)
+    // #else
+    // Q_OBJECT
+    // #endif
+    Q_OBJECT
+public:
+    QtSingleApplication(int& argc, char** argv, bool GUIenabled = true);
+    QtSingleApplication(const QString& id, int& argc, char** argv);
 
 // This constructor dont compile under Qt 5.2.0 (Type is undeclared)
 // This constructor dont use in this program and commented
 // QtSingleApplication(int &argc, char **argv, Type type);
 #if defined(Q_WS_X11)
-		QtSingleApplication(Display *dpy, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
-		QtSingleApplication(Display *dpy, int &argc, char * *argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0);
-		QtSingleApplication(Display *dpy, const QString &appId, int argc, char * *argv, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
+    QtSingleApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
+    QtSingleApplication(Display* dpy, int& argc, char** argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0);
+    QtSingleApplication(Display* dpy, const QString& appId, int argc, char** argv, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
 #endif
 
-		bool isRunning();
-		QString id() const;
+    bool isRunning();
+    QString id() const;
 
-		void setActivationWindow(QWidget *aw, bool activateOnMessage = true);
-		QWidget *activationWindow() const;
+    void setActivationWindow(QWidget* aw, bool activateOnMessage = true);
+    QWidget* activationWindow() const;
 
-		// Obsolete:
-		void initialize(bool dummy = true){
-			isRunning();
-			Q_UNUSED(dummy)
-		}
+    // Obsolete:
+    void initialize(bool dummy = true)
+    {
+        isRunning();
+        Q_UNUSED(dummy)
+    }
 
-	public Q_SLOTS:
-		bool sendMessage(const QString &message, int timeout = 5000);
-		void activateWindow();
+public Q_SLOTS:
+    bool sendMessage(const QString& message, int timeout = 5000);
+    void activateWindow();
 
 Q_SIGNALS:
-		void messageReceived(const QString &message)
+    void messageReceived(const QString& message)
 #if QT_VERSION == 0x050600
-		W_SIGNAL(messageReceived, (const QString &), message) // ;
+        W_SIGNAL(messageReceived, (const QString&), message) // ;
 #else
-		;
+        ;
 #endif
 
-	private: void sysInit(const QString &appId = QString());
-		QtLocalPeer *peer;
-		QWidget *actWin;
-	};
+        private : void sysInit(const QString& appId = QString());
+    QtLocalPeer* peer;
+    QWidget* actWin;
+};
 }

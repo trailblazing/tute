@@ -14,13 +14,15 @@
 W_OBJECT_IMPL(MtStyledItemDelegate)
 #endif
 
-MtStyledItemDelegate::MtStyledItemDelegate(QObject *parent)
-	: QStyledItemDelegate(parent)
-{}
-QSize MtStyledItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
-	QSize size = QStyledItemDelegate::sizeHint(option, index);
+MtStyledItemDelegate::MtStyledItemDelegate(QObject* parent)
+    : QStyledItemDelegate(parent)
+{
+}
+QSize MtStyledItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    QSize size = QStyledItemDelegate::sizeHint(option, index);
 
-	size.rheight() = 45;
+    size.rheight() = 45;
 
-	return size;
+    return size;
 }

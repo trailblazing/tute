@@ -25,30 +25,38 @@
 
 #include "status_widget.h"
 
-StatusWidget::StatusWidget(QWidget *parent)
-	: QWidget(parent){
-	ui.setupUi(this);
+StatusWidget::StatusWidget(QWidget* parent)
+    : QWidget(parent)
+{
+    ui.setupUi(this);
 }
 
-StatusWidget::~StatusWidget(){
-	deleteLater();
+StatusWidget::~StatusWidget()
+{
+    deleteLater();
 }
 
-void StatusWidget::showMessage(QString message, int time){
-	QTimer *timer = new QTimer(this);
-	if(time != 0) connect(timer, SIGNAL(timeout()), this, SLOT(clearMessage()));
-	ui.lMessageSpace->setText(message);
-	if(time != 0) timer->start();
+void StatusWidget::showMessage(QString message, int time)
+{
+    QTimer* timer = new QTimer(this);
+    if (time != 0)
+        connect(timer, SIGNAL(timeout()), this, SLOT(clearMessage()));
+    ui.lMessageSpace->setText(message);
+    if (time != 0)
+        timer->start();
 }
 
-void StatusWidget::clearMessage(){
-	ui.lMessageSpace->setText(QString());
+void StatusWidget::clearMessage()
+{
+    ui.lMessageSpace->setText(QString());
 }
 
-QPushButton *StatusWidget::copyURLButton(){
-	return ui.pbCopyURLBase;
+QPushButton* StatusWidget::copyURLButton()
+{
+    return ui.pbCopyURLBase;
 }
 
-QProgressBar *StatusWidget::progressBar(){
-	return ui.progressBarBase;
+QProgressBar* StatusWidget::progressBar()
+{
+    return ui.progressBarBase;
 }

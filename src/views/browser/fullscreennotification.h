@@ -54,33 +54,33 @@ class QGridLayout;
 class QPropertyAnimation;
 
 namespace web {
-	class FullScreenNotification : public QWidget {
+class FullScreenNotification : public QWidget {
 #if QT_VERSION == 0x050600
-	W_OBJECT(FullScreenNotification)
+    W_OBJECT(FullScreenNotification)
 #else
-	Q_OBJECT
+    Q_OBJECT
 #endif
 
-	public:
-		FullScreenNotification(QWidget *parent = 0);
-		~FullScreenNotification();
+public:
+    FullScreenNotification(QWidget* parent = 0);
+    ~FullScreenNotification();
 
-		void show();
-		void hide();
+    void show();
+    void hide();
 
-	public slots:
-		void fadeOut();
-		void fadeOutFinished();
+public slots:
+    void fadeOut();
+    void fadeOutFinished();
 
-	private:
-		QLabel *_label;
-		QGridLayout *_layout;
-		QPropertyAnimation *_animation;
-		int width;
-		int height;
-		int x;
-		int y;
-	};
+private:
+    QLabel* _label;
+    QGridLayout* _layout;
+    QPropertyAnimation* _animation;
+    int width;
+    int height;
+    int x;
+    int y;
+};
 }
 
 #endif // FULLSCREENNOTIFICATION_H

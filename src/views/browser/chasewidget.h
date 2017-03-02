@@ -63,37 +63,37 @@ QT_END_NAMESPACE
 // QT_BEGIN_NAMESPACE
 
 namespace web {
-	class ChaseWidget : public QWidget {
+class ChaseWidget : public QWidget {
 #if QT_VERSION == 0x050600
-	W_OBJECT(ChaseWidget)
+    W_OBJECT(ChaseWidget)
 #else
-	Q_OBJECT
+    Q_OBJECT
 #endif
 
-	public:
-		ChaseWidget(const QSize &size, QWidget *parent = 0, QPixmap pixmap = QPixmap(), bool pixmapEnabled = false);
+public:
+    ChaseWidget(const QSize& size, QWidget* parent = 0, QPixmap pixmap = QPixmap(), bool pixmapEnabled = false);
 
-		void setAnimated(bool value);
-		void setPixmapEnabled(bool enable);
-		QSize sizeHint() const;
+    void setAnimated(bool value);
+    void setPixmapEnabled(bool enable);
+    QSize sizeHint() const;
 
-	protected:
-		void paintEvent(QPaintEvent *event);
-		void timerEvent(QTimerEvent *event);
+protected:
+    void paintEvent(QPaintEvent* event);
+    void timerEvent(QTimerEvent* event);
 
-	private:
-		int segmentCount() const;
-		QColor colorForSegment(int segment) const;
+private:
+    int segmentCount() const;
+    QColor colorForSegment(int segment) const;
 
-		int _segment;
-		int _delay;
-		int _step;
-		int _timerid;
-		QSize _size;
-		bool _animated;
-		QPixmap _pixmap;
-		bool _pixmapenabled;
-	};
+    int _segment;
+    int _delay;
+    int _step;
+    int _timerid;
+    QSize _size;
+    bool _animated;
+    QPixmap _pixmap;
+    bool _pixmapenabled;
+};
 }
 
 // QT_END_NAMESPACE

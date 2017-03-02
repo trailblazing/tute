@@ -59,27 +59,27 @@ namespace web {
             It will wait several seconds after changed() to combining multiple changes and
             prevent continuous writing to disk.
  */
-	class AutoSaver : public QObject {
+class AutoSaver : public QObject {
 #if QT_VERSION == 0x050600
-	W_OBJECT(AutoSaver)
+    W_OBJECT(AutoSaver)
 #else
-	Q_OBJECT
+    Q_OBJECT
 #endif
-	public:
-		AutoSaver(QObject *parent);
-		~AutoSaver();
-		void saveIfNeccessary();
+public:
+    AutoSaver(QObject* parent);
+    ~AutoSaver();
+    void saveIfNeccessary();
 
-	public slots:
-		void changeOccurred();
+public slots:
+    void changeOccurred();
 
-	protected:
-		void timerEvent(QTimerEvent *event);
+protected:
+    void timerEvent(QTimerEvent* event);
 
-	private:
-		QBasicTimer _timer;
-		QTime _firstchange;
-	};
+private:
+    QBasicTimer _timer;
+    QTime _firstchange;
+};
 }
 
 // QT_END_NAMESPACE

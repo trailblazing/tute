@@ -31,132 +31,154 @@
 
 #include "xml_rpc_handler.h"
 
-#define _BLOGGER_GETUSERSBLOGS		Blogger::HttpBusinessType::_blogger_getUsersBlogs
-#define _MT_GETCATEGORYLIST		Blogger::HttpBusinessType::_mt_getCategoryList
-#define _METAWEBLOG_NEWMEDIAOBJECT	Blogger::HttpBusinessType::_metaWeblog_newMediaObject
+#define _BLOGGER_GETUSERSBLOGS Blogger::HttpBusinessType::_blogger_getUsersBlogs
+#define _MT_GETCATEGORYLIST Blogger::HttpBusinessType::_mt_getCategoryList
+#define _METAWEBLOG_NEWMEDIAOBJECT Blogger::HttpBusinessType::_metaWeblog_newMediaObject
 // #define _BLOGGER_GETUSERSBLOGS            _blogger_getUsersBlogs
 // #define _MT_GETCATEGORYLIST               _mt_getCategoryList
 // #define _METAWEBLOG_NEWMEDIAOBJECT        _metaWeblog_newMediaObject
 
 #include "blogger.h"
 
-XmlRpcHandler::XmlRpcHandler(Blogger::HttpBusinessType x) : _request_type(x){
-//	_request_type = x;
-	_fault = false;
-	methodResponseFinished	= false;
-	receivingArgumentName	= false;
-	insideStruct = false;
-	receivingFaultString = false;
-	if(_request_type == _BLOGGER_GETUSERSBLOGS) returnElement = doc.createElement("blogs");
-	if(_request_type == _MT_GETCATEGORYLIST) returnElement = doc.createElement("categories");
+XmlRpcHandler::XmlRpcHandler(Blogger::HttpBusinessType x)
+    : _request_type(x)
+{
+    //	_request_type = x;
+    _fault = false;
+    methodResponseFinished = false;
+    receivingArgumentName = false;
+    insideStruct = false;
+    receivingFaultString = false;
+    if (_request_type == _BLOGGER_GETUSERSBLOGS)
+        returnElement = doc.createElement("blogs");
+    if (_request_type == _MT_GETCATEGORYLIST)
+        returnElement = doc.createElement("categories");
 }
 
-XmlRpcHandler::XmlRpcHandler(){
-	methodResponseFinished	= false;
-	receivingArgumentName	= false;
-	insideStruct = false;
-	receivingFaultString = false;
+XmlRpcHandler::XmlRpcHandler()
+{
+    methodResponseFinished = false;
+    receivingArgumentName = false;
+    insideStruct = false;
+    receivingFaultString = false;
 }
 
-void XmlRpcHandler::setProtocol(Blogger::HttpBusinessType x){
-	_request_type = x;
+void XmlRpcHandler::setProtocol(Blogger::HttpBusinessType x)
+{
+    _request_type = x;
 }
 
-bool XmlRpcHandler::startElement(const QString &, const QString &, const QString &qName, const QXmlAttributes &attr){
-	(void) attr;
-	QString superElementName;
-	/*if( qName == "struct" )
+bool XmlRpcHandler::startElement(const QString&, const QString&, const QString& qName, const QXmlAttributes& attr)
+{
+    (void)attr;
+    QString superElementName;
+    /*if( qName == "struct" )
 	      currentString = "";
 	    if( (qName == "string" ) && (currentString.isNull() ) )
 	    currentString = "";*/
-	if((qName == "struct")){
-		insideStruct = true;
-		if(((_request_type == _BLOGGER_GETUSERSBLOGS) || (_request_type == _MT_GETCATEGORYLIST))){
-			switch(_request_type){
-				case _BLOGGER_GETUSERSBLOGS:
-					superElementName = QString("blog");
-					break;
-				case _MT_GETCATEGORYLIST:
-					superElementName = QString("category");
-					break;
-				default:
-					break;
-			}
-			// qDebug() << "Creating super element: " << superElementName.toAscii().data();
-			currentSuperElement = doc.createElement(superElementName);
-		}
-	}
-	if(qName == "base64" || qName == "boolean" || qName == "dateTime.iso8601" || qName == "double" || qName == "int" || qName == "string") receivingData = true;
-	if(qName == "member" && insideStruct) currentElement = doc.createElement("currentElement");
-	if(qName == "name"){
-		receivingArgumentName	= true;
-		currentRpcArgumentName	= "";
-	}
-	if(qName == "fault") _fault = true;
-	if(qName == "faultString") receivingFaultString = true;
-	return true;
+    if ((qName == "struct")) {
+        insideStruct = true;
+        if (((_request_type == _BLOGGER_GETUSERSBLOGS) || (_request_type == _MT_GETCATEGORYLIST))) {
+            switch (_request_type) {
+            case _BLOGGER_GETUSERSBLOGS:
+                superElementName = QString("blog");
+                break;
+            case _MT_GETCATEGORYLIST:
+                superElementName = QString("category");
+                break;
+            default:
+                break;
+            }
+            // qDebug() << "Creating super element: " << superElementName.toAscii().data();
+            currentSuperElement = doc.createElement(superElementName);
+        }
+    }
+    if (qName == "base64" || qName == "boolean" || qName == "dateTime.iso8601" || qName == "double" || qName == "int" || qName == "string")
+        receivingData = true;
+    if (qName == "member" && insideStruct)
+        currentElement = doc.createElement("currentElement");
+    if (qName == "name") {
+        receivingArgumentName = true;
+        currentRpcArgumentName = "";
+    }
+    if (qName == "fault")
+        _fault = true;
+    if (qName == "faultString")
+        receivingFaultString = true;
+    return true;
 }
 
-bool XmlRpcHandler::characters(const QString &str){
-	QString stringToAdd;
-	if(str.startsWith("http://", Qt::CaseInsensitive) && _request_type != _METAWEBLOG_NEWMEDIAOBJECT) currentString += str.section("//", 1);
-	else currentString += str;
-	if(receivingArgumentName){
-		currentRpcArgumentName = str;
-		if((_request_type == _BLOGGER_GETUSERSBLOGS) || (_request_type == _MT_GETCATEGORYLIST)){
-			// qDebug() << "Naming current element: " << str.toAscii().data();
-			currentElement.setTagName(currentRpcArgumentName);
-		}
-	}else{
-		if(receivingData){
-			if(str.startsWith("http://", Qt::CaseInsensitive) && _request_type != _METAWEBLOG_NEWMEDIAOBJECT) stringToAdd = str.section("//", 1);
-			// returnDataList[currentRpcArgumentName].append( str.section( "//", 1 ) );
-			else stringToAdd = str;
-			returnDataList[currentRpcArgumentName].append(stringToAdd);
-			// returnDataList[currentRpcArgumentName].append( str );
-			if((_request_type == _BLOGGER_GETUSERSBLOGS) || (_request_type == _MT_GETCATEGORYLIST))
-				if(!currentElement.isNull()){
-					// qDebug() << "Appending text: " << str.toAscii().data();
-					currentElement.appendChild(QDomText(doc.createTextNode(stringToAdd)));
-				}
-		}
-	}
-	if(receivingFaultString){
-		// qDebug() << "Fault: " << str.toAscii().data();
-		_faultString = str;
-	}
-	return true;
+bool XmlRpcHandler::characters(const QString& str)
+{
+    QString stringToAdd;
+    if (str.startsWith("http://", Qt::CaseInsensitive) && _request_type != _METAWEBLOG_NEWMEDIAOBJECT)
+        currentString += str.section("//", 1);
+    else
+        currentString += str;
+    if (receivingArgumentName) {
+        currentRpcArgumentName = str;
+        if ((_request_type == _BLOGGER_GETUSERSBLOGS) || (_request_type == _MT_GETCATEGORYLIST)) {
+            // qDebug() << "Naming current element: " << str.toAscii().data();
+            currentElement.setTagName(currentRpcArgumentName);
+        }
+    } else {
+        if (receivingData) {
+            if (str.startsWith("http://", Qt::CaseInsensitive) && _request_type != _METAWEBLOG_NEWMEDIAOBJECT)
+                stringToAdd = str.section("//", 1);
+            // returnDataList[currentRpcArgumentName].append( str.section( "//", 1 ) );
+            else
+                stringToAdd = str;
+            returnDataList[currentRpcArgumentName].append(stringToAdd);
+            // returnDataList[currentRpcArgumentName].append( str );
+            if ((_request_type == _BLOGGER_GETUSERSBLOGS) || (_request_type == _MT_GETCATEGORYLIST))
+                if (!currentElement.isNull()) {
+                    // qDebug() << "Appending text: " << str.toAscii().data();
+                    currentElement.appendChild(QDomText(doc.createTextNode(stringToAdd)));
+                }
+        }
+    }
+    if (receivingFaultString) {
+        // qDebug() << "Fault: " << str.toAscii().data();
+        _faultString = str;
+    }
+    return true;
 }
 
-bool XmlRpcHandler::endElement(const QString &, const QString &, const QString &qName){
-	if(qName == "name"){
-		// currentString += ":";
-		if(!returnDataList.contains(qName)) returnDataList.insert(qName, QStringList());
-		receivingArgumentName = false;
-	}
-	if(qName == "faultString") receivingFaultString = false;
-	if(qName == "methodResponse") methodResponseFinished = true;
-	if(qName == "member" && insideStruct)
-		if(!currentSuperElement.isNull() && !currentElement.isNull()){
-			// qDebug() << "Appending current element: " << qName.toAscii().data();
-			currentSuperElement.appendChild(currentElement);
-		}
-	if(qName == "struct"){
-		if(!returnElement.isNull() && !currentSuperElement.isNull()){
-			// qDebug() << "Appending current super-element: " << qName.toAscii().data();
-			returnElement.appendChild(currentSuperElement);
-		}
-		/*    else
+bool XmlRpcHandler::endElement(const QString&, const QString&, const QString& qName)
+{
+    if (qName == "name") {
+        // currentString += ":";
+        if (!returnDataList.contains(qName))
+            returnDataList.insert(qName, QStringList());
+        receivingArgumentName = false;
+    }
+    if (qName == "faultString")
+        receivingFaultString = false;
+    if (qName == "methodResponse")
+        methodResponseFinished = true;
+    if (qName == "member" && insideStruct)
+        if (!currentSuperElement.isNull() && !currentElement.isNull()) {
+            // qDebug() << "Appending current element: " << qName.toAscii().data();
+            currentSuperElement.appendChild(currentElement);
+        }
+    if (qName == "struct") {
+        if (!returnElement.isNull() && !currentSuperElement.isNull()) {
+            // qDebug() << "Appending current super-element: " << qName.toAscii().data();
+            returnElement.appendChild(currentSuperElement);
+        }
+        /*    else
 		   if( returnElement.isNull() )
 		    // qDebug() << "Return element is null";
 		   else
 		   // qDebug() << "Super element is null"; */
-		insideStruct = false;
-	}
-	if(qName == "base64" || qName == "boolean" || qName == "dateTime.iso8601" || qName == "double" || qName == "int" || qName == "string") receivingData = false;
-	if(qName == "array")
-		if(!returnElement.isNull()) doc.appendChild(returnElement);
-	/*  else {
+        insideStruct = false;
+    }
+    if (qName == "base64" || qName == "boolean" || qName == "dateTime.iso8601" || qName == "double" || qName == "int" || qName == "string")
+        receivingData = false;
+    if (qName == "array")
+        if (!returnElement.isNull())
+            doc.appendChild(returnElement);
+    /*  else {
 	      if( (qName == "string") || (qName == "int") || (qName == "boolean")
 	 || (qName == "dateTime.iso8601" ) )**
 	      if( qName == "value" ) {
@@ -174,17 +196,18 @@ bool XmlRpcHandler::endElement(const QString &, const QString &, const QString &
 	        }
 	      }
 	    } */
-	return true;
+    return true;
 }
 
-bool XmlRpcHandler::fatalError(const QXmlParseException &exc){
-	qWarning("Line %d, column %d: %s", exc.lineNumber(), exc.columnNumber(), exc.message().toLatin1().data());
-	_faultString.append(QString("Line %1, column %2: %3")
-		.arg(exc.lineNumber())
-		.arg(exc.columnNumber())
-		.arg(exc.message()));
-	methodResponseFinished = true;
-	return false;
+bool XmlRpcHandler::fatalError(const QXmlParseException& exc)
+{
+    qWarning("Line %d, column %d: %s", exc.lineNumber(), exc.columnNumber(), exc.message().toLatin1().data());
+    _faultString.append(QString("Line %1, column %2: %3")
+                            .arg(exc.lineNumber())
+                            .arg(exc.columnNumber())
+                            .arg(exc.message()));
+    methodResponseFinished = true;
+    return false;
 }
 /*
    QList<QString> XmlRpcHandler::returnList()
@@ -192,23 +215,29 @@ bool XmlRpcHandler::fatalError(const QXmlParseException &exc){
    return returnData;
    }*/
 
-QStringList XmlRpcHandler::returnList(const QString &title){
-	if(returnDataList.contains(title)) return returnDataList.value(title);
-	else return QStringList();
+QStringList XmlRpcHandler::returnList(const QString& title)
+{
+    if (returnDataList.contains(title))
+        return returnDataList.value(title);
+    else
+        return QStringList();
 }
 
-QDomDocumentFragment XmlRpcHandler::returnXml(){
-	QDomDocumentFragment returnFragment = doc.createDocumentFragment();
-	returnFragment.appendChild(returnElement);
-	return returnFragment;
+QDomDocumentFragment XmlRpcHandler::returnXml()
+{
+    QDomDocumentFragment returnFragment = doc.createDocumentFragment();
+    returnFragment.appendChild(returnElement);
+    return returnFragment;
 }
 
-bool XmlRpcHandler::fault(){
-	return _fault;
+bool XmlRpcHandler::fault()
+{
+    return _fault;
 }
 
-QString XmlRpcHandler::faultString(){
-	return _faultString;
+QString XmlRpcHandler::faultString()
+{
+    return _faultString;
 }
 
 /*QString XmlRpcHandler::returnFirstEntry()
@@ -216,6 +245,7 @@ QString XmlRpcHandler::faultString(){
    return returnData[0];
    }*/
 
-bool XmlRpcHandler::isMethodResponseFinished(){
-	return methodResponseFinished;
+bool XmlRpcHandler::isMethodResponseFinished()
+{
+    return methodResponseFinished;
 }

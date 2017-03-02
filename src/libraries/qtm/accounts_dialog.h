@@ -39,30 +39,30 @@ class QNetworkReply;
 class QEvent;
 
 class AccountsDialog : public QDialog, public Ui::AccountsForm {
-Q_OBJECT
+    Q_OBJECT
 
 public:
-	typedef struct _acct {
-		QString id;
-		int hostedBlogType;
-		QString name;
-		QString endpoint;
-		/*    QString server;
+    typedef struct _acct {
+        QString id;
+        int hostedBlogType;
+        QString name;
+        QString endpoint;
+        /*    QString server;
 		   QString location;
 		   QString port; */
-		QString login;
-		QString password;
-		// bool useHTTPS;
-		bool	categoriesEnabled;
-		bool	postDateTime;
-		bool	allowComments;
-		bool	allowTB;
-		bool	useWordpressAPI;
-	}Account;
+        QString login;
+        QString password;
+        // bool useHTTPS;
+        bool categoriesEnabled;
+        bool postDateTime;
+        bool allowComments;
+        bool allowTB;
+        bool useWordpressAPI;
+    } Account;
 
-	AccountsDialog(QList<AccountsDialog::Account> &, int, QWidget *parent = 0);
-	QList<Account> accounts(){return accountList;}
-	/*QStringList templateTitles() { return _templateTitles; }
+    AccountsDialog(QList<AccountsDialog::Account>&, int, QWidget* parent = 0);
+    QList<Account> accounts() { return accountList; }
+    /*QStringList templateTitles() { return _templateTitles; }
 	    QStringList templateStrings() { return _templateStrings; }
 	    QList<int> defaultPublishStates() { return _defaultPublishStates; }
 	    QList<bool> copyTitleStates() { return _copyTitleStates; }
@@ -71,63 +71,63 @@ public:
 	    QList<QStringList> assocHostLists(); */
 
 private:
-	void acceptAccount();
-	QList<Account> accountList, originalAccountList;
-	Account currentAcct;
-	QList<QWidget *> accountWidgets;
-	QList<QWidget *> boolWidgets;
-	bool doingNewAccount;
-	bool dirty;
-	int currentRow;
-	QString currentAccountId;
-	QAction *addAccount;
-	QAction *removeAccount;
-	Account currentAccount;
-	QDateTime entryDateTime;
-	QNetworkAccessManager *netmgr;
-	QNetworkReply *currentReply;
-	QByteArray httpByteArray;
-	QString currentHost;
-	typedef enum _biz {
-		NoBusiness
-		, FindingRsdXml
-		, FindingXmlrpcPhp
-	}HttpBusiness;
-	HttpBusiness networkBiz;
+    void acceptAccount();
+    QList<Account> accountList, originalAccountList;
+    Account currentAcct;
+    QList<QWidget*> accountWidgets;
+    QList<QWidget*> boolWidgets;
+    bool doingNewAccount;
+    bool dirty;
+    int currentRow;
+    QString currentAccountId;
+    QAction* addAccount;
+    QAction* removeAccount;
+    Account currentAccount;
+    QDateTime entryDateTime;
+    QNetworkAccessManager* netmgr;
+    QNetworkReply* currentReply;
+    QByteArray httpByteArray;
+    QString currentHost;
+    typedef enum _biz {
+        NoBusiness,
+        FindingRsdXml,
+        FindingXmlrpcPhp
+    } HttpBusiness;
+    HttpBusiness networkBiz;
 
 private slots:
-	void changeListIndex(int);
-	void doNewAccount();
-	void setDirty();
-	void setClean();
-	void assignSlug();
-	void on_leBlogURI_returnPressed();
-	// void handleResponseHeader( int, bool );
-	void handleHttpDone(QNetworkReply *);
-	void on_pbNew_clicked(){doNewAccount();}
-	void removeThisAccount();
-	// void on_pbAccept_clicked() { acceptTemplate(); }
-	void on_pbWhatsThis_clicked();
-	void on_pbOK_clicked();
-	void on_pbCancel_clicked(){reject();}
+    void changeListIndex(int);
+    void doNewAccount();
+    void setDirty();
+    void setClean();
+    void assignSlug();
+    void on_leBlogURI_returnPressed();
+    // void handleResponseHeader( int, bool );
+    void handleHttpDone(QNetworkReply*);
+    void on_pbNew_clicked() { doNewAccount(); }
+    void removeThisAccount();
+    // void on_pbAccept_clicked() { acceptTemplate(); }
+    void on_pbWhatsThis_clicked();
+    void on_pbOK_clicked();
+    void on_pbCancel_clicked() { reject(); }
 
-	// Handle changes to account variables
-	void on_leName_textEdited(const QString &);
-	void on_leEndpoint_textEdited(const QString &);
-	void on_leLogin_textEdited(const QString &);
-	void on_lePassword_textEdited(const QString &);
-	void on_cbHostedBlogType_activated(int);
-	// void on_chUseHTTPS_clicked( bool );
-	void on_chCategoriesEnabled_clicked(bool);
-	void on_chPostDateTime_clicked(bool);
-	void on_chAllowComments_clicked(bool);
-	void on_chAllowTB_clicked(bool);
-	void on_chUseWordpressAPI_clicked(bool);
+    // Handle changes to account variables
+    void on_leName_textEdited(const QString&);
+    void on_leEndpoint_textEdited(const QString&);
+    void on_leLogin_textEdited(const QString&);
+    void on_lePassword_textEdited(const QString&);
+    void on_cbHostedBlogType_activated(int);
+    // void on_chUseHTTPS_clicked( bool );
+    void on_chCategoriesEnabled_clicked(bool);
+    void on_chPostDateTime_clicked(bool);
+    void on_chAllowComments_clicked(bool);
+    void on_chAllowTB_clicked(bool);
+    void on_chUseWordpressAPI_clicked(bool);
 
-	// void handleRequestFinished( int, bool );
+    // void handleRequestFinished( int, bool );
 
 protected:
-	virtual bool eventFilter(QObject *, QEvent *);
+    virtual bool eventFilter(QObject*, QEvent*);
 };
 
 #endif

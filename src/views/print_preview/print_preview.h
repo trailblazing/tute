@@ -17,27 +17,27 @@ class FlatToolButton;
 
 class PrintPreview : public QDialog {
 #if QT_VERSION == 0x050600
-W_OBJECT(PrintPreview)
+    W_OBJECT(PrintPreview)
 #else
-Q_OBJECT
+    Q_OBJECT
 #endif
 
 public:
-	PrintPreview(const QTextDocument *document, QWidget *parent);
-	virtual ~PrintPreview();
+    PrintPreview(const QTextDocument* document, QWidget* parent);
+    virtual ~PrintPreview();
 
 private slots:
-	void print();
-	void page_setup();
+    void print();
+    void page_setup();
 
 private:
-	void setup();
+    void setup();
 
-	QTextDocument *doc;
-	PreviewView *view;
-	QPrinter printer;
+    QTextDocument* doc;
+    PreviewView* view;
+    QPrinter printer;
 
-	QVBoxLayout *centralLayout;
+    QVBoxLayout* centralLayout;
 };
 
 #endif // _PRINTPREVIEW_H_

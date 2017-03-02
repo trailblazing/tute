@@ -71,96 +71,110 @@ extern std::shared_ptr<gl_para> gl_paras;
 
 namespace web {
 #if QT_VERSION == 0x050600
-	W_OBJECT_IMPL(NetworkAccessManager)
+W_OBJECT_IMPL(NetworkAccessManager)
 #endif
 
-	NetworkAccessManager::NetworkAccessManager(QObject *parent)
-		: QNetworkAccessManager(parent)
-		  , requestFinishedCount(0)
-		  , requestFinishedFromCacheCount(0)
-		  , requestFinishedPipelinedCount(0)
-		  , requestFinishedSecureCount(0)
-		  , requestFinishedDownloadBufferCount(0){
-		connect(this, &NetworkAccessManager::finished, this, &NetworkAccessManager::requestFinished);
+NetworkAccessManager::NetworkAccessManager(QObject* parent)
+    : QNetworkAccessManager(parent)
+    , requestFinishedCount(0)
+    , requestFinishedFromCacheCount(0)
+    , requestFinishedPipelinedCount(0)
+    , requestFinishedSecureCount(0)
+    , requestFinishedDownloadBufferCount(0)
+{
+    connect(this, &NetworkAccessManager::finished, this, &NetworkAccessManager::requestFinished);
 #ifndef QT_NO_OPENSSL
-		connect(this, &QNetworkAccessManager::sslErrors, this, &NetworkAccessManager::sslErrors);
+    connect(this, &QNetworkAccessManager::sslErrors, this, &NetworkAccessManager::sslErrors);
 #endif
-		loadSettings();
+    loadSettings();
 
-		QNetworkDiskCache *diskCache = new QNetworkDiskCache(this);
-		QString location = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-		diskCache->setCacheDirectory(location);
-		setCache(diskCache);
-	}
+    QNetworkDiskCache* diskCache = new QNetworkDiskCache(this);
+    QString location = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    diskCache->setCacheDirectory(location);
+    setCache(diskCache);
+}
 
-	QNetworkReply *NetworkAccessManager::createRequest(Operation op, const QNetworkRequest &req, QIODevice *outgoingData){
-		QNetworkRequest request = req; // copy so we can modify
-		// this is a temporary hack until we properly use the pipelining flags from QtWebkit
-		// pipeline everything! :)
-		request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+QNetworkReply* NetworkAccessManager::createRequest(Operation op, const QNetworkRequest& req, QIODevice* outgoingData)
+{
+    QNetworkRequest request = req; // copy so we can modify
+    // this is a temporary hack until we properly use the pipelining flags from QtWebkit
+    // pipeline everything! :)
+    request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
 
-		return QNetworkAccessManager::createRequest(op, request, outgoingData);
-	}
+    return QNetworkAccessManager::createRequest(op, request, outgoingData);
+}
 
-	void NetworkAccessManager::requestFinished(QNetworkReply *reply){
-		requestFinishedCount++;
-		if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true) requestFinishedFromCacheCount++;
-		if(reply->attribute(QNetworkRequest::HttpPipeliningWasUsedAttribute).toBool() == true) requestFinishedPipelinedCount++;
-		if(reply->attribute(QNetworkRequest::ConnectionEncryptedAttribute).toBool() == true) requestFinishedSecureCount++;
-		if(reply->attribute(QNetworkRequest::DownloadBufferAttribute).isValid() == true) requestFinishedDownloadBufferCount++;
-		if(requestFinishedCount % 10) return;
+void NetworkAccessManager::requestFinished(QNetworkReply* reply)
+{
+    requestFinishedCount++;
+    if (reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true)
+        requestFinishedFromCacheCount++;
+    if (reply->attribute(QNetworkRequest::HttpPipeliningWasUsedAttribute).toBool() == true)
+        requestFinishedPipelinedCount++;
+    if (reply->attribute(QNetworkRequest::ConnectionEncryptedAttribute).toBool() == true)
+        requestFinishedSecureCount++;
+    if (reply->attribute(QNetworkRequest::DownloadBufferAttribute).isValid() == true)
+        requestFinishedDownloadBufferCount++;
+    if (requestFinishedCount % 10)
+        return;
 #ifdef QT_DEBUG
-		double pctCached = (double (requestFinishedFromCacheCount) * 100.0 / double (requestFinishedCount));
-		double pctPipelined = (double (requestFinishedPipelinedCount) * 100.0 / double (requestFinishedCount));
-		double pctSecure = (double (requestFinishedSecureCount) * 100.0 / double (requestFinishedCount));
-		double pctDownloadBuffer = (double (requestFinishedDownloadBufferCount) * 100.0 / double (requestFinishedCount));
+    double pctCached = (double(requestFinishedFromCacheCount) * 100.0 / double(requestFinishedCount));
+    double pctPipelined = (double(requestFinishedPipelinedCount) * 100.0 / double(requestFinishedCount));
+    double pctSecure = (double(requestFinishedSecureCount) * 100.0 / double(requestFinishedCount));
+    double pctDownloadBuffer = (double(requestFinishedDownloadBufferCount) * 100.0 / double(requestFinishedCount));
 
-		qDebug("STATS [%lli requests total] [%3.2f%% from cache] [%3.2f%% pipelined] [%3.2f%% SSL/TLS] [%3.2f%% Zerocopy]", requestFinishedCount, pctCached, pctPipelined, pctSecure, pctDownloadBuffer);
-		//
-		if(reply->error() != QNetworkReply::NoError) qDebug() << QString("Network Error: %1").arg(reply->errorString());
-		if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true){
-			QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
-			qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
-		}
+    qDebug("STATS [%lli requests total] [%3.2f%% from cache] [%3.2f%% pipelined] [%3.2f%% SSL/TLS] [%3.2f%% Zerocopy]", requestFinishedCount, pctCached, pctPipelined, pctSecure, pctDownloadBuffer);
+    //
+    if (reply->error() != QNetworkReply::NoError)
+        qDebug() << QString("Network Error: %1").arg(reply->errorString());
+    if (reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true) {
+        QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
+        qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
+    }
 #endif
-	}
+}
 
-	void NetworkAccessManager::loadSettings(){
-		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
-		settings.beginGroup(QLatin1String("proxy"));
-		QNetworkProxy proxy;
-		if(settings.value(QLatin1String("enabled"), false).toBool()){
-			if(settings.value(QLatin1String("type"), 0).toInt() == 0) proxy = QNetworkProxy::Socks5Proxy;
-			else proxy = QNetworkProxy::HttpProxy;
-			proxy.setHostName(settings.value(QLatin1String("hostName")).toString());
-			proxy.setPort(settings.value(QLatin1String("port"), 1080).toInt());
-			proxy.setUser(settings.value(QLatin1String("userName")).toString());
-			proxy.setPassword(settings.value(QLatin1String("password")).toString());
-		}
-		setProxy(proxy);
-	}
+void NetworkAccessManager::loadSettings()
+{
+    QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+    settings.beginGroup(QLatin1String("proxy"));
+    QNetworkProxy proxy;
+    if (settings.value(QLatin1String("enabled"), false).toBool()) {
+        if (settings.value(QLatin1String("type"), 0).toInt() == 0)
+            proxy = QNetworkProxy::Socks5Proxy;
+        else
+            proxy = QNetworkProxy::HttpProxy;
+        proxy.setHostName(settings.value(QLatin1String("hostName")).toString());
+        proxy.setPort(settings.value(QLatin1String("port"), 1080).toInt());
+        proxy.setUser(settings.value(QLatin1String("userName")).toString());
+        proxy.setPassword(settings.value(QLatin1String("password")).toString());
+    }
+    setProxy(proxy);
+}
 
 #ifndef QT_NO_OPENSSL
-	void NetworkAccessManager::sslErrors(QNetworkReply *reply, const QList<QSslError> &error){
-		// check if SSL certificate has been trusted already
-		QString replyHost = reply->url().host() + QString(":%1").arg(reply->url().port());
-		if(!sslTrustedHostList.contains(replyHost)){
-			auto brwoser_docker_ = gl_paras->browser_docker(); // ->main_window(register_record(QUrl(DockedWindow::_defaulthome)));    //QtSingleApplication::instance()->mainWindow();
+void NetworkAccessManager::sslErrors(QNetworkReply* reply, const QList<QSslError>& error)
+{
+    // check if SSL certificate has been trusted already
+    QString replyHost = reply->url().host() + QString(":%1").arg(reply->url().port());
+    if (!sslTrustedHostList.contains(replyHost)) {
+        auto brwoser_docker_ = gl_paras->browser_docker(); // ->main_window(register_record(QUrl(DockedWindow::_defaulthome)));    //QtSingleApplication::instance()->mainWindow();
 
-			QStringList errorStrings;
-			for(int i = 0; i < error.count(); ++i) errorStrings += error.at(i).errorString();
-			QString errors = errorStrings.join(QLatin1String("\n"));
-			int ret = QMessageBox::warning(brwoser_docker_, QCoreApplication::applicationName(), tr("SSL Errors:\n\n%1\n\n%2\n\n"
-			                                                                                   "Do you want to ignore these errors for this host?")
-			                               .arg(reply->url().toString())
-			                               .arg(errors)
-			                              , QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-			if(ret == QMessageBox::Yes){
-				reply->ignoreSslErrors();
-				sslTrustedHostList.append(replyHost);
-			}
-		}
-	}
+        QStringList errorStrings;
+        for (int i = 0; i < error.count(); ++i)
+            errorStrings += error.at(i).errorString();
+        QString errors = errorStrings.join(QLatin1String("\n"));
+        int ret = QMessageBox::warning(brwoser_docker_, QCoreApplication::applicationName(), tr("SSL Errors:\n\n%1\n\n%2\n\n"
+                                                                                                "Do you want to ignore these errors for this host?")
+                                                                                                 .arg(reply->url().toString())
+                                                                                                 .arg(errors),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (ret == QMessageBox::Yes) {
+            reply->ignoreSslErrors();
+            sslTrustedHostList.append(replyHost);
+        }
+    }
+}
 
 #endif
 }

@@ -140,24 +140,26 @@ CODECFORTR      =   utf8
 # QMAKE_LFLAGS  +=  -L/usr/lib/qt4/lib
 INCLUDEPATH     +=  $${_PRO_FILE_PWD_}/src
 
+equals(QT_VERSION, 5.6) {
 INCLUDEPATH     += ../../verdigris/src
+}
 
 contains(TARGET_OS, ANY_OS) {
- message(Building the any OS version...)
- SYSTEM_PROGRAM_NAME    =   tute
- BINARY_INSTALL_PATH    =   /usr/local/bin
+        message(Building the any OS version...)
+        SYSTEM_PROGRAM_NAME    =   tute
+        BINARY_INSTALL_PATH    =   /usr/local/bin
 }
 
 contains(TARGET_OS, MEEGO_OS){
- message(Building the MeeGo OS version...)
- SYSTEM_PROGRAM_NAME    =   ru.webhamster.tute
- BINARY_INSTALL_PATH    =   /opt/$${SYSTEM_PROGRAM_NAME}/bin
+        message(Building the MeeGo OS version...)
+        SYSTEM_PROGRAM_NAME    =   ru.webhamster.tute
+        BINARY_INSTALL_PATH    =   /opt/$${SYSTEM_PROGRAM_NAME}/bin
 }
 
 contains(TARGET_OS, ANDROID_OS){
- message(Building the Android OS version...)
- SYSTEM_PROGRAM_NAME    =   tute
- BINARY_INSTALL_PATH    =   /
+        message(Building the Android OS version...)
+        SYSTEM_PROGRAM_NAME    =   tute
+        BINARY_INSTALL_PATH    =   /
 }
 
 contains(DEFINES, QWEBENGINEPAGE_SETNETWORKACCESSMANAGER) {
@@ -191,15 +193,19 @@ target.path     =   $${BINARY_INSTALL_PATH}
 INSTALLS        +=  target
 
 desktop_file.path   =   /usr/share/applications
+
 contains(TARGET_OS, ANY_OS) {
- desktop_file.files =   desktop/any/tute.desktop
+        desktop_file.files =   desktop/any/tute.desktop
 }
+
 contains(TARGET_OS, MEEGO_OS) {
- desktop_file.files =   desktop/meego/tute.desktop
+        desktop_file.files =   desktop/meego/tute.desktop
 }
+
 contains(TARGET_OS, ANDROID_OS) {
- desktop_file.files =   desktop/any/tute.desktop
+        desktop_file.files =   desktop/any/tute.desktop
 }
+
 INSTALLS    +=  desktop_file
 
 icon_scalable_file.path     =   /usr/share/icons/hicolor/scalable/apps
@@ -485,7 +491,9 @@ SOURCES     =   src/main.cpp \
     src/views/main_window/hidable_tab.cpp \
     src/views/browser/docker.cpp \
     src/libraries/qtm/blogger.cxx \
-    src/utility/variant.cxx
+    src/utility/variant.cxx \
+    src/models/tree/tree_item.inl \
+    src/models/record_table/record.inl
 
 
 lessThan(QT_MAJOR_VERSION,5) {

@@ -27,20 +27,20 @@
 #include "ui_StatusWidgetBase.h"
 
 class StatusWidget : public QWidget {
-Q_OBJECT
+    Q_OBJECT
 
 public:
-	StatusWidget(QWidget *parent = 0);
-	~StatusWidget();
-	QProgressBar *progressBar();
-	QPushButton *copyURLButton();
+    StatusWidget(QWidget* parent = 0);
+    ~StatusWidget();
+    QProgressBar* progressBar();
+    QPushButton* copyURLButton();
 
 public slots:
-	void showMessage(QString, int time = 0);
-	void clearMessage();
+    void showMessage(QString, int time = 0);
+    void clearMessage();
 
 private:
-	Ui::StatusWidgetBase ui;
+    Ui::StatusWidgetBase ui;
 };
 
 #endif

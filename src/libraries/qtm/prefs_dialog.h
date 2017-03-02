@@ -31,36 +31,36 @@ class QHostInfo;
 #include "ui_PrefsForm.h"
 
 class PrefsDialog : public QDialog, public Ui::PrefsForm {
-Q_OBJECT
+    Q_OBJECT
 
 public:
-	PrefsDialog(QWidget *parent = 0);
-	// bool noValidHost();
-	void setLabelText(QLabel *, bool, bool);
+    PrefsDialog(QWidget* parent = 0);
+    // bool noValidHost();
+    void setLabelText(QLabel*, bool, bool);
 
 private slots:
-	void on_pbBrowse_clicked();
-	void on_pbWhatsThis_clicked();
-	void on_tbEditorBgColor_clicked();
-	void on_tbEditorFgColor_clicked();
-	void on_tbPreviewBgColor_clicked();
-	void on_tbPreviewFgColor_clicked();
-	void on_tbConsoleBgColor_clicked();
-	void on_tbConsoleFgColor_clicked();
-	void on_pbTagColorFore_clicked();
-	void on_pbTagColorBack_clicked();
-	void on_pbEntityColorFore_clicked();
-	void on_pbEntityColorBack_clicked();
-	void on_pbCommentColorFore_clicked();
-	void on_pbCommentColorBack_clicked();
-	void on_chTagBold_toggled(bool);
-	void on_chTagItalic_toggled(bool);
-	void on_chEntityBold_toggled(bool);
-	void on_chEntityItalic_toggled(bool);
-	void on_chCommentBold_toggled(bool);
-	void on_chCommentItalic_toggled(bool);
-	// void on_okButton_clicked();
-	// void handleHostInfo( const QHostInfo & );
+    void on_pbBrowse_clicked();
+    void on_pbWhatsThis_clicked();
+    void on_tbEditorBgColor_clicked();
+    void on_tbEditorFgColor_clicked();
+    void on_tbPreviewBgColor_clicked();
+    void on_tbPreviewFgColor_clicked();
+    void on_tbConsoleBgColor_clicked();
+    void on_tbConsoleFgColor_clicked();
+    void on_pbTagColorFore_clicked();
+    void on_pbTagColorBack_clicked();
+    void on_pbEntityColorFore_clicked();
+    void on_pbEntityColorBack_clicked();
+    void on_pbCommentColorFore_clicked();
+    void on_pbCommentColorBack_clicked();
+    void on_chTagBold_toggled(bool);
+    void on_chTagItalic_toggled(bool);
+    void on_chEntityBold_toggled(bool);
+    void on_chEntityItalic_toggled(bool);
+    void on_chCommentBold_toggled(bool);
+    void on_chCommentItalic_toggled(bool);
+    // void on_okButton_clicked();
+    // void handleHostInfo( const QHostInfo & );
 };
 
 #endif

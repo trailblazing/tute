@@ -52,19 +52,19 @@
 // QT_BEGIN_NAMESPACE
 
 namespace web {
-	class SqueezeLabel : public QLabel {
+class SqueezeLabel : public QLabel {
 #if QT_VERSION == 0x050600
-	W_OBJECT(SqueezeLabel)
+    W_OBJECT(SqueezeLabel)
 #else
-	Q_OBJECT
+    Q_OBJECT
 #endif
 
-	public:
-		SqueezeLabel(QWidget *parent = 0);
+public:
+    SqueezeLabel(QWidget* parent = 0);
 
-	protected:
-		void paintEvent(QPaintEvent *event);
-	};
+protected:
+    void paintEvent(QPaintEvent* event);
+};
 }
 
 // QT_END_NAMESPACE

@@ -54,71 +54,71 @@
 
 namespace web {
 // A QMenu that is dynamically populated from a QAbstractItemModel
-	class ModelMenu : public QMenu {
+class ModelMenu : public QMenu {
 #if QT_VERSION == 0x050600
-	W_OBJECT(ModelMenu)
+    W_OBJECT(ModelMenu)
 #else
-	Q_OBJECT
+    Q_OBJECT
 #endif
-	signals:
-		void activated(const QModelIndex &index)
+signals:
+    void activated(const QModelIndex& index)
 #if QT_VERSION == 0x050600
-		W_SIGNAL(activated, (const QModelIndex &), index) //
+        W_SIGNAL(activated, (const QModelIndex&), index) //
 #else
-		;
+        ;
 #endif
-		void hovered_signal(const QString &text)
+        void hovered_signal(const QString& text)
 #if QT_VERSION == 0x050600
-		W_SIGNAL(hovered_signal, (const QString &), text) //
+            W_SIGNAL(hovered_signal, (const QString&), text) //
 #else
-		;
+        ;
 #endif
 
-	public: ModelMenu(QWidget *parent = 0);
+        public : ModelMenu(QWidget* parent = 0);
 
-		void setModel(QAbstractItemModel *model);
-		QAbstractItemModel *model() const;
+    void setModel(QAbstractItemModel* model);
+    QAbstractItemModel* model() const;
 
-		void setMaxRows(int max);
-		int maxRows() const;
+    void setMaxRows(int max);
+    int maxRows() const;
 
-		void setFirstSeparator(int offset);
-		int firstSeparator() const;
+    void setFirstSeparator(int offset);
+    int firstSeparator() const;
 
-		void setRootIndex(const QModelIndex &index);
-		QModelIndex rootIndex() const;
+    void setRootIndex(const QModelIndex& index);
+    QModelIndex rootIndex() const;
 
-		void setHoverRole(int role);
-		int hoverRole() const;
+    void setHoverRole(int role);
+    int hoverRole() const;
 
-		void setSeparatorRole(int role);
-		int separatorRole() const;
+    void setSeparatorRole(int role);
+    int separatorRole() const;
 
-		QAction *makeAction(const QIcon &icon, const QString &text, QObject *parent);
+    QAction* makeAction(const QIcon& icon, const QString& text, QObject* parent);
 
-	protected:
-		// add any actions before the tree, return true if any actions are added.
-		virtual bool prePopulated();
-		// add any actions after the tree
-		virtual void postPopulated();
-		// put all of the children of parent into menu up to max
-		void createMenu(const QModelIndex &parent, int max, QMenu *parentMenu = 0, QMenu *menu = 0);
+protected:
+    // add any actions before the tree, return true if any actions are added.
+    virtual bool prePopulated();
+    // add any actions after the tree
+    virtual void postPopulated();
+    // put all of the children of parent into menu up to max
+    void createMenu(const QModelIndex& parent, int max, QMenu* parentMenu = 0, QMenu* menu = 0);
 
-	private slots:
-		void aboutToShow();
-		void triggered(QAction *action);
-		void hovered(QAction *action);
+private slots:
+    void aboutToShow();
+    void triggered(QAction* action);
+    void hovered(QAction* action);
 
-	private:
-		QAction *makeAction(const QModelIndex &index);
-		int _maxrows;
-		int _firstseparator;
-		int _maxwidth;
-		int _hoverrole;
-		int _separatorrole;
-		QAbstractItemModel *_model;
-		QPersistentModelIndex _root;
-	};
+private:
+    QAction* makeAction(const QModelIndex& index);
+    int _maxrows;
+    int _firstseparator;
+    int _maxwidth;
+    int _hoverrole;
+    int _separatorrole;
+    QAbstractItemModel* _model;
+    QPersistentModelIndex _root;
+};
 }
 
 // QT_END_NAMESPACE

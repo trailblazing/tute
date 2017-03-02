@@ -42,20 +42,14 @@
 #ifndef EDITTABLEVIEW_H
 #define EDITTABLEVIEW_H
 
-
-
-
-
 #include <QtWidgets/QTableView>
 
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
 //QT_BEGIN_NAMESPACE
-
 
 // namespace web {
 
@@ -66,22 +60,17 @@ class EditTableView : public QTableView {
     Q_OBJECT
 #endif
 
-    public:
-	EditTableView(QWidget *parent = 0);
-	void keyPressEvent(QKeyEvent *event);
+public:
+    EditTableView(QWidget* parent = 0);
+    void keyPressEvent(QKeyEvent* event);
 
-    public slots:
-	void	removeOne();
-	void	removeAll();
+public slots:
+    void removeOne();
+    void removeAll();
 };
-
 
 // }
 
-
 //QT_END_NAMESPACE
 
-#endif	// EDITTABLEVIEW_H
-
-
-
+#endif // EDITTABLEVIEW_H
