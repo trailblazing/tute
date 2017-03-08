@@ -42,8 +42,6 @@
 #ifndef HISTORY_H
 #define HISTORY_H
 
-
-
 #include "modelmenu.h"
 
 #include <QtCore/QDateTime>
@@ -52,131 +50,134 @@
 #include <QtCore/QTimer>
 #include <QtCore/QUrl>
 
-#include <QtCore/QSortFilterProxyModel>
 #include "ui_history.h"
-
+#include <QtCore/QSortFilterProxyModel>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
 // QT_BEGIN_NAMESPACE
-namespace browser {
-    class HistoryItem;
+namespace web {
+class HistoryItem;
 }
 
 #if QT_VERSION == 0x050600
-W_REGISTER_ARGTYPE(browser::HistoryItem)
+W_REGISTER_ARGTYPE(web::HistoryItem)
 #endif
 
-namespace browser {
-    class HistoryItem {
+namespace web {
+class HistoryItem {
 	public:
-	    HistoryItem(){}
+	HistoryItem() {
+	}
 
-	    HistoryItem(const QString &u, const QDateTime &d = QDateTime(), const QString &t = QString());
+	HistoryItem(const QString &u, const QDateTime &d = QDateTime(), const QString &t = QString());
 
-	    inline bool operator ==(const HistoryItem &other) const;
-		// history is sorted in reverse
-	    inline bool operator <(const HistoryItem &other) const {return _datetime > other._datetime;}
+	inline bool operator==(const HistoryItem &other) const;
+	// history is sorted in reverse
+	inline bool operator<(const HistoryItem &other) const {
+		return _datetime > other._datetime;
+	}
 
-	    QString	_title;
-	    QString	_url;
-	    QDateTime	_datetime;
-    };
+	QString _title;
+	QString _url;
+	QDateTime _datetime;
+};
 
-    class AutoSaver;
-    class HistoryModel;
-    class HistoryFilterModel;
-    class HistoryTreeModel;
+class AutoSaver;
+class HistoryModel;
+class HistoryFilterModel;
+class HistoryTreeModel;
 
-//    W_REGISTER_ARGTYPE(HistoryModel *)
-//    W_REGISTER_ARGTYPE(HistoryFilterModel *)
-//    W_REGISTER_ARGTYPE(HistoryTreeModel *)
-    class HistoryManager : public QObject {
+// W_REGISTER_ARGTYPE(HistoryModel *)
+// W_REGISTER_ARGTYPE(HistoryFilterModel *)
+// W_REGISTER_ARGTYPE(HistoryTreeModel *)
+class HistoryManager : public QObject {
 #if QT_VERSION == 0x050600
 	W_OBJECT(HistoryManager)
-//	W_PROPERTY(int, historyLimit, &HistoryManager::historyLimit, &HistoryManager::setHistoryLimit)
+// W_PROPERTY(int, historyLimit, &HistoryManager::historyLimit,
+// &HistoryManager::setHistoryLimit)
 #else
 
 	Q_OBJECT Q_PROPERTY(int historyLimit READ historyLimit WRITE setHistoryLimit)
 #endif
 	signals:
-	    void historyReset()
+	void historyReset()
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(historyReset)	//
+	    W_SIGNAL(historyReset)  //
 #else
-	    ;
+	                  ;
 #endif
 	    void entryAdded(const HistoryItem &it)
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(entryAdded, (const HistoryItem &), it)	//
+	        W_SIGNAL(entryAdded, (const HistoryItem &), it)  //
 #else
 	    ;
 #endif
 	    void entryRemoved(const HistoryItem &it)
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(entryRemoved, (const HistoryItem &), it)	//
+	        W_SIGNAL(entryRemoved, (const HistoryItem &), it)  //
 #else
 	    ;
 #endif
 	    void entryUpdated(int offset)
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(entryUpdated, (int), offset)	//
+	        W_SIGNAL(entryUpdated, (int), offset)  //
 #else
 	    ;
 #endif
 
-	public:
-	    HistoryManager(QObject *parent = 0);
-	    ~HistoryManager();
+	    public : HistoryManager(QObject *parent = 0);
+	~HistoryManager();
 
-	    bool	historyContains(const QString &url) const;
-	    void	addHistoryEntry(const QString &url);
+	bool historyContains(const QString &url) const;
+	void addHistoryEntry(const QString &url);
 
-	    void updateHistoryItem(const QUrl &url, const QString &title);
+	void updateHistoryItem(const QUrl &url, const QString &title);
 
-	    int		historyLimit() const;
-	    void	setHistoryLimit(int limit);
+	int historyLimit() const;
+	void setHistoryLimit(int limit);
 
-	    QList<HistoryItem>	history() const;
-	    void		setHistory(const QList<HistoryItem> &history, bool loadedAndSorted = false);
+	QList<HistoryItem> history() const;
+	void setHistory(const QList<HistoryItem> &history, bool loadedAndSorted = false);
 
-		// History manager keeps around these models for use by the completer and other classes
-	    HistoryModel	*historyModel() const;
-	    HistoryFilterModel	*historyFilterModel() const;
-	    HistoryTreeModel	*historyTreeModel() const;
+	// History manager keeps around these models for use by the completer and
+	// other classes
+	HistoryModel *historyModel() const;
+	HistoryFilterModel *historyFilterModel() const;
+	HistoryTreeModel *historyTreeModel() const;
 
 	public slots:
-	    void	clear();// W_SLOT(clear);
-	    void	loadSettings();	// W_SLOT(loadSettings)
+	void clear();         // W_SLOT(clear);
+	void loadSettings();  // W_SLOT(loadSettings)
 
 	private slots:
-	    void	save();	// W_SLOT(save);
-	    void	checkForExpired();	// W_SLOT(checkForExpired);
+	void save();             // W_SLOT(save);
+	void checkForExpired();  // W_SLOT(checkForExpired);
 
 	protected:
-	    void addHistoryItem(const HistoryItem &item);
+	void addHistoryItem(const HistoryItem &item);
 
 	private:
-	    void load();
+	void load();
 
-	    AutoSaver		*_savetimer;
-	    int			_historylimit;
-	    QTimer		_expiredtimer;
-	    QList<HistoryItem>	_history;
-	    QString		_lastsavedurl;
+	AutoSaver *_savetimer;
+	int _historylimit;
+	QTimer _expiredtimer;
+	QList<HistoryItem> _history;
+	QString _lastsavedurl;
 
-	    HistoryModel	*_historymodel;
-	    HistoryFilterModel	*_historyfiltermodel;
-	    HistoryTreeModel	*_historytreemodel;
+	HistoryModel *_historymodel;
+	HistoryFilterModel *_historyfiltermodel;
+	HistoryTreeModel *_historytreemodel;
 #if QT_VERSION == 0x050600
-	    W_PROPERTY(int, historyLimit, &HistoryManager::historyLimit, &HistoryManager::setHistoryLimit)
+	W_PROPERTY(int, historyLimit, &HistoryManager::historyLimit, &HistoryManager::setHistoryLimit)
 #endif
-    };
-//    W_REGISTER_ARGTYPE(HistoryManager *)
-    class HistoryModel : public QAbstractTableModel {
+};
+// W_REGISTER_ARGTYPE(HistoryManager *)
+class HistoryModel : public QAbstractTableModel {
 #if QT_VERSION == 0x050600
 	W_OBJECT(HistoryModel)
 #else
@@ -184,35 +185,35 @@ namespace browser {
 #endif
 
 	public slots:
-	    void	historyReset();
-	    void	entryAdded();
-	    void	entryUpdated(int offset);
+	void historyReset();
+	void entryAdded();
+	void entryUpdated(int offset);
 
 	public:
-	    enum Roles {
-		DateRole	= Qt::UserRole + 1
-		, DateTimeRole	= Qt::UserRole + 2
-		, UrlRole	= Qt::UserRole + 3
-		, UrlStringRole = Qt::UserRole + 4
-	    };
+	enum Roles {
+		DateRole = Qt::UserRole + 1,
+		DateTimeRole = Qt::UserRole + 2,
+		UrlRole = Qt::UserRole + 3,
+		UrlStringRole = Qt::UserRole + 4
+	};
 
-	    HistoryModel(HistoryManager *history, QObject *parent = 0);
-	    QVariant	headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-	    QVariant	data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-	    int		columnCount(const QModelIndex &parent = QModelIndex()) const;
-	    int		rowCount(const QModelIndex &parent = QModelIndex()) const;
-	    bool	removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+	HistoryModel(HistoryManager *history, QObject *parent = 0);
+	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	int columnCount(const QModelIndex &parent = QModelIndex()) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
 	private:
-	    HistoryManager *_history;
-    };
+	HistoryManager *_history;
+};
 
-	/*!
-	    Proxy model that will remove any duplicate entries.
-	    Both _sourcerow and _historyhash store their offsets not from
-	    the front of the list, but as offsets from the back.
-	  */
-    class HistoryFilterModel : public QAbstractProxyModel {
+/*!
+            Proxy model that will remove any duplicate entries.
+            Both _sourcerow and _historyhash store their offsets not from
+            the front of the list, but as offsets from the back.
+ */
+class HistoryFilterModel : public QAbstractProxyModel {
 #if QT_VERSION == 0x050600
 	W_OBJECT(HistoryFilterModel)
 #else
@@ -220,46 +221,51 @@ namespace browser {
 #endif
 
 	public:
-	    HistoryFilterModel(QAbstractItemModel *sourceModel, QObject *parent = 0);
+	HistoryFilterModel(QAbstractItemModel *sourceModel, QObject *parent = 0);
 
-	    inline bool historyContains(const QString &url) const {load();return _historyhash.contains(url);}
+	inline bool historyContains(const QString &url) const {
+		load();
+		return _historyhash.contains(url);
+	}
 
-	    int	historyLocation(const QString &url) const;
+	int historyLocation(const QString &url) const;
 
-	    QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
-	    QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
-	    void	setSourceModel(QAbstractItemModel *sourceModel);
-	    QVariant	headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-	    int		rowCount(const QModelIndex &parent = QModelIndex()) const;
-	    int		columnCount(const QModelIndex &parent = QModelIndex()) const;
-	    QModelIndex index(int, int, const QModelIndex & = QModelIndex()) const;
-	    QModelIndex parent(const QModelIndex &index = QModelIndex()) const;
-	    bool	removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
-	    QVariant	data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
+	QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
+	void setSourceModel(QAbstractItemModel *sourceModel);
+	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	int columnCount(const QModelIndex &parent = QModelIndex()) const;
+	QModelIndex index(int, int, const QModelIndex & = QModelIndex()) const;
+	QModelIndex parent(const QModelIndex &index = QModelIndex()) const;
+	bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
 	private slots:
-	    void	sourceReset();
-	    void	sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-	    void	sourceRowsInserted(const QModelIndex &parent, int start, int end);
-	    void	sourceRowsRemoved(const QModelIndex &, int, int);
+	void sourceReset();
+	void sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+	void sourceRowsInserted(const QModelIndex &parent, int start, int end);
+	void sourceRowsRemoved(const QModelIndex &, int, int);
 
 	private:
-	    void load() const;
+	void load() const;
 
-	    mutable QList<int>		_sourcerow;
-	    mutable QHash<QString, int> _historyhash;
-	    mutable bool		_loaded;
-    };
+	mutable QList<int> _sourcerow;
+	mutable QHash<QString, int> _historyhash;
+	mutable bool _loaded;
+};
 
-	/*
-	    The history menu
-	    - Removes the first twenty entries and puts them as children of the top level.
-	    - If there are less then twenty entries then the first folder is also removed.
+/*
+            The history menu
+            - Removes the first twenty entries and puts them as children of the
+   top level.
+            - If there are less then twenty entries then the first folder is
+   also removed.
 
-	    The mapping is done by knowing that HistoryTreeModel is over a table
-	    We store that row offset in our index's private data.
-	*/
-    class HistoryMenuModel : public QAbstractProxyModel {
+            The mapping is done by knowing that HistoryTreeModel is over a table
+            We store that row offset in our index's private data.
+ */
+class HistoryMenuModel : public QAbstractProxyModel {
 #if QT_VERSION == 0x050600
 	W_OBJECT(HistoryMenuModel)
 #else
@@ -267,22 +273,22 @@ namespace browser {
 #endif
 
 	public:
-	    HistoryMenuModel(HistoryTreeModel *sourceModel, QObject *parent = 0);
-	    int		columnCount(const QModelIndex &parent) const;
-	    int		rowCount(const QModelIndex &parent = QModelIndex()) const;
-	    QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
-	    QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
-	    QModelIndex index(int, int, const QModelIndex &parent = QModelIndex()) const;
-	    QModelIndex parent(const QModelIndex &index = QModelIndex()) const;
+	HistoryMenuModel(HistoryTreeModel *sourceModel, QObject *parent = 0);
+	int columnCount(const QModelIndex &parent) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
+	QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
+	QModelIndex index(int, int, const QModelIndex &parent = QModelIndex()) const;
+	QModelIndex parent(const QModelIndex &index = QModelIndex()) const;
 
-	    int bumpedRows() const;
+	int bumpedRows() const;
 
 	private:
-	    HistoryTreeModel *_treemodel;
-    };
+	HistoryTreeModel *_treemodel;
+};
 
-	// Menu that is dynamically populated from the history
-    class HistoryMenu : public ModelMenu {
+// Menu that is dynamically populated from the history
+class HistoryMenu : public ModelMenu {
 #if QT_VERSION == 0x050600
 	W_OBJECT(HistoryMenu)
 #else
@@ -290,34 +296,34 @@ namespace browser {
 #endif
 
 	signals:
-	    void openUrl(const QUrl &url)
+	void openUrl(const QUrl &url)
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(openUrl, (const QUrl &), url)	//
+	    W_SIGNAL(openUrl, (const QUrl &), url)  //
 #else
 	    ;
 #endif
 
-	public:
-	    HistoryMenu(QWidget *parent = 0);
-	    void setInitialActions(QList<QAction *> actions);
+	    public : HistoryMenu(QWidget *parent = 0);
+	void setInitialActions(QList<QAction *> actions);
 
 	protected:
-	    bool	prePopulated();
-	    void	postPopulated();
+	bool prePopulated();
+	void postPopulated();
 
 	private slots:
-	    void	activated(const QModelIndex &index);
-	    void	showHistoryDialog();
+	void activated(const QModelIndex &index);
+	void showHistoryDialog();
 
 	private:
-	    HistoryManager	*_history;
-	    HistoryMenuModel	*_historymenumodel;
-	    QList<QAction *>	_initialactions;
-    };
+	HistoryManager *_history;
+	HistoryMenuModel *_historymenumodel;
+	QList<QAction *> _initialactions;
+};
 
-	// proxy model for the history model that
-	// exposes each url http://www.foo.com and it url starting at the host www.foo.com
-    class HistoryCompletionModel : public QAbstractProxyModel {
+// proxy model for the history model that
+// exposes each url http://www.foo.com and it url starting at the host
+// www.foo.com
+class HistoryCompletionModel : public QAbstractProxyModel {
 #if QT_VERSION == 0x050600
 	W_OBJECT(HistoryCompletionModel)
 #else
@@ -325,24 +331,24 @@ namespace browser {
 #endif
 
 	public:
-	    HistoryCompletionModel(QObject *parent = 0);
-	    QVariant	data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-	    int		rowCount(const QModelIndex &parent = QModelIndex()) const;
-	    int		columnCount(const QModelIndex &parent = QModelIndex()) const;
-	    QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
-	    QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
-	    QModelIndex index(int, int, const QModelIndex & = QModelIndex()) const;
-	    QModelIndex parent(const QModelIndex &index = QModelIndex()) const;
-	    void	setSourceModel(QAbstractItemModel *sourceModel);
+	HistoryCompletionModel(QObject *parent = 0);
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	int columnCount(const QModelIndex &parent = QModelIndex()) const;
+	QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
+	QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
+	QModelIndex index(int, int, const QModelIndex & = QModelIndex()) const;
+	QModelIndex parent(const QModelIndex &index = QModelIndex()) const;
+	void setSourceModel(QAbstractItemModel *sourceModel);
 
 	private slots:
-	    void sourceReset();
-    };
+	void sourceReset();
+};
 
-	// proxy model for the history model that converts the list
-	// into a tree, one top level node per day.
-	// Used in the HistoryDialog.
-    class HistoryTreeModel : public QAbstractProxyModel {
+// proxy model for the history model that converts the list
+// into a tree, one top level node per day.
+// Used in the HistoryDialog.
+class HistoryTreeModel : public QAbstractProxyModel {
 #if QT_VERSION == 0x050600
 	W_OBJECT(HistoryTreeModel)
 #else
@@ -350,35 +356,36 @@ namespace browser {
 #endif
 
 	public:
-	    HistoryTreeModel(QAbstractItemModel *sourceModel, QObject *parent = 0);
-	    QVariant		data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-	    int			columnCount(const QModelIndex &parent) const;
-	    int			rowCount(const QModelIndex &parent = QModelIndex()) const;
-	    QModelIndex		mapFromSource(const QModelIndex &sourceIndex) const;
-	    QModelIndex		mapToSource(const QModelIndex &proxyIndex) const;
-	    QModelIndex		index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-	    QModelIndex		parent(const QModelIndex &index = QModelIndex()) const;
-	    bool		hasChildren(const QModelIndex &parent = QModelIndex()) const;
-	    Qt::ItemFlags	flags(const QModelIndex &index) const;
-	    bool		removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
-	    QVariant		headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+	HistoryTreeModel(QAbstractItemModel *sourceModel, QObject *parent = 0);
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	int columnCount(const QModelIndex &parent) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
+	QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
+	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+	QModelIndex parent(const QModelIndex &index = QModelIndex()) const;
+	bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
+	Qt::ItemFlags flags(const QModelIndex &index) const;
+	bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
-	    void setSourceModel(QAbstractItemModel *sourceModel);
+	void setSourceModel(QAbstractItemModel *sourceModel);
 
 	private slots:
-	    void	sourceReset();
-	    void	sourceRowsInserted(const QModelIndex &parent, int start, int end);
-	    void	sourceRowsRemoved(const QModelIndex &parent, int start, int end);
+	void sourceReset();
+	void sourceRowsInserted(const QModelIndex &parent, int start, int end);
+	void sourceRowsRemoved(const QModelIndex &parent, int start, int end);
 
 	private:
-	    int			sourceDateRow(int row) const;
-	    mutable QList<int>	_sourcerowcache;
-    };
+	int sourceDateRow(int row) const;
+	mutable QList<int> _sourcerowcache;
+};
 
-	// A modified QSortFilterProxyModel that always accepts the root nodes in the tree
-	// so filtering is only done on the children.
-	// Used in the HistoryDialog
-    class TreeProxyModel : public QSortFilterProxyModel {
+// A modified QSortFilterProxyModel that always accepts the root nodes in the
+// tree
+// so filtering is only done on the children.
+// Used in the HistoryDialog
+class TreeProxyModel : public QSortFilterProxyModel {
 #if QT_VERSION == 0x050600
 	W_OBJECT(TreeProxyModel)
 #else
@@ -386,15 +393,15 @@ namespace browser {
 #endif
 
 	public:
-	    TreeProxyModel(QObject *parent = 0);
+	TreeProxyModel(QObject *parent = 0);
 
 	protected:
-	    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-    };
+	bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+};
 
-	// #include "ui_history.h"
+// #include "ui_history.h"
 
-    class HistoryDialog : public QDialog, public Ui_HistoryDialog {
+class HistoryDialog : public QDialog, public Ui_HistoryDialog {
 #if QT_VERSION == 0x050600
 	W_OBJECT(HistoryDialog)
 #else
@@ -402,27 +409,22 @@ namespace browser {
 #endif
 
 	signals:
-	    void openUrl(const QUrl &url)
+	void openUrl(const QUrl &url)
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(openUrl, (const QUrl &), url)	//
+	    W_SIGNAL(openUrl, (const QUrl &), url)  //
 #else
 	    ;
 #endif
 
-	public:
-	    HistoryDialog(QWidget *parent = 0, HistoryManager *history = 0);
+	    public : HistoryDialog(QWidget *parent = 0, HistoryManager *history = 0);
 
 	private slots:
-	    void	customContextMenuRequested(const QPoint &pos);
-	    void	open();
-	    void	copy();
-    };
+	void customContextMenuRequested(const QPoint &pos);
+	void open();
+	void copy();
+};
 }
-
 
 // QT_END_NAMESPACE
 
-#endif	// HISTORY_H
-
-
-
+#endif  // HISTORY_H

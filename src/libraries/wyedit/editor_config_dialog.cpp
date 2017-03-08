@@ -3,9 +3,8 @@
 #include <wobjectimpl.h>
 #endif
 
-
-#include <QStackedWidget>
 #include <QDialog>
+#include <QStackedWidget>
 
 #include "main.h"
 #include "views/app_config/config_dialog.h"
@@ -15,23 +14,20 @@
 #include "editor_config_misc.h"
 #include "libraries/global_parameters.h"
 
-
-
-extern gl_para globalparameters;
-
+extern std::shared_ptr<gl_para> gl_paras;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorConfigDialog)
 #endif
 
+EditorConfigDialog::EditorConfigDialog(QWidget *parent)
+    : QWidget(parent) {
+	configDialog = new ConfigDialog(this);
 
-EditorConfigDialog::EditorConfigDialog(QWidget *parent) : QWidget(parent){
-    configDialog = new ConfigDialog(this);
+	configDialog->set_window_title(tr("Editor settings"));
 
-    configDialog->set_window_title(tr("Editor settings"));
+	configDialog->add_widget(new EditorConfigFont(this), tr("Fonts"));
+	configDialog->add_widget(new EditorConfigMisc(this), tr("Misc"));
 
-    configDialog->add_widget(new EditorConfigFont(this), tr("Fonts"));
-    configDialog->add_widget(new EditorConfigMisc(this), tr("Misc"));
-
-    configDialog->exec();
+	configDialog->exec();
 }

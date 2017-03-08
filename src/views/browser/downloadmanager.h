@@ -44,10 +44,8 @@
 
 #include <memory>
 
-
-
-#include "ui_downloads.h"
 #include "ui_downloaditem.h"
+#include "ui_downloads.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QTime>
@@ -56,135 +54,128 @@
 #include <QWebEngineDownloadItem>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
 QT_BEGIN_NAMESPACE
 class QFileIconProvider;
 QT_END_NAMESPACE
 
-//    QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
-class HidableTabWidget;
+class HidableTab;
 
-namespace browser {
-    class TabWidget;
-    class DownloadManager;
-    class DownloadWidget : public QWidget, public Ui_DownloadItem, public std::enable_shared_from_this<DownloadWidget> {
+namespace web {
+class TabWidget;
+class DownloadManager;
+class DownloadWidget : public QWidget,
+                       public Ui_DownloadItem,
+                       public std::enable_shared_from_this<DownloadWidget> {
 #if QT_VERSION == 0x050600
 	W_OBJECT(DownloadWidget)
 #else
 	Q_OBJECT
 #endif
 	signals:
-	    void statusChanged()
+	void statusChanged()
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(statusChanged)	//
+	    W_SIGNAL(statusChanged)  //
 #else
 	    ;
 #endif
 
-	public:
-	    DownloadWidget(QWebEngineDownloadItem   *_download
-			  , TabWidget               *_tab_manager
-			  , DownloadManager         *_parent = 0		//    QWidget *parent = 0
-		);
-	    bool	downloading() const;
-	    bool	downloadedSuccessfully() const;
+	    public
+	    : DownloadWidget(QWebEngineDownloadItem *_download, TabWidget *_tab_manager,
+	                     DownloadManager *_parent = 0  // QWidget *parent = 0
+	                     );
+	bool downloading() const;
+	bool downloadedSuccessfully() const;
 
-	    void	init();
-	    bool	getFileName(bool prompt_for_filename = true);
-	    TabWidget	*tab_manager() const;
+	void init();
+	bool getFileName(bool prompt_for_filename = true);
+	TabWidget *tab_manager() const;
 	private slots:
-	    void	stop();
-	    void	open();
+	void stop();
+	void open();
 
-	    void	downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-	    void	finished();
+	void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+	void finished();
 
 	private:
-	    friend class DownloadManager;
-	    void	updateInfoLabel();
-	    QString	dataString(int size) const;
+	friend class DownloadManager;
+	void updateInfoLabel();
+	QString dataString(int size) const;
 
-	    QUrl	_url;
-	    QFileInfo	_file;
-	    qint64	_bytesreceived;
-	    QTime	_downloadtime;
-	    bool	_stopped;
+	QUrl _url;
+	QFileInfo _file;
+	qint64 _bytesreceived;
+	QTime _downloadtime;
+	bool _stopped;
 
-		//        QScopedPointer<QWebEngineDownloadItem>
-		//        QSharedPointer<QWebEngineDownloadItem>
-		//        std::shared_ptr<QWebEngineDownloadItem>
-	    QWebEngineDownloadItem	*_download;
-	    TabWidget			*_tab_manager;
-    };
+	// QScopedPointer<QWebEngineDownloadItem>
+	// QSharedPointer<QWebEngineDownloadItem>
+	// std::shared_ptr<QWebEngineDownloadItem>
+	QWebEngineDownloadItem *_download;
+	TabWidget *_tab_manager;
+};
 
-    class AutoSaver;
-    class DownloadModel;
-	//    QT_BEGIN_NAMESPACE
-	//    class QFileIconProvider;
-	//    QT_END_NAMESPACE
+class AutoSaver;
+class DownloadModel;
+// QT_BEGIN_NAMESPACE
+// class QFileIconProvider;
+// QT_END_NAMESPACE
 
-
-
-    class DownloadManager
-	: public QDialog
-	  , public Ui_download_dialog {
+class DownloadManager : public QDialog, public Ui_download_dialog {
 	public:
-	    enum RemovePolicy {
-		Never
-		, Exit
-		, SuccessFullDownload
-	    };
+	enum RemovePolicy { Never,
+		                Exit,
+		                SuccessFullDownload };
 
-	    RemovePolicy	removePolicy() const;
-	    void		setRemovePolicy(RemovePolicy policy);
-
+	RemovePolicy removePolicy() const;
+	void setRemovePolicy(RemovePolicy policy);
 
 	private:
 #if QT_VERSION == 0x050600
-	    W_OBJECT(DownloadManager)
-	    W_PROPERTY(RemovePolicy, removePolicy, &DownloadManager::removePolicy, &DownloadManager::setRemovePolicy)		//
+	W_OBJECT(DownloadManager)
+	W_PROPERTY(RemovePolicy, removePolicy, &DownloadManager::removePolicy,
+	           &DownloadManager::setRemovePolicy)  //
 #else
-	    Q_OBJECT Q_PROPERTY(RemovePolicy removePolicy READ removePolicy WRITE setRemovePolicy)
+	Q_OBJECT Q_PROPERTY(RemovePolicy removePolicy READ removePolicy WRITE setRemovePolicy)
 #endif
-	    Q_ENUMS(RemovePolicy)
+	Q_ENUMS(RemovePolicy)
 
 	public:
-
-	    DownloadManager(QString object_name, HidableTabWidget *vtab_record_);
-	    ~DownloadManager();
-	    int activeDownloads() const;
+	DownloadManager(QString object_name, HidableTab *vtab_record_);
+	~DownloadManager();
+	int activeDownloads() const;
 
 	public slots:
-	    void	download(TabWidget *_tab_manager, QWebEngineDownloadItem *download);
-	    void	cleanup();
+	void download(TabWidget *_tab_manager, QWebEngineDownloadItem *download);
+	void cleanup();
 
 	private slots:
-	    void	save() const;
-	    void	updateRow();
+	void save() const;
+	void updateRow();
 
 	private:
-	    void	addItem(std::shared_ptr<DownloadWidget> downloadwidget);
-	    void	updateItemCount();
-	    void	load();
+	void addItem(std::shared_ptr<DownloadWidget> downloadwidget);
+	void updateItemCount();
+	void load();
 
-	    HidableTabWidget				*_vtab_record;
-	    AutoSaver					*_autosaver;
-	    DownloadModel				*_model;
-	    QFileIconProvider				*_iconprovider;
-	    QList<std::shared_ptr<DownloadWidget> >	_downloads;
-	    RemovePolicy				_removepolicy;
-	    bool					_prompt_store_position = true;
+	HidableTab *_vtab_record;
+	AutoSaver *_autosaver;
+	DownloadModel *_model;
+	QFileIconProvider *_iconprovider;
+	QList<std::shared_ptr<DownloadWidget>> _downloads;
+	RemovePolicy _removepolicy;
+	bool _prompt_store_position = true;
 
+	friend class DownloadModel;
+	friend class DownloadWidget;
+};
 
-	    friend class DownloadModel;
-	    friend class DownloadWidget;
-    };
-
-    class DownloadModel : public QAbstractListModel {
+class DownloadModel : public QAbstractListModel {
 	friend class DownloadManager;
 #if QT_VERSION == 0x050600
 	W_OBJECT(DownloadModel)
@@ -193,20 +184,16 @@ namespace browser {
 #endif
 
 	public:
-	    DownloadModel(DownloadManager *downloadManager, QObject *parent = 0);
-	    QVariant	data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-	    int		rowCount(const QModelIndex &parent = QModelIndex()) const;
-	    bool	removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+	DownloadModel(DownloadManager *downloadManager, QObject *parent = 0);
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
 	private:
-	    DownloadManager *_downloadmanager;
-    };
+	DownloadManager *_downloadmanager;
+};
 }
-
 
 // QT_END_NAMESPACE
 
-#endif	// DOWNLOADMANAGER_H
-
-
-
+#endif  // DOWNLOADMANAGER_H

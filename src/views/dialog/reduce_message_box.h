@@ -2,48 +2,43 @@
 #define __REDUCEMESSAGEBOX_H__
 
 #include <QDialog>
-#include <QLabel>
-#include <QTextEdit>
 #include <QDialogButtonBox>
 #include <QFlags>
-
-
+#include <QLabel>
+#include <QTextEdit>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
-
-// Виджет, похожий на QMessageBox, только позволяющий выделять и копировать текст
+// Виджет, похожий на QMessageBox, только позволяющий выделять и копировать
+// текст
 // (т. к. в Windows невозможно скопировать текст, отображаемый в QMessageBox)
-
 
 class ReduceMessageBox : public QDialog {
 #if QT_VERSION == 0x050600
-    W_OBJECT(ReduceMessageBox)
+	W_OBJECT(ReduceMessageBox)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-    public:
+	public:
 	ReduceMessageBox(QWidget *parent = 0);
 
-	void	setText(QString iText);
-	void	setDetailedText(QString iDetailedText);
-	void	setDetailedTextReadOnly(bool iReadOnly);
-	void	setStandardButtons(QFlags<QDialogButtonBox::StandardButton> buttons);
+	void setText(QString iText);
+	void setDetailedText(QString iDetailedText);
+	void setDetailedTextReadOnly(bool iReadOnly);
+	void setStandardButtons(QFlags<QDialogButtonBox::StandardButton> buttons);
 
-    protected:
+	protected:
+	void setupSignals(void);
+	void setupUI(void);
+	void assembly(void);
 
-	void	setupSignals(void);
-	void	setupUI(void);
-	void	assembly(void);
-
-
-	QLabel			text;
-	QTextEdit		detailedText;
-	QDialogButtonBox	buttonBox;
+	QLabel text;
+	QTextEdit detailedText;
+	QDialogButtonBox buttonBox;
 };
 
-#endif	// __REDUCEMESSAGEBOX_H__
+#endif  // __REDUCEMESSAGEBOX_H__

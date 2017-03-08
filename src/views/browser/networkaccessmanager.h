@@ -42,24 +42,18 @@
 #ifndef NETWORKACCESSMANAGER_H
 #define NETWORKACCESSMANAGER_H
 
-
-
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 
-
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
+// QT_BEGIN_NAMESPACE
 
-//QT_BEGIN_NAMESPACE
-
-
-namespace browser {
-    class NetworkAccessManager : public QNetworkAccessManager {
+namespace web {
+class NetworkAccessManager : public QNetworkAccessManager {
 #if QT_VERSION == 0x050600
 	W_OBJECT(NetworkAccessManager)
 #else
@@ -67,34 +61,29 @@ namespace browser {
 #endif
 
 	public:
-	    NetworkAccessManager(QObject *parent = 0);
+	NetworkAccessManager(QObject *parent = 0);
 
-	    virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &req, QIODevice *outgoingData = 0);
+	virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &req, QIODevice *outgoingData = 0);
 
 	private:
-	    QList<QString>	sslTrustedHostList;
-	    qint64		requestFinishedCount;
-	    qint64		requestFinishedFromCacheCount;
-	    qint64		requestFinishedPipelinedCount;
-	    qint64		requestFinishedSecureCount;
-	    qint64		requestFinishedDownloadBufferCount;
+	QList<QString> sslTrustedHostList;
+	qint64 requestFinishedCount;
+	qint64 requestFinishedFromCacheCount;
+	qint64 requestFinishedPipelinedCount;
+	qint64 requestFinishedSecureCount;
+	qint64 requestFinishedDownloadBufferCount;
 
 	public slots:
-	    void	loadSettings();
-	    void	requestFinished(QNetworkReply *reply);
+	void loadSettings();
+	void requestFinished(QNetworkReply *reply);
 
 	private slots:
 #ifndef QT_NO_OPENSSL
-	    void sslErrors(QNetworkReply *reply, const QList<QSslError> &error);
+	void sslErrors(QNetworkReply *reply, const QList<QSslError> &error);
 #endif
-    };
+};
 }
 
+// QT_END_NAMESPACE
 
-//QT_END_NAMESPACE
-
-
-#endif	// NETWORKACCESSMANAGER_H
-
-
-
+#endif  // NETWORKACCESSMANAGER_H

@@ -42,19 +42,17 @@
 #ifndef EDITTREEVIEW_H
 #define EDITTREEVIEW_H
 
-
-
 #include <QtWidgets/QTreeView>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
-//QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
-namespace browser {
-    class EditTreeView : public QTreeView {
+namespace web {
+class EditTreeView : public QTreeView {
 #if QT_VERSION == 0x050600
 	W_OBJECT(EditTreeView)
 #else
@@ -62,18 +60,15 @@ namespace browser {
 #endif
 
 	public:
-	    EditTreeView(QWidget *parent = 0);
-	    void keyPressEvent(QKeyEvent *event);
+	EditTreeView(QWidget *parent = 0);
+	void keyPressEvent(QKeyEvent *event);
 
 	public slots:
-	    void	removeOne();
-	    void	removeAll();
-    };
+	void removeOne();
+	void removeAll();
+};
 }
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
-#endif	// EDITTREEVIEW_H
-
-
-
+#endif  // EDITTREEVIEW_H

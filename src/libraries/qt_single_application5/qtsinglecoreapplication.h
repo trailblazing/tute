@@ -40,50 +40,41 @@
 #ifndef QTSINGLECOREAPPLICATION_H
 #define QTSINGLECOREAPPLICATION_H
 
-
-
-
-
 #include <QCoreApplication>
 
-
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
 
 class QtLocalPeer;
 
 class QtSingleCoreApplication : public QCoreApplication {
 #if QT_VERSION == 0x050600
-    W_OBJECT(QtSingleCoreApplication)
+	W_OBJECT(QtSingleCoreApplication)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-    public:
-	QtSingleCoreApplication(int &argc, char * *argv);
-	QtSingleCoreApplication(const QString &id, int &argc, char * *argv);
+	public:
+	QtSingleCoreApplication(int &argc, char **argv);
+	QtSingleCoreApplication(const QString &id, int &argc, char **argv);
 
-	bool	isRunning();
+	bool isRunning();
 	QString id() const;
 
-    public Q_SLOTS:
+	public Q_SLOTS:
 	bool sendMessage(const QString &message, int timeout = 5000);
 
-
-Q_SIGNALS:
+	Q_SIGNALS:
 	void messageReceived(const QString &message)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(messageReceived, (const QString &), message)	// ;
+	    W_SIGNAL(messageReceived, (const QString &), message)  // ;
 #else
-	;
+	    ;
 #endif
 
-    private:
-	QtLocalPeer *peer;
+	    private : QtLocalPeer *peer;
 };
 
-#endif	// QTSINGLECOREAPPLICATION_H
+#endif  // QTSINGLECOREAPPLICATION_H

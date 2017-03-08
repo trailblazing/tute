@@ -39,14 +39,9 @@
 **
 ****************************************************************************/
 
-
-
 #if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
 #endif
-
-
-
 
 #include "fullscreennotification.h"
 
@@ -57,20 +52,17 @@
 #include <QPropertyAnimation>
 #include <QTimer>
 
-
-
-namespace browser {
+namespace web {
 #if QT_VERSION == 0x050600
-    W_OBJECT_IMPL(FullScreenNotification)
+W_OBJECT_IMPL(FullScreenNotification)
 #endif
 
-
-    FullScreenNotification::FullScreenNotification(QWidget *parent)
-	: QWidget(parent)
-	  , width(400)
-	  , height(80)
-	  , x((parent->geometry().width() - width) / 2)
-	  , y(80){
+FullScreenNotification::FullScreenNotification(QWidget *parent)
+    : QWidget(parent)
+    , width(400)
+    , height(80)
+    , x((parent->geometry().width() - width) / 2)
+    , y(80) {
 	setVisible(false);
 	setWindowFlags(Qt::ToolTip | Qt::WindowDoesNotAcceptFocus);
 
@@ -81,17 +73,18 @@ namespace browser {
 
 	setGeometry(x, y, width, height);
 
-	setStyleSheet("background-color: white;\
+	setStyleSheet(
+	    "background-color: white;\
         color: black;");
 
 	_animation = new QPropertyAnimation(this, "windowOpacity");
 	connect(_animation, &QPropertyAnimation::finished, this, &FullScreenNotification::fadeOutFinished);
-    }
+}
 
-    FullScreenNotification::~FullScreenNotification()
-    {}
+FullScreenNotification::~FullScreenNotification() {
+}
 
-    void FullScreenNotification::show(){
+void FullScreenNotification::show() {
 	setWindowOpacity(1.0);
 	QTimer::singleShot(300, [&] {
 		QWidget *parent = parentWidget();
@@ -100,27 +93,25 @@ namespace browser {
 		QWidget::move(topLeft.x(), topLeft.y());
 		QWidget::show();
 		QWidget::raise();
-	    });
+	});
 	QTimer::singleShot(5000, this, &FullScreenNotification::fadeOut);
-    }
+}
 
-    void FullScreenNotification::hide(){
+void FullScreenNotification::hide() {
 	QWidget::hide();
 	_animation->stop();
-    }
+}
 
-    void FullScreenNotification::fadeOut(){
+void FullScreenNotification::fadeOut() {
 	_animation->setDuration(800);
 	_animation->setStartValue(1.0);
 	_animation->setEndValue(0.0);
 	_animation->setEasingCurve(QEasingCurve::OutQuad);
 	_animation->start();
-    }
-
-    void FullScreenNotification::fadeOutFinished(){
-	hide();
-	setWindowOpacity(1.0);
-    }
 }
 
-
+void FullScreenNotification::fadeOutFinished() {
+	hide();
+	setWindowOpacity(1.0);
+}
+}

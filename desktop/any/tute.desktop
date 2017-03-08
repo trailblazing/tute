@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=tute
+Comment=Smart manager for information collecting
+Exec=tute
+Icon=tute
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Qt;Utility;

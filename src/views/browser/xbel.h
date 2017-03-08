@@ -42,84 +42,71 @@
 #ifndef XBEL_H
 #define XBEL_H
 
-#include <QtCore/QXmlStreamReader>
 #include <QtCore/QDateTime>
+#include <QtCore/QXmlStreamReader>
 #include <QtCore/QXmlStreamWriter>
 
+// QT_BEGIN_NAMESPACE
 
-//QT_BEGIN_NAMESPACE
+namespace web {
+class BookmarkNode {
+	public:
+	enum Type { Root,
+		        Folder,
+		        Bookmark,
+		        Separator };
 
+	BookmarkNode(Type type = Root, BookmarkNode *parent = 0);
+	~BookmarkNode();
+	bool operator==(const BookmarkNode &other);
 
-namespace browser {
+	Type type() const;
+	void setType(Type type);
+	QList<BookmarkNode *> children() const;
+	BookmarkNode *parent() const;
 
-    class BookmarkNode {
-    public:
-        enum Type {
-            Root,
-            Folder,
-            Bookmark,
-            Separator
-        };
+	void add(BookmarkNode *child, int offset = -1);
+	void remove(BookmarkNode *child);
 
-        BookmarkNode(Type type = Root, BookmarkNode *parent = 0);
-        ~BookmarkNode();
-        bool operator==(const BookmarkNode &other);
+	QString url;
+	QString title;
+	QString desc;
+	bool expanded;
 
-        Type type() const;
-        void setType(Type type);
-        QList<BookmarkNode *> children() const;
-        BookmarkNode *parent() const;
+	private:
+	BookmarkNode *_parent;
+	Type _type;
+	QList<BookmarkNode *> _children;
+};
 
-        void add(BookmarkNode *child, int offset = -1);
-        void remove(BookmarkNode *child);
+class XbelReader : public QXmlStreamReader {
+	public:
+	XbelReader();
+	BookmarkNode *read(const QString &fileName);
+	BookmarkNode *read(QIODevice *device);
 
-        QString url;
-        QString title;
-        QString desc;
-        bool expanded;
+	private:
+	void readXBEL(BookmarkNode *parent);
+	void readTitle(BookmarkNode *parent);
+	void readDescription(BookmarkNode *parent);
+	void readSeparator(BookmarkNode *parent);
+	void readFolder(BookmarkNode *parent);
+	void readBookmarkNode(BookmarkNode *parent);
+};
 
-    private:
-        BookmarkNode *_parent;
-        Type _type;
-        QList<BookmarkNode *> _children;
+// #include <QtCore/QXmlStreamWriter>
 
-    };
+class XbelWriter : public QXmlStreamWriter {
+	public:
+	XbelWriter();
+	bool write(const QString &fileName, const BookmarkNode *root);
+	bool write(QIODevice *device, const BookmarkNode *root);
 
-    class XbelReader : public QXmlStreamReader {
-    public:
-        XbelReader();
-        BookmarkNode *read(const QString &fileName);
-        BookmarkNode *read(QIODevice *device);
-
-    private:
-        void readXBEL(BookmarkNode *parent);
-        void readTitle(BookmarkNode *parent);
-        void readDescription(BookmarkNode *parent);
-        void readSeparator(BookmarkNode *parent);
-        void readFolder(BookmarkNode *parent);
-        void readBookmarkNode(BookmarkNode *parent);
-    };
-
-    //#include <QtCore/QXmlStreamWriter>
-
-    class XbelWriter : public QXmlStreamWriter {
-    public:
-        XbelWriter();
-        bool write(const QString &fileName, const BookmarkNode *root);
-        bool write(QIODevice *device, const BookmarkNode *root);
-
-    private:
-        void writeItem(const BookmarkNode *parent);
-    };
-
-
+	private:
+	void writeItem(const BookmarkNode *parent);
+};
 }
 
+// QT_END_NAMESPACE
 
-//QT_END_NAMESPACE
-
-
-#endif // XBEL_H
-
-
-
+#endif  // XBEL_H

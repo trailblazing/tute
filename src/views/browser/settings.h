@@ -42,23 +42,18 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-
-
-#include <QtWidgets/QDialog>
 #include "ui_settings.h"
-
+#include <QtWidgets/QDialog>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
+// QT_BEGIN_NAMESPACE
 
-//QT_BEGIN_NAMESPACE
-
-
-namespace browser {
-    class SettingsDialog : public QDialog, public Ui_Settings {
+namespace web {
+class SettingsDialog : public QDialog, public Ui_Settings {
 #if QT_VERSION == 0x050600
 	W_OBJECT(SettingsDialog)
 #else
@@ -66,32 +61,27 @@ namespace browser {
 #endif
 
 	public:
-	    SettingsDialog(QWidget *parent = 0);
-	    void accept();
+	SettingsDialog(QWidget *parent = 0);
+	void accept();
 
 	private slots:
-	    void	loadDefaults();
-	    void	loadFromSettings();
-	    void	saveToSettings();
+	void loadDefaults();
+	void loadFromSettings();
+	void saveToSettings();
 
-	    void	setHomeToCurrentPage();
-	    void	showCookies();
-	    void	showExceptions();
+	void setHomeToCurrentPage();
+	void showCookies();
+	void showExceptions();
 
-	    void	chooseFont();
-	    void	chooseFixedFont();
+	void chooseFont();
+	void chooseFixedFont();
 
 	private:
-	    QFont	standardFont;
-	    QFont	fixedFont;
-    };
+	QFont standardFont;
+	QFont fixedFont;
+};
 }
 
+// QT_END_NAMESPACE
 
-//QT_END_NAMESPACE
-
-
-#endif	// SETTINGS_H
-
-
-
+#endif  // SETTINGS_H

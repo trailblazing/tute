@@ -14,79 +14,30 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout">
-     <item>
-      <spacer>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QComboBox" name="cbPageSelector">
-       <item>
-        <property name="text">
-         <string>Basics</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Categories</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Excerpt</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>WP tags</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Technorati tags</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Trackbacks</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item>
-      <spacer>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QStackedWidget" name="stackedWidget">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="tabPosition">
+      <enum>QTabWidget::West</enum>
+     </property>
      <property name="currentIndex">
       <number>0</number>
      </property>
      <widget class="QWidget" name="basicsPage">
+      <attribute name="title">
+       <string/>
+      </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QGridLayout">
@@ -121,9 +72,6 @@
            <property name="text">
             <string>&amp;Status</string>
            </property>
-           <property name="buddy">
-            <cstring>cbStatus</cstring>
-           </property>
           </widget>
          </item>
          <item row="2" column="1">
@@ -135,11 +83,11 @@
          </item>
          <item row="4" column="1">
           <widget class="QLineEdit" name="lePassword">
-           <property name="echoMode">
-            <enum>QLineEdit::Password</enum>
-           </property>
            <property name="whatsThis">
             <string>A password to read this post. Leave this blank if you do not want to apply a password. Note that the title will be visible.</string>
+           </property>
+           <property name="echoMode">
+            <enum>QLineEdit::Password</enum>
            </property>
           </widget>
          </item>
@@ -148,13 +96,10 @@
            <property name="text">
             <string>&amp;Blog</string>
            </property>
-           <property name="buddy">
-            <cstring>cbBlogSelector</cstring>
-           </property>
           </widget>
          </item>
          <item row="0" column="0">
-          <widget class="QLabel" name="lTitle">
+          <widget class="QLabel" name="label_2">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -164,9 +109,6 @@
            <property name="text">
             <string>Entry &amp;title</string>
            </property>
-           <property name="buddy">
-            <cstring>leTitle</cstring>
-           </property>
           </widget>
          </item>
          <item row="1" column="0">
@@ -174,18 +116,12 @@
            <property name="text">
             <string>&amp;Account</string>
            </property>
-           <property name="buddy">
-            <cstring>cbAccountSelector</cstring>
-           </property>
           </widget>
          </item>
          <item row="4" column="0">
           <widget class="QLabel" name="lPassword">
            <property name="text">
             <string>Pass&amp;word</string>
-           </property>
-           <property name="buddy">
-            <cstring>lePassword</cstring>
            </property>
           </widget>
          </item>
@@ -345,6 +281,9 @@
       </layout>
      </widget>
      <widget class="QWidget" name="categoryPage">
+      <attribute name="title">
+       <string/>
+      </attribute>
       <layout class="QVBoxLayout">
        <item>
         <widget class="QGroupBox" name="gbCategory">
@@ -356,9 +295,6 @@
            <widget class="QLabel" name="lMainCat">
             <property name="text">
              <string>Primary</string>
-            </property>
-            <property name="buddy">
-             <cstring>cbMainCat</cstring>
             </property>
            </widget>
           </item>
@@ -373,9 +309,6 @@
            <widget class="QLabel" name="lOtherCats">
             <property name="text">
              <string>Others</string>
-            </property>
-            <property name="buddy">
-             <cstring>lwOtherCats</cstring>
             </property>
            </widget>
           </item>
@@ -430,7 +363,10 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="excerptPage">
+     <widget class="QWidget" name="tabWidgetPage3">
+      <attribute name="title">
+       <string/>
+      </attribute>
       <layout class="QVBoxLayout">
        <item>
         <widget class="QGroupBox" name="gbExcerpt">
@@ -452,9 +388,6 @@
             <property name="wordWrap">
              <bool>true</bool>
             </property>
-            <property name="buddy">
-             <cstring>teExcerpt</cstring>
-            </property>
            </widget>
           </item>
          </layout>
@@ -462,7 +395,10 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="keywordTagsPage">
+     <widget class="QWidget" name="tabWidgetPage4">
+      <attribute name="title">
+       <string/>
+      </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QGroupBox" name="gbKeywordTags">
@@ -552,7 +488,10 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tagsPage">
+     <widget class="QWidget" name="tabWidgetPage5">
+      <attribute name="title">
+       <string/>
+      </attribute>
       <layout class="QHBoxLayout">
        <item>
         <widget class="QGroupBox" name="gbTags">
@@ -634,7 +573,10 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tbPingsPage">
+     <widget class="QWidget" name="tabWidgetPage6">
+      <attribute name="title">
+       <string/>
+      </attribute>
       <layout class="QGridLayout">
        <item row="0" column="0">
         <widget class="QGroupBox" name="gbTrackbacks">
@@ -676,7 +618,6 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>cbPageSelector</tabstop>
   <tabstop>leTitle</tabstop>
   <tabstop>cbAccountSelector</tabstop>
   <tabstop>cbBlogSelector</tabstop>
@@ -701,54 +642,5 @@
   <tabstop>tbTBAdd</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>cbPageSelector</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>stackedWidget</receiver>
-   <slot>setCurrentIndex(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>217</x>
-     <y>25</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>252</x>
-     <y>90</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>chNoCats</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>cbMainCat</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>63</x>
-     <y>57</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>75</x>
-     <y>64</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>chNoCats</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>lwOtherCats</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>81</x>
-     <y>57</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>72</x>
-     <y>62</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

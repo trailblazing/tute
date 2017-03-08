@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=hapnote
-Comment=Smart manager for information collecting
-Exec=hapnote
-Icon=hapnote
-Terminal=false
-Type=Application
-StartupNotify=true
-Categories=Qt;Utility;

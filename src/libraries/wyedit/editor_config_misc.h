@@ -1,48 +1,39 @@
 #ifndef _EDITORCONFIGMISC_H_
-#define	_EDITORCONFIGMISC_H_
+#define _EDITORCONFIGMISC_H_
 
-
-#include <QWidget>
-#include <QLineEdit>
 #include <QFontComboBox>
+#include <QLineEdit>
 #include <QSpinBox>
+#include <QWidget>
+#include <memory>
 
 #include "views/app_config/config_page.h"
 
-
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
-
-
 
 class EditorConfig;
 
-
 class EditorConfigMisc : public ConfigPage {
 #if QT_VERSION == 0x050600
-    W_OBJECT(EditorConfigMisc)
+	W_OBJECT(EditorConfigMisc)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    EditorConfigMisc(QWidget *parent = 0);
+	public:
+	EditorConfigMisc(QWidget *parent = 0);
 
-    int apply_changes(void);
+	int apply_changes(void);
 
-private slots:
+	private slots:
 
-private:
-    QSpinBox *indentStep;
+	private:
+	QSpinBox *indentStep;
 
-    EditorConfig *conf;
-
+	std::shared_ptr<EditorConfig> conf;
 };
 
-
-#endif	// _EDITORCONFIGMISC_H_
-
+#endif  // _EDITORCONFIGMISC_H_

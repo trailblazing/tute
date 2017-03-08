@@ -1,73 +1,66 @@
 #ifndef __ADDNEWRECORD_H__
 #define __ADDNEWRECORD_H__
 
-
 #include <QDialog>
+#include <QDialogButtonBox>
 #include <QLabel>
 #include <QLineEdit>
-#include <QDialogButtonBox>
 #include <QPushButton>
-
-
-
+#include <memory>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
-
-
-
 
 class Editor;
 class InfoFieldEnter;
+class Blogger;
 
 // Окно добавления новой записи
 
 class AddNewRecord : public QDialog {
 #if QT_VERSION == 0x050600
-    W_OBJECT(AddNewRecord)
+	W_OBJECT(AddNewRecord)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-
+	public:
 #if QT_VERSION < 0x050000
-    AddNewRecord( QWidget * parent = 0, Qt::WFlags f = 0 );
+	AddNewRecord(QWidget *parent = 0, Qt::WFlags f = 0);
 #else
-    AddNewRecord( QWidget * parent = 0, Qt::WindowFlags f = 0 );
+	AddNewRecord(QWidget *parent = 0, Qt::WindowFlags f = 0);
 #endif
 
-    ~AddNewRecord();
+	~AddNewRecord();
 
-    QString getField(QString name);
-    QString getImagesDirectory(void);
+	QString getField(QString name);
+	QString getImagesDirectory(void);
 
-private slots:
+	private slots:
 
-    void okClick(void);
+	void okClick(void);
 
-private:
+	private:
+	// Ввод инфополей записи
+	InfoFieldEnter *infoField;
 
-// Ввод инфополей записи
-    InfoFieldEnter *infoField;
+	Blogger *_blogger;
+	//// Ввод текста записи
+	// Editor *recordTextEditor;
 
-// Ввод текста записи
-    Editor    *recordTextEditor;
+	QDialogButtonBox *buttonBox;
 
-    QDialogButtonBox *buttonBox;
+	QString imagesDirName;
 
-    QString imagesDirName;
+	void setupUI(void);
+	void setupSignals(void);
+	void assembly(void);
 
-    void setupUI(void);
-    void setupSignals(void);
-    void assembly(void);
+	void setupEventFilter(void);
 
-    void setupEventFilter(void);
-
-    virtual bool eventFilter(QObject *object, QEvent *event);
+	virtual bool eventFilter(QObject *object, QEvent *event);
 };
 
-#endif // __ADDNEWRECORD_H__
+#endif  // __ADDNEWRECORD_H__

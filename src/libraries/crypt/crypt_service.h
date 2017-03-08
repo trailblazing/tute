@@ -1,37 +1,33 @@
 #ifndef __CRYPTSERVICE_H__
 #define __CRYPTSERVICE_H__
 
+#include <QByteArray>
+#include <QString>
 #include <cstdio>
 #include <vector>
-#include <QString>
-#include <QByteArray>
 
 // Класс с функциями-помощниками, используемыми при шифрации/дешифровки
 
-
 class CryptService {
+	public:
+	CryptService();
+	virtual ~CryptService();
 
-public:
+	static void convertByteArrayToVector(const QByteArray &qba, std::vector<unsigned char> &vec);
+	static void convertVectorToByteArray(const std::vector<unsigned char> &vec, QByteArray &qba);
 
-    CryptService();
-    virtual ~CryptService();
+	static QString encryptString(QByteArray key, QString line);
+	static QString decryptString(QByteArray key, QString line);
 
-    static void convertByteArrayToVector(const QByteArray &qba, std::vector<unsigned char> &vec);
-    static void convertVectorToByteArray(const std::vector<unsigned char> &vec, QByteArray &qba);
+	static QByteArray encryptByteArray(QByteArray key, QByteArray data);
+	static QByteArray decryptByteArray(QByteArray key, QByteArray data);
 
-    static QString encryptString(QByteArray key, QString line);
-    static QString decryptString(QByteArray key, QString line);
+	static QByteArray encryptStringToByteArray(QByteArray key, QString line);
+	static QString decryptStringFromByteArray(QByteArray key, QByteArray data);
 
-    static QByteArray encryptByteArray(QByteArray key, QByteArray data);
-    static QByteArray decryptByteArray(QByteArray key, QByteArray data);
-
-    static QByteArray encryptStringToByteArray(QByteArray key, QString line);
-    static QString decryptStringFromByteArray(QByteArray key, QByteArray data);
-
-    static void encryptFile(QByteArray key, QString fileName);
-    static void decryptFile(QByteArray key, QString fileName);
-    static void encDecFileSmart(QByteArray key, QString fileName, int mode);
-
+	static void encryptFile(QByteArray key, QString fileName);
+	static void decryptFile(QByteArray key, QString fileName);
+	static void encDecFileSmart(QByteArray key, QString fileName, int mode);
 };
 
-#endif // __CRYPTSERVICE_H__
+#endif  // __CRYPTSERVICE_H__

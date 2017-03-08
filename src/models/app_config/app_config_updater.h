@@ -1,31 +1,26 @@
 #ifndef __APPCONFIGUPDATER_H__
 #define __APPCONFIGUPDATER_H__
 
-
-
-
-#include <QSettings>
 #include <QDebug>
+#include <QSettings>
 #include <QString>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
 
 #define MYTETRA_CONFIG_PARAM_NUM 100
 #define MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD 3
 
-
 class AppConfigUpdater : public QObject {
 #if QT_VERSION == 0x050600
-    W_OBJECT(AppConfigUpdater)
+	W_OBJECT(AppConfigUpdater)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-    public:
+	public:
 	AppConfigUpdater(QObject *pobj = 0);
 	virtual ~AppConfigUpdater();
 
@@ -33,12 +28,10 @@ class AppConfigUpdater : public QObject {
 
 	void update_version(int versionFrom, int versionTo, QStringList baseTable, QStringList finalTable);
 
-    private:
-
+	private:
 	QString update_version_allowcollision(int versionFrom, int versionTo, QString name, QString fromType, QString fromValue, QString toType, QString toValue);
 
 	QSettings *conf;
 };
 
 #endif /* __APPCONFIGUPDATER_H__ */
-

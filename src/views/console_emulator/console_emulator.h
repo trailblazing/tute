@@ -1,24 +1,21 @@
 #ifndef _CONSOLEEMULATOR_H_
 #define _CONSOLEEMULATOR_H_
 
-
 #include <QDialog>
-#include <QWidget>
 #include <QLabel>
 #include <QPushButton>
+#include <QWidget>
 
-#include <QTextEdit>
 #include <QCloseEvent>
 #include <QShortcut>
+#include <QTextEdit>
 
 #include "views/wait_clock/wait_clock.h"
 
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
 
 class FlatToolButton;
 
@@ -37,25 +34,25 @@ class FlatToolButton;
 
 class ConsoleEmulator : public QDialog {
 #if QT_VERSION == 0x050600
-    W_OBJECT(ConsoleEmulator)
+	W_OBJECT(ConsoleEmulator)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-    public:
+	public:
 	ConsoleEmulator(QWidget *parent = 0);
 	~ConsoleEmulator();
 
 	void setMessageText(QString text);
 
-	void	setConsoleOutput(QString text);
-	void	clearConsoleOutput(void);
-	void	addConsoleOutput(QString text);
+	void setConsoleOutput(QString text);
+	void clearConsoleOutput(void);
+	void addConsoleOutput(QString text);
 
 	// Преобразование внешнего вида консольного эмулятора к отображению ошибки
 	void switchToErrorView(void);
 
-    public slots:
+	public slots:
 
 	// Слот срабатывающий при нажатии Cancel или при принудительном закрытии окна
 	void onCancelClick(void);
@@ -63,29 +60,29 @@ class ConsoleEmulator : public QDialog {
 	// Слот срабатывающий при клике на кнопку скрыть/показать консольный вывод
 	void onDetailsClick(void);
 
-    signals:
+	signals:
 
 	// Сигнал, вырабатывающийся в слоте onCancelConsole()
 	void cancelConsole(void)
 #if QT_VERSION == 0x050600
-	W_SIGNAL(cancelConsole)//
+	    W_SIGNAL(cancelConsole)  //
 #else
-	;
+	    ;
 #endif
 
-    private:
+	    private :
 
-	void	setupUI(void);
-	void	setupSignals(void);
-	void	assembly(void);
+	    void setupUI(void);
+	void setupSignals(void);
+	void assembly(void);
 
 	// Переопределенный метод, срабатывает при принудительном закрытии окна
 	void closeEvent(QCloseEvent *event);
 
-	WaitClock	*waitClock;
-	QLabel		*messageLabel;
-	QPushButton	*buttonCancel;
-	FlatToolButton	*buttonDetails;
+	WaitClock *waitClock;
+	QLabel *messageLabel;
+	QPushButton *buttonCancel;
+	FlatToolButton *buttonDetails;
 
 	// Верхний блок вида "Картинка |Тут какая-то надпись| [v] | [Cancel]"
 	QHBoxLayout *upToolbar;

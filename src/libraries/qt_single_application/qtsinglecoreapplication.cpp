@@ -44,14 +44,12 @@
 **
 ****************************************************************************/
 
-
 #if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
 #endif
 
-
-#include "qtsinglecoreapplication.h"
 #include "qtlocalpeer.h"
+#include "qtsinglecoreapplication.h"
 
 /*!
     \class QtSingleCoreApplication qtsinglecoreapplication.h
@@ -73,79 +71,81 @@
     command-line tool that sends commands to a GUI application.
 
     \sa QtSingleApplication
-*/
+ */
 
 /*!
     Creates a QtSingleCoreApplication object. The application identifier
     will be QCoreApplication::applicationFilePath(). \a argc and \a
     argv are passed on to the QCoreAppliation constructor.
-*/
+ */
 
 namespace qt4 {
+// #if QT_VERSION == 0x050600
+// W_OBJECT_IMPL(QtSingleCoreApplication)
+// #endif
 
-
-//#if QT_VERSION == 0x050600
-//    W_OBJECT_IMPL(QtSingleCoreApplication)
-//#endif
-
-    QtSingleCoreApplication::QtSingleCoreApplication(int &argc, char * *argv)
-	: QCoreApplication(argc, argv){
+QtSingleCoreApplication::QtSingleCoreApplication(int &argc, char **argv)
+    : QCoreApplication(argc, argv) {
 	peer = new QtLocalPeer(this);
 	connect(peer, &QtLocalPeer::messageReceived, &QtSingleCoreApplication::messageReceived);
-    }
-	/*!
-	    Creates a QtSingleCoreApplication object with the application
-	    identifier \a appId. \a argc and \a argv are passed on to the
-	    QCoreAppliation constructor.
-	*/
-    QtSingleCoreApplication::QtSingleCoreApplication(const QString &appId, int &argc, char * *argv)
-	: QCoreApplication(argc, argv){
+}
+/*!
+            Creates a QtSingleCoreApplication object with the application
+            identifier \a appId. \a argc and \a argv are passed on to the
+            QCoreAppliation constructor.
+ */
+QtSingleCoreApplication::QtSingleCoreApplication(const QString &appId, int &argc, char **argv)
+    : QCoreApplication(argc, argv) {
 	peer = new QtLocalPeer(this, appId);
 	connect(peer, &QtLocalPeer::messageReceived, &QtSingleCoreApplication::messageReceived);
-    }
-	/*!
-	    Returns true if another instance of this application is running;
-	    otherwise false.
+}
+/*!
+            Returns true if another instance of this application is running;
+            otherwise false.
 
-	    This function does not find instances of this application that are
-	    being run by a different user (on Windows: that are running in
-	    another session).
+            This function does not find instances of this application that are
+            being run by a different user (on Windows: that are running in
+            another session).
 
-	    \sa sendMessage()
-	*/
+            \sa sendMessage()
+ */
 
-    bool QtSingleCoreApplication:: isRunning(){return peer->isClient();}
-
-
-	/*!
-	    Tries to send the text \a message to the currently running
-	    instance. The QtSingleCoreApplication object in the running instance
-	    will emit the messageReceived() signal when it receives the
-	    message.
-
-	    This function returns true if the message has been sent to, and
-	    processed by, the current instance. If there is no instance
-	    currently running, or if the running instance fails to process the
-	    message within \a timeout milliseconds, this function return false.
-
-	    \sa isRunning(), messageReceived()
-	*/
-
-    bool QtSingleCoreApplication:: sendMessage(const QString &message, int timeout){return peer->sendMessage(message, timeout);}
-	/*!
-	    Returns the application identifier. Two processes with the same
-	    identifier will be regarded as instances of the same application.
-	*/
-
-    QString QtSingleCoreApplication:: id() const {return peer->applicationId();}
-	/*!
-	    \fn void QtSingleCoreApplication::messageReceived(const QString& message)
-
-	    This signal is emitted when the current instance receives a \a
-	    message from another instance of this application.
-
-	    \sa sendMessage()
-	*/
+bool QtSingleCoreApplication::isRunning() {
+	return peer->isClient();
 }
 
+/*!
+            Tries to send the text \a message to the currently running
+            instance. The QtSingleCoreApplication object in the running instance
+            will emit the messageReceived() signal when it receives the
+            message.
 
+            This function returns true if the message has been sent to, and
+            processed by, the current instance. If there is no instance
+            currently running, or if the running instance fails to process the
+            message within \a timeout milliseconds, this function return false.
+
+            \sa isRunning(), messageReceived()
+ */
+
+bool QtSingleCoreApplication::sendMessage(const QString &message, int timeout) {
+	return peer->sendMessage(message, timeout);
+}
+/*!
+            Returns the application identifier. Two processes with the same
+            identifier will be regarded as instances of the same application.
+ */
+
+QString QtSingleCoreApplication::id() const {
+	return peer->applicationId();
+}
+/*!
+            \fn void QtSingleCoreApplication::messageReceived(const QString&
+   message)
+
+            This signal is emitted when the current instance receives a \a
+            message from another instance of this application.
+
+            \sa sendMessage()
+ */
+}

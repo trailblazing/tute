@@ -1,79 +1,80 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-
+#include <map>
+#include <memory>
 
 #include <QDialog>
 #include <QMainWindow>
-#include <QWidget>
-#include <QTextListFormat>
 #include <QTextBlockFormat>
+#include <QTextListFormat>
+#include <QWidget>
 
-#include <QtXml>
-#include <QtGui>
-#include <QXmlSimpleReader>
 #include <QXmlInputSource>
+#include <QXmlSimpleReader>
+#include <QtGui>
+#include <QtXml>
 
-#include <QStandardItemModel>
 #include <QAbstractItemModel>
 #include <QAbstractListModel>
 #include <QItemSelectionModel>
+#include <QStandardItemModel>
 
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QCloseEvent>
 #include <QColorDialog>
-#include <QFontComboBox>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFontComboBox>
 #include <QFontDatabase>
+#include <QList>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QTextCodec>
-#include <QTextEdit>
-#include <QToolBar>
 #include <QTextCursor>
+#include <QTextEdit>
 #include <QTextList>
+#include <QToolBar>
 #include <QtDebug>
-#include <QCloseEvent>
-#include <QMessageBox>
-#include <QList>
-#include <QHBoxLayout>
+// #include <QHBoxLayout>
 #include <QSplitter>
+#include <QStatusBar>
 #include <QSystemTrayIcon>
 
-#include <QStatusBar>
-#include "hidable_tabwidget.h"
+#include "hidable_tab.h"
+
 
 // #include "libraries/GlobalParameters.h"
 // #include "models/app_config/AppConfig.h"
 // #include "models/database_config/DataBaseConfig.h"
 
-
-
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
+extern const char* program_title;
+extern const QString program_title_qstring;
+extern const std::string program_title_string;
+extern const char* meta_editor_singleton_name;
 
-
-extern const char *meta_editor_singleton_name;
-
-namespace browser {
-    class Entrance;
-    class Browser;
-    class DownloadManager;
-    class HistoryMenu;
-    class BookmarksMenu;
-    class Profile;
+namespace web {
+	class Docker;
+	class Browser;
+	class DownloadManager;
+	class HistoryMenu;
+	class BookmarksMenu;
+	class Profile;
 }
 
 class ts_t;
-class MetaEditor;
+class Editor;
 class rs_t;
 class FindScreen;
 class WindowSwitcher;
@@ -83,174 +84,201 @@ class gl_para;
 class AppConfig;
 class DataBaseConfig;
 class tsv_t;
-class Editentry;
+class Blogger;
+class QHBoxLayout;
+class QVBoxLayout;
+class SysTrayIcon;
+class i_t;
+struct url_value;
+
+extern std::shared_ptr<gl_para> gl_paras;
 
 
-class wn_t
-    : public QMainWindow {
+class wn_t : public QMainWindow {
 #if QT_VERSION == 0x050600
-    W_OBJECT(wn_t)
+	W_OBJECT(wn_t)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
     public:
-	wn_t(gl_para &_globalparameters
-	    , AppConfig &_appconfig
-	    , DataBaseConfig &_databaseconfig
-	    , browser::Profile *_profile, QString style_source);
+	wn_t(web::Profile* profile, QString style_source);
+	// std::shared_ptr<gl_para> gl_paras_
+	// , std::shared_ptr<AppConfig> appconfig_
+	// , std::shared_ptr<DataBaseConfig> databaseconfig_
+	// ,
 
 	~wn_t();
 
 	void restore_geometry(void);
 	void restore_tree_position(void);
-//    void restore_recordtable_position(void);// too many _record_screen objects, deprecated
-	void restore_editor_cursor_position(void);
-	void restore_editor_scrollbar_position(void);
+	// void restore_recordtable_position(void);// too many _record_screen objects,
+	// deprecated
+	// void restore_editor_cursor_position(void);
+	// void restore_editor_scrollbar_position(void);
 	void restore_find_in_base_visible(void);
 
 	void set_tree_position(QString view_root_id, QStringList current_item_absolute_path);
 	bool is_tree_position_crypt();
 
-//    void select_id(QString id);// too many _record_screen objects, deprecated
+	// void select_id(QString id);// too many _record_screen objects, deprecated
 
 	void synchronization(void);
 
-	void go_walk_history_previous(void);
-	void go_walk_history_next(void);
+	// void go_walk_history_previous(void);
+	// void go_walk_history_next(void);
 
-	void save_text_area(void);
+	// void save_text_context(void);
 	void save_all_state(void);
 
-	HidableTabWidget	*vtab_record() const;
-	ts_t			*tree_screen() const;
+	HidableTab* vtab_record() const;
+	ts_t* tree_screen() const;
 
-	QMenu			*file_menu() const;
-	QMenu			*edit_menu() const;
-	QMenu			*view_menu() const;
-	browser::HistoryMenu	*histry_menu() const;
-	browser::BookmarksMenu	*bookmark_menu() const;
-	QMenu			*window_menu() const;
-	QMenu			*tools_menu() const;
-	QMenu			*help_menu() const;
-	QSplitter		*find_splitter() const;
-	QSplitter		*h_record_splitter() const;
-	QSplitter		*h_tree_splitter() const;
-//	std::vector<tsv_t *>	tree_viewers() const;
+	QMenu* file_menu() const;
+	QMenu* edit_menu() const;
+	QMenu* view_menu() const;
+	web::HistoryMenu* histry_menu() const;
+	web::BookmarksMenu* bookmark_menu() const;
+	QMenu* window_menu() const;
+	QMenu* tools_menu() const;
+	QMenu* help_menu() const;
+	QSplitter* find_splitter() const;
+	QSplitter* h_record_splitter() const;
+	QSplitter* h_tree_splitter() const;
+	// std::vector<tsv_t *>	tree_viewers() const;
+	std::set<rs_t*> record_screens() const;
+	web::WebView*
+	find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal) const;
+
+	// EditingWindow *current_editing_window();
+	//	Blogger *editing_window(const QString &topic, const QByteArray &state_ =
+	//QByteArray());
+	std::map<std::string, QMenu*>& main_menu_map();
+
+	template <typename initia_t>
+	web::Browser* browser(const initia_t& it, bool force = true);
+
+	QAction* quit_action() const;
     public slots:
 	void application_exit(void);
 	void application_fast_exit(void);
-	void commit_data(QSessionManager &manager);
-	void editor_switch(void);
+	void commit_data(QSessionManager& manager);
 
+	void on_expand_edit_area(bool flag);
+	void synchronize_title(const QString& title_);
     private slots:
 	void file_new(void);
 	void file_open(void);
 	bool file_save(void);
 	bool file_save_as(void);
-	void file_print(void);
-	void file_print_preview(void);
-	void file_print_pdf(void);
+	// void file_print(void);
+	// void file_print_preview(void);
+	// void file_print_pdf(void);
 	void tools_find(void);
 	void tools_preferences(void);
-//    void editor_switch(void);
+	// void editor_switch(void);
 
-
-	void on_expand_edit_area(bool flag);
-
-	void on_click_help_about_hapnote(void);
+	void on_click_help_about_this(void);
 	void on_click_help_about_qt(void);
 
 	void icon_activated(QSystemTrayIcon::ActivationReason reason);
 
-	void on_focus_changed(QWidget *, QWidget *);
+	void on_focus_changed(QWidget*, QWidget*);
+
+	void slotAboutApplication();
 
     private:
-
 	void setup_ui(void);
 	void setup_signals(void);
 	void assembly(void);
 
 	void init_file_menu(void);
-	void append_quit_menu();
+	//	void append_quit_menu();
 	void init_tools_menu(void);
-	void init_preferences_menu(QMenu *menu);
+	void init_preferences_menu(QMenu* menu);
 	void init_help_menu(void);
 
 	void init_itemsflat_actions(void);
 
-	void setup_icon_actions(void);
-	void create_tray_icon(void);
-	void set_icon(void);
+	// void setup_icon_actions(void);
+	// void create_tray_icon(void);
+	// void set_icon(void);
 
 	void save_geometry(void);
 	void save_tree_position(void);
-//    void save_recordtable_position(void);// too many _record_screen objects, deprecated
-	void save_editor_cursor_position(void);
-	void save_editor_scrollbar_position(void);
+	// void save_recordtable_position(void);// too many _record_screen objects,
+	// deprecated
+	// void save_editor_cursor_position(void);
+	// void save_editor_scrollbar_position(void);
 
+	// std::shared_ptr<gl_para> _gl_paras;
+	// std::shared_ptr<AppConfig> _appconfig;
+	// std::shared_ptr<DataBaseConfig> _databaseconfig;
 
-	QString _style;
+	QWidget* _central_widget;
+	web::Profile* _profile;
+	QString _style_source;
+	// QAction *_action_tray_restore;
+	// QAction *_action_tray_maximize;
+	// QAction *_action_tray_minimize;
+	// QAction *_action_tray_quit;
 
-	gl_para	&_globalparameters;
-	AppConfig		&_appconfig;
-	DataBaseConfig		&_databaseconfig;
+	QSplitter* _v_right_splitter;
+	QSplitter* _v_find_splitter;
 
+	// HidableTabWidget	*_vtab_tree;
+	QSplitter* _h_record_splitter;
+	QSplitter* _h_tree_splitter;
+	// QSplitter           *_h_splitter;
+	std::map<std::string, QMenu*> _main_menu_map;
+	QMenu* _filemenu;
+	QMenu* _editmenu;
+	QMenu* _viewmenu;
+	web::HistoryMenu* _histrymenu;
+	web::BookmarksMenu* _bookmarkmenu;
+	QMenu* _windowmenu;
+	QMenu* _toolsmenu;
+	QMenu* _helpmenu;
 
+	web::Docker* _browser_docker;
+	HidableTab* _vtab_record;
+	web::Docker* _editor_docker;
+	ts_t* _tree_screen;
+	FindScreen* _find_screen;
+	// web::DownloadManager	*_download;
 
-	QAction			*_action_tray_restore;
-	QAction			*_action_tray_maximize;
-	QAction			*_action_tray_minimize;
-	QAction			*_action_tray_quit;
-
-	QSystemTrayIcon		*_tray_icon;
-	QMenu			*_tray_icon_menu;
-
-	QSplitter		*_v_right_splitter;
-	QSplitter		*_v_find_splitter;
-
-//	HidableTabWidget	*_vtab_tree;
-	QSplitter		*_h_record_splitter;
-	QSplitter		*_h_tree_splitter;
-//    QSplitter           *_h_splitter;
-
-
-	QMenu				*_filemenu;
-	QMenu				*_editmenu;
-	QMenu				*_viewmenu;
-	browser::HistoryMenu		*_histrymenu;
-	browser::BookmarksMenu		*_bookmarkmenu;
-	QMenu				*_windowmenu;
-	QMenu				*_toolsmenu;
-	QMenu				*_helpmenu;
-
-	ts_t				*_tree_screen;
-	FindScreen			*_find_screen;
-
-	Editentry *_editenty;
-	browser::Entrance		*_entrance;
-//	browser::DownloadManager	*_download;
-	HidableTabWidget	*_vtab_record;
-	QStatusBar		*_statusbar;
-	WindowSwitcher		*_switcher;
-
-
-
-//    bool _treetable_hidden;       // = globalparameters.getTreeScreen()->isHidden();
-//    bool _recordtable_hidden;     // = globalparameters.getRecordTableScreen()->isHidden();
+	QStatusBar* _statusbar;
+	WindowSwitcher* _switcher;
+	SysTrayIcon* _tray_icon = nullptr;
+	QAction* _quit_action;
+	// QMenu *_tray_icon_menu;
+	// bool _treetable_hidden;       // =
+	// globalparameters.getTreeScreen()->isHidden();
+	// bool _recordtable_hidden;     // =
+	// globalparameters.getRecordTableScreen()->isHidden();
 
     protected:
+	void closeEvent(QCloseEvent* event);
 
+	bool eventFilter(QObject* o, QEvent* e); // Отслеживание прочих событий
 
-
-	void closeEvent(QCloseEvent *event);
-
-	bool eventFilter(QObject *o, QEvent *e);	// Отслеживание прочих событий
-
-	void go_walk_history(void);
+	// void go_walk_history(void);
 
 	bool _enable_real_close;
 
-	friend class browser::Browser;
+	friend class web::Browser;
 };
+
+template <>
+web::Browser*
+wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bool force);
+template <>
+web::Browser* wn_t::browser<QUrl>(const QUrl& url_, bool force);
+template <>
+web::Browser* wn_t::browser<url_value>(const url_value& url_, bool force);
+template <>
+web::Browser* wn_t::browser<QByteArray>(const QByteArray& state_, bool force);
+template <>
+web::Browser* wn_t::browser<QString>(const QString& topic, bool force);
+
 #endif

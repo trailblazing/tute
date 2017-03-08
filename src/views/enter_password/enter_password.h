@@ -1,36 +1,31 @@
 #ifndef _ENTERPASSWORD_H_
-#define	_ENTERPASSWORD_H_
+#define _ENTERPASSWORD_H_
 
-
-
-#include <QWidget>
 #include <QDialog>
 #include <QTimer>
-
+#include <QWidget>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
 
 class QLabel;
 class QLineEdit;
 class QPushButton;
 
-#define ENTER_PASSWORD_MODE_SINGLE		0
-#define ENTER_PASSWORD_MODE_DOUBLE		1
-#define ENTER_PASSWORD_MODE_WITH_PREVIOUS	2
-
+#define ENTER_PASSWORD_MODE_SINGLE 0
+#define ENTER_PASSWORD_MODE_DOUBLE 1
+#define ENTER_PASSWORD_MODE_WITH_PREVIOUS 2
 
 class EnterPassword : public QDialog {
 #if QT_VERSION == 0x050600
-    W_OBJECT(EnterPassword)
+	W_OBJECT(EnterPassword)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-    public:
+	public:
 	EnterPassword(int imode, QWidget *parent = 0);
 
 	QString getPassword(void);
@@ -39,43 +34,42 @@ class EnterPassword : public QDialog {
 
 	void setCancelDelay(int delay);
 
-    private slots:
+	private slots:
 
-	void	okClick(void);
-	void	cancelCountUpdate(void);
-	void	passwordTyped(void);
+	void okClick(void);
+	void cancelCountUpdate(void);
+	void passwordTyped(void);
 
-    private:
-	QLabel		*label;
-	QLabel		*label1;
-	QLabel		*label2;
-	QLineEdit	*passwordEdit1;
-	QLineEdit	*passwordEdit2;
+	private:
+	QLabel *label;
+	QLabel *label1;
+	QLabel *label2;
+	QLineEdit *passwordEdit1;
+	QLineEdit *passwordEdit2;
 
-	QLabel		*previousLabel;
-	QLineEdit	*previousPasswordEdit;
+	QLabel *previousLabel;
+	QLineEdit *previousPasswordEdit;
 
-// QDialogButtonBox *buttonBox;
-	QPushButton	*okButton;
-	QPushButton	*cancelButton;
+	// QDialogButtonBox *buttonBox;
+	QPushButton *okButton;
+	QPushButton *cancelButton;
 
 	QString password;
 	QString previousPassword;
-	int	mode;
+	int mode;
 
-	int	cancelDelay;	// Сколько времени ждать автонажатия Cancel (сек)
-	int	cancelCount;	// Сколько времени просшло с начала открытия окна (сек)
+	int cancelDelay;  // Сколько времени ждать автонажатия Cancel (сек)
+	int cancelCount;  // Сколько времени просшло с начала открытия окна (сек)
 
 	QTimer timer;
 
-	bool isPasswordTyped;	// Начал ли пользователь набирать пароль
+	bool isPasswordTyped;  // Начал ли пользователь набирать пароль
 
-	void	setupUI(void);
-	void	setupSignals(void);
-	void	assembly(void);
+	void setupUI(void);
+	void setupSignals(void);
+	void assembly(void);
 
 	void showEvent(QShowEvent *event);
 };
 
 #endif /* _ENTERPASSWORD_H_ */
-

@@ -1,28 +1,25 @@
 #ifndef __EDITORCONFIG_H__
 #define __EDITORCONFIG_H__
 
-
-#include <memory>
 #include <QObject>
-#include <QWidget>
 #include <QSettings>
-
+#include <QWidget>
+#include <memory>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
-
 
 class EditorConfig : public QWidget {
 #if QT_VERSION == 0x050600
-    W_OBJECT(EditorConfig)
+	W_OBJECT(EditorConfig)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-    public:
-	EditorConfig(const QString &config_file_name, QWidget *parent = 0);
+	public:
+	EditorConfig(std::shared_ptr<QSettings> topic_editor_config_, QWidget *parent = 0);
 	~EditorConfig();
 
 	// Настройка стандартного шрифта
@@ -40,7 +37,6 @@ class EditorConfig : public QWidget {
 	void set_monospace_font_size(int size);
 	bool get_monospace_font_size_apply(void);
 	void set_monospace_font_size_apply(bool i);
-
 
 	// Настройка шрифта форматирования кода
 	QString get_code_font(void);
@@ -66,20 +62,19 @@ class EditorConfig : public QWidget {
 	void set_finddialog_geometry(QString geometry);
 
 	// Настройка первой линии с кнопками инструментов
-	QString get_tools_line_1(void);
-	void set_tools_line_1(QString geometry);
+	QString tools_line_0(void);
+	void tools_line_0(QString geometry);
 
 	// Настройка второй линии с кнопками инструментов
-	QString get_tools_line_2(void);
-	void set_tools_line_2(QString geometry);
+	QString tools_line_1(void);
+	void tools_line_1(QString geometry);
 
-	// Раскрыты или сомкнуты панели инструментов
+	// аскрыты или сомкнуты панели инструментов
 	bool get_expand_tools_lines(void);
 	void set_expand_tools_lines(bool i);
 
-    private:
-
-	std::unique_ptr<QSettings> _editor_conf;
+	private:
+	std::shared_ptr<QSettings> _editor_conf;
 
 	QString get_parameter(QString name);
 
@@ -106,4 +101,4 @@ class EditorConfig : public QWidget {
 	void update_version(int versionFrom, int versionTo, QStringList baseTable, QStringList finalTable);
 };
 
-#endif	// __EDITORCONFIG_H__
+#endif  // __EDITORCONFIG_H__

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>browser::CookiesExceptionsDialog</class>
- <widget class="QDialog" name="browser::CookiesExceptionsDialog">
+ <class>web::CookiesExceptionsDialog</class>
+ <widget class="QDialog" name="web::CookiesExceptionsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -219,7 +219,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>browser::CookiesExceptionsDialog</receiver>
+   <receiver>web::CookiesExceptionsDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">

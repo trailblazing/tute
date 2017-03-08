@@ -53,57 +53,52 @@
 #endif
 
 #if defined(Q_WS_WIN)
-#  if !defined(QT_QTLOCKEDFILE_EXPORT) && !defined(QT_QTLOCKEDFILE_IMPORT)
-#    define QT_QTLOCKEDFILE_EXPORT
-#  elif defined(QT_QTLOCKEDFILE_IMPORT)
-#    if defined(QT_QTLOCKEDFILE_EXPORT)
-#      undef QT_QTLOCKEDFILE_EXPORT
-#    endif
-#    define QT_QTLOCKEDFILE_EXPORT __declspec(dllimport)
-#  elif defined(QT_QTLOCKEDFILE_EXPORT)
-#    undef QT_QTLOCKEDFILE_EXPORT
-#    define QT_QTLOCKEDFILE_EXPORT __declspec(dllexport)
-#  endif
-#else
-#  define QT_QTLOCKEDFILE_EXPORT
+#if !defined(QT_QTLOCKEDFILE_EXPORT) && !defined(QT_QTLOCKEDFILE_IMPORT)
+#define QT_QTLOCKEDFILE_EXPORT
+#elif defined(QT_QTLOCKEDFILE_IMPORT)
+#if defined(QT_QTLOCKEDFILE_EXPORT)
+#undef QT_QTLOCKEDFILE_EXPORT
 #endif
-
+#define QT_QTLOCKEDFILE_EXPORT __declspec(dllimport)
+#elif defined(QT_QTLOCKEDFILE_EXPORT)
+#undef QT_QTLOCKEDFILE_EXPORT
+#define QT_QTLOCKEDFILE_EXPORT __declspec(dllexport)
+#endif
+#else
+#define QT_QTLOCKEDFILE_EXPORT
+#endif
 
 namespace qt4 {
+class QT_QTLOCKEDFILE_EXPORT QtLockedFile : public QFile {
+	public:
+	enum LockMode { NoLock = 0,
+		            ReadLock,
+		            WriteLock };
 
+	QtLockedFile();
+	QtLockedFile(const QString &name);
+	~QtLockedFile();
 
-    class QT_QTLOCKEDFILE_EXPORT QtLockedFile : public QFile {
-    public:
-        enum LockMode { NoLock = 0, ReadLock, WriteLock };
+	bool open(OpenMode mode);
 
-        QtLockedFile();
-        QtLockedFile(const QString &name);
-        ~QtLockedFile();
+	bool lock(LockMode mode, bool block = true);
+	bool unlock();
+	bool isLocked() const;
+	LockMode lockMode() const;
 
-        bool open(OpenMode mode);
-
-        bool lock(LockMode mode, bool block = true);
-        bool unlock();
-        bool isLocked() const;
-        LockMode lockMode() const;
-
-    private:
+	private:
 #ifdef Q_OS_WIN
-        Qt::HANDLE wmutex;
-        Qt::HANDLE rmutex;
-        QVector<Qt::HANDLE> rmutexes;
-        QString mutexname;
+	Qt::HANDLE wmutex;
+	Qt::HANDLE rmutex;
+	QVector<Qt::HANDLE> rmutexes;
+	QString mutexname;
 
-        Qt::HANDLE getMutexHandle(int idx, bool doCreate);
-        bool waitMutex(Qt::HANDLE mutex, bool doBlock);
+	Qt::HANDLE getMutexHandle(int idx, bool doCreate);
+	bool waitMutex(Qt::HANDLE mutex, bool doBlock);
 
 #endif
-        LockMode _lockmode;
-    };
-
+	LockMode _lockmode;
+};
 }
 
-
 #endif
-
-

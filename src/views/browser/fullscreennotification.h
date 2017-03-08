@@ -42,22 +42,19 @@
 #ifndef FULLSCREENNOTIFICATION_H
 #define FULLSCREENNOTIFICATION_H
 
-
-
 #include <QWidget>
 
 #if QT_VERSION == 0x050600
-#include <wobjectdefs.h>
 #include <QObject>
+#include <wobjectdefs.h>
 #endif
 
 class QLabel;
 class QGridLayout;
 class QPropertyAnimation;
 
-
-namespace browser {
-    class FullScreenNotification : public QWidget {
+namespace web {
+class FullScreenNotification : public QWidget {
 #if QT_VERSION == 0x050600
 	W_OBJECT(FullScreenNotification)
 #else
@@ -65,28 +62,25 @@ namespace browser {
 #endif
 
 	public:
-	    FullScreenNotification(QWidget *parent = 0);
-	    ~FullScreenNotification();
+	FullScreenNotification(QWidget *parent = 0);
+	~FullScreenNotification();
 
-	    void	show();
-	    void	hide();
+	void show();
+	void hide();
 
 	public slots:
-	    void	fadeOut();
-	    void	fadeOutFinished();
+	void fadeOut();
+	void fadeOutFinished();
 
 	private:
-	    QLabel		*_label;
-	    QGridLayout		*_layout;
-	    QPropertyAnimation	*_animation;
-	    int			width;
-	    int			height;
-	    int			x;
-	    int			y;
-    };
+	QLabel *_label;
+	QGridLayout *_layout;
+	QPropertyAnimation *_animation;
+	int width;
+	int height;
+	int x;
+	int y;
+};
 }
 
-
-
-
-#endif	// FULLSCREENNOTIFICATION_H
+#endif  // FULLSCREENNOTIFICATION_H
