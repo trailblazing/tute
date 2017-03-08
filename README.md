@@ -175,6 +175,8 @@ For Tute:
 * code beautifier   - clang-format::WebKit (to save time)
 ```
         find . -iname "*.h" -or -iname "*.hxx" -or -iname "*.inl" -or -iname "*.cpp" -or -iname "*.cxx" | xargs clang-format -i -style=WebKit
+        // if you have a .clang-format under currrent directory (clang-format -style=webkit -dump-config > .clang-format), then:
+        find . -iname "*.h" -or -iname "*.hxx" -or -iname "*.inl" -or -iname "*.cpp" -or -iname "*.cxx" | xargs clang-format -i -style=file
 ```
 
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.

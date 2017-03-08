@@ -16,17 +16,17 @@
 
 class MtTableWidget : public QTableWidget {
 #if QT_VERSION == 0x050600
-    W_OBJECT(MtTableWidget) //
+	W_OBJECT(MtTableWidget)  //
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    MtTableWidget(QWidget* parent = 0);
-    virtual ~MtTableWidget();
+	public:
+	MtTableWidget(QWidget *parent = 0);
+	virtual ~MtTableWidget();
 
-private:
-    QStyledItemDelegate* itemDelegate;
+	private:
+	QStyledItemDelegate *itemDelegate;
 };
 
-#endif // __MTTABLEWIDGET_H__
+#endif  // __MTTABLEWIDGET_H__

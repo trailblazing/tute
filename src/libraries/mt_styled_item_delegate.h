@@ -12,19 +12,19 @@
 
 class MtStyledItemDelegate : public QStyledItemDelegate {
 #if QT_VERSION == 0x050600
-    W_OBJECT(MtStyledItemDelegate) //
+	W_OBJECT(MtStyledItemDelegate)  //
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    explicit MtStyledItemDelegate(QObject* parent = 0);
+	public:
+	explicit MtStyledItemDelegate(QObject *parent = 0);
 
-    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+	QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
-signals:
+	signals:
 
-public slots:
+	public slots:
 };
 
-#endif // __MTSTYLEDITEMDELEGATE_H__
+#endif  // __MTSTYLEDITEMDELEGATE_H__

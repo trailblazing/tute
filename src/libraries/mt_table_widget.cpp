@@ -11,15 +11,13 @@
 W_OBJECT_IMPL(MtTableWidget)
 #endif
 
-MtTableWidget::MtTableWidget(QWidget* parent)
-    : QTableWidget(parent)
-{
-    Q_UNUSED(parent);
+MtTableWidget::MtTableWidget(QWidget *parent)
+    : QTableWidget(parent) {
+	Q_UNUSED(parent);
 
-    itemDelegate = new QStyledItemDelegate();
-    this->setItemDelegate(itemDelegate);
+	itemDelegate = new QStyledItemDelegate();
+	this->setItemDelegate(itemDelegate);
 }
-MtTableWidget::~MtTableWidget()
-{
-    delete itemDelegate;
+MtTableWidget::~MtTableWidget() {
+	delete itemDelegate;
 }

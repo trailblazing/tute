@@ -55,33 +55,33 @@
 namespace web {
 class SettingsDialog : public QDialog, public Ui_Settings {
 #if QT_VERSION == 0x050600
-    W_OBJECT(SettingsDialog)
+	W_OBJECT(SettingsDialog)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    SettingsDialog(QWidget* parent = 0);
-    void accept();
+	public:
+	SettingsDialog(QWidget *parent = 0);
+	void accept();
 
-private slots:
-    void loadDefaults();
-    void loadFromSettings();
-    void saveToSettings();
+	private slots:
+	void loadDefaults();
+	void loadFromSettings();
+	void saveToSettings();
 
-    void setHomeToCurrentPage();
-    void showCookies();
-    void showExceptions();
+	void setHomeToCurrentPage();
+	void showCookies();
+	void showExceptions();
 
-    void chooseFont();
-    void chooseFixedFont();
+	void chooseFont();
+	void chooseFixedFont();
 
-private:
-    QFont standardFont;
-    QFont fixedFont;
+	private:
+	QFont standardFont;
+	QFont fixedFont;
 };
 }
 
 // QT_END_NAMESPACE
 
-#endif // SETTINGS_H
+#endif  // SETTINGS_H

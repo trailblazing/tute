@@ -31,48 +31,52 @@ class QMenuBar;
 class Blogger;
 
 class Application : public QApplication {
-    Q_OBJECT
+	Q_OBJECT
 
-public:
-    Application(int&, char**);
-    void setupRecentFiles();
-    QStringList recentFileTitles();
-    QStringList recentFilenames();
-    typedef struct _RF {
-        QString title;
-        QString filename;
-    } recentFile;
-    QList<recentFile> recentFiles();
-    recentFile getRecentFile(int);
-    QStringList titles();
-    QStringList filenames();
-    Blogger* currentEditingWindow() { return _currentEditingWindow; }
-    void deleteSandbox();
-    bool isSandbox() { return _isSandbox; }
+	public:
+	Application(int &, char **);
+	void setupRecentFiles();
+	QStringList recentFileTitles();
+	QStringList recentFilenames();
+	typedef struct _RF {
+		QString title;
+		QString filename;
+	} recentFile;
+	QList<recentFile> recentFiles();
+	recentFile getRecentFile(int);
+	QStringList titles();
+	QStringList filenames();
+	Blogger *currentEditingWindow() {
+		return _currentEditingWindow;
+	}
+	void deleteSandbox();
+	bool isSandbox() {
+		return _isSandbox;
+	}
 
-public slots:
-    void set_recent_files(const QStringList&, const QStringList&);
-    void add_recent_file(const QString&, const QString&);
-    void saveAll();
-    void setMainWindow(Blogger* sm);
+	public slots:
+	void set_recent_files(const QStringList &, const QStringList &);
+	void add_recent_file(const QString &, const QString &);
+	void saveAll();
+	void setMainWindow(Blogger *sm);
 
-signals:
-    void recent_files_updated(QStringList, QStringList);
-    void recent_files_updated(const QList<Application::recentFile>&);
-    void mainWindowChanged(Blogger*);
+	signals:
+	void recent_files_updated(QStringList, QStringList);
+	void recent_files_updated(const QList<Application::recentFile> &);
+	void mainWindowChanged(Blogger *);
 
-private:
-    QList<recentFile> _recentFiles;
+	private:
+	QList<recentFile> _recentFiles;
 #ifdef Q_OS_MAC
-    SuperMenu* superMenu;
+	SuperMenu *superMenu;
 #endif
-    Blogger* _currentEditingWindow;
-    bool _isSandbox;
+	Blogger *_currentEditingWindow;
+	bool _isSandbox;
 
-private slots:
-    void saveRecentFiles();
-    void handleWindowChange(QWidget*, QWidget*);
-    void handleLastWindowClosed();
+	private slots:
+	void saveRecentFiles();
+	void handleWindowChange(QWidget *, QWidget *);
+	void handleLastWindowClosed();
 };
 
 #endif

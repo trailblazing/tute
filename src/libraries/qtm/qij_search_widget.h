@@ -41,7 +41,7 @@ class QPlainTextEdit;
 #define TEXTEDIT_FOR_READ QPlainTextEdit
 #define TEXTEDIT MetaEditor
 
-#else
+#else  //DONT_USE_PTE
 
 #ifdef USE_WYEDIT
 
@@ -50,74 +50,81 @@ class QPlainTextEdit;
 class EditorWrap;
 //#define TEXTEDIT EditorWrap
 typedef EditorWrap TEXTEDIT;
-#else
+#else  //USE_EDITOR_WRAP
+
 class Editor;
 typedef Editor TEXTEDIT;
 
-#endif //USE_EDITOR_WRAP
+#endif  // USE_EDITOR_WRAP
 typedef QTextEdit TEXTEDIT_FOR_READ;
-#else
+#else   //USE_WYEDIT
 
 //#define TEXTEDIT_FOR_READ	QTextEdit
 //#define TEXTEDIT		QTextEdit
 typedef QTextEdit TEXTEDIT_FOR_READ;
 typedef QTextEdit TEXTEDIT;
 
-#endif
+#endif  //USE_WYEDIT
 
-#endif
+#endif  //DONT_USE_PTE
 
 class QijSearchWidget : public QWidget, private Ui::SearchWidgetBase {
-    Q_OBJECT
+	Q_OBJECT
 
-public:
-    QijSearchWidget(TEXTEDIT*, QWidget* parent = 0);
-    QijSearchWidget(QPlainTextEdit*, QWidget* parent = 0);
-    QPlainTextEdit* plainTextEdit() { return _plainTextEdit; }
-    // QTextEdit
-    TEXTEDIT* textEdit() { return _editor; }
-    bool expertEnabled() { return _expertEnabled; }
+	public:
+	QijSearchWidget(TEXTEDIT *, QWidget *parent = 0);
+	QijSearchWidget(QPlainTextEdit *, QWidget *parent = 0);
+	QPlainTextEdit *plainTextEdit() {
+		return _plainTextEdit;
+	}
+	// QTextEdit
+	TEXTEDIT *textEdit() {
+		return _editor;
+	}
+	bool expertEnabled() {
+		return _expertEnabled;
+	}
 
-public slots:
-    void setTextEdit(QWidget*);
-    /*  void setTextEdit( QTextEdit * );
-	       void setTextEdit( QPlainTextEdit * ); */
-    void find();
-    void findAgain();
-    void setExpertEnabled(bool);
-    void clearSearchText();
+	public slots:
+	void setTextEdit(QWidget *);
+	/*  void setTextEdit( QTextEdit * );
+             void setTextEdit( QPlainTextEdit * ); */
+	void find();
+	void findAgain();
+	void setExpertEnabled(bool);
+	void clearSearchText();
 
-protected:
-    bool eventFilter(QObject*, QEvent*);
-    virtual void closeEvent(QCloseEvent*);
+	protected:
+	bool eventFilter(QObject *, QEvent *);
+	virtual void closeEvent(QCloseEvent *);
 
-private:
-    enum direction { Forward,
-        Backward,
-        Stay };
-    void findInTextEdit(const QString&, direction d = Stay);
+	private:
+	enum direction { Forward,
+		             Backward,
+		             Stay };
+	void findInTextEdit(const QString &, direction d = Stay);
 
-    bool matchCase, wholeWords, isRegexSearch;
-    bool _expertEnabled;
-    direction dir;
-    // QTextEdit
-    TEXTEDIT* _editor;
-    QPlainTextEdit* _plainTextEdit;
-    QString currentCursorText;
+	bool matchCase, wholeWords, isRegexSearch;
+	bool _expertEnabled;
+	direction dir;
+	// QTextEdit
+	TEXTEDIT *_editor;
+	QPlainTextEdit *_plainTextEdit;
+	QString currentCursorText;
 
-private slots:
-    void on_tbClose_clicked();
-    void on_leFindText_textChanged(const QString&);
-    void on_leFindText_returnPressed();
-    void on_tbSearchDown_clicked(bool);
-    void on_tbSearchUp_clicked(bool);
-    void on_tbSelectAll_clicked(bool);
-    void on_chMatchCase_toggled(bool);
-    void on_chWholeWords_toggled(bool);
-    void on_chRegExp_toggled(bool);
+	private slots:
+	void on_tbClose_clicked();
+	void on_leFindText_textChanged(const QString &);
+	void on_leFindText_returnPressed();
+	void on_tbSearchDown_clicked(bool);
+	void on_tbSearchUp_clicked(bool);
+	void on_tbSelectAll_clicked(bool);
+	void on_chMatchCase_toggled(bool);
+	void on_chWholeWords_toggled(bool);
+	void on_chRegExp_toggled(bool);
 
-signals:
-    void searchMessage(const QString&);
+	signals:
+	void searchMessage(const QString &);
 };
 
 #endif

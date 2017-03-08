@@ -4,9 +4,9 @@
 #include <QSortFilterProxyModel>
 
 class RecordProxyModel : public QSortFilterProxyModel {
-public:
-    RecordProxyModel(QObject* pobj = 0);
-    ~RecordProxyModel();
+	public:
+	RecordProxyModel(QObject *pobj = 0);
+	~RecordProxyModel();
 };
 
-#endif // __RECORDTABLEPROXYMODEL_H__
+#endif  // __RECORDTABLEPROXYMODEL_H__

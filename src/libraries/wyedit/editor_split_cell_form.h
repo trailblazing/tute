@@ -15,37 +15,37 @@
 
 class EditorSplitCellForm : public QDialog {
 #if QT_VERSION == 0x050600
-    W_OBJECT(EditorSplitCellForm)
+	W_OBJECT(EditorSplitCellForm)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
-public:
-    EditorSplitCellForm(int fixHorisontalSplit, int fixVerticalSplit);
-    ~EditorSplitCellForm();
+	public:
+	EditorSplitCellForm(int fixHorisontalSplit, int fixVerticalSplit);
+	~EditorSplitCellForm();
 
-    int get_num_split_h(void);
-    int get_num_split_v(void);
+	int get_num_split_h(void);
+	int get_num_split_v(void);
 
-private:
-    int fixHSplit;
-    int fixVSplit;
+	private:
+	int fixHSplit;
+	int fixVSplit;
 
-    QCheckBox* checkboxFixHSplit;
-    QCheckBox* checkboxFixVSplit;
+	QCheckBox *checkboxFixHSplit;
+	QCheckBox *checkboxFixVSplit;
 
-    QLabel* checkboxLabelFixHSplit;
-    QLabel* checkboxLabelFixVSplit;
+	QLabel *checkboxLabelFixHSplit;
+	QLabel *checkboxLabelFixVSplit;
 
-    QLabel* labelPictogramH;
-    QLabel* labelPictogramV;
+	QLabel *labelPictogramH;
+	QLabel *labelPictogramV;
 
-    QLabel* labelH;
-    QLabel* labelV;
+	QLabel *labelH;
+	QLabel *labelV;
 
-    QSpinBox* numSplitH;
-    QSpinBox* numSplitV;
+	QSpinBox *numSplitH;
+	QSpinBox *numSplitV;
 
-    QDialogButtonBox* buttonBox;
+	QDialogButtonBox *buttonBox;
 };
 
-#endif // _EDITORSPLITCELLFORM_H_
+#endif  // _EDITORSPLITCELLFORM_H_

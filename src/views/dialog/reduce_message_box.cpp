@@ -17,56 +17,49 @@ extern std::shared_ptr<gl_para> gl_paras;
 W_OBJECT_IMPL(ReduceMessageBox)
 #endif
 
-ReduceMessageBox::ReduceMessageBox(QWidget* parent)
-    : QDialog(parent)
-{
-    setupUI();
-    setupSignals();
-    assembly();
+ReduceMessageBox::ReduceMessageBox(QWidget *parent)
+    : QDialog(parent) {
+	setupUI();
+	setupSignals();
+	assembly();
 }
 
-void ReduceMessageBox::setupUI(void)
-{
-    int w = // find_object<MainWindow>("mainwindow")
-        gl_paras->main_window()->width();
-    int h = // find_object<MainWindow>("mainwindow")
-        gl_paras->main_window()->height();
+void ReduceMessageBox::setupUI(void) {
+	int w =  // find_object<MainWindow>("mainwindow")
+	    gl_paras->main_window()->width();
+	int h =  // find_object<MainWindow>("mainwindow")
+	    gl_paras->main_window()->height();
 
-    this->resize(w * 2 / 3, h / 3);
+	this->resize(w * 2 / 3, h / 3);
 }
 
-void ReduceMessageBox::setupSignals(void)
-{
-    connect(&buttonBox, &QDialogButtonBox::accepted, this, &ReduceMessageBox::accept);
-    connect(&buttonBox, &QDialogButtonBox::rejected, this, &ReduceMessageBox::reject);
+void ReduceMessageBox::setupSignals(void) {
+	connect(&buttonBox, &QDialogButtonBox::accepted, this, &ReduceMessageBox::accept);
+	connect(&buttonBox, &QDialogButtonBox::rejected, this, &ReduceMessageBox::reject);
 }
 
-void ReduceMessageBox::assembly(void)
-{
-    // азмещалка элементов
-    QVBoxLayout* layout = new QVBoxLayout(this);
+void ReduceMessageBox::assembly(void) {
+	// азмещалка элементов
+	QVBoxLayout *layout = new QVBoxLayout(this);
 
-    layout->addWidget(&text);
-    layout->addWidget(&detailedText);
-    layout->addWidget(&buttonBox);
+	layout->addWidget(&text);
+	layout->addWidget(&detailedText);
+	layout->addWidget(&buttonBox);
 }
 
-void ReduceMessageBox::setText(QString iText)
-{
-    text.setText(iText);
+void ReduceMessageBox::setText(QString iText) {
+	text.setText(iText);
 }
 
-void ReduceMessageBox::setDetailedText(QString iDetailedText)
-{
-    detailedText.setText(iDetailedText);
+void ReduceMessageBox::setDetailedText(QString iDetailedText) {
+	detailedText.setText(iDetailedText);
 }
 
-void ReduceMessageBox::setDetailedTextReadOnly(bool iReadOnly)
-{
-    detailedText.setReadOnly(iReadOnly);
+void ReduceMessageBox::setDetailedTextReadOnly(bool iReadOnly) {
+	detailedText.setReadOnly(iReadOnly);
 }
 
-void ReduceMessageBox::setStandardButtons(QFlags<QDialogButtonBox::StandardButton> buttons)
-{
-    buttonBox.setStandardButtons(buttons);
+void ReduceMessageBox::setStandardButtons(
+    QFlags<QDialogButtonBox::StandardButton> buttons) {
+	buttonBox.setStandardButtons(buttons);
 }

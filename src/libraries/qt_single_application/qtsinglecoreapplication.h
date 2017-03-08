@@ -55,32 +55,32 @@ class QtLocalPeer;
 
 namespace qt4 {
 class QtSingleCoreApplication : public QCoreApplication {
-    // #if QT_VERSION == 0x050600
-    // W_OBJECT(QtSingleCoreApplication)
-    // #else
-    // Q_OBJECT
-    // #endif
+	// #if QT_VERSION == 0x050600
+	// W_OBJECT(QtSingleCoreApplication)
+	// #else
+	// Q_OBJECT
+	// #endif
 
-    Q_OBJECT
+	Q_OBJECT
 
-public:
-    QtSingleCoreApplication(int& argc, char** argv);
-    QtSingleCoreApplication(const QString& id, int& argc, char** argv);
+	public:
+	QtSingleCoreApplication(int &argc, char **argv);
+	QtSingleCoreApplication(const QString &id, int &argc, char **argv);
 
-    bool isRunning();
-    QString id() const;
+	bool isRunning();
+	QString id() const;
 
-public Q_SLOTS:
-    bool sendMessage(const QString& message, int timeout = 5000);
+	public Q_SLOTS:
+	bool sendMessage(const QString &message, int timeout = 5000);
 
-Q_SIGNALS:
-    void messageReceived(const QString& message)
+	Q_SIGNALS:
+	void messageReceived(const QString &message)
 #if QT_VERSION == 0x050600
-        W_SIGNAL(messageReceived, (const QString&), message) // ;
+	    W_SIGNAL(messageReceived, (const QString &), message)  // ;
 #else
-        ;
+	    ;
 #endif
 
-        private : QtLocalPeer* peer;
+	    private : QtLocalPeer *peer;
 };
 }

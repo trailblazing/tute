@@ -15,58 +15,62 @@
 W_OBJECT_IMPL(VerticalScrollArea)
 #endif
 
-VerticalScrollArea::VerticalScrollArea(rv_t* _record_view // std::shared_ptr<sd::_interface<void(QResizeEvent *), sd::meta_info<void *>>> interface
+VerticalScrollArea::VerticalScrollArea(
+    rv_t *_record_view  // std::shared_ptr<sd::_interface<void(QResizeEvent *),
+                        // sd::meta_info<void *>>> interface
     ,
-    QWidget* parent)
+    QWidget *parent)
     : QScrollArea(parent)
-    , _record_view(_record_view)
-{ // _interface(interface)
-    setWidgetResizable(true);
-    setFrameStyle(QFrame::NoFrame);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    , _record_view(_record_view) {  // _interface(interface)
+	setWidgetResizable(true);
+	setFrameStyle(QFrame::NoFrame);
+	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-    //// how to use VerticalScrollArea class:
-    // auto vertical_scroll_widget = new QWidget(this);
-    // vertical_scroll_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    // QVBoxLayout *baseLayout = new QVBoxLayout(vertical_scroll_widget);
-    // setWidget(vertical_scroll_widget);
-    // vertical_scroll_widget->installEventFilter(this);
+	//// how to use VerticalScrollArea class:
+	// auto vertical_scroll_widget = new QWidget(this);
+	// vertical_scroll_widget->setSizePolicy(QSizePolicy::Preferred,
+	// QSizePolicy::Preferred);
+	// QVBoxLayout *baseLayout = new QVBoxLayout(vertical_scroll_widget);
+	// setWidget(vertical_scroll_widget);
+	// vertical_scroll_widget->installEventFilter(this);
 
-    // RecordView *_record_view = _record_controller->view(); //    auto record_view = new QWidget(this);
+	// RecordView *_record_view = _record_controller->view(); //    auto
+	// record_view = new QWidget(this);
 
-    _record_view->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	_record_view->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-    setWidget(_record_view);
-    _record_view->viewport()->installEventFilter(this);
-    // _record_view->_vertical_scroll_bar_width	= this->verticalScrollBar()->width();
-    _record_view->_vertical_scroll_area = this;
-    // setWidgetResizable(true);
-    // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    // setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+	setWidget(_record_view);
+	_record_view->viewport()->installEventFilter(this);
+	// _record_view->_vertical_scroll_bar_width	=
+	// this->verticalScrollBar()->width();
+	_record_view->_vertical_scroll_area = this;
+	// setWidgetResizable(true);
+	// setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	// setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 }
 
-bool VerticalScrollArea::eventFilter(QObject* obj, QEvent* ev)
-{
-    // This works because QScrollArea::setWidget installs an eventFilter on the widget
-    if (obj && obj == widget() && ev->type() == QEvent::Resize) {
-        // deprecated:
-        // setMinimumWidth(widget()->minimumSizeHint().width() + verticalScrollBar()->width());
+bool VerticalScrollArea::eventFilter(QObject *obj, QEvent *ev) {
+	// This works because QScrollArea::setWidget installs an eventFilter on the
+	// widget
+	if (obj && obj == widget() && ev->type() == QEvent::Resize) {
+		// deprecated:
+		// setMinimumWidth(widget()->minimumSizeHint().width() +
+		// verticalScrollBar()->width());
 
-        // widget()->setMaximumWidth(width() + verticalScrollBar()->width());
-        // widget()->repaint();
+		// widget()->setMaximumWidth(width() + verticalScrollBar()->width());
+		// widget()->repaint();
 
-        // static_cast<RecordTableView *>(o)
-        ////        widget()
-        // ->resizeEvent(static_cast<QResizeEvent *>(e));
+		// static_cast<RecordTableView *>(o)
+		////        widget()
+		// ->resizeEvent(static_cast<QResizeEvent *>(e));
 
-        _record_view->resizeEvent(static_cast<QResizeEvent*>(ev)); // (*_interface)(static_cast<QResizeEvent *>(ev));
-    }
-    return QScrollArea::eventFilter(obj, ev);
+		_record_view->resizeEvent(static_cast<QResizeEvent *>(ev));  // (*_interface)(static_cast<QResizeEvent *>(ev));
+	}
+	return QScrollArea::eventFilter(obj, ev);
 }
 
-void VerticalScrollArea::wheelEvent(QWheelEvent* event)
-{ // does not work
-    x -= (event->delta() / 120) * 10;
-    verticalScrollBar()->setValue(x);
+void VerticalScrollArea::wheelEvent(QWheelEvent *event) {  // does not work
+	x -= (event->delta() / 120) * 10;
+	verticalScrollBar()->setValue(x);
 }

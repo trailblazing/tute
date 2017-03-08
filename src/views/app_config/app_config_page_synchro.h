@@ -15,25 +15,25 @@
 
 class AppConfigPageSynchro : public ConfigPage {
 #if QT_VERSION == 0x050600
-    W_OBJECT(AppConfigPageSynchro)
+	W_OBJECT(AppConfigPageSynchro)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    AppConfigPageSynchro(QWidget* parent = 0);
-    int apply_changes(void);
+	public:
+	AppConfigPageSynchro(QWidget *parent = 0);
+	int apply_changes(void);
 
-private slots:
+	private slots:
 
-protected:
-    QLineEdit* synchroCommand;
+	protected:
+	QLineEdit *synchroCommand;
 
-    QCheckBox* synchroOnStartup;
-    QCheckBox* synchroOnExit;
+	QCheckBox *synchroOnStartup;
+	QCheckBox *synchroOnExit;
 
-    // Объединяющая рамка
-    QGroupBox* synchroOnBox;
+	// Объединяющая рамка
+	QGroupBox *synchroOnBox;
 };
 
-#endif // _CONFIGPAGE_SYNCHRO_H_
+#endif  // _CONFIGPAGE_SYNCHRO_H_

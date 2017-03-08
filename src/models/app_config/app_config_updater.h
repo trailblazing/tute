@@ -15,23 +15,23 @@
 
 class AppConfigUpdater : public QObject {
 #if QT_VERSION == 0x050600
-    W_OBJECT(AppConfigUpdater)
+	W_OBJECT(AppConfigUpdater)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    AppConfigUpdater(QObject* pobj = 0);
-    virtual ~AppConfigUpdater();
+	public:
+	AppConfigUpdater(QObject *pobj = 0);
+	virtual ~AppConfigUpdater();
 
-    void set_config_file(QString fileName);
+	void set_config_file(QString fileName);
 
-    void update_version(int versionFrom, int versionTo, QStringList baseTable, QStringList finalTable);
+	void update_version(int versionFrom, int versionTo, QStringList baseTable, QStringList finalTable);
 
-private:
-    QString update_version_allowcollision(int versionFrom, int versionTo, QString name, QString fromType, QString fromValue, QString toType, QString toValue);
+	private:
+	QString update_version_allowcollision(int versionFrom, int versionTo, QString name, QString fromType, QString fromValue, QString toType, QString toValue);
 
-    QSettings* conf;
+	QSettings *conf;
 };
 
 #endif /* __APPCONFIGUPDATER_H__ */

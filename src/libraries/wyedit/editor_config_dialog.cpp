@@ -20,15 +20,14 @@ extern std::shared_ptr<gl_para> gl_paras;
 W_OBJECT_IMPL(EditorConfigDialog)
 #endif
 
-EditorConfigDialog::EditorConfigDialog(QWidget* parent)
-    : QWidget(parent)
-{
-    configDialog = new ConfigDialog(this);
+EditorConfigDialog::EditorConfigDialog(QWidget *parent)
+    : QWidget(parent) {
+	configDialog = new ConfigDialog(this);
 
-    configDialog->set_window_title(tr("Editor settings"));
+	configDialog->set_window_title(tr("Editor settings"));
 
-    configDialog->add_widget(new EditorConfigFont(this), tr("Fonts"));
-    configDialog->add_widget(new EditorConfigMisc(this), tr("Misc"));
+	configDialog->add_widget(new EditorConfigFont(this), tr("Fonts"));
+	configDialog->add_widget(new EditorConfigMisc(this), tr("Misc"));
 
-    configDialog->exec();
+	configDialog->exec();
 }

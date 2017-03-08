@@ -20,46 +20,46 @@ class Blogger;
 
 class AttachTableScreen : public QWidget {
 #if QT_VERSION == 0x050600
-    W_OBJECT(AttachTableScreen)
+	W_OBJECT(AttachTableScreen)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    AttachTableScreen(Blogger* blogger_, QWidget* parent = 0);
-    virtual ~AttachTableScreen();
+	public:
+	AttachTableScreen(Blogger *blogger_, QWidget *parent = 0);
+	virtual ~AttachTableScreen();
 
-    void clear(void);
+	void clear(void);
 
-    QAction* actionAddAttach;
-    QAction* actionAddLink;
-    QAction* actionEditFileName;
-    QAction* actionDeleteAttach;
-    QAction* actionOpenAttach;
-    QAction* actionSaveAsAttach;
-    QAction* actionShowAttachInfo;
+	QAction *actionAddAttach;
+	QAction *actionAddLink;
+	QAction *actionEditFileName;
+	QAction *actionDeleteAttach;
+	QAction *actionOpenAttach;
+	QAction *actionSaveAsAttach;
+	QAction *actionShowAttachInfo;
 
-signals:
+	signals:
 
-public slots:
+	public slots:
 
-protected:
-    void setupActions(void);
-    void setupUI(void);
-    void setupSignals(void);
-    void assembly(void);
+	protected:
+	void setupActions(void);
+	void setupUI(void);
+	void setupSignals(void);
+	void assembly(void);
 
-    // Экранные элементы
-    QToolBar* toolsLine;
-    // Указатель на контроллер таблицы приаттаченных файлов
-    AttachTableController* attachTableController;
+	// Экранные элементы
+	QToolBar *toolsLine;
+	// Указатель на контроллер таблицы приаттаченных файлов
+	AttachTableController *attachTableController;
 
-    // Указатель на таблицу приаттаченных файлов (представление)
-    AttachTableView* attachTableView;
+	// Указатель на таблицу приаттаченных файлов (представление)
+	AttachTableView *attachTableView;
 
-    QVBoxLayout* screenLayout;
+	QVBoxLayout *screenLayout;
 
-    QAction* actionSwitchToEditor;
+	QAction *actionSwitchToEditor;
 };
 
-#endif // ATTACHTABLESCREEN_H
+#endif  // ATTACHTABLESCREEN_H

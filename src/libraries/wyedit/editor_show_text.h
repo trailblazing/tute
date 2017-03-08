@@ -9,31 +9,32 @@
 #include <wobjectdefs.h>
 #endif
 
-// Класс отдельного (открепляемого) окна для просмотра текста записи без возможности редактирования
+// Класс отдельного (открепляемого) окна для просмотра текста записи без
+// возможности редактирования
 class EditorShowText : public QDialog {
 #if QT_VERSION == 0x050600
-    W_OBJECT(EditorShowText)
+	W_OBJECT(EditorShowText)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    explicit EditorShowText(QWidget* parent = 0);
-    virtual ~EditorShowText();
+	public:
+	explicit EditorShowText(QWidget *parent = 0);
+	virtual ~EditorShowText();
 
-    void setHtml(QString text);
-    void setDocument(QTextDocument* document);
+	void setHtml(QString text);
+	void setDocument(QTextDocument *document);
 
-signals:
+	signals:
 
-public slots:
+	public slots:
 
-private:
-    QTextEdit* textArea;
+	private:
+	QTextEdit *textArea;
 
-    void setupUi(void);
-    void setupSignals(void);
-    void assembly(void);
+	void setupUi(void);
+	void setupSignals(void);
+	void assembly(void);
 };
 
-#endif // EDITORSHOWTEXT_H
+#endif  // EDITORSHOWTEXT_H

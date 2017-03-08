@@ -15,31 +15,31 @@
 
 class WaitClock : public QWidget {
 #if QT_VERSION == 0x050600
-    W_OBJECT(WaitClock)
+	W_OBJECT(WaitClock)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    WaitClock(QWidget* parent = 0);
-    ~WaitClock();
+	public:
+	WaitClock(QWidget *parent = 0);
+	~WaitClock();
 
-private slots:
+	private slots:
 
-    void iconUpdate();
+	void iconUpdate();
 
-private:
-    QHBoxLayout* centralLayout;
+	private:
+	QHBoxLayout *centralLayout;
 
-    QLabel iconLabel;
+	QLabel iconLabel;
 
-    QPixmap kadr_00;
-    QPixmap kadr_01;
-    QPixmap kadr_02;
+	QPixmap kadr_00;
+	QPixmap kadr_01;
+	QPixmap kadr_02;
 
-    int currentIconNum;
+	int currentIconNum;
 
-    QTimer timer;
+	QTimer timer;
 };
 
 #endif /* _WAITCLOCK_H_ */

@@ -77,6 +77,7 @@ DEFINES += USE_WYEDIT
 DEFINES += USE_QTM
 DEFINES += LOAD_TEXT_BY_WYEDITOR
 DEFINES += USE_MAIN_MENU_IN_BUTTON
+DEFINES += USE_CXX_14
 #DEFINES += USE_EDITOR_WRAP
 
 # http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
@@ -323,7 +324,6 @@ HEADERS     =   \
     src/views/browser/cookiejar.h \
     src/libraries/qtm/markdown_header.h \
     src/libraries/qtm/qtm_version.h \
-#    src/views/browser/cookiejar.h \
     src/libraries/qtm/accounts_dialog.h \
     src/libraries/qtm/application.h \
     src/libraries/qtm/dbus_adaptor.h \
@@ -346,8 +346,9 @@ HEADERS     =   \
     src/libraries/qtm/blogger.h \
     src/utility/variant.h \
     src/utility/for_each.h \
-    src/utility/expose.h
-
+    src/utility/expose.h \
+    src/utility/strong_typedef.hxx
+#    src/views/browser/cookiejar.h \
 
 
 lessThan(QT_MAJOR_VERSION,5) {
@@ -467,7 +468,6 @@ SOURCES     =   src/main.cpp \
     src/views/wait_clock/wait_clock.cpp \
     src/views/app_config/app_config_page_table.cpp \
     src/views/browser/cookiejar.cpp \
-#    src/views/browser/cookiejar.cpp \
     src/libraries/qtm/accounts_dialog.cxx \
     src/libraries/qtm/application.cxx \
     src/libraries/qtm/dbus_adaptor.cxx \
@@ -493,8 +493,10 @@ SOURCES     =   src/main.cpp \
     src/libraries/qtm/blogger.cxx \
     src/utility/variant.cxx \
     src/models/tree/tree_item.inl \
-    src/models/record_table/record.inl
-
+    src/models/record_table/record.inl \
+    src/libraries/qtm/blogger.inl \
+    src/libraries/wyedit/editor.inl
+#    src/views/browser/cookiejar.cpp \
 
 lessThan(QT_MAJOR_VERSION,5) {
 SOURCES     +=  \

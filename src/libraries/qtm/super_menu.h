@@ -39,106 +39,136 @@ class Blogger;
 namespace web {
 class Docker;
 }
-class SuperMenu : public QMenu // EditorContextMenu	// QMenuBar
+class SuperMenu : public QMenu  // EditorContextMenu	// QMenuBar
 {
-    Q_OBJECT
-    typedef QMenu super;
+	Q_OBJECT
+	typedef QMenu super;
 
-public:
-    SuperMenu(Blogger* bloger_, QWidget* parent = 0, SysTrayIcon* sti = 0);
-    void setEditActionsEnabled(bool);
-    QAction* getCutAction() { return cutAction; }
-    QAction* getCopyAction() { return copyAction; }
-    QAction* getPasteAction() { return pasteAction; }
-    QAction* getUndoAction() { return undoAction; }
-    QAction* getRedoAction() { return redoAction; }
-    QAction* getConsoleAction() { return showConsoleAction; }
-    QAction* getPreviewAction() { return previewAction; }
-    void setConsoleEnabled(bool);
-    void setCategoriesEnabled(bool);
-    void handleNewWindowAtStartup();
+	public:
+	SuperMenu(Blogger *bloger_, QWidget *parent = 0, SysTrayIcon *sti = 0);
+	void setEditActionsEnabled(bool);
+	QAction *getCutAction() {
+		return cutAction;
+	}
+	QAction *getCopyAction() {
+		return copyAction;
+	}
+	QAction *getPasteAction() {
+		return pasteAction;
+	}
+	QAction *getUndoAction() {
+		return undoAction;
+	}
+	QAction *getRedoAction() {
+		return redoAction;
+	}
+	QAction *getConsoleAction() {
+		return showConsoleAction;
+	}
+	QAction *getPreviewAction() {
+		return previewAction;
+	}
+	void setConsoleEnabled(bool);
+	void setCategoriesEnabled(bool);
+	void handleNewWindowAtStartup();
 
-    QMenu *fileMenu, *editMenu, *insMenu, *viewMenu, *categoryMenu, *servicesMenu, *print_menu, *helpMenu;
-    QMenu *recentFilesMenu, *pasteAsMenu;
+	QMenu *fileMenu, *editMenu, *insMenu, *viewMenu, *categoryMenu, *servicesMenu,
+	    *print_menu, *helpMenu;
+	QMenu *recentFilesMenu, *pasteAsMenu;
 
-    // File menu actions
-    QAction *newEntryAction, *openAction, *openRecent, *saveAction, *saveAsAction, *saveAllAction, *exportAction, *uploadAction, *refreshBlogListAction, *blogThisAction, *abortAction, *accountsAction, *prefsAction, *saveBlogsAction, *qptAction, *clearConsoleAction, *closeAction, *quitAction;
+	// File menu actions
+	QAction *newEntryAction, *openAction, *openRecent, *saveAction, *saveAsAction,
+	    *saveAllAction, *exportAction, *uploadAction, *refreshBlogListAction,
+	    *blogThisAction, *abortAction, *accountsAction, *prefsAction,
+	    *saveBlogsAction, *qptAction, *clearConsoleAction, *closeAction,
+	    *quitAction;
 
-    // Edit menu actions
-    QAction *cutAction, *copyAction, *copyURLAction, *pasteAction, *tidyPasteAction, *pasteAsAction, *undoAction, *redoAction, *findAction, *findAgainAction, *boldAction, *italicAction, *underlineAction, *blockquoteAction, *paraAction, *ulAction, *olAction;
+	// Edit menu actions
+	QAction *cutAction, *copyAction, *copyURLAction, *pasteAction,
+	    *tidyPasteAction, *pasteAsAction, *undoAction, *redoAction, *findAction,
+	    *findAgainAction, *boldAction, *italicAction, *underlineAction,
+	    *blockquoteAction, *paraAction, *ulAction, *olAction;
 
-    // Paste As sub-menu actions
-    QAction *pasteAsMarkedParasAction, *pasteAsBlockquoteAction, *pasteAsMarkdownBlockquoteAction, *pasteAsUnorderedListAction, *pasteAsOrderedListAction;
+	// Paste As sub-menu actions
+	QAction *pasteAsMarkedParasAction, *pasteAsBlockquoteAction,
+	    *pasteAsMarkdownBlockquoteAction, *pasteAsUnorderedListAction,
+	    *pasteAsOrderedListAction;
 
-    // Insert menu actions
-    QAction *linkAction, *clipLinkAction, *selfLinkAction, *autoLinkAction, *imageAction, *clipImageAction, *moreAction;
+	// Insert menu actions
+	QAction *linkAction, *clipLinkAction, *selfLinkAction, *autoLinkAction,
+	    *imageAction, *clipImageAction, *moreAction;
 
-    // View menu actions
-    QAction *highlightingAction, *showConsoleAction, *previewAction, *viewBasicsAction, *viewCatsAction, *viewExcerptAction, *viewWPTagsAction, *viewTechTagsAction, *viewPingsAction;
+	// View menu actions
+	QAction *highlightingAction, *showConsoleAction, *previewAction,
+	    *viewBasicsAction, *viewCatsAction, *viewExcerptAction, *viewWPTagsAction,
+	    *viewTechTagsAction, *viewPingsAction;
 #ifndef Q_WS_MAC
-    QAction* viewToolbarAction;
+	QAction *viewToolbarAction;
 #endif
 
-    // Category menu actions
-    QAction *refreshCatsAction, *updateCatsAction, *addCatAction;
+	// Category menu actions
+	QAction *refreshCatsAction, *updateCatsAction, *addCatAction;
 
-    // Services menu actions
-    QAction *addWPTagAction, *removeWPTagAction, *refreshWPTagsAction, *addTechTagAction, *addClipTechTagAction, *removeTechTagAction, *addPingAction, *addClipPingAction, *removePingAction;
-    QAction *file_print_action, *file_print_preview_action, *file_print_pdf_action;
-    QAction *actionSelectAll, *actionEditImageProperties;
+	// Services menu actions
+	QAction *addWPTagAction, *removeWPTagAction, *refreshWPTagsAction,
+	    *addTechTagAction, *addClipTechTagAction, *removeTechTagAction,
+	    *addPingAction, *addClipPingAction, *removePingAction;
+	QAction *file_print_action, *file_print_preview_action,
+	    *file_print_pdf_action;
+	QAction *actionSelectAll, *actionEditImageProperties;
 
-    // Help menu actions
-    QAction *aboutAction, *whatsThisAction;
+	// Help menu actions
+	QAction *aboutAction, *whatsThisAction;
 
-    void set_edit_image_properties(bool is_image_select);
-public slots:
-    void set_recent_files(const QList<sapp_t::RecentFile>&);
-    void openRecentFile();
-    void blogger_changed(Blogger* bloger_);
-    void setConsoleActionTitle(bool);
-    void setPreviewActionTitle(bool);
-    void setHighlightingChecked(bool);
+	void set_edit_image_properties(bool is_image_select);
+	public slots:
+	void set_recent_files(const QList<sapp_t::RecentFile> &);
+	void openRecentFile();
+	void blogger_changed(Blogger *bloger_);
+	void setConsoleActionTitle(bool);
+	void setPreviewActionTitle(bool);
+	void setHighlightingChecked(bool);
 
-private:
-    EditorContextMenu* _editor_context_menu;
-    QList<QAction*> _blogger_actions;
-    // QList<QMenu *> editingMenus;
-    QAction* noRecentFilesAction;
-    SysTrayIcon* _sti;
-    QList<sapp_t::RecentFile> recentFiles;
-    QAction* recentFileActions[10];
-    //	sapp_t *_app;
-    Blogger* _bloger = nullptr;
+	private:
+	EditorContextMenu *_editor_context_menu;
+	QList<QAction *> _blogger_actions;
+	// QList<QMenu *> editingMenus;
+	QAction *noRecentFilesAction;
+	SysTrayIcon *_sti;
+	QList<sapp_t::RecentFile> recentFiles;
+	QAction *recentFileActions[10];
+	//	sapp_t *_app;
+	Blogger *_bloger = nullptr;
 
-    ts_t* _tree_screen;
-    web::Docker* _browser_docker;
-    wn_t* _main_window;
-    web::Profile* _profile;
-    Qt::WindowFlags _flags;
-    QString _style_source;
+	ts_t *_tree_screen;
+	web::Docker *_browser_docker;
+	wn_t *_main_window;
+	web::Profile *_profile;
+	Qt::WindowFlags _flags;
+	QString _style_source;
 
-    FindScreen* _find_screen;
-    web::Docker* _editor_docker;
-    //	Bloger_blogerer;
-    //	HidableTab *_vtab_record;
+	FindScreen *_find_screen;
+	web::Docker *_editor_docker;
+	//	Bloger_blogerer;
+	//	HidableTab *_vtab_record;
 
-    // QSplitter *_splitter;
-    // std::shared_ptr<QSettings>  _splitter_config;
-    // QString _splitter_groupname;
-    // QString _splitter_sizelist;
+	// QSplitter *_splitter;
+	// std::shared_ptr<QSettings>  _splitter_config;
+	// QString _splitter_groupname;
+	// QString _splitter_sizelist;
 
-    void updateRecentFileMenu();
+	void updateRecentFileMenu();
 
-private slots:
-    void newEntry();
-    void choose(QString fname = QString());
-    void quit();
-    void about();
-    void getPreferences();
-    void handleLastWindowClosed();
-    // void doPreview( bool );
-    void handleConsole(bool);
+	private slots:
+	void newEntry();
+	void choose(QString fname = QString());
+	void quit();
+	void about();
+	void getPreferences();
+	void handleLastWindowClosed();
+	// void doPreview( bool );
+	void handleConsole(bool);
 
-protected:
-    virtual void showEvent(QShowEvent*);
+	protected:
+	virtual void showEvent(QShowEvent *);
 };

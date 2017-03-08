@@ -49,28 +49,28 @@
 #include <wobjectdefs.h>
 #endif
 
-//QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
 // namespace web {
 
 class EditTableView : public QTableView {
 #if QT_VERSION == 0x050600
-    W_OBJECT(EditTableView)
+	W_OBJECT(EditTableView)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    EditTableView(QWidget* parent = 0);
-    void keyPressEvent(QKeyEvent* event);
+	public:
+	EditTableView(QWidget *parent = 0);
+	void keyPressEvent(QKeyEvent *event);
 
-public slots:
-    void removeOne();
-    void removeAll();
+	public slots:
+	void removeOne();
+	void removeAll();
 };
 
 // }
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
-#endif // EDITTABLEVIEW_H
+#endif  // EDITTABLEVIEW_H

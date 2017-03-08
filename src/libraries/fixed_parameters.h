@@ -49,7 +49,7 @@
 #include <boost/fusion/sequence/intrinsic/at_key.hpp>
 
 #include <boost/type_traits.hpp>
-#include <boost/type_traits/remove_reference.hpp> //or
+#include <boost/type_traits/remove_reference.hpp>  //or
 
 #include <tuple>
 
@@ -64,6 +64,7 @@
 #endif
 
 #include "utility/delegate.h"
+#include "utility/strong_typedef.hxx"
 //#include "utility/variant.h" // for Unify template
 
 // extern const char *id_field;
@@ -86,147 +87,170 @@
 #define BOOST_MPL_LIMIT_STRING_SIZE 256
 #endif
 
-typedef boost::mpl::string<'i', 'd'> id_type;
-typedef boost::mpl::string<'p', 'i', 'n'> pin_type;
-typedef boost::mpl::string<'r', 'a', 't', 'i', 'n', 'g'> rating_type;
-typedef boost::mpl::string<'n', 'a', 'm', 'e'> name_type;
-typedef boost::mpl::string<'a', 'u', 't', 'h', 'o', 'r'> author_type;
-typedef boost::mpl::string<'h', 'o', 'm', 'e'> home_type;
-typedef boost::mpl::string<'u', 'r', 'l'> url_type;
-typedef boost::mpl::string<'t', 'a', 'g', 's'> tags_type;
-typedef boost::mpl::string<'c', 't', 'i', 'm', 'e'> ctime_type;
-typedef boost::mpl::string<'d', 'i', 'r'> dir_type;
-typedef boost::mpl::string<'f', 'i', 'l', 'e'> file_type;
-typedef boost::mpl::string<'c', 'r', 'y', 'p', 't'> crypt_type;
-typedef boost::mpl::string<'h', 'a', 's', '_', 'a', 't', 'c', 'h'> has_attach_type; //
-//typedef boost::mpl::string<'has_', 'a','t','t','a', 'c','h'> has_attach_type;
+typedef boost::mpl::string<'i', 'd'> id_key;
+typedef boost::mpl::string<'p', 'i', 'n'> pin_key;
+typedef boost::mpl::string<'r', 'a', 't', 'i', 'n', 'g'> rating_key;
+typedef boost::mpl::string<'n', 'a', 'm', 'e'> name_key;
+typedef boost::mpl::string<'a', 'u', 't', 'h', 'o', 'r'> author_key;
+typedef boost::mpl::string<'h', 'o', 'm', 'e'> home_key;
+typedef boost::mpl::string<'u', 'r', 'l'> url_key;
+typedef boost::mpl::string<'t', 'a', 'g', 's'> tags_key;
+typedef boost::mpl::string<'c', 't', 'i', 'm', 'e'> ctime_key;
+typedef boost::mpl::string<'d', 'i', 'r'> dir_key;
+typedef boost::mpl::string<'f', 'i', 'l', 'e'> file_key;
+typedef boost::mpl::string<'c', 'r', 'y', 'p', 't'> crypt_key;
+typedef boost::mpl::string<'h', 'a', 's', '_', 'a', 't', 'c', 'h'> has_attach_key;  //
+// typedef boost::mpl::string<'has_', 'a','t','t','a', 'c','h'> has_attach_type;
 // http://stackoverflow.com/questions/37606999/boostmplstring-size-error-messages
 // with "-Wmultichar" parameter for make // -Wno-multichar won't disable it
-typedef boost::mpl::string<'a', 't', 'c', 'h', 's', 'i', 'z', 'e'> attach_size_type; //
-//typedef boost::mpl::string<'atta', 'c','h','_','c', 'o','u','n','t'>	attach_count_type;// error: too many template arguments for class template 'string'
+typedef boost::mpl::string<'a', 't', 'c', 'h', 's', 'i', 'z', 'e'> attach_size_key;  //
+// typedef boost::mpl::string<'atta', 'c','h','_','c', 'o','u','n','t'>
+// attach_count_type;// error: too many template arguments for class template
+// 'string'
 
-typedef boost::mpl::string<'d', 'y', 'n', '_', 'n', 'a', 'm', 'e'> dynamic_name_type;
-//typedef boost::mpl::string<'dyna', 'm','i','c','_', 'n','a','m','e'>	dynamic_name_type;
+typedef boost::mpl::string<'d', 'y', 'n', '_', 'n', 'a', 'm', 'e'> dynamic_name_key;
+// typedef boost::mpl::string<'dyna', 'm','i','c','_', 'n','a','m','e'>
+// dynamic_name_type;
 
-BOOST_STRONG_TYPEDEF(QString, id_value)
-BOOST_STRONG_TYPEDEF(bool, pin_value)
-BOOST_STRONG_TYPEDEF(QString, name_value)
-BOOST_STRONG_TYPEDEF(QString, author_value)
-BOOST_STRONG_TYPEDEF(QString, home_value)
-BOOST_STRONG_TYPEDEF(QString, url_value)
-BOOST_STRONG_TYPEDEF(QStringList, tags_value)
-BOOST_STRONG_TYPEDEF(int, rating_value)
-BOOST_STRONG_TYPEDEF(QString, ctime_value)
-BOOST_STRONG_TYPEDEF(QString, dir_value)
-BOOST_STRONG_TYPEDEF(QString, file_value)
-BOOST_STRONG_TYPEDEF(bool, crypt_value)
-BOOST_STRONG_TYPEDEF(bool, has_attach_value)
-BOOST_STRONG_TYPEDEF(int, attach_size_value)
-BOOST_STRONG_TYPEDEF(QString, dynamic_name_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(QString, id_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(bool, pin_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(QString, name_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(QString, author_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(QString, home_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(QString, url_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(QStringList, tags_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(int, rating_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(QString, ctime_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(QString, dir_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(QString, file_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(bool, crypt_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(bool, has_attach_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(int, attach_size_value)
+BOOST_STRONG_TYPEDEF_EXTENSION(QString, dynamic_name_value)
 
-typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type> crypt_field_set;
-//typedef boost::mpl::map<pin_type, name_type, author_type, home_type, url_type, tags_type> crypt_field_map;
-typedef std::tuple<pin_type, name_type, author_type, home_type, url_type, tags_type> crypt_field_tuple;
-typedef boost::fusion::map<boost::fusion::pair<pin_type, pin_value>,
-    boost::fusion::pair<name_type, name_value>,
-    boost::fusion::pair<author_type, author_value>,
-    boost::fusion::pair<home_type, home_value>,
-    boost::fusion::pair<url_type, url_value>,
-    boost::fusion::pair<tags_type, tags_value> >
-    crypt_field_map;
+typedef boost::mpl::set<name_key, author_key, home_key, url_key, tags_key> crypt_fields_keys;
+// typedef boost::mpl::map<pin_type, name_type, author_type, home_type,
+// url_type, tags_type> crypt_field_map;
+typedef std::tuple<name_key, author_key, home_key, url_key, tags_key> crypt_fields_key_tuple;
+typedef boost::fusion::map<boost::fusion::pair<name_key, name_value>,
+			   boost::fusion::pair<author_key, author_value>,
+			   boost::fusion::pair<home_key, home_value>,
+			   boost::fusion::pair<url_key, url_value>,
+			   boost::fusion::pair<tags_key, tags_value> >
+    crypt_fields_map;
 
-typedef boost::mpl::set<id_type, rating_type, ctime_type, dir_type, file_type, crypt_type> append_to_crypt_set;
-typedef std::tuple<id_type, rating_type, ctime_type, dir_type, file_type, crypt_type> append_to_crypt_tuple;
-typedef boost::fusion::map<boost::fusion::pair<id_type, id_value>,
-    boost::fusion::pair<rating_type, rating_value>,
-    boost::fusion::pair<ctime_type, ctime_value>,
-    boost::fusion::pair<dir_type, dir_value>,
-    boost::fusion::pair<file_type, file_value>,
-    boost::fusion::pair<crypt_type, crypt_value> >
-    append_to_crypt_map;
+typedef boost::mpl::set<id_key, pin_key, rating_key, ctime_key, dir_key, file_key, crypt_key> append_to_crypts_keys;
+typedef std::tuple<id_key, pin_key, rating_key, ctime_key, dir_key, file_key, crypt_key> append_to_crypts_key_tuple;
+typedef boost::fusion::map<boost::fusion::pair<id_key, id_value>,
+			   boost::fusion::pair<pin_key, pin_value>,
+                           boost::fusion::pair<rating_key, rating_value>,
+                           boost::fusion::pair<ctime_key, ctime_value>,
+                           boost::fusion::pair<dir_key, dir_value>,
+                           boost::fusion::pair<file_key, file_value>,
+                           boost::fusion::pair<crypt_key, crypt_value> >
+    append_to_crypts_map;
 
-// typedef boost::mpl::push_back<crypt_field_type, append_to_crypt_type> natural_field_type;
-typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type> natural_field_set;
-typedef std::tuple<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type> natural_field_tuple;
-typedef boost::fusion::map<boost::fusion::pair<pin_type, pin_value>,
-    boost::fusion::pair<name_type, name_value>,
-    boost::fusion::pair<author_type, author_value>,
-    boost::fusion::pair<home_type, home_value>,
-    boost::fusion::pair<url_type, url_value>,
-    boost::fusion::pair<tags_type, tags_value>,
-    boost::fusion::pair<id_type, id_value>,
-    boost::fusion::pair<rating_type, rating_value>,
-    boost::fusion::pair<ctime_type, ctime_value>,
-    boost::fusion::pair<dir_type, dir_value>,
-    boost::fusion::pair<file_type, file_value>,
-    boost::fusion::pair<crypt_type, crypt_value> >
-    natural_field_map;
+// typedef boost::mpl::push_back<crypt_field_type, append_to_crypt_type>
+// natural_field_type;
+typedef boost::mpl::set<name_key, author_key, home_key, url_key, tags_key, id_key, pin_key, rating_key, ctime_key, dir_key, file_key, crypt_key> natural_fields_keys;
+typedef std::tuple<name_key, author_key, home_key, url_key, tags_key, id_key, pin_key, rating_key, ctime_key, dir_key, file_key, crypt_key> natural_fields_key_tuple;
+typedef boost::fusion::map<boost::fusion::pair<name_key, name_value>,
+                           boost::fusion::pair<author_key, author_value>,
+                           boost::fusion::pair<home_key, home_value>,
+                           boost::fusion::pair<url_key, url_value>,
+                           boost::fusion::pair<tags_key, tags_value>,
+			   boost::fusion::pair<id_key, id_value>,
+			   boost::fusion::pair<pin_key, pin_value>,
+                           boost::fusion::pair<rating_key, rating_value>,
+                           boost::fusion::pair<ctime_key, ctime_value>,
+                           boost::fusion::pair<dir_key, dir_value>,
+                           boost::fusion::pair<file_key, file_value>,
+                           boost::fusion::pair<crypt_key, crypt_value> >
+    natural_fields_map;
 
 #ifdef USE_COMPILE_TIME_CACULATION
-//using natural_field_fold = boost::mpl::fold <
+// using natural_field_fold = boost::mpl::fold <
 //			   crypt_field_set
 //      , boost::mpl::set0<>
 //      , boost::mpl::insert<boost::mpl::_1, boost::mpl::_2>::type;
 
-typedef boost::mpl::copy<crypt_field_set, boost::mpl::back_inserter<append_to_crypt_set> >::type natural_field_concatenated;
+typedef boost::mpl::copy<crypt_field_set,
+                         boost::mpl::back_inserter<append_to_crypt_set> >::type
+    natural_field_concatenated;
 
-typedef boost::mpl::joint_view<crypt_field_set, append_to_crypt_set> natural_field_concatenated_view;
+typedef boost::mpl::joint_view<crypt_field_set, append_to_crypt_set>
+    natural_field_concatenated_view;
 natural_field_concatenated::dog;
 natural_field_set::fish;
 natural_field_concatenated_view::pig;
 BOOST_MPL_ASSERT((boost::mpl::equal<natural_field_concatenated_view, natural_field_concatenated>));
 
-static_assert(sd::STATIC_SAME<natural_field_concatenated, natural_field_set>::value == true, "types are not euqal");
+static_assert(
+    sd::STATIC_SAME<natural_field_concatenated, natural_field_set>::value == true,
+    "types are not euqal");
 //
-//typedef Unify<
+// typedef Unify<
 //	std::tuple
 //	, natural_field_set
 //	, boost::mpl::size<natural_field_set>::type::value
 //	>::type natural_field_tuple;
-#endif // USE_COMPILE_TIME_CACULATION
+#endif  // USE_COMPILE_TIME_CACULATION
 
-typedef boost::mpl::set<has_attach_type, attach_size_type, dynamic_name_type> calculable_field_set;
-typedef std::tuple<has_attach_type, attach_size_type, dynamic_name_type> calculable_field_tuple;
-typedef boost::fusion::map<boost::fusion::pair<has_attach_type, has_attach_value>,
-    boost::fusion::pair<attach_size_type, attach_size_value>,
-    boost::fusion::pair<dynamic_name_type, dynamic_name_value> >
-    calculable_field_map;
+typedef boost::mpl::set<has_attach_key, attach_size_key, dynamic_name_key> calculable_fields_keys;
+typedef std::tuple<has_attach_key, attach_size_key, dynamic_name_key> calculable_fields_key_tuple;
+typedef boost::fusion::map<boost::fusion::pair<has_attach_key, has_attach_value>, boost::fusion::pair<attach_size_key, attach_size_value>, boost::fusion::pair<dynamic_name_key, dynamic_name_value> >
+    calculable_fields_map;
 
-// typedef boost::mpl::push_back<natural_field_type, calculable_field_type> full_field_type;
-typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type, has_attach_type, attach_size_type, dynamic_name_type> full_field_set;
-typedef std::tuple<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type, has_attach_type, attach_size_type, dynamic_name_type> full_field_tuple;
-//typedef boost::fusion::tuple<pin_type, name_type, author_type, home_type, url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type, crypt_type, has_attach_type, attach_size_type, dynamic_name_type>		full_field_fusion_tuple;
-typedef std::tuple<pin_value, name_value, author_value, home_value, url_value, tags_value, id_value, rating_value, ctime_value, dir_value, file_value, crypt_value, has_attach_value, attach_size_value, dynamic_name_value> full_field_value;
+// typedef boost::mpl::push_back<natural_field_type, calculable_field_type>
+// full_field_type;
+typedef boost::mpl::set<name_key, author_key, home_key, url_key, tags_key, id_key, pin_key, rating_key, ctime_key, dir_key, file_key, crypt_key, has_attach_key, attach_size_key, dynamic_name_key>
+    full_fields_keys;
+typedef std::tuple<name_key, author_key, home_key, url_key, tags_key, id_key, pin_key, rating_key, ctime_key, dir_key, file_key, crypt_key, has_attach_key, attach_size_key, dynamic_name_key>
+    full_fields_key_tuple;
+// typedef boost::fusion::tuple<pin_type, name_type, author_type, home_type,
+// url_type, tags_type, id_type, rating_type, ctime_type, dir_type, file_type,
+// crypt_type, has_attach_type, attach_size_type, dynamic_name_type>
+// full_field_fusion_tuple;
+typedef std::tuple<name_value, author_value, home_value, url_value, tags_value, id_value, pin_value, rating_value, ctime_value, dir_value, file_value, crypt_value, has_attach_value, attach_size_value, dynamic_name_value>
+    full_fields_value_tuple;
 
-typedef boost::fusion::map<boost::fusion::pair<pin_type, pin_value>,
-    boost::fusion::pair<name_type, name_value>,
-    boost::fusion::pair<author_type, author_value>,
-    boost::fusion::pair<home_type, home_value>,
-    boost::fusion::pair<url_type, url_value>,
-    boost::fusion::pair<tags_type, tags_value>,
-    boost::fusion::pair<id_type, id_value>,
-    boost::fusion::pair<rating_type, rating_value>,
-    boost::fusion::pair<ctime_type, ctime_value>,
-    boost::fusion::pair<dir_type, dir_value>,
-    boost::fusion::pair<file_type, file_value>,
-    boost::fusion::pair<crypt_type, crypt_value>,
-    boost::fusion::pair<has_attach_type, has_attach_value>,
-    boost::fusion::pair<attach_size_type, attach_size_value>,
-    boost::fusion::pair<dynamic_name_type, dynamic_name_value> >
-    full_field_map;
+typedef boost::fusion::map<boost::fusion::pair<name_key, name_value>,
+                           boost::fusion::pair<author_key, author_value>,
+                           boost::fusion::pair<home_key, home_value>,
+                           boost::fusion::pair<url_key, url_value>,
+                           boost::fusion::pair<tags_key, tags_value>,
+                           boost::fusion::pair<id_key, id_value>,
+			   boost::fusion::pair<pin_key, pin_value>,
+                           boost::fusion::pair<rating_key, rating_value>,
+                           boost::fusion::pair<ctime_key, ctime_value>,
+                           boost::fusion::pair<dir_key, dir_value>,
+                           boost::fusion::pair<file_key, file_value>,
+                           boost::fusion::pair<crypt_key, crypt_value>,
+                           boost::fusion::pair<has_attach_key, has_attach_value>,
+                           boost::fusion::pair<attach_size_key, attach_size_value>,
+                           boost::fusion::pair<dynamic_name_key, dynamic_name_value> >
+    full_fields_map;
 
 namespace detail {
 template <typename value_type>
-QString to_string(const value_type& input);
+QString to_qstring(const value_type& input);
+template <typename value_type>
+std::string to_string(const value_type& input);
 template <typename field_type>
-typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_field_map, field_type>::type>::type from_string(const QString& input);
+typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, field_type>::type>::type
+from_qstring(const QString& input);
 }
 
 struct null_type;
 template <typename field_type>
 struct switch_type {
-    typedef typename sd::static_if<boost::mpl::has_key<append_to_crypt_set, field_type>::value, append_to_crypt_set, typename sd::static_if<boost::mpl::has_key<crypt_field_set, field_type>::value, crypt_field_set, typename sd::static_if<boost::mpl::has_key<calculable_field_set, field_type>::value, calculable_field_set, null_type // boost::units::detail::
-                                                                                                                                                                                                                          >::type>::type>::type type;
+	typedef typename sd::static_if<boost::mpl::has_key<append_to_crypts_keys, field_type>::value,
+	                               append_to_crypts_keys,
+	                               typename sd::static_if<boost::mpl::has_key<crypt_fields_keys, field_type>::value,
+	                                                      crypt_fields_keys,
+	                                                      typename sd::static_if<boost::mpl::has_key<calculable_fields_keys, field_type>::value,
+	                                                                             calculable_fields_keys, null_type  // boost::units::detail::
+	                                                                             >::type>::type>::type type;
 };
 
 extern QMap<Qt::CheckState, QString> char_from_check_state;
@@ -236,119 +260,191 @@ extern QMap<QString, bool> bool_from_char;
 extern QMap<Qt::CheckState, bool> bool_from_check_state;
 extern QMap<bool, Qt::CheckState> check_state_from_bool;
 
-// Неизменяемые параметры, то есть параметры, которые заданы жестко в текущей версии
-// Immutable parameters, ie parameters that are hard-coded in the current version
+// Неизменяемые параметры, то есть параметры, которые заданы жестко в текущей
+// версии
+// Immutable parameters, ie parameters that are hard-coded in the current
+// version
 
 class FixedParameters : public QObject {
 #if QT_VERSION == 0x050600
-    W_OBJECT(FixedParameters)
+	W_OBJECT(FixedParameters)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    FixedParameters(QObject* parent = 0);
-    virtual ~FixedParameters();
+	public:
+	FixedParameters(QObject* parent = 0);
+	virtual ~FixedParameters();
 
-    // boost::mpl::set<id_type, pin_type, rating_type, name_type, author_type, home_type, url_type, tags_type, ctime_type, dir_type,  file_type, crypt_type, has_attach_type, attach_count_type> _record_field_static;
-    QStringList _record_field;
+	// boost::mpl::set<id_type, pin_type, rating_type, name_type, author_type,
+	// home_type, url_type, tags_type, ctime_type, dir_type,  file_type,
+	// crypt_type, has_attach_type, attach_count_type> _record_field_static;
+	QStringList _record_all_fields_key_list;
+	static constexpr const full_fields_key_tuple _record_full_fields_key_tuple = full_fields_key_tuple();
+	//	static constexpr const natural_field_set _record_natural_field_static =
+	//natural_field_set();
 
-    //	static constexpr const natural_field_set _record_natural_field_static = natural_field_set();
+	static constexpr const natural_fields_key_tuple _record_natural_fields_key_tuple = natural_fields_key_tuple();
+	//	QStringList _record_natural_field;
 
-    static constexpr const natural_field_tuple _record_natural_field_tuple = natural_field_tuple();
-    //	QStringList _record_natural_field;
+	// boost::mpl::set<has_attach_type, attach_count_type>
+	// _record_calculable_field_static;
+	static constexpr const calculable_fields_key_tuple _record_calculable_fields_key_tuple = calculable_fields_key_tuple();
+	//	QStringList _record_calculable_fields_key_list;
 
-    // boost::mpl::set<has_attach_type, attach_count_type> _record_calculable_field_static;
-    static constexpr const calculable_field_tuple _record_calculable_field_tuple = calculable_field_tuple();
-    QStringList _record_calculable_field;
+	boost::mpl::set<pin_key, name_key, author_key, home_key, url_key, tags_key> _record_field_crypted_static;
+	static constexpr const crypt_fields_key_tuple _record_crypt_fields_key_tuple = crypt_fields_key_tuple();
+	//	QStringList _record_crypt_fields_key_list;
 
-    boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type> _record_field_crypted_static;
-    static constexpr const crypt_field_tuple _record_field_crypted_tuple = crypt_field_tuple();
-    QStringList _record_field_crypted;
+	//	bool is_record_field_available(QString name) const;
+	//	bool is_record_field_natural(QString name) const;
+	template <typename concrete>
+	static constexpr bool is_record_field_natural() {  // const//QString name
+		// if(_record_natural_field.contains(name))
+		// return true;
+		// else
+		// return false;
+		return boost::mpl::contains<natural_fields_keys, concrete>::type::value;
+		//	return _record_natural_field.contains(name);
+	}
 
-    bool is_record_field_available(QString name) const;
-    //	bool is_record_field_natural(QString name) const;
-    template <typename concrete>
-    static constexpr bool is_record_field_natural()
-    { //const//QString name
-        // if(_record_natural_field.contains(name))
-        // return true;
-        // else
-        // return false;
-        return boost::mpl::contains<natural_field_set, concrete>::type::value;
-        //	return _record_natural_field.contains(name);
-    }
+	//	bool is_record_field_calculable(QString name) const;
 
-    bool is_record_field_calculable(QString name) const;
+	QMap<QString, QString> record_field_description(QStringList list) const;
 
-    QMap<QString, QString> record_field_description(QStringList list) const;
+	signals:
 
-signals:
-
-public slots:
-private:
-    QMap<QString, QString> _description;
+	public slots:
+	private:
+	QMap<QString, QString> _description;
 };
 
 namespace detail {
 
+#ifndef TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION
+#define TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(value_type) \
+	template <>                                                 \
+	QString to_qstring<value_type>(const value_type& input);
+
+#endif  // TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION
+
+TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(pin_value)
+// TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(name_value)
+// TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(author_value)
+// TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(home_value)
+// TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(url_value)
+TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(tags_value)
+// TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(id_value)
+TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(rating_value)
+// TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(ctime_value)
+// TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(dir_value)
+// TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(file_value)
+TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(crypt_value)
+TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(has_attach_value)
+TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(attach_size_value)
+// TO_QSTRING_DECLARE_EXPLICIAE_SPECIALIZATION(dynamic_name_value)
+
+#ifndef DECLARATION_TO_QSTRING
+#define DECLARATION_TO_QSTRING(id_value) \
+	extern template QString to_qstring<id_value>(const id_value& input);
+#endif  // DECLARATION_TO_QSTRING
+
+DECLARATION_TO_QSTRING(id_value)
+DECLARATION_TO_QSTRING(name_value)
+DECLARATION_TO_QSTRING(author_value)
+DECLARATION_TO_QSTRING(home_value)
+DECLARATION_TO_QSTRING(url_value)
+DECLARATION_TO_QSTRING(ctime_value)
+DECLARATION_TO_QSTRING(dir_value)
+DECLARATION_TO_QSTRING(file_value)
+DECLARATION_TO_QSTRING(dynamic_name_value)
+
 #ifndef TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION
 #define TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(value_type) \
-    template <>                                                \
-    QString to_string<value_type>(const value_type& input);
+	template <>                                                \
+	std::string to_string<value_type>(const value_type& input);
 
-#endif //TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION
+#endif  // TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION
 
 TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(pin_value)
-//TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(name_value)
-//TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(author_value)
-//TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(home_value)
-//TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(url_value)
+// TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(name_value)
+// TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(author_value)
+// TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(home_value)
+// TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(url_value)
 TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(tags_value)
-//TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(id_value)
+// TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(id_value)
 TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(rating_value)
-//TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(ctime_value)
-//TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(dir_value)
-//TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(file_value)
+// TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(ctime_value)
+// TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(dir_value)
+// TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(file_value)
 TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(crypt_value)
 TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(has_attach_value)
 TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(attach_size_value)
-//TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(dynamic_name_value)
+// TO_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(dynamic_name_value)
 
-//template <>
-//QString to_string<rating_value>(rating_value rv);
-//template <>
-//QString to_string<attach_size_value>(attach_size_value rv);
-//template <>
-//QString to_string<crypt_value>(crypt_value rv);
-//template <>
-//QString to_string<has_attach_value>(has_attach_value rv);
-//template <>
-//QString to_string<pin_value>(pin_value rv);
-//template <>
-//QString to_string<tags_value>(tags_value rv);
+// template <> QString to_string<rating_value>(rating_value rv);
+// template <> QString to_string<attach_size_value>(attach_size_value rv);
+// template <> QString to_string<crypt_value>(crypt_value rv);
+// template <> QString to_string<has_attach_value>(has_attach_value rv);
+// template <> QString to_string<pin_value>(pin_value rv);
+// template <> QString to_string<tags_value>(tags_value rv);
+
+#ifndef DECLARATION_TO_STRING
+#define DECLARATION_TO_STRING(id_value) \
+	extern template std::string to_string<id_value>(const id_value& input);
+#endif  // DECLARATION_TO_STRING
+
+DECLARATION_TO_STRING(id_value)
+DECLARATION_TO_STRING(name_value)
+DECLARATION_TO_STRING(author_value)
+DECLARATION_TO_STRING(home_value)
+DECLARATION_TO_STRING(url_value)
+DECLARATION_TO_STRING(ctime_value)
+DECLARATION_TO_STRING(dir_value)
+DECLARATION_TO_STRING(file_value)
+DECLARATION_TO_STRING(dynamic_name_value)
+
 #ifndef FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION
-#define FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(key_type) \
-    template <>                                                \
-    typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_field_map, key_type>::type>::type from_string<key_type>(const QString& input);
+#define FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(key_type)                                                         \
+	template <>                                                                                                        \
+	typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, key_type>::type>::type \
+	from_qstring<key_type>(const QString& input);
 
-#endif //FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION
+#endif  // FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION
 
-FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(pin_type)
-//FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(name_type)
-//FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(author_type)
-//FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(home_type)
-//FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(url_type)
-FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(tags_type)
-//FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(id_type)
-FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(rating_type)
-//FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(ctime_type)
-//FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(dir_type)
-//FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(file_type)
-FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(crypt_type)
-FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(has_attach_type)
-FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(attach_size_type)
-//FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(dynamic_name_type)
+FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(pin_key)
+// FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(name_key)
+// FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(author_key)
+// FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(home_key)
+// FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(url_key)
+FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(tags_key)
+// FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(id_key)
+FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(rating_key)
+// FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(ctime_key)
+// FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(dir_key)
+// FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(file_key)
+FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(crypt_key)
+FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(has_attach_key)
+FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(attach_size_key)
+// FROM_STRING_DECLARE_EXPLICIAE_SPECIALIZATION(dynamic_name_key)
+
+#ifndef DECLARATION_FROM_STRING
+#define DECLARATION_FROM_STRING(field_type)                                \
+	extern template typename boost::remove_reference<                      \
+	    typename boost::fusion::result_of::at_key<full_fields_map,         \
+						      field_type>::type>::type \
+	from_qstring<field_type>(const QString& input);
+#endif  // DECLARATION_FROM_STRING
+
+DECLARATION_FROM_STRING(id_key)
+DECLARATION_FROM_STRING(name_key)
+DECLARATION_FROM_STRING(author_key)
+DECLARATION_FROM_STRING(home_key)
+DECLARATION_FROM_STRING(url_key)
+DECLARATION_FROM_STRING(ctime_key)
+DECLARATION_FROM_STRING(dir_key)
+DECLARATION_FROM_STRING(file_key)
+DECLARATION_FROM_STRING(dynamic_name_key)
 }
 
-#endif // __FIXEDPARAMETERS_H__
+#endif  // __FIXEDPARAMETERS_H__

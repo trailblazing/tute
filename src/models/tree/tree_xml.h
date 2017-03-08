@@ -14,19 +14,19 @@ class TrashMonitoring;
 
 class XmlTree : public QObject {
 #if QT_VERSION == 0x050600
-    W_OBJECT(XmlTree)
+	W_OBJECT(XmlTree)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    XmlTree(void);
-    ~XmlTree(void);
-    bool load(QString _file_path);
-    QDomDocument* dom_model(void);
+	public:
+	XmlTree(void);
+	~XmlTree(void);
+	bool load(QString _file_path);
+	QDomDocument *dom_model(void);
 
-protected:
-    QDomDocument* _dom_model; // DOM-представление документа
+	protected:
+	QDomDocument *_dom_model;  // DOM-представление документа
 };
 
-#endif // __XMLTREE_H__
+#endif  // __XMLTREE_H__

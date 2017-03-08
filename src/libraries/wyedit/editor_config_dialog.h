@@ -11,16 +11,16 @@
 
 class EditorConfigDialog : public QWidget {
 #if QT_VERSION == 0x050600
-    W_OBJECT(EditorConfigDialog)
+	W_OBJECT(EditorConfigDialog)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    EditorConfigDialog(QWidget* parent = 0);
+	public:
+	EditorConfigDialog(QWidget *parent = 0);
 
-private:
-    ConfigDialog* configDialog;
+	private:
+	ConfigDialog *configDialog;
 };
 
-#endif // _EDITORCONFIGDIALOG_H_
+#endif  // _EDITORCONFIGDIALOG_H_

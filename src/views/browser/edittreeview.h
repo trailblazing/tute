@@ -54,21 +54,21 @@
 namespace web {
 class EditTreeView : public QTreeView {
 #if QT_VERSION == 0x050600
-    W_OBJECT(EditTreeView)
+	W_OBJECT(EditTreeView)
 #else
-    Q_OBJECT
+	Q_OBJECT
 #endif
 
-public:
-    EditTreeView(QWidget* parent = 0);
-    void keyPressEvent(QKeyEvent* event);
+	public:
+	EditTreeView(QWidget *parent = 0);
+	void keyPressEvent(QKeyEvent *event);
 
-public slots:
-    void removeOne();
-    void removeAll();
+	public slots:
+	void removeOne();
+	void removeAll();
 };
 }
 
 // QT_END_NAMESPACE
 
-#endif // EDITTREEVIEW_H
+#endif  // EDITTREEVIEW_H
