@@ -18,6 +18,8 @@
 
 // #include "models/tree/TreeItem.h"
 
+#include "utility/lease.h"
+
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>
@@ -150,7 +152,7 @@ class RecordModel : public QAbstractTableModel // , public pages_container
 	// *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
 
 	// ItemsFlat *browser_pages()const {return pages_container::browser_pages();}
-	rctrl_t* reocrd_controller() const;
+	std::shared_ptr<borrower<rctrl_t>> rctrl_borrower() const;
 
 	int count() const; // {return _tabmanager->count();}
 
@@ -168,6 +170,7 @@ class RecordModel : public QAbstractTableModel // , public pages_container
 
     public slots:
 
+	//	void on_rctrl_close_requested();
     private:
 	void reset_internal_data();
 
@@ -198,7 +201,7 @@ class RecordModel : public QAbstractTableModel // , public pages_container
 	// TreeModelKnow *_browser_pages;  //
 	// boost::intrusive_ptr<TreeItem> _shadow_branch_root;	// keep it flat
 
-	rctrl_t* _record_controller;
+	std::shared_ptr<borrower<rctrl_t>> _rctrl_borrower;
 	friend class rs_t;
 	friend class web::TabWidget;
 	friend struct RecordIndex;

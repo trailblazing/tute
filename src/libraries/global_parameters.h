@@ -193,6 +193,8 @@ class gl_para : public QObject {
 	static constexpr const char* _current_browser = "current_browser";
 	static constexpr const char* _browser_navigater_name = "browser_navigater";
 	static constexpr const char* _blog_root_dir = "blog";
+	static constexpr const char* _custom_hidable_tab_style = "custom_hidable_tab_style.css";
+	static constexpr const char* _custom_browser_tabbar_style = "custom_browser_tabbar_style.css";
 	static constexpr int initialize_priority = 0;
 	template <typename T>
 	struct initialize_prior_to;

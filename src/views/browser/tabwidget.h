@@ -66,7 +66,7 @@
 
 #include "libraries/disk_helper.h"
 #include "libraries/global_parameters.h"
-
+#include "utility/lease.h"
 // #include "models/tree/TreeModel.h"
 
 // #include "views/tree/KnowView.h"
@@ -84,7 +84,7 @@ extern std::shared_ptr<gl_para> gl_paras;
 extern QMap<Qt::CheckState, QString> char_from_check_state;
 extern QMap<QString, Qt::CheckState> check_state_from_char;
 extern id_value get_unical_id(void);
-extern const char* custom_widget_style;
+//extern const char* custom_browser_tabbar_style;
 
 QT_BEGIN_NAMESPACE
 class QWebEngineDownloadItem;
@@ -267,10 +267,7 @@ namespace web {
 	};
 
 	namespace origin {
-		/*
-                                Tab bar with a few more features such as a
-   context menu and shortcuts
-             */
+		// Tab bar with a few more features such as a context menu and shortcuts
 		class TabBar : public QTabBar {
 #if QT_VERSION == 0x050600
 			W_OBJECT(TabBar)
@@ -279,50 +276,51 @@ namespace web {
 #endif
 
 		    signals:
-			void newTab()
+
 #if QT_VERSION == 0x050600
-			    W_SIGNAL(newTab) //
+			void newTab() W_SIGNAL(newTab); //
 #else
-			    ;
-#endif
-			    void cloneTabSignal(int index)
-#if QT_VERSION == 0x050600
-				W_SIGNAL(cloneTabSignal, (int), index) //
-#else
-			    ;
-#endif
-			    void closeTabSignal(int index)
-#if QT_VERSION == 0x050600
-				W_SIGNAL(closeTabSignal, (int), index) //
-#else
-			    ;
-#endif
-			    void closeOtherTabsSignal(int index)
-#if QT_VERSION == 0x050600
-				W_SIGNAL(closeOtherTabsSignal, (int), index) //
-#else
-			    ;
-#endif
-			    void reloadTabSignal(int index)
-#if QT_VERSION == 0x050600
-				W_SIGNAL(reloadTabSignal, (int), index) //
-#else
-			    ;
-#endif
-			    void reloadAllTabs()
-#if QT_VERSION == 0x050600
-				W_SIGNAL(reloadAllTabs) //
-#else
-			    ;
-#endif
-			    void tabMoveRequested(int fromIndex, int toIndex)
-#if QT_VERSION == 0x050600
-				W_SIGNAL(tabMoveRequested, (int, int), fromIndex, toIndex) //
-#else
-			    ;
+			void newTab();
 #endif
 
-			    public : TabBar(QWidget* parent = 0);
+#if QT_VERSION == 0x050600
+			void cloneTabSignal(int index) W_SIGNAL(cloneTabSignal, (int), index); //
+#else
+			void cloneTabSignal(int index);
+#endif
+
+#if QT_VERSION == 0x050600
+			void closeTabSignal(int index) W_SIGNAL(closeTabSignal, (int), index); //
+#else
+			void closeTabSignal(int index);
+#endif
+
+#if QT_VERSION == 0x050600
+			void closeOtherTabsSignal(int index) W_SIGNAL(closeOtherTabsSignal, (int), index); //
+#else
+			void closeOtherTabsSignal(int index);
+#endif
+
+#if QT_VERSION == 0x050600
+			void reloadTabSignal(int index) W_SIGNAL(reloadTabSignal, (int), index); //
+#else
+			void reloadTabSignal(int index);
+#endif
+
+#if QT_VERSION == 0x050600
+			void reloadAllTabs() W_SIGNAL(reloadAllTabs); //
+#else
+			void reloadAllTabs();
+#endif
+
+#if QT_VERSION == 0x050600
+			void tabMoveRequested(int fromIndex, int toIndex) W_SIGNAL(tabMoveRequested, (int, int), fromIndex, toIndex); //
+#else
+			void tabMoveRequested(int fromIndex, int toIndex);
+#endif
+
+		    public:
+			TabBar(QWidget* parent = 0);
 
 		    protected:
 			void mousePressEvent(QMouseEvent* event);
@@ -416,80 +414,78 @@ namespace web {
 #endif
 
 	    signals:
-		// tab widget signals
-		void loadPage(const QString& url)
+// tab widget signals
+
 #if QT_VERSION == 0x050600
-		    W_SIGNAL(loadPage, (const QString&), url) //
+		void loadPage(const QString& url) W_SIGNAL(loadPage, (const QString&), url); //
 #else
-		    ;
-#endif
-		    void tabsChanged()
-#if QT_VERSION == 0x050600
-			W_SIGNAL(tabsChanged) //
-#else
-		    ;
-#endif
-		    void lastTabClosed()
-#if QT_VERSION == 0x050600
-			W_SIGNAL(lastTabClosed) //
-#else
-		    ;
+		void loadPage(const QString& url);
 #endif
 
-		    // current tab signals
-		    void setCurrentTitle(const QString& title_)
 #if QT_VERSION == 0x050600
-			W_SIGNAL(setCurrentTitle, (const QString&), url) //
+		void tabsChanged() W_SIGNAL(tabsChanged); //
 #else
-		    ;
+		void tabsChanged();
 #endif
-		    void showStatusBarMessage(const QString& message, int timeout = 0)
+
 #if QT_VERSION == 0x050600
-			W_SIGNAL(showStatusBarMessage, (const QString&, int), message,
-			    timeout) //
+		void lastTabClosed() W_SIGNAL(lastTabClosed); //
 #else
-		    ;
+		void lastTabClosed();
 #endif
-		    void linkHovered(const QString& link)
+
+// current tab signals
+
 #if QT_VERSION == 0x050600
-			W_SIGNAL(linkHovered, (const QString&),
-			    link) // ;	// , int timeout = 0)
+		void setCurrentTitle(const QString& title_) W_SIGNAL(setCurrentTitle, (const QString&), url); //
 #else
-		    ;
+		void setCurrentTitle(const QString& title_);
 #endif
-		    void loadProgress(int progress)
+
 #if QT_VERSION == 0x050600
-			W_SIGNAL(loadProgress, (int), progress) //
+		void showStatusBarMessage(const QString& message, int timeout = 0) W_SIGNAL(showStatusBarMessage, (const QString&, int), message, timeout); //
 #else
-		    ;
+		void showStatusBarMessage(const QString& message, int timeout = 0);
 #endif
-		    void geometryChangeRequested(const QRect& geometry)
+
 #if QT_VERSION == 0x050600
-			W_SIGNAL(geometryChangeRequested, (const QRect&), geometry) //
+		void linkHovered(const QString& link) W_SIGNAL(linkHovered, (const QString&), link); // ;	// , int timeout = 0)
 #else
-		    ;
+		void linkHovered(const QString& link);
 #endif
-		    void menuBarVisibilityChangeRequested(bool visible)
+
 #if QT_VERSION == 0x050600
-			W_SIGNAL(menuBarVisibilityChangeRequested, (bool), visible) //
+		void loadProgress(int progress) W_SIGNAL(loadProgress, (int), progress); //
 #else
-		    ;
+		void loadProgress(int progress);
 #endif
-		    void statusBarVisibilityChangeRequested(bool visible)
+
 #if QT_VERSION == 0x050600
-			W_SIGNAL(statusBarVisibilityChangeRequested, (bool), visible) //
+		void geometryChangeRequested(const QRect& geometry) W_SIGNAL(geometryChangeRequested, (const QRect&), geometry); //
 #else
-		    ;
+		void geometryChangeRequested(const QRect& geometry);
 #endif
-		    void toolBarVisibilityChangeRequested(bool visible)
+
 #if QT_VERSION == 0x050600
-			W_SIGNAL(toolBarVisibilityChangeRequested, (bool), visible) //
+		void menuBarVisibilityChangeRequested(bool visible) W_SIGNAL(menuBarVisibilityChangeRequested, (bool), visible); //
 #else
-		    ;
+		void menuBarVisibilityChangeRequested(bool visible);
+#endif
+
+#if QT_VERSION == 0x050600
+		void statusBarVisibilityChangeRequested(bool visible) W_SIGNAL(statusBarVisibilityChangeRequested, (bool), visible); //
+#else
+		void statusBarVisibilityChangeRequested(bool visible);
+#endif
+
+#if QT_VERSION == 0x050600
+		void toolBarVisibilityChangeRequested(bool visible) W_SIGNAL(toolBarVisibilityChangeRequested, (bool), visible); //
+#else
+		void toolBarVisibilityChangeRequested(bool visible);
 #endif
 
 #if defined(QWEBENGINEPAGE_PRINTREQUESTED)
-		    void printRequested(QWebEngineFrame* frame);
+		void printRequested(QWebEngineFrame* frame);
 #endif
 
 	    public:
@@ -592,8 +588,7 @@ namespace web {
 		// {_page_tree_item->record_table(table_data);}
 
 		TabBar* tabbar();
-		rctrl_t* record_controller();
-		void record_controller(rctrl_t* rctrl);
+
 		// boost::intrusive_ptr<TreeItem> item_request_from_tree_fragment(const QUrl
 		// &_url);
 
@@ -649,6 +644,8 @@ namespace web {
 		static std::tuple<qint32, qint32, QStringList, QString>
 		state(const QByteArray& state_);
 
+		rs_t* record_screen();
+
 	    protected:
 		void mouseDoubleClickEvent(QMouseEvent* event);
 		void contextMenuEvent(QContextMenuEvent* event);
@@ -699,9 +696,9 @@ namespace web {
 		Blogger* _blogger;
 		web::Docker* _browser_docker;
 		Browser* _browser;
-		//		rs_t *_record_screen;
+
 		wn_t* _main_window;
-		rctrl_t* _rctrl = nullptr; // RecordScreen        *_record_screen;
+		//		rctrl_t* _rctrl; // RecordScreen        *_record_screen;
 
 		QAction* _recentlyclosedtabsaction;
 		QAction* _newtabaction;
@@ -724,8 +721,10 @@ namespace web {
 		Profile* _profile;
 		QWebEngineView* _fullscreenview;
 		FullScreenNotification* _fullscreennotification;
+
 		std::pair<QUrl, bool> _current_download_acceptance;
 		int _previous_index = -1;
+		rs_t* _record_screen;
 
 	    protected:
 		// active_record _active_record;

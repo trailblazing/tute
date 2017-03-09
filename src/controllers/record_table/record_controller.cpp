@@ -66,11 +66,9 @@ extern WalkHistory walkhistory;
 W_OBJECT_IMPL(rctl_t)
 #endif
 
-rctrl_t::rctrl_t(Blogger* blogger_ // TreeScreen           *_tree_screen
-				   // // , FindScreen         *_find_screen // ,
-    ,
+rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_find_screen // ,
     web::TabWidget* tabmanager_, rs_t* record_screen_)
-    : QObject(record_screen_)
+    : super(record_screen_)
     , _tabmanager(tabmanager_) // nullptr
     , _source_model(new RecordModel(this))
     , _proxy_model(new RecordProxyModel(this))
@@ -188,11 +186,9 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			_view->selectionModel()->select(index_proxy_, current_tree_selection_mode);
 			// Установка засветки на нужный индекс
 			// Set the backlight to the desired index
-			_view->selectionModel()->setCurrentIndex(
-			    index_proxy_,
-			    current_tree_current_index_mode); // selIdx   //
-							      // QItemSelectionModel::Select    //
-							      // ClearAndSelect
+			_view->selectionModel()->setCurrentIndex(index_proxy_, current_tree_current_index_mode); // selIdx   //
+														 // QItemSelectionModel::Select    //
+														 // ClearAndSelect
 			_view->setCurrentIndex(index_proxy_);
 			_view->edit(index_proxy_);
 
@@ -222,16 +218,13 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			auto it = index<boost::intrusive_ptr<i_t>>(pos_source_);
 			if (this->_view->hasFocus()) { // view is the curretn controller
 				if (_tabmanager->currentIndex() != static_cast<int>(pos_source_))
-					_tabmanager->select_as_current(
-					    it->page()
-						->view()); // setCurrentIndex(static_cast<int>(pos_source_));
+					_tabmanager->select_as_current(it->page()->view()); // setCurrentIndex(static_cast<int>(pos_source_));
 				auto tree_screen = gl_paras->main_window()->tree_screen();
 				if (tree_screen->view()->current_item() != it)
 					tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
 			}
 			if (it)
-				if (it->page())
-					it->page()->metaeditor_sychronize();
+				if (it->page()) it->page()->metaeditor_sychronize();
 		}
 		_view->setFocus();
 	}
@@ -1678,7 +1671,7 @@ bool rctrl_t::edit_field_context(index_proxy proxyIndex)
 
 	// Выясняется ссылка на таблицу конечных данных
 	auto item = _source_model->item(pos_source_);
-//	auto debug_tags = detail::to_qstring(item->field<tags_key>());
+	//	auto debug_tags = detail::to_qstring(item->field<tags_key>());
 	// Поля окна заполняются начальными значениями
 	edit_record_dialog.setField("pin", detail::to_qstring(item->field<pin_key>()));       // "pin"
 	edit_record_dialog.setField("name", detail::to_qstring(item->field<name_key>()));     // "name"
@@ -2971,8 +2964,7 @@ pos_source rctrl_t::index<pos_source>(const pos_proxy& pos_proxy_) const
 {
 	if (-1 == pos_proxy_)
 		return pos_source(-1);
-	QModelIndex fake_source_index =
-	    _proxy_model->mapToSource(_proxy_model->index((int)pos_proxy_, 0));
+	QModelIndex fake_source_index = _proxy_model->mapToSource(_proxy_model->index(static_cast<int>(pos_proxy_), 0));
 
 	return pos_source(fake_source_index.row());
 }
@@ -2980,7 +2972,7 @@ pos_source rctrl_t::index<pos_source>(const pos_proxy& pos_proxy_) const
 template <>
 pos_source rctrl_t::index<pos_source>(const index_proxy& ip) const
 {
-	pos_proxy pp(((QModelIndex)ip).row());
+	pos_proxy pp(QModelIndex(ip).row());
 
 	return index<pos_source>(pp);
 }
@@ -3020,8 +3012,7 @@ index_proxy rctrl_t::index<index_proxy>(const pos_proxy& pos_proxy_) const
 	auto pos_source_ = index<pos_source>(pos_proxy_);
 	auto it = _source_model->item(pos_source_);
 	auto index_source_ = _source_model->index(it);
-	QModelIndex index = _proxy_model->mapFromSource(
-	    index_source_); // _proxy_model->index((int) pos_proxy_, 0);
+	QModelIndex index = _proxy_model->mapFromSource(index_source_); // _proxy_model->index((int) pos_proxy_, 0);
 
 	return index_proxy(index);
 }
@@ -3032,9 +3023,7 @@ rctrl_t::index<index_proxy>(const index_source& index_source_) const
 {
 	if (!static_cast<QModelIndex>(index_source_).isValid())
 		return index_proxy(QModelIndex());
-	QModelIndex index_ = _proxy_model->mapFromSource(
-	    index_source_ // ((QModelIndex) sourceIndex).row(), 0)
-	    );            // (QModelIndex)sourceIndex
+	QModelIndex index_ = _proxy_model->mapFromSource(index_source_); // ((QModelIndex) sourceIndex).row(), 0)// (QModelIndex)sourceIndex
 
 	return index_proxy(index_);
 }

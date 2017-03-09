@@ -4,8 +4,8 @@
 #include <QSplashScreen>
 #include <QToolButton>
 #include <QTranslator>
-#include <boost/date_time/posix_time/posix_time.hpp>        // include all types plus i/o
-#include <boost/date_time/posix_time/posix_time_types.hpp>  // no i/o just types
+#include <boost/date_time/posix_time/posix_time.hpp>       // include all types plus i/o
+#include <boost/date_time/posix_time/posix_time_types.hpp> // no i/o just types
 #include <boost/locale.hpp>
 #include <chrono>
 #include <ctime>
@@ -68,10 +68,10 @@ FixedParameters fixedparameters;
 std::shared_ptr<gl_para> gl_paras;
 
 // Конфигурация программы (считанная из файла конфигурации)
-std::shared_ptr<AppConfig> appconfig;  // (gl_paras);
+std::shared_ptr<AppConfig> appconfig; // (gl_paras);
 
 // Конфигурация данных
-std::shared_ptr<DataBaseConfig> databaseconfig;  // (gl_paras, appconfig);
+std::shared_ptr<DataBaseConfig> databaseconfig; // (gl_paras, appconfig);
 
 // Объект слежения за состоянием корзины
 TrashMonitoring trashmonitoring;
@@ -80,64 +80,69 @@ TrashMonitoring trashmonitoring;
 WalkHistory walkhistory;
 
 // Указатель на основное окно программы
-QObject *mainwindow;
+QObject* mainwindow;
 
-extern const char *program_title;
+extern const char* program_title;
 extern const QString program_title_qstring;
 extern const std::string program_title_string;
 
-const char *app_version = (std::string("APPLICATION_RELEASE_VERSION") + "." + "APPLICATION_RELEASE_SUBVERSION" + "." + "APPLICATION_RELEASE_MICROVERSION").c_str();
+const char* app_version = (std::string("APPLICATION_RELEASE_VERSION") + "." + "APPLICATION_RELEASE_SUBVERSION" + "." + "APPLICATION_RELEASE_MICROVERSION").c_str();
 
-bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get) {
+bool url_equal(const std::string& url_compare_stored, const std::string& url_compare_get)
+{
 	std::string difference = url_difference(url_compare_stored, url_compare_get);
 
 	return difference.size() == 0 || difference == "/";
 }
 
-bool url_equal(const QString &u0, const QString &u1) {
-	const std::string &url_compare_stored = u0.toStdString();
-	const std::string &url_compare_get = u1.toStdString();
+bool url_equal(const QString& u0, const QString& u1)
+{
+	const std::string& url_compare_stored = u0.toStdString();
+	const std::string& url_compare_get = u1.toStdString();
 	std::string difference = url_difference(url_compare_stored, url_compare_get);
 
 	return difference.size() == 0 || difference == "/";
 }
 
-bool url_equal(const url_value &u0, const url_value &u1) {
-	const std::string &url_compare_stored = detail::to_string(u0);
-	const std::string &url_compare_get = detail::to_string(u1);
+bool url_equal(const url_value& u0, const url_value& u1)
+{
+	const std::string& url_compare_stored = detail::to_string(u0);
+	const std::string& url_compare_get = detail::to_string(u1);
 	std::string difference = url_difference(url_compare_stored, url_compare_get);
 
 	return difference.size() == 0 || difference == "/";
 }
 
-std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get) {
+std::string url_difference(const std::string& url_compare_stored, const std::string& url_compare_get)
+{
 	std::string compare = "";
 	if (url_compare_stored.size() >= url_compare_get.size()) {
-		for (std::string::size_type i = 0; i < url_compare_get.size(); i++)                              // url_compare_stored.erase(url_compare_get.begin(),
-			                                                                                             // url_compare_get.end());
-			if (url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i);  // url_compare_stored.erase(i, 1);
+		for (std::string::size_type i = 0; i < url_compare_get.size(); i++)                                 // url_compare_stored.erase(url_compare_get.begin(),
+														    // url_compare_get.end());
+			if (url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i); // url_compare_stored.erase(i, 1);
 		for (std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i++)
 			compare += url_compare_stored.at(i);
 	} else {
 		// url_compare_get.erase(url_compare_stored.begin(),
 		// url_compare_stored.end());
-		for (std::string::size_type i = 0; i < url_compare_stored.size(); i++)                        // url_compare_stored.erase(url_compare_get.begin(),
-			                                                                                          // url_compare_get.end());
-			if (url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i);  // url_compare_get.erase(i, 1);
+		for (std::string::size_type i = 0; i < url_compare_stored.size(); i++)                           // url_compare_stored.erase(url_compare_get.begin(),
+														 // url_compare_get.end());
+			if (url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i); // url_compare_get.erase(i, 1);
 		for (std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i++)
 			compare += url_compare_get.at(i);
 	}
 	// std::string::size_type pos;
 	// while((pos = compare.find_first_of(" ")) != compare.npos)compare.erase(pos,
 	// 1);
-	compare.erase(std::remove_if(compare.begin(), compare.end(), ::isspace), compare.end());  // [](char ch){return  // std::isspace<char>(ch,// std::locale::classic());}	//
+	compare.erase(std::remove_if(compare.begin(), compare.end(), ::isspace), compare.end()); // [](char ch){return  // std::isspace<char>(ch,// std::locale::classic());}	//
 
 	return compare;
 }
 
-void log_print(char *lpszText, ...) {
+void log_print(char* lpszText, ...)
+{
 	va_list argList;
-	FILE *pFile;
+	FILE* pFile;
 
 	// инициализируем список аргументов
 	va_start(argList, lpszText);
@@ -162,7 +167,8 @@ void log_print(char *lpszText, ...) {
 	return;
 }
 
-void critical_error(QString message) {
+void critical_error(QString message)
+{
 	qDebug() << " ";
 	qDebug() << "---------------";
 	qDebug() << "Critical error!";
@@ -171,14 +177,15 @@ void critical_error(QString message) {
 	qDebug() << "---------------";
 	qDebug() << " ";
 
-	QMessageBox::critical(qobject_cast<QWidget *>(mainwindow), "Critical error", message + "\n\nProgramm was closed.", QMessageBox::Ok);
+	QMessageBox::critical(qobject_cast<QWidget*>(mainwindow), "Critical error", message + "\n\nProgramm was closed.", QMessageBox::Ok);
 	//	throw std::runtime_error(message.toStdString());
 	exit(1);
 }
 
 // Функция-помощник при отладке генерации XML-кода. Преобразует узел DOM в
 // строку
-QString xml_node_to_qstring(QDomNode xmlData) {
+QString xml_node_to_qstring(QDomNode xmlData)
+{
 	// Если узел представляет собой полностью документ
 	if (xmlData.isDocument()) {
 		// Значит этот узел можно напрямую преобразовать
@@ -203,7 +210,8 @@ QString xml_node_to_qstring(QDomNode xmlData) {
 }
 
 // Преобразование из QString в обычный char
-char *qc_str(const QString &str) {
+char* qc_str(const QString& str)
+{
 	//	char *tmpC = new char[str.size() + 1];
 	//	QVariant var;
 	//	for(int i = 0; i < str.length(); i++){
@@ -219,14 +227,15 @@ char *qc_str(const QString &str) {
 
 // екурсивная печать дерева объектов, т.к. dumpObjectInfo() и dumpObjectTree()
 // не работают
-void print_object_tree_recurse(QObject *pobj) {
+void print_object_tree_recurse(QObject* pobj)
+{
 	static int indent = 0;
 
 	QObjectList olist;
 
 	olist = pobj->children();
 	for (int i = 0; i < olist.size(); ++i) {
-		QObject *currobj;
+		QObject* currobj;
 		currobj = olist.at(i);
 
 		QString indentline = ".";
@@ -243,7 +252,8 @@ void print_object_tree_recurse(QObject *pobj) {
 }
 
 // Печать дерева объектов, основная функция
-void print_object_tree(void) {
+void print_object_tree(void)
+{
 	qDebug() << "Object tree";
 
 	print_object_tree_recurse(mainwindow);
@@ -277,28 +287,31 @@ void print_object_tree(void) {
 // else return x2;
 // }
 
-std::string get_time() {
+std::string get_time()
+{
 	std::time_t tt = std::chrono::system_clock::to_time_t(
-	    std::chrono::system_clock::now());  // std::time(0);// get time now
-	struct tm *now = localtime(&tt);
+	    std::chrono::system_clock::now()); // std::time(0);// get time now
+	struct tm* now = localtime(&tt);
 	std::ostringstream _current_time;
 	_current_time << std::setw(4) << std::setfill('0')
-	              << (now->tm_year + 1900)  // << '-'
-	              << std::setw(2) << std::setfill('0')
-	              << (now->tm_mon + 1)                                  // << '-'
-	              << std::setw(2) << std::setfill('0') << now->tm_mday  // << '-'
-	              << std::setw(2) << std::setfill('0') << now->tm_hour  // << '-'
-	              << std::setw(2) << std::setfill('0') << now->tm_min   // << '-'
-	              << std::setw(2) << std::setfill('0') << now->tm_sec;
+		      << (now->tm_year + 1900) // << '-'
+		      << std::setw(2) << std::setfill('0')
+		      << (now->tm_mon + 1)                                 // << '-'
+		      << std::setw(2) << std::setfill('0') << now->tm_mday // << '-'
+		      << std::setw(2) << std::setfill('0') << now->tm_hour // << '-'
+		      << std::setw(2) << std::setfill('0') << now->tm_min  // << '-'
+		      << std::setw(2) << std::setfill('0') << now->tm_sec;
 
 	return _current_time.str();
 }
 
-QString get_qtime() {
+QString get_qtime()
+{
 	return QString::fromStdString(get_time());
 }
 
-void smart_print_debug_message(QString msg) {
+void smart_print_debug_message(QString msg)
+{
 	if (gl_paras->target_os() == "any" || gl_paras->target_os() == "meego") {
 		////	QTime	currTime	= QTime::currentTime();
 		////	QString timeText	= currTime.toString("hh:mm:ss");
@@ -306,15 +319,15 @@ void smart_print_debug_message(QString msg) {
 		// QString		ctime		= ctime_dt.toString("yyyyMMddhhmmss");
 
 		std::time_t tt = std::chrono::system_clock::to_time_t(
-		    std::chrono::system_clock::now());  // std::time(0);// get time now
-		struct tm *now = localtime(&tt);
+		    std::chrono::system_clock::now()); // std::time(0);// get time now
+		struct tm* now = localtime(&tt);
 		std::ostringstream _current_time;
 		_current_time << (now->tm_year + 1900) << '-' << std::setw(2)
-		              << std::setfill('0') << (now->tm_mon + 1) << '-'
-		              << std::setw(2) << std::setfill('0') << now->tm_mday << '-'
-		              << std::setw(2) << std::setfill('0') << now->tm_hour << '-'
-		              << std::setw(2) << std::setfill('0') << now->tm_min << '-'
-		              << std::setw(2) << std::setfill('0') << now->tm_sec;
+			      << std::setfill('0') << (now->tm_mon + 1) << '-'
+			      << std::setw(2) << std::setfill('0') << now->tm_mday << '-'
+			      << std::setw(2) << std::setfill('0') << now->tm_hour << '-'
+			      << std::setw(2) << std::setfill('0') << now->tm_min << '-'
+			      << std::setw(2) << std::setfill('0') << now->tm_sec;
 		std::string c_t(_current_time.str());
 		//// auto _end = std::chrono::system_clock::now();	//
 		///std::chrono::time_point<std::chrono::system_clock>
@@ -329,7 +342,7 @@ void smart_print_debug_message(QString msg) {
 		// msg_.imbue(std::locale(msg_.getloc(), &f));
 		// msg_ << now_;
 		auto ctime = QString::fromStdString(_current_time.str());
-		msg = ctime + " " + msg;  // timeText + " " + msg;
+		msg = ctime + " " + msg; // timeText + " " + msg;
 
 		unsigned int messageLen = msg.toLocal8Bit().size();
 		// printf("Len of line: %d\n", messageLen);
@@ -344,9 +357,9 @@ void smart_print_debug_message(QString msg) {
 // Внутри этого обработчика нельзя использовать вызовы qDebug(), т. к. получится
 // рекурсия
 #if QT_VERSION < 0x050000
-void my_message_output(QtMsgType type, const char *msg)
+void my_message_output(QtMsgType type, const char* msg)
 #else
-void my_message_output(QtMsgType type, const QMessageLogContext &context, const QString &msgText)
+void my_message_output(QtMsgType type, const QMessageLogContext& context, const QString& msgText)
 #endif
 {
 #if QT_VERSION >= 0x050000
@@ -367,32 +380,33 @@ void my_message_output(QtMsgType type, const QMessageLogContext &context, const 
 	if (!appconfig->print_debug_messages())
 		return;
 	switch (type) {
-		case QtInfoMsg:
-			smart_print_debug_message("[INF] " + msgText + "\n");
-			break;
+	case QtInfoMsg:
+		smart_print_debug_message("[INF] " + msgText + "\n");
+		break;
 
-		case QtDebugMsg:
-			smart_print_debug_message("[DBG] " + msgText + "\n");
-			break;
+	case QtDebugMsg:
+		smart_print_debug_message("[DBG] " + msgText + "\n");
+		break;
 
-		case QtWarningMsg:
-			smart_print_debug_message("[WRN] " + msgText + "\n");
-			break;
+	case QtWarningMsg:
+		smart_print_debug_message("[WRN] " + msgText + "\n");
+		break;
 
-		case QtCriticalMsg:
-			smart_print_debug_message("[CRERR] " + msgText + "\n");
-			break;
+	case QtCriticalMsg:
+		smart_print_debug_message("[CRERR] " + msgText + "\n");
+		break;
 
-		case QtFatalMsg:
-			smart_print_debug_message("[FTERR] " + msgText + "\n");
-			abort();
+	case QtFatalMsg:
+		smart_print_debug_message("[FTERR] " + msgText + "\n");
+		abort();
 	}
 	// #endif
 }
 
-void set_debug_message_handler() {
+void set_debug_message_handler()
+{
 	qDebug() << "Debug message before set message handler for target OS: "
-	         << gl_paras->target_os();
+		 << gl_paras->target_os();
 	// Для десктопных операционок можно переустановить обработчик qDebug()
 	// Для Андроида переустановка qDebug() приводит к невозможности получения
 	// отладочных сообщений в удаленном отладчике
@@ -409,17 +423,19 @@ void set_debug_message_handler() {
 }
 
 // Выдача на экран простого окна с сообщением
-void show_message_box(QString message) {
+void show_message_box(QString message)
+{
 	QMessageBox msg_box;
 
 	msg_box.setText(message);
 	msg_box.exec();
 }
 
-int screen_size_y(void) {
+int screen_size_y(void)
+{
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
 	int size = (QtSingleApplication::instance()->desktop()->availableGeometry())
-	               .height();
+		       .height();
 #endif
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
@@ -429,7 +445,8 @@ int screen_size_y(void) {
 	return size;
 }
 
-int screen_size_x(void) {
+int screen_size_x(void)
+{
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
 	int size =
 	    (QtSingleApplication::instance()->desktop()->availableGeometry()).width();
@@ -442,7 +459,8 @@ int screen_size_x(void) {
 	return size;
 }
 
-qreal calculate_iconsize_px(void) {
+qreal calculate_iconsize_px(void)
+{
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
 	qreal dpiX = QtSingleApplication::instance()->desktop()->physicalDpiX();
 	qreal dpiY = QtSingleApplication::instance()->desktop()->physicalDpiY();
@@ -453,8 +471,8 @@ qreal calculate_iconsize_px(void) {
 	qreal dpi = QApplication::screens().at(0)->physicalDotsPerInch();
 #endif
 
-	qreal iconSizeMm = 6;                    // азмер иконки в миллиметрах (рекомендованный)
-	qreal iconSizeInch = iconSizeMm / 25.4;  // азмер иконки в дюймах
+	qreal iconSizeMm = 6;                   // азмер иконки в миллиметрах (рекомендованный)
+	qreal iconSizeInch = iconSizeMm / 25.4; // азмер иконки в дюймах
 	qreal iconSizePx = iconSizeInch * dpi;
 
 	return iconSizePx;
@@ -464,7 +482,8 @@ qreal calculate_iconsize_px(void) {
 // размер иконки в пикселях
 // Replacement CSS-style of all occurrences of a substring META_ICON_SIZE
 // calculated on the icon size in pixels
-QString replace_css_meta_iconsize(QString styleText) {
+QString replace_css_meta_iconsize(QString styleText)
+{
 	styleText.replace("META_ICON_SIZE", QString::number((int)calculate_iconsize_px()));
 	styleText.replace("META_ICON_HALF_SIZE", QString::number((int)calculate_iconsize_px() / 2));
 	styleText.replace("META_ICON_TWO_THIRDS_SIZE", QString::number(((int)calculate_iconsize_px() * 2) / 3));
@@ -475,66 +494,10 @@ QString replace_css_meta_iconsize(QString styleText) {
 	return styleText;
 }
 
-QString set_css_style() {
-	QString style;
 
-	QString root_path_ = gl_paras->root_path();
-	auto target_os = gl_paras->target_os();
-	auto location = root_path_ + "/" + target_os;
-	if (!QDir(location).exists())
-		if (!QDir::root().mkpath(location))
-			critical_error("QString set_css_style() can not make path \"" + location + "\"");
-	QString file_name_to = location + "/" + gl_para::_stylesheet_filename;
-	// QString	file_name_from	= work_directory + "/resource/standardconfig/" +
-	// target_os + "/stylesheet.css";
-	// qint64	size_from = 0;
-	// QFile	css_from(file_name_from);
-	// bool result = css_from.open(QIODevice::ReadOnly | QIODevice::Text);
-	//// Если файла не существует
-	// if(! result){
-	// qDebug() << "Stylesheet not found in " << file_name_from;
-	////
-	///globalparameters.create_stylesheet_file(globalparameters.work_directory());
-	// }else size_from = css_from.size();
-	// css_from.close();	// ?
-	// qint64	size_to = 0;
-	QFile css_to(file_name_to);
-	// bool openResult = css_to.open(QIODevice::ReadOnly | QIODevice::Text);
-	//// Если файла не существует
-	// if(! openResult){
-	// qDebug() << "Stylesheet not found in " << file_name_from << ". Create new
-	// css file.";
-	// globalparameters.create_stylesheet_file(globalparameters.work_directory());
-	// }else size_to = css_to.size();
-	// css_to.close();	// ?
-	// if(size_to < size_from){
-	if (!css_to.exists())
-		// if(! QFile::remove(file_name_to)) critical_error("Can not remove file\n"
-		// + file_name_to);
-		if (!QFile::copy(":/resource/standardconfig/" + target_os + "/stylesheet.css",
-		                 file_name_to)) {  // file_name_from, file_name_to
-			// trashmonitoring.add_file(file_name_to_short); // Оповещение что в
-			// корзину добавлен файл
-			// }else {
-			critical_error("Can not copy css file to file\t" + file_name_to);
-		}
-	// }
-	// Заново открывается файл
-	if (css_to.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		qDebug() << "Stylesheet success loaded from" << file_name_to;
 
-		// QString
-		style = QTextStream(&css_to).readAll();
-
-		style = replace_css_meta_iconsize(style);
-
-		sapp_t::instance()->setStyleSheet(style);
-		css_to.close();
-	}
-	return style;
-}
-
-void set_kinetic_scrollarea(QAbstractItemView *object) {
+void set_kinetic_scrollarea(QAbstractItemView* object)
+{
 #if QT_VERSION < 0x050000
 
 	Q_UNUSED(object);
@@ -546,7 +509,7 @@ void set_kinetic_scrollarea(QAbstractItemView *object) {
 		return;
 	if (gl_paras->target_os() == "android") {
 		// Настройка жестов прокрутки
-		QScroller *scroller = QScroller::scroller(object);
+		QScroller* scroller = QScroller::scroller(object);
 
 		// For desktop - QScroller::LeftMouseButtonGesture, for Android -
 		// QScroller::TouchGesture in doc
@@ -558,12 +521,12 @@ void set_kinetic_scrollarea(QAbstractItemView *object) {
 		QScrollerProperties properties = scroller->scrollerProperties();
 		QVariant overshootPolicy =
 		    QVariant::fromValue<QScrollerProperties::OvershootPolicy>(
-		        QScrollerProperties::OvershootWhenScrollable  // OvershootAlwaysOff
-		        );
+			QScrollerProperties::OvershootWhenScrollable // OvershootAlwaysOff
+			);
 		properties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, overshootPolicy);
 		properties.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, overshootPolicy);
 		scroller->setScrollerProperties(
-		    properties);  // QScrollerProperties::OvershootAlwaysOff
+		    properties); // QScrollerProperties::OvershootAlwaysOff
 
 		// Горизонтальный скроллинг скрывается
 		object->horizontalScrollBar()->setStyleSheet("QScrollBar {height:0px;}");
@@ -602,66 +565,66 @@ void set_kinetic_scrollarea(QAbstractItemView *object) {
 		object->verticalScrollBar()->setStyleSheet(QString::fromUtf8(
 		    "QScrollBar:vertical {"
 		    "   border: 1px solid #aaaaaa;"
-		    "   background: transparent;"           // "   background: #eeeeee;" // white;"
-		    "   width:10px;    "                    // "width: 10px;"
-		    "   margin: 0px 0px 0px 0px;"           // "margin: 21px 0 21px 0;"
-		    "   border-color: rgb(227, 227, 227);"  // "   border-width: 1px;"
+		    "   background: transparent;"          // "   background: #eeeeee;" // white;"
+		    "   width:10px;    "                   // "width: 10px;"
+		    "   margin: 0px 0px 0px 0px;"          // "margin: 21px 0 21px 0;"
+		    "   border-color: rgb(227, 227, 227);" // "   border-width: 1px;"
 		    "   border-style: solid;"
-		    "   background-color: transparent; "  // "   background-color: rgb(240,
-		                                          // 240, 240);"
+		    "   background-color: transparent; " // "   background-color: rgb(240,
+							 // 240, 240);"
 		    "}"
 		    "QScrollBar::handle:vertical {"
 		    "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-		    "   stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);"  // "
-		                                                                 // stop: 0
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop: 0.5
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop:1
-		                                                                 // rgb(32,
-		                                                                 // 47,
-		                                                                 // 130));"
-		    "   min-height: 10px;"                                       // "min-height: 25px;"
-		    "   background-color: #AEA89A;"                              // rgb(180, 180, 180)  // 200,200,200
+		    "   stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);" // "
+										// stop: 0
+										// rgb(32,
+										// 47, 130),
+										// stop: 0.5
+										// rgb(32,
+										// 47, 130),
+										// stop:1
+										// rgb(32,
+										// 47,
+										// 130));"
+		    "   min-height: 10px;"                                      // "min-height: 25px;"
+		    "   background-color: #AEA89A;"                             // rgb(180, 180, 180)  // 200,200,200
 		    "   border: 1px #948B77 solid;"
 		    "}"
 		    "QScrollBar::add-line:vertical {"
 		    "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-		    "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"  // "
-		                                                                 // stop: 0
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop: 0.5
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop:1
-		                                                                 // rgb(32,
-		                                                                 // 47,
-		                                                                 // 130));"
-		    "   height: 10px;"                                           // "height: 20px;"
-		    "   subcontrol-position: bottom;"                            // "subcontrol-position: bottom;"
-		    "   subcontrol-origin: margin;"                              // "subcontrol-origin: margin;"
+		    "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);" // "
+										// stop: 0
+										// rgb(32,
+										// 47, 130),
+										// stop: 0.5
+										// rgb(32,
+										// 47, 130),
+										// stop:1
+										// rgb(32,
+										// 47,
+										// 130));"
+		    "   height: 10px;"                                          // "height: 20px;"
+		    "   subcontrol-position: bottom;"                           // "subcontrol-position: bottom;"
+		    "   subcontrol-origin: margin;"                             // "subcontrol-origin: margin;"
 		    "   border: 1px solid grey;"
 		    "   background-color: rgb(241, 241, 241);"
 		    "}"
 		    "QScrollBar::sub-line:vertical {"
 		    "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-		    "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"  // "
-		                                                                 // stop: 0
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop: 0.5
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop:1
-		                                                                 // rgb(32,
-		                                                                 // 47,
-		                                                                 // 130));"
-		    "   height: 10px;"                                           // "height: 20px;"
-		    "   subcontrol-position: top;"                               // "subcontrol-position: top;"
-		    "   subcontrol-origin: margin;"                              // "subcontrol-origin: margin;"
+		    "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);" // "
+										// stop: 0
+										// rgb(32,
+										// 47, 130),
+										// stop: 0.5
+										// rgb(32,
+										// 47, 130),
+										// stop:1
+										// rgb(32,
+										// 47,
+										// 130));"
+		    "   height: 10px;"                                          // "height: 20px;"
+		    "   subcontrol-position: top;"                              // "subcontrol-position: top;"
+		    "   subcontrol-origin: margin;"                             // "subcontrol-origin: margin;"
 		    "   border: 1px solid grey;"
 		    "   background-color: rgb(241, 241, 241);"
 		    "}"
@@ -711,66 +674,66 @@ void set_kinetic_scrollarea(QAbstractItemView *object) {
 		object->horizontalScrollBar()->setStyleSheet(QString::fromUtf8(
 		    "QScrollBar:horizontal {"
 		    "   border: 1px solid #aaaaaa;"
-		    "   background: transparent;"           // "   background: #eeeeee;"
-		    "   height:10px;    "                   // "   height: 10px; "
-		    "   margin: 0px 0px 0px 0px;"           // "   margin: 0px 21px 0 21px; "
-		    "   border-color: rgb(227, 227, 227);"  // "   border-height: 1px;"
+		    "   background: transparent;"          // "   background: #eeeeee;"
+		    "   height:10px;    "                  // "   height: 10px; "
+		    "   margin: 0px 0px 0px 0px;"          // "   margin: 0px 21px 0 21px; "
+		    "   border-color: rgb(227, 227, 227);" // "   border-height: 1px;"
 		    "   border-style: solid; "
-		    "   background-color: transparent; "  // "   background-color: rgb(240,
-		                                          // 240, 240); "
+		    "   background-color: transparent; " // "   background-color: rgb(240,
+							 // 240, 240); "
 		    "}"
 		    "QScrollBar::handle:horizontal {"
 		    "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
-		    "   stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);"  // "
-		                                                                 // stop: 0
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop: 0.5
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop:1
-		                                                                 // rgb(32,
-		                                                                 // 47,
-		                                                                 // 130));"
-		    "   min-width: 10px;"                                        // "   min-width: 25px; "
-		    "   background-color: #AEA89A;"                              // rgb(180, 180, 180)  // 200,200,200
+		    "   stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);" // "
+										// stop: 0
+										// rgb(32,
+										// 47, 130),
+										// stop: 0.5
+										// rgb(32,
+										// 47, 130),
+										// stop:1
+										// rgb(32,
+										// 47,
+										// 130));"
+		    "   min-width: 10px;"                                       // "   min-width: 25px; "
+		    "   background-color: #AEA89A;"                             // rgb(180, 180, 180)  // 200,200,200
 		    "   border: 1px #948B77 solid;"
 		    "}"
 		    "QScrollBar::add-line:horizontal {"
 		    "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
-		    "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"  // "
-		                                                                 // stop: 0
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop: 0.5
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop:1
-		                                                                 // rgb(32,
-		                                                                 // 47,
-		                                                                 // 130));"
-		    "   width: 10px;"                                            // "   width: 20px; "   // "    height: px;"
-		    "   subcontrol-position: right;"                             // "   subcontrol-position: right; "
-		    "   subcontrol-origin: margin;"                              // "   subcontrol-origin: margin; "
+		    "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);" // "
+										// stop: 0
+										// rgb(32,
+										// 47, 130),
+										// stop: 0.5
+										// rgb(32,
+										// 47, 130),
+										// stop:1
+										// rgb(32,
+										// 47,
+										// 130));"
+		    "   width: 10px;"                                           // "   width: 20px; "   // "    height: px;"
+		    "   subcontrol-position: right;"                            // "   subcontrol-position: right; "
+		    "   subcontrol-origin: margin;"                             // "   subcontrol-origin: margin; "
 		    "   border: 1px solid grey;"
 		    "   background-color: rgb(241, 241, 241); "
 		    "}"
 		    "QScrollBar::sub-line:horizontal {"
 		    "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
-		    "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"  // "
-		                                                                 // stop: 0
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop: 0.5
-		                                                                 // rgb(32,
-		                                                                 // 47, 130),
-		                                                                 // stop:1
-		                                                                 // rgb(32,
-		                                                                 // 47,
-		                                                                 // 130));"
-		    "   width: 10px;"                                            // "   width: 20px; "   // "    height: 0px;"
-		    "   subcontrol-position: left;"                              // "   subcontrol-position: left; "
-		    "   subcontrol-origin: margin;"                              // "   subcontrol-origin: margin; "
+		    "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);" // "
+										// stop: 0
+										// rgb(32,
+										// 47, 130),
+										// stop: 0.5
+										// rgb(32,
+										// 47, 130),
+										// stop:1
+										// rgb(32,
+										// 47,
+										// 130));"
+		    "   width: 10px;"                                           // "   width: 20px; "   // "    height: 0px;"
+		    "   subcontrol-position: left;"                             // "   subcontrol-position: left; "
+		    "   subcontrol-origin: margin;"                             // "   subcontrol-origin: margin; "
 		    "   border: 1px solid grey; "
 		    "   background-color: rgb(241, 241, 241); "
 		    "}"
@@ -827,7 +790,8 @@ void set_kinetic_scrollarea(QAbstractItemView *object) {
 #endif
 }
 
-QString purify(QString text) {
+QString purify(QString text)
+{
 	text = QObject::tr(
 	    text.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str());
 	text.replace('"', ' ');
@@ -846,7 +810,8 @@ QString purify(QString text) {
 	return text;
 }
 
-QStringList text_delimiter_decompose(QString text) {
+QStringList text_delimiter_decompose(QString text)
+{
 	//	text.replace('"', ' ');
 	//	text.replace("'", " ");
 	//	text.replace('.', ' ');
@@ -864,7 +829,8 @@ QStringList text_delimiter_decompose(QString text) {
 }
 
 // Функция всегда возвращает уникальный идентификатор
-id_value get_unical_id(void) {
+id_value get_unical_id(void)
+{
 	// Уникальный идентификатор состоит из 10 цифр количества секунд с эпохи UNIX
 	// и 10 случайных символов 0-9 a-z
 
@@ -887,7 +853,8 @@ id_value get_unical_id(void) {
 	return detail::from_qstring<id_key>(result);
 }
 
-int get_milli_count(void) {
+int get_milli_count(void)
+{
 	// Something like GetTickCount but portable
 	// It rolls over every ~ 12.1 days (0x100000/24/60/60)
 	// Use getMilliSpan to correct for rollover
@@ -899,7 +866,8 @@ int get_milli_count(void) {
 	return nCount;
 }
 
-void init_random(void) {
+void init_random(void)
+{
 	qDebug() << "Init random generator";
 
 	unsigned int seed1 = get_milli_count();
@@ -931,7 +899,8 @@ void init_random(void) {
 
 #endif
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
 #ifdef USE_QTM
 
 // EditingWindow *c;
@@ -946,8 +915,8 @@ int main(int argc, char **argv) {
 		// https://bugreports.qt-project.org/browse/QTBUG-32789
 		QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
 	}
-#endif  // QT_VERSION
-#endif  // Q_OS_MAC
+#endif // QT_VERSION
+#endif // Q_OS_MAC
 	{
 		// Application app(argc, argv);
 		// QStringList args = app.arguments();
@@ -970,8 +939,8 @@ int main(int argc, char **argv) {
 // smenu->handleNewWindowAtStartup();
 #endif
 		{
-		    // app.setQuitOnLastWindowClosed(false);
-		}  // }
+		  // app.setQuitOnLastWindowClosed(false);
+		} // }
 		// }else{
 		{
 			// c = new EditingWindow;
@@ -1007,32 +976,34 @@ int main(int argc, char **argv) {
 		// #endif
 	}
 
-#endif  // USE_QTM
+#endif // USE_QTM
 
 	printf(
 	    std::string("\n\rStart " + program_title_string + " v. % d. % d. % d\n\r").c_str(),
 	    APPLICATION_RELEASE_VERSION, APPLICATION_RELEASE_SUBVERSION, APPLICATION_RELEASE_MICROVERSION);
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-	Q_INIT_RESOURCE(data);  // added by hughvonyoung@gmail.com
+	Q_INIT_RESOURCE(data); // added by hughvonyoung@gmail.com
 	Q_INIT_RESOURCE(tute);
 	// gl_paras	= std::make_shared<gl_para>();
 	// appconfig	= std::make_shared<AppConfig>(gl_paras);
 	// databaseconfig = std::make_shared<DataBaseConfig>(gl_paras, appconfig);
-	return sapp_t(argc, argv).exec();  // , gl_paras		// , appconfig		// ,
-					   // databaseconfig
-					   // application.exec();
+	return sapp_t(argc, argv).exec(); // , gl_paras		// , appconfig		// ,
+					  // databaseconfig
+					  // application.exec();
 }
 
-std::ifstream::pos_type filesize(const char *filename) {
+std::ifstream::pos_type filesize(const char* filename)
+{
 	std::ifstream in(
-	    filename, std::ios::ate | std::ios::binary);  // std::ifstream in(filename,
-	                                                  // std::ifstream::ate |
-	                                                  // std::ifstream::binary);
+	    filename, std::ios::ate | std::ios::binary); // std::ifstream in(filename,
+							 // std::ifstream::ate |
+							 // std::ifstream::binary);
 	return in.tellg();
 }
 
-std::streampos file_size(const char *file_path) {
+std::streampos file_size(const char* file_path)
+{
 	std::ifstream file(file_path, std::ios::ate | std::ios::binary);
 	std::streampos fsize = file.tellg();
 	// file.close();
@@ -1041,7 +1012,8 @@ std::streampos file_size(const char *file_path) {
 }
 
 // similar to QString::leftJustified
-std::string truncate(std::string str, size_t width, bool show_ellipsis) {
+std::string truncate(std::string str, size_t width, bool show_ellipsis)
+{
 	if (str.length() > width) {
 		if (show_ellipsis)
 			return str.substr(0, width - 3) + "...";

@@ -81,100 +81,94 @@ class ts_t;
 class tkm_t;
 
 namespace web {
-class ChaseWidget;
+	class ChaseWidget;
 }
 
 // QT_BEGIN_NAMESPACE
 
 namespace web {
-class AutoSaver;
+	class AutoSaver;
 
-class WorkerThread : public QThread {
-	Q_OBJECT
+	class WorkerThread : public QThread {
+		Q_OBJECT
 
-	void run() Q_DECL_OVERRIDE;
-	// {
-	////		    QString result;
-	// auto e = _child_linkers.last();
-	// _child_linkers.pop_back();
-	// emit resultReady();
-	// }
-	signals:
-	void result_ready();
+		void run() Q_DECL_OVERRIDE;
+		// {
+		////		    QString result;
+		// auto e = _child_linkers.last();
+		// _child_linkers.pop_back();
+		// emit resultReady();
+		// }
+	    signals:
+		void result_ready();
 
-	private:
-	QList<boost::intrusive_ptr<i_t>> &_child_items;
+	    private:
+		QList<boost::intrusive_ptr<i_t>>& _child_items;
 
-	public:
-	WorkerThread(QWidget *p, QList<boost::intrusive_ptr<i_t>> &l)
-	    : QThread(p)
-	    , _child_items(l) {
-	}
-};
+	    public:
+		WorkerThread(QWidget* p, QList<boost::intrusive_ptr<i_t>>& l)
+		    : QThread(p)
+		    , _child_items(l)
+		{
+		}
+	};
 
-class ToolbarSearch : public SearchLineEdit {
+	class ToolbarSearch : public SearchLineEdit {
 #if QT_VERSION == 0x050600
-	W_OBJECT(ToolbarSearch)
+		W_OBJECT(ToolbarSearch)
 #else
-	Q_OBJECT
+		Q_OBJECT
 #endif
 
-	signals:
-	// void search(boost::intrusive_ptr<TreeItem>, const QUrl &url
-	// , const TreeScreen::paste_strategy &_view_paste_strategy
-	// , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const
-	// QUrl &_url) ->bool {return it ? QUrl(it->field("url")).fragment() ==
-	// _url.fragment() : false;}
-	// );
+	    signals:
+// void search(boost::intrusive_ptr<TreeItem>, const QUrl &url
+// , const TreeScreen::paste_strategy &_view_paste_strategy
+// , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return it ? QUrl(it->field("url")).fragment() == _url.fragment() : false;}
+// );
 
-	void return_pressed()
+
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(return_pressed)  //
+		void return_pressed() W_SIGNAL(return_pressed); //
 #else
-	    ;
+		void return_pressed();
 #endif
-	    public : ToolbarSearch(  // QStackedWidget *lineedits, QLineEdit *findtext,
-	                 QWidget *parent = 0);
-	~ToolbarSearch();
-	void text(const QString &text);
-	QString text() const;
+	    public:
+		ToolbarSearch(QWidget* parent = 0); // QStackedWidget *lineedits, QLineEdit *findtext,
 
-	QLineEdit *findtext() {
-		return _findtext;
-	}
+		~ToolbarSearch();
+		void text(const QString& text);
+		QString text() const;
 
-	// void findtext(QLineEdit *findtext) {_findtext = findtext;}
+		QLineEdit* findtext() { return _findtext; }
 
-	QStackedWidget *lineedits() {
-		return _lineedits;
-	}
+		// void findtext(QLineEdit *findtext) {_findtext = findtext;}
 
-	void lineedits(QStackedWidget *lineedits) {
-		_lineedits = lineedits;
-	}
+		QStackedWidget* lineedits() { return _lineedits; }
 
-	public slots:
-	void clear();
-	void search_now();
+		void lineedits(QStackedWidget* lineedits) { _lineedits = lineedits; }
 
-	private slots:
-	void save();
-	void show_menu();
-	void triggered_menu_action(QAction *action);
+	    public slots:
+		void clear();
+		void search_now();
 
-	private:
-	void load();
+	    private slots:
+		void save();
+		void show_menu();
+		void triggered_menu_action(QAction* action);
 
-	AutoSaver *_autosaver;
-	int _maxsavedsearches;
-	QStringListModel *_stringlistmodel;
-	QStackedWidget *_lineedits;
-	QLineEdit *_findtext;
-	// TabManager           *_tabmanager;
-	// web::ChaseWidget *_chasewidget;
-};
+	    private:
+		void load();
+
+		AutoSaver* _autosaver;
+		int _maxsavedsearches;
+		QStringListModel* _stringlistmodel;
+		QStackedWidget* _lineedits;
+		QLineEdit* _findtext;
+		// TabManager           *_tabmanager;
+		// web::ChaseWidget *_chasewidget;
+	};
 }
 
 // QT_END_NAMESPACE
 
-#endif  // TOOLBARSEARCH_H
+#endif // TOOLBARSEARCH_H

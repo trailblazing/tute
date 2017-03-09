@@ -50,7 +50,7 @@ extern const char* tree_screen_viewer_name;
 W_OBJECT_IMPL(rs_t)
 #endif
 
-rs_t::rs_t(Blogger* blogger_, web::Browser* browser_)
+rs_t::rs_t(Blogger* blogger_, web::TabWidget* tabmanager_)
     : QWidget(gl_paras->vtab_record()) //
     //	  , _vtab_record(gl_paras->vtab_record())
     , _tree_screen(gl_paras->tree_screen())
@@ -94,10 +94,14 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_)
     , _toolsline(new QToolBar(this))
     , _extra_toolsline(new QToolBar(this))
     , _treepathlabel(new QLabel(this))
-    , _browser(browser_)
+//    , _tabmanager([&] {_tabmanager = nullptr;return tabmanager_; }())
     , _rctrl([&]() -> rctrl_t* {
+	     // before construct record_screen, we need final browser menu set up,
+	     // for record_view will need it to set up content menu
+	     tabmanager_->browser()->init_main_menu();
+//	     tabmanager_->browser()->reset_find_screen_navigater();
 	    _rctrl = nullptr;
-	    auto r = new rctrl_t(blogger_, browser_->tabmanager(), this);
+	    auto r = new rctrl_t(blogger_, tabmanager_, this);
 	    return r;
     }())                                                                 // , _tabmanager(_browser->tabmanager())
     , _vertical_scrollarea(new VerticalScrollArea(_rctrl->view(), this)) // std::make_shared<sd::_interface<void
@@ -285,51 +289,46 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_)
 	////    }
 	///
 
-	connect(this, &rs_t::close_request, gl_paras->vtab_record(), &::HidableTab::on_close_request);
 
-	connect(gl_paras->vtab_record(), &::HidableTab::tabCloseRequested, [](int index) {
-		//			if(!_vtab_record)
-		auto _vtab_record = gl_paras->vtab_record(); //?
-		auto count = _vtab_record->count();
-		assert(index < count);
-		if (index != -1) {
-			auto w = _vtab_record->widget(index);
-			if (w) {
-				if (w->objectName() == record_screen_multi_instance_name) {
-					auto rs = dynamic_cast<rs_t*>(w);
-					if (rs) {
-						auto browser_ = rs->browser();
-						if (browser_) {
-							browser_->close();
-							//								emit
-							//browser_->close_request(browser_);
-							browser_->deleteLater(); //
-										 // if(_record_screens.find(rs) !=
-										 // _record_screens.end())_record_screens.erase(rs);
-										 //			                        _browser->deleteLater();
-						}
-						auto blogger_ = rs->blogger();
-						if (blogger_) {
-							blogger_->close(); //
-							//								emit
-							//blogger_->close_request(blogger_);
-							blogger_->deleteLater();
-						}
-						rs->close(); //
-						//							emit
-						//rs->close_request(rs);
-						rs->deleteLater();
-					}
-				} else {
-					w->close();
-					//			                w->deleteLater();
-				}
-				//				_vtab_record->removeTab(index);// move
-				//into HidableTab
-			}
-			w = nullptr;
-		}
-	});
+	connect(this, &rs_t::close_request, gl_paras->vtab_record(), &::HidableTab::on_child_self_close_requested);
+
+//	connect(gl_paras->vtab_record(), &::HidableTab::tabCloseRequested, [](int index) {
+//		//			if(!_vtab_record)
+//		auto _vtab_record = gl_paras->vtab_record(); //?
+//		auto count = _vtab_record->count();
+//		assert(index < count);
+//		if (index != -1) {
+//			auto w = _vtab_record->widget(index);
+//			if (w) {
+//				if (w->objectName() == record_screen_multi_instance_name) {
+//					auto rs = dynamic_cast<rs_t*>(w);
+//					if (rs) {
+//						//						auto browser_ = rs->browser();
+//						//						if (browser_) {
+//						//							browser_->close();       // emit browser_->close_request(browser_);
+//						//							browser_->deleteLater(); //
+//						//										 // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+//						//										 //			                        _browser->deleteLater();
+//						//						}
+//						//						auto blogger_ = rs->blogger();
+//						//						if (blogger_) {
+//						//							blogger_->close(); // emit blogger_->close_request(blogger_);
+//						//							blogger_->deleteLater();
+//						//						}
+//						rs->close(); //
+//						// emit rs->close_request(rs);
+//						rs->deleteLater();
+//					}
+//				} else {
+//					w->close();
+//					//			                w->deleteLater();
+//				}
+//				//				_vtab_record->removeTab(index);// move
+//				//into HidableTab
+//			}
+//			w = nullptr;
+//		}
+//	});
 
 	connect(gl_paras->vtab_record(), &::HidableTab::currentChanged, [](int index) {
 		auto _vtab_record = gl_paras->vtab_record();
@@ -410,18 +409,21 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_)
 							// rs->adjustSize();
 							for (int i = 0; i < _vtab_record->count(); i++) {
 								auto w = _vtab_record->widget(i);
-
-								auto rs = dynamic_cast<rs_t*>(w);
-								if (rs != current_rs) {
-									auto blogger_ = rs->blogger();
-									if (blogger_) {
-										blogger_->hide();
-										if (blogger_->isTopLevel()) blogger_->lower();
-									}
-									auto browser = rs->browser();
-									if (browser) {
-										browser->hide();
-										if (browser->isTopLevel()) browser->lower();
+								if (w) {
+									if (w->objectName() == record_screen_multi_instance_name) {
+										auto rs = dynamic_cast<rs_t*>(w);
+										if (rs && rs != current_rs) {
+											auto blogger_ = rs->blogger();
+											if (blogger_) {
+												blogger_->hide();
+												if (blogger_->isTopLevel()) blogger_->lower();
+											}
+											auto browser = rs->browser();
+											if (browser) {
+												browser->hide();
+												if (browser->isTopLevel()) browser->lower();
+											}
+										}
 									}
 								}
 							}
@@ -440,15 +442,17 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_)
 	// _browser->raise();
 	// return _browser->isVisible();
 	// });
+	auto _browser = _rctrl->tabmanager()->browser();
 	connect(this, &rs_t::isHidden, _browser, &web::Browser::hide);
 }
 
 rs_t::~rs_t()
 {
-	if (_blogger)
-		connect(this, &rs_t::close_request, _blogger, &Blogger::on_record_screen_close);
+	//	if (_blogger)
+	//		connect(this, &rs_t::close_request, _blogger, &Blogger::on_record_screen_close_requested);
+	auto _browser = _rctrl->tabmanager()->browser();
 	if (_browser)
-		connect(this, &rs_t::close_request, _browser, &web::Browser::on_record_screen_close);
+		connect(this, &rs_t::close_request, _browser, &web::Browser::on_record_screen_close_requested);
 	emit close_request(this);
 	// delete _recordtree_search;
 	if (_rctrl)
@@ -882,7 +886,7 @@ void rs_t::setup_actions(void)
 		    auto _item = //_browser->tabmanager()->currentWebView()->page()->host();
 			[&] {
 				boost::intrusive_ptr<i_t> r;
-				auto v = _browser->tabmanager()->currentWebView();
+				auto v =  _rctrl->tabmanager()->currentWebView();
 				if (v) {
 					auto p = v->page();
 					if (p) {
@@ -994,7 +998,7 @@ void rs_t::setup_actions(void)
 		r_ctl->source_model()->move(r_ctl->index<pos_source>(pos_proxy_));
 
 		// Установка засветки на перемещенную запись
-		r_ctl->select_as_current(pos_proxy((int)pos_proxy_ - 1));
+		r_ctl->select_as_current(pos_proxy(static_cast<int>(pos_proxy_) - 1));
 
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1016,12 +1020,12 @@ void rs_t::setup_actions(void)
 		// Выясняется ссылка на таблицу конечных данных
 		// auto item = _source_model->browser_pages();
 		pos_proxy target =
-		    static_cast<int>(pos_proxy_) < r_ctl->tabmanager()->count() - 1 ? pos_proxy((int)pos_proxy_ + 1) : pos_proxy(r_ctl->tabmanager()->count() - 1);
+		    static_cast<int>(pos_proxy_) < r_ctl->tabmanager()->count() - 1 ? pos_proxy(static_cast<int>(pos_proxy_) + 1) : pos_proxy(r_ctl->tabmanager()->count() - 1);
 		// Перемещение текущей записи вниз
 		r_ctl->source_model()->move(r_ctl->index<pos_source>(pos_proxy_), r_ctl->index<pos_source>(target));
 
 		// Установка засветки на перемещенную запись
-		r_ctl->select_as_current(pos_proxy((int)pos_proxy_ + 1));
+		r_ctl->select_as_current(pos_proxy(static_cast<int>(pos_proxy_) + 1));
 
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1555,6 +1559,7 @@ rctrl_t* rs_t::record_controller()
 
 web::Browser* rs_t::browser()
 {
+	auto _browser =  _rctrl->tabmanager()->browser();
 	return _browser;
 }
 
@@ -1572,15 +1577,15 @@ Blogger* rs_t::blogger()
 	return _blogger;
 }
 
-void rs_t::on_blogger_close()
+void rs_t::on_blogger_close_requested()
 {
 	_blogger = nullptr;
 	close();
 }
 
-void rs_t::on_browser_close_request()
+void rs_t::on_browser_close_requested()
 {
-	_browser = nullptr;
+	//	_browser = nullptr;
 	close();
 }
 

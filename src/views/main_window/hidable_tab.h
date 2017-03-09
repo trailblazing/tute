@@ -17,7 +17,7 @@
 #include <wobjectdefs.h>
 #endif
 
-extern const char *custom_hidabletabwidget_style;
+//extern const char *custom_hidable_tab_style;
 namespace web {
 class WebView;
 class Browser;
@@ -54,7 +54,7 @@ class HidableTab : public QTabWidget {
 	public slots:
 	void collapse_when_true(bool checked);
 	// void onTabBarClicked(int index);
-	void on_close_request(QWidget *child_);
+	void on_child_self_close_requested(QWidget *child_);
 
 	protected:
 	// HidableTabWidget *_delegate_tab;

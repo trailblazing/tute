@@ -77,159 +77,143 @@ W_OBJECT_IMPL(wn_t)
 #endif
 
 wn_t::wn_t(
-    web::Profile* profile, QString style_source) // std::shared_ptr<gl_para> gl_paras	// ,
-						 // std::shared_ptr<AppConfig> appconfig_	// ,
-						 // std::shared_ptr<DataBaseConfig> databaseconfig_
-						 // // ,
+    web::Profile* profile, QString style_source // std::shared_ptr<gl_para> gl_paras	// , std::shared_ptr<AppConfig> appconfig_	// , std::shared_ptr<DataBaseConfig> databaseconfig_,
+    )
     : QMainWindow()
-      // , _gl_paras([&]() -> std::shared_ptr<gl_para>
-      // {gl_paras->main_window(this); return gl_paras;} ())
-      // , _appconfig(appconfig_)
-      // , _databaseconfig(databaseconfig_)
-      ,
-      _central_widget(new QWidget(this)),
-      _profile(profile),
-      _style_source([&]() -> QString {
-	      gl_paras->main_window(this);
-	      gl_paras->style_source(style_source);
-	      return style_source;
-      }()),
-      _v_right_splitter([&]() -> QSplitter* {
-	      auto vrs = new QSplitter(Qt::Vertical);
-	      vrs->setSizes(appconfig->v_right_splitter_sizelist());
-	      gl_paras->v_right_splitter(vrs);
-	      return vrs;
-      }()),
-      _v_find_splitter([&]() -> QSplitter* {
-	      auto vfs = new QSplitter(Qt::Vertical);
-	      vfs->setSizes(appconfig->findsplitter_sizelist());
-	      gl_paras->find_splitter(vfs);
-	      return vfs;
-      }())
-      // , _vtab_tree([&](QString style_source_){auto vt = new
-      // HidableTabWidget(style_source_, this);gl_paras->vtab_tree(vt);return
-      // vt;} (_style))
-      ,
-      _h_record_splitter([&]() -> QSplitter* {
-	      auto hrs = new QSplitter(Qt::Horizontal);
-	      hrs->setSizes(appconfig->h_record_splitter_sizelist());
-	      gl_paras->h_record_splitter(hrs);
-	      return hrs;
-      }()),
-      _h_tree_splitter([&]() -> QSplitter* {
-	      auto hls = new QSplitter(Qt::Horizontal);
-	      hls->setSizes(appconfig->h_tree_splitter_sizelist());
-	      gl_paras->h_tree_splitter(hls);
-	      return hls;
-      }()) // Qt::Vertical
-      // , _h_splitter(new QSplitter(Qt::Horizontal))
-      ,
-      _filemenu([&]() -> QMenu* {
-	      auto fm = new QMenu(tr("&File"), this);
-	      fm->setContentsMargins(0, 0, 0, 0);
-	      return fm;
-      }()) //_main_menu_map[gl_para::_file_menu_name] = fm;
-      ,
-      _editmenu([&]() -> QMenu* {
-	      auto fm = new QMenu(tr("&Edit"), this);
-	      fm->setContentsMargins(0, 0, 0, 0);
-	      return fm;
-      }()) //_main_menu_map[gl_para::_edit_menu_name] = fm;
-      ,
-      _viewmenu([&]() -> QMenu* {
-	      auto fm = new QMenu(tr("&View"), this);
-	      fm->setContentsMargins(0, 0, 0, 0);
-	      return fm;
-      }()) //_main_menu_map[gl_para::_view_menu_name] = fm;
-      ,
-      _histrymenu([&]() -> web::HistoryMenu* {
-	      auto fm = new web::HistoryMenu(this);
-	      fm->setContentsMargins(0, 0, 0, 0);
-	      return fm;
-      }()) //_main_menu_map[gl_para::_history_menu_name] = fm;
-      ,
-      _bookmarkmenu([&]() -> web::BookmarksMenu* {
-	      auto fm = new web::BookmarksMenu(this);
-	      fm->setContentsMargins(0, 0, 0, 0);
-	      return fm;
-      }()) //_main_menu_map[gl_para::_bookmark_menu_name] = fm;
-      ,
-      _windowmenu([&]() -> QMenu* {
-	      auto fm = new QMenu(tr("&Window"), this);
-	      fm->setContentsMargins(0, 0, 0, 0);
-	      return fm;
-      }()) //_main_menu_map[gl_para::_window_menu_name] = fm;
-      ,
-      _toolsmenu([&]() -> QMenu* {
-	      auto fm = new QMenu(tr("&Tools"), this);
-	      fm->setContentsMargins(0, 0, 0, 0);
-	      return fm;
-      }()) //_main_menu_map[gl_para::_tools_menu_name] = fm;
-      ,
-      _helpmenu([&]() -> QMenu* {
-	      auto fm = new QMenu(tr("&Help"), this);
-	      fm->setContentsMargins(0, 0, 0, 0);
-	      return fm;
-      }()) //_main_menu_map[gl_para::_help_menu_name] = fm;
-      ,
-      _browser_docker([&]() -> web::Docker* {
-	      _browser_docker = nullptr;
-	      auto bd = new web::Docker(browser_docker_singleton_name, this, Qt::Widget);
-	      gl_paras->browser_docker(bd);
-	      return bd;
-      }()) // Qt::MaximizeUsingFullscreenGeometryHint
-      ,
-      _vtab_record([&]() -> HidableTab* {
-	      _vtab_record = nullptr;
-	      auto vr = new HidableTab(
-		  this, _h_record_splitter, std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_record_splitter_sizelist", "collapsed", this);
-	      gl_paras->vtab_record(vr);
-	      return vr;
-      }()),
-      _editor_docker([&]() -> web::Docker* {
-	      _editor_docker = nullptr;
-	      auto ed = new web::Docker(editor_docker_singleton_name, this, Qt::Widget);
-	      gl_paras->editor_docker(ed);
-	      return ed;
-      }()),
-      _tree_screen([&]() -> ts_t* {
-	      _tree_screen = nullptr;
-	      auto ts = new ts_t(tree_screen_singleton_name, _editor_docker, this);
-	      gl_paras->tree_screen(ts);
-	      return ts;
-      }()) // _vtabwidget
-      ,
-      _find_screen([&]() -> FindScreen* {
-	      _find_screen = nullptr;
-	      auto fs = new FindScreen(find_screen_singleton_name, _tree_screen, this);
-	      gl_paras->find_screen(fs);
-	      return fs;
-      }())
-      // , _download(new web::DownloadManager(download_manager_singleton_name,
-      // _vtab_record))
-      ,
-      _statusbar([&] {
-	      auto st = new QStatusBar(this);
-	      gl_paras->status_bar(st);
-	      return st;
-      }()),
-      _switcher([&] {
-	      auto sw = new WindowSwitcher(windowswitcher_singleton_name, this);
-	      gl_paras->window_switcher(sw);
-	      return sw;
-      }()),
-      _tray_icon([&] {
-	      auto ti = new SysTrayIcon(_vtab_record, _editor_docker, this, _profile, _style_source, true);
-	      gl_paras->tray_icon(ti);
-	      return ti;
-      }()),
-      _quit_action([&]() -> QAction* {
-	      auto q = new QAction(tr("&Quit"), this);
-	      q->setShortcut(Qt::CTRL + Qt::Key_Q);
-	      connect(q, &QAction::triggered, this, &wn_t::application_exit);
-	      return q;
-      }()),
-      _enable_real_close(false)
+    // , _gl_paras([&]() -> std::shared_ptr<gl_para>
+    // {gl_paras->main_window(this); return gl_paras;} ())
+    // , _appconfig(appconfig_)
+    // , _databaseconfig(databaseconfig_)
+    , _central_widget(new QWidget(this))
+    , _profile(profile)
+    , _style_source([&]() -> QString {
+	    gl_paras->main_window(this);
+	    gl_paras->style_source(style_source);
+	    return style_source;
+    }())
+    , _v_right_splitter([&]() -> QSplitter* {
+	    auto vrs = new QSplitter(Qt::Vertical);
+	    vrs->setSizes(appconfig->v_right_splitter_sizelist());
+	    gl_paras->v_right_splitter(vrs);
+	    return vrs;
+    }())
+    , _v_find_splitter([&]() -> QSplitter* {
+	    auto vfs = new QSplitter(Qt::Vertical);
+	    vfs->setSizes(appconfig->findsplitter_sizelist());
+	    gl_paras->find_splitter(vfs);
+	    return vfs;
+    }())
+    // , _vtab_tree([&](QString style_source_){auto vt = new
+    // HidableTabWidget(style_source_, this);gl_paras->vtab_tree(vt);return
+    // vt;} (_style))
+    , _h_record_splitter([&]() -> QSplitter* {
+	    auto hrs = new QSplitter(Qt::Horizontal);
+	    hrs->setSizes(appconfig->h_record_splitter_sizelist());
+	    gl_paras->h_record_splitter(hrs);
+	    return hrs;
+    }())
+    , _h_tree_splitter([&]() -> QSplitter* {
+	    auto hls = new QSplitter(Qt::Horizontal);
+	    hls->setSizes(appconfig->h_tree_splitter_sizelist());
+	    gl_paras->h_tree_splitter(hls);
+	    return hls;
+    }()) // Qt::Vertical
+    // , _h_splitter(new QSplitter(Qt::Horizontal))
+    , _filemenu([&]() -> QMenu* {
+	    auto fm = new QMenu(tr("&File"), this);
+	    fm->setContentsMargins(0, 0, 0, 0);
+	    return fm;
+    }()) //_main_menu_map[gl_para::_file_menu_name] = fm;
+    , _editmenu([&]() -> QMenu* {
+	    auto fm = new QMenu(tr("&Edit"), this);
+	    fm->setContentsMargins(0, 0, 0, 0);
+	    return fm;
+    }()) //_main_menu_map[gl_para::_edit_menu_name] = fm;
+    , _viewmenu([&]() -> QMenu* {
+	    auto fm = new QMenu(tr("&View"), this);
+	    fm->setContentsMargins(0, 0, 0, 0);
+	    return fm;
+    }()) //_main_menu_map[gl_para::_view_menu_name] = fm;
+    , _histrymenu([&]() -> web::HistoryMenu* {
+	    auto fm = new web::HistoryMenu(this);
+	    fm->setContentsMargins(0, 0, 0, 0);
+	    return fm;
+    }()) //_main_menu_map[gl_para::_history_menu_name] = fm;
+    , _bookmarkmenu([&]() -> web::BookmarksMenu* {
+	    auto fm = new web::BookmarksMenu(this);
+	    fm->setContentsMargins(0, 0, 0, 0);
+	    return fm;
+    }()) //_main_menu_map[gl_para::_bookmark_menu_name] = fm;
+    , _windowmenu([&]() -> QMenu* {
+	    auto fm = new QMenu(tr("&Window"), this);
+	    fm->setContentsMargins(0, 0, 0, 0);
+	    return fm;
+    }()) //_main_menu_map[gl_para::_window_menu_name] = fm;
+    , _toolsmenu([&]() -> QMenu* {
+	    auto fm = new QMenu(tr("&Tools"), this);
+	    fm->setContentsMargins(0, 0, 0, 0);
+	    return fm;
+    }()) //_main_menu_map[gl_para::_tools_menu_name] = fm;
+    , _helpmenu([&]() -> QMenu* {
+	    auto fm = new QMenu(tr("&Help"), this);
+	    fm->setContentsMargins(0, 0, 0, 0);
+	    return fm;
+    }()) //_main_menu_map[gl_para::_help_menu_name] = fm;
+    , _browser_docker([&]() -> web::Docker* {
+	    _browser_docker = nullptr;
+	    auto bd = new web::Docker(browser_docker_singleton_name, this, Qt::Widget);
+	    gl_paras->browser_docker(bd);
+	    return bd;
+    }()) // Qt::MaximizeUsingFullscreenGeometryHint
+    , _vtab_record([&]() -> HidableTab* {
+	    _vtab_record = nullptr;
+	    auto vr = new HidableTab(
+		this, _h_record_splitter, std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_record_splitter_sizelist", "collapsed", this);
+	    gl_paras->vtab_record(vr);
+	    return vr;
+    }())
+    , _editor_docker([&]() -> web::Docker* {
+	    _editor_docker = nullptr;
+	    auto ed = new web::Docker(editor_docker_singleton_name, this, Qt::Widget);
+	    gl_paras->editor_docker(ed);
+	    return ed;
+    }())
+    , _tree_screen([&]() -> ts_t* {
+	    _tree_screen = nullptr;
+	    auto ts = new ts_t(tree_screen_singleton_name, _editor_docker, this);
+	    gl_paras->tree_screen(ts);
+	    return ts;
+    }()) // _vtabwidget
+    , _find_screen([&]() -> FindScreen* {
+	    _find_screen = nullptr;
+	    auto fs = new FindScreen(find_screen_singleton_name, _tree_screen, this);
+	    gl_paras->find_screen(fs);
+	    return fs;
+    }())
+    // , _download(new web::DownloadManager(download_manager_singleton_name,
+    // _vtab_record))
+    , _statusbar([&] {
+	    auto st = new QStatusBar(this);
+	    gl_paras->status_bar(st);
+	    return st;
+    }())
+    , _switcher([&] {
+	    auto sw = new WindowSwitcher(windowswitcher_singleton_name, this);
+	    gl_paras->window_switcher(sw);
+	    return sw;
+    }())
+    , _tray_icon([&] {
+	    auto ti = new SysTrayIcon(_vtab_record, _editor_docker, this, _profile, _style_source, true);
+	    gl_paras->tray_icon(ti);
+	    return ti;
+    }())
+    , _quit_action([&]() -> QAction* {
+	    auto q = new QAction(tr("&Quit"), this);
+	    q->setShortcut(Qt::CTRL + Qt::Key_Q);
+	    connect(q, &QAction::triggered, this, &wn_t::application_exit);
+	    return q;
+    }())
+    , _enable_real_close(false)
 {
 	// _page_screen->setVisible(false);
 	// _page_screen->hide();

@@ -741,8 +741,12 @@ void sapp_t::main_window()
 
 		exit(0);
 	}
+
+	QString root_path_ = gl_paras->root_path();
+	auto target_os = gl_paras->target_os();
+
 	// Установка CSS-оформления
-	_style = set_css_style();
+	_style = set_css_style(this, root_path_, target_os, gl_para::_stylesheet_filename);
 
 	// Экран загрузки, показывается только в Андроид версии (так как загрузка идет
 	// ~10 сек, и без сплешскрина непонятно что происходит)
@@ -1184,7 +1188,7 @@ void sapp_t::newLocalSocketConnection()
 			// try {
 			boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance(
 			    [&] {
-				    return browser->tabmanager()->record_controller()->source_model();
+				    return browser->tabmanager()->record_screen()->record_controller()->source_model();
 			    },
 			    it); // ,
 				 // browser->record_screen()->record_controller()->source_model()->sibling(it)
@@ -1485,7 +1489,7 @@ void sapp_t::saveSession()
 			//			browser->save();//recursive calling
 			auto blogger = browser->blogger();
 			if (blogger) {
-				auto browser_topic =blogger->topic();
+				auto browser_topic = blogger->topic();
 				if (browser_topic != gl_para::_default_topic && browser_topic != "")
 					stream << browser_topic; //get_state();
 			}
@@ -1676,7 +1680,7 @@ QNetworkAccessManager* sapp_t::networkAccessManager()
 	// s_networkAccessManager = new web::NetworkAccessManager();
 	// s_networkAccessManager->setCookieJar(new web::CookieJar);
 	// }
-	// return s_networkAccessManager;
+	// return _networkAccessManager;
 	// #else
 	// if(!_networkaccessmanager) {
 	// _networkaccessmanager = new QNetworkAccessManager();

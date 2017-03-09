@@ -7,6 +7,7 @@
 #include "models/record_table/record_model.h"
 #include "models/tree/tree_item.h"
 #include "utility/delegate.h"
+#include "utility/lease.h"
 #include <boost/serialization/strong_typedef.hpp>
 
 #if QT_VERSION == 0x050600
@@ -35,11 +36,11 @@ class AppConfig;
 class Blogger;
 
 namespace web {
-class Docker;
-class Browser;
-class WebView;
-class TabWidget;
-// extern constexpr const char * DockedWindow::_defaulthome;
+	class Docker;
+	class Browser;
+	class WebView;
+	class TabWidget;
+	// extern constexpr const char * DockedWindow::_defaulthome;
 }
 
 struct pos_proxy;
@@ -48,30 +49,33 @@ struct index_proxy;
 struct index_source;
 struct id_value;
 
-class rctrl_t : public QObject {
+class rctrl_t : public can_rent {
 #if QT_VERSION == 0x050600
 	W_OBJECT(rctl_t)
 #else
 	Q_OBJECT
 #endif
-	public:
+    public:
+	typedef can_rent super;
 	// typedef TreeItem::bind_helper       bind_helper;
 	// typedef TreeItem::activate_helper   active_helper;
-	rctrl_t(Blogger *blogger_, web::TabWidget *tabmanager_, rs_t *record_screen_);
+	rctrl_t(Blogger* blogger_, web::TabWidget* tabmanager_, rs_t* record_screen_);
 	virtual ~rctrl_t();
 
 	// void init(void);
 
-	rv_t *view(void);
-	RecordModel *source_model();  // {return _source_model;}
-	RecordProxyModel *proxy_model();
-	web::TabWidget *tabmanager() {
+	rv_t* view(void);
+	RecordModel* source_model(); // {return _source_model;}
+	RecordProxyModel* proxy_model();
+	web::TabWidget* tabmanager()
+	{
 		return _tabmanager;
 	}
-	void tabmanager(web::TabWidget *tab_) {
+	void tabmanager(web::TabWidget* tab_)
+	{
 		_tabmanager = tab_;
 	}
-	boost::intrusive_ptr<i_t> index_invoke(const index_proxy &index_proxy_, bool force_update = false);
+	boost::intrusive_ptr<i_t> index_invoke(const index_proxy& index_proxy_, bool force_update = false);
 
 	// bool is_tree_item_exists(void);
 	// void reset_tabledata_test(TableData *rtData);
@@ -80,14 +84,14 @@ class rctrl_t : public QObject {
 
 	int row_count(void) const;
 
-	void add_items_to_clipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy);
+	void add_items_to_clipboard(ClipboardRecords* clipboardRecords, QModelIndexList itemsForCopy);
 
 	// void url_load(IndexProxy proxyIndex);
 	// Действия при редактировании инфополей записи из контекстного меню
 	bool edit_field_context(index_proxy proxyIndex);
 
 	template <typename return_type, typename parameter_type>
-	inline return_type index(const parameter_type &) const;
+	inline return_type index(const parameter_type&) const;
 
 	// template<typename return_type, typename parameter_type>
 	// std::function<return_type(const parameter_type &)> index_object;
@@ -131,7 +135,7 @@ class rctrl_t : public QObject {
 	// void sychronize_metaeditor_to_item(const PosSource pos_source_);
 	void sychronize_attachtable_to_item(const pos_source pos);
 
-	web::WebView *addnew_blank();  // int mode
+	web::WebView* addnew_blank(); // int mode
 
 	// int new_record_from_url(const QUrl &url, const int mode =
 	// add_new_record_after);
@@ -141,7 +145,8 @@ class rctrl_t : public QObject {
 	// *main_window, MetaEditor *_editor_screen);
 	// bool no_view() {return _no_view;}
 
-	rs_t *record_screen() {
+	rs_t* record_screen()
+	{
 		return _record_screen;
 	}
 
@@ -149,10 +154,10 @@ class rctrl_t : public QObject {
 	// RecordController *reocrd_controller()const {return
 	// const_cast<RecordController *>(this);}
 
-	Blogger *editing_window();
-	signals:
-
-	public slots:
+	Blogger* editing_window();
+//    signals:
+//	void close_request(QObject*);
+    public slots:
 
 	// Вызов действий для копирования записей в буфер обмена с удалением
 	void cut(void);
@@ -193,32 +198,32 @@ class rctrl_t : public QObject {
 	void on_print_click(void);
 
 	void select_as_current(
-	    pos_proxy pos_proxy_);  // , const int mode = add_new_record_after
+	    pos_proxy pos_proxy_); // , const int mode = add_new_record_after
 	// void cursor_to_index(boost::intrusive_ptr<TreeItem> it);
 	void on_sort_request(int logicalIndex, Qt::SortOrder order);
 
-	protected:
+    protected:
 	// void browser_update(const PosSource pos_source_);
 
 	// bool                _no_view = true;
-	web::TabWidget *_tabmanager;  //
-	RecordModel *_source_model;   // Class, advanced by QAbstractTableModel   //
-	                              // Класс, расширенный от QAbstractTableModel
-	RecordProxyModel *_proxy_model;
-	rv_t *_view;
-	rs_t *_record_screen;
-	Blogger *_blogger;
+	web::TabWidget* _tabmanager; //
+	RecordModel* _source_model;  // Class, advanced by QAbstractTableModel   //
+	// Класс, расширенный от QAbstractTableModel
+	RecordProxyModel* _proxy_model;
+	rv_t* _view;
+	rs_t* _record_screen;
+	Blogger* _blogger;
 	//	wn_t *_main_window;
 
 	// web::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex>
 	// record_index_, bool make_current = true);	// , const int mode =
 	// add_new_record_after	// add_new_record_after
-	web::WebView *addnew_item(
+	web::WebView* addnew_item(
 	    boost::intrusive_ptr<RecordIndex> record_index_,
-	    bool make_current = true);  // , const int mode = add_new_record_after
+	    bool make_current = true); // , const int mode = add_new_record_after
 	boost::intrusive_ptr<i_t>
 	synchronize(boost::intrusive_ptr<RecordIndex> record_index_);
-	void edit_field(pos_source pos, const pin_value &pin, const name_value &name, const author_value &author, const home_value &home, const url_value &url, const tags_value &tags);
+	void edit_field(pos_source pos, const pin_value& pin, const name_value& name, const author_value& author, const home_value& home, const url_value& url, const tags_value& tags);
 
 	// Methods of removing records transferred to public access, because through
 	// them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления
@@ -245,76 +250,76 @@ class rctrl_t : public QObject {
 // -std=c++14
 
 template <>
-pos_proxy rctrl_t::index<pos_proxy>(const pos_source &) const;
+pos_proxy rctrl_t::index<pos_proxy>(const pos_source&) const;
 template <>
-pos_proxy rctrl_t::index<pos_proxy>(const index_proxy &) const;
+pos_proxy rctrl_t::index<pos_proxy>(const index_proxy&) const;
 template <>
-pos_proxy rctrl_t::index<pos_proxy>(const index_source &) const;
+pos_proxy rctrl_t::index<pos_proxy>(const index_source&) const;
 template <>
-pos_proxy rctrl_t::index<pos_proxy>(const id_value &) const;
+pos_proxy rctrl_t::index<pos_proxy>(const id_value&) const;
 template <>
-pos_proxy rctrl_t::index<pos_proxy>(const boost::intrusive_ptr<i_t> &) const;
+pos_proxy rctrl_t::index<pos_proxy>(const boost::intrusive_ptr<i_t>&) const;
 
 template <>
-pos_source rctrl_t::index<pos_source>(const pos_proxy &) const;
+pos_source rctrl_t::index<pos_source>(const pos_proxy&) const;
 template <>
-pos_source rctrl_t::index<pos_source>(const index_proxy &) const;
+pos_source rctrl_t::index<pos_source>(const index_proxy&) const;
 template <>
-pos_source rctrl_t::index<pos_source>(const index_source &) const;
+pos_source rctrl_t::index<pos_source>(const index_source&) const;
 template <>
-pos_source rctrl_t::index<pos_source>(const id_value &) const;
+pos_source rctrl_t::index<pos_source>(const id_value&) const;
 template <>
-pos_source rctrl_t::index<pos_source>(const boost::intrusive_ptr<i_t> &) const;
+pos_source rctrl_t::index<pos_source>(const boost::intrusive_ptr<i_t>&) const;
 
 template <>
-index_proxy rctrl_t::index<index_proxy>(const pos_source &) const;
+index_proxy rctrl_t::index<index_proxy>(const pos_source&) const;
 template <>
-index_proxy rctrl_t::index<index_proxy>(const pos_proxy &) const;
+index_proxy rctrl_t::index<index_proxy>(const pos_proxy&) const;
 template <>
-index_proxy rctrl_t::index<index_proxy>(const index_source &) const;
+index_proxy rctrl_t::index<index_proxy>(const index_source&) const;
 template <>
-index_proxy rctrl_t::index<index_proxy>(const id_value &) const;
+index_proxy rctrl_t::index<index_proxy>(const id_value&) const;
 template <>
 index_proxy
-rctrl_t::index<index_proxy>(const boost::intrusive_ptr<i_t> &) const;
+rctrl_t::index<index_proxy>(const boost::intrusive_ptr<i_t>&) const;
 
 template <>
-index_source rctrl_t::index<index_source>(const pos_source &) const;
+index_source rctrl_t::index<index_source>(const pos_source&) const;
 template <>
-index_source rctrl_t::index<index_source>(const index_proxy &) const;
+index_source rctrl_t::index<index_source>(const index_proxy&) const;
 template <>
-index_source rctrl_t::index<index_source>(const pos_proxy &) const;
+index_source rctrl_t::index<index_source>(const pos_proxy&) const;
 template <>
-index_source rctrl_t::index<index_source>(const id_value &) const;
+index_source rctrl_t::index<index_source>(const id_value&) const;
 template <>
 index_source
-rctrl_t::index<index_source>(const boost::intrusive_ptr<i_t> &) const;
+rctrl_t::index<index_source>(const boost::intrusive_ptr<i_t>&) const;
 
 template <>
-id_value rctrl_t::index<id_value>(const pos_source &) const;
+id_value rctrl_t::index<id_value>(const pos_source&) const;
 template <>
-id_value rctrl_t::index<id_value>(const index_proxy &) const;
+id_value rctrl_t::index<id_value>(const index_proxy&) const;
 template <>
-id_value rctrl_t::index<id_value>(const pos_proxy &) const;
+id_value rctrl_t::index<id_value>(const pos_proxy&) const;
 template <>
-id_value rctrl_t::index<id_value>(const index_source &) const;
+id_value rctrl_t::index<id_value>(const index_source&) const;
 template <>
-id_value rctrl_t::index<id_value>(const boost::intrusive_ptr<i_t> &) const;
+id_value rctrl_t::index<id_value>(const boost::intrusive_ptr<i_t>&) const;
 
 template <>
 boost::intrusive_ptr<i_t>
-rctrl_t::index<boost::intrusive_ptr<i_t>>(const pos_source &) const;
+rctrl_t::index<boost::intrusive_ptr<i_t>>(const pos_source&) const;
 template <>
 boost::intrusive_ptr<i_t>
-rctrl_t::index<boost::intrusive_ptr<i_t>>(const index_proxy &) const;
+rctrl_t::index<boost::intrusive_ptr<i_t>>(const index_proxy&) const;
 template <>
 boost::intrusive_ptr<i_t>
-rctrl_t::index<boost::intrusive_ptr<i_t>>(const pos_proxy &) const;
+rctrl_t::index<boost::intrusive_ptr<i_t>>(const pos_proxy&) const;
 template <>
 boost::intrusive_ptr<i_t>
-rctrl_t::index<boost::intrusive_ptr<i_t>>(const index_source &) const;
+rctrl_t::index<boost::intrusive_ptr<i_t>>(const index_source&) const;
 template <>
 boost::intrusive_ptr<i_t>
-rctrl_t::index<boost::intrusive_ptr<i_t>>(const id_value &) const;
+rctrl_t::index<boost::intrusive_ptr<i_t>>(const id_value&) const;
 
-#endif  // __RECORDTABLECONTROLLER_H__
+#endif // __RECORDTABLECONTROLLER_H__

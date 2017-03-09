@@ -1,0 +1,70 @@
+    /* hidden from css */ 
+    QTabWidget::pane {
+    border: 0 px;
+    }
+    QTabBar::tab {
+    /* left 3 px; */ 
+    /* background: transparent; */ 
+    /* background-color: transparent; */ 
+    border-color: white;
+    border-width: 0 px; /* border-width: 1 px; */ 
+    border-style: solid;
+    /*  */ alignment: left;  /* bottom */ 
+    max-height: 0 px; /* max-height: 16px; */ 
+    width: 0 px;      /* width: 100 px; */ 
+    max-width: 200px;
+    /* qproperty-alignment: AlignLeft;  */             /* AlignCenter | */  
+    /* AlignVCenter; */ 
+    qproperty-wordWrap: false;
+    padding-bottom: 0 px; /* padding-bottom: 5px; */ 
+    /* padding: 0 px; */ 
+    margin-left: 0 px; /* margin-left: 2 px; */ 
+    margin-right: 0 px;
+    }
+
+    QTabWidget::tab-bar {
+    /* background: transparent; */ 
+    /* border-color: transparent; */ 
+    border-width: 0 px;
+    border-style: solid;
+    background-color: transparent;
+    /* alignment: bottom; */ 
+    width: 0 px;      /* width: 100 px; */ 
+    max-width : 0 px; /* max-width : 200 px; */ 
+    text-align: left;
+    /* qproperty-alignment: AlignBottom; */ 
+    qproperty-wordWrap: false;
+    padding-bottom: 0px;
+    margin-left : 0 px;
+    padding : 0 px;
+    margin-right : 0 px;
+    }
+    QTabWidget{
+    background: transparent;
+    border-color: transparent;
+    }
+    QTabBar::tab:selected, QTabBar::tab:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 0, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa); 
+    /* background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);*/
+    font-color: black;
+    }
+    QTabBar::tab:selected {
+    border-color: #9B9B9B;
+    border-bottom-color: white; /* #C2C7CB */          /* same as pane color */
+    background-color: #AEA89A;
+    }
+    QTabBar::tab:!selected {
+    margin-left: 0px; /* make non-selected tabs look smaller */
+    background-color: transparent;
+    border-bottom-color: transparent;
+    }
+    QTabBar::close-button {
+    /* image: url(:/New_UI/tab_close.png); */ 
+    /* subcontrol-origin: padding; */ 
+    /* subcontrol-position: right; */ 
+    width: 0 px;  /* width: 13px; */ 
+    height: 0 px; /* height: 13px; */ 
+    /* image: url(:/tab-close.png); */ 
+    /* padding-left: -13px; */ 
+
+    }

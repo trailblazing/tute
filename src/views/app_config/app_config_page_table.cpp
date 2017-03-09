@@ -114,7 +114,7 @@ void AppConfigPageTable::setupSignals(void) {
 			// auto	rs		= dynamic_cast<rs_t *>(w);
 			auto bro_ = dynamic_cast<rs_t *>(rs)->browser();
 			if (bro_) {
-				auto _record_controller = bro_->tabmanager()->record_controller();
+				auto _record_controller = bro_->tabmanager()->record_screen()->record_controller();
 				connect(this, &AppConfigPageTable::record_table_config_change, _record_controller, &rctrl_t::on_recordtable_configchange);
 			}
 			count_browser++;

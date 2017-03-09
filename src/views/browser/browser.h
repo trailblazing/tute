@@ -233,13 +233,14 @@ namespace web {
 		void updateToolbarActionText(
 		    bool visible); // void updateToolbarActionText(bool visible);
 
-		void on_blogger_close();
-		void on_record_screen_close();
+		void on_blogger_close_requested();
+		void on_record_screen_close_requested();
 		void save();
 
 		bool restore_state(const QString& new_topic_);
 		void on_topic_changed(const QString& original_topic_, const QString& topic_, bool append_mode = false);
-
+		void init_main_menu();
+//		void reset_find_screen_navigater();
 
 	    protected:
 		void closeEvent(QCloseEvent* event);
@@ -315,7 +316,7 @@ namespace web {
 		void load_state();
 
 		void reset_main_menu();
-		void reset_find_screen_navigater();
+
 		void update_statusbar_action_text(bool visible);
 		void handle_find_text_result(bool found);
 		// void initUrl();
@@ -373,7 +374,7 @@ namespace web {
 		Blogger* _blogger;
 
 		TabWidget* _tabmanager;
-		rs_t* _record_screen;
+		//		rs_t* _record_screen;
 
 		web::Docker* _browser_docker;
 		QString _configuration_full_name = "";
@@ -383,7 +384,7 @@ namespace web {
 		friend class WebView;
 		friend class ::Blogger;
 		void init_history_menu();
-		void init_main_menu();
+
 		void init_file_menu();
 		void init_edit_menu();
 		void init_view_menu();

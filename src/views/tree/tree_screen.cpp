@@ -97,37 +97,29 @@ const char* tree_screen_viewer_name = "TreeScreenViewer";
 W_OBJECT_IMPL(ts_t)
 #endif
 
-ts_t::ts_t(QString object_name, web::Docker* editor_docker_,
-    wn_t* main_window) // , std::shared_ptr<AppConfig> appconfig_//
-		       // , QMenu *filemenu, QMenu *toolsmenu
-    : QWidget(main_window),
-      _editor_docker(editor_docker_),
-      _main_window(main_window)
-      // , know_root_holder(appconfig, this)
-      // , ui(new Ui::MainWindow)
-      // , _menubar(new QMenuBar(this))
-      // , _tree_controller(new TreeController())
-      ,
-      _tools_line(new QToolBar(this))
+ts_t::ts_t(QString object_name, web::Docker* editor_docker_, // , std::shared_ptr<AppConfig> appconfig_ , QMenu *filemenu, QMenu *toolsmenu
+    wn_t* main_window)
+    : QWidget(main_window), _editor_docker(editor_docker_), _main_window(main_window)
+    // , know_root_holder(appconfig, this)
+    // , ui(new Ui::MainWindow)
+    // , _menubar(new QMenuBar(this))
+    // , _tree_controller(new TreeController())
+    , _tools_line(new QToolBar(this))
 #ifdef USE_MAIN_MENU_IN_BUTTON
-          ,
-      _extra_tools_line(new QToolBar(this))
+    , _extra_tools_line(new QToolBar(this))
 #endif // USE_MAIN_MENU_IN_BUTTON
-      // , _main_menu_bar(new QToolBar(this))
-      // , _main_menu_button(new QPushButton("", _main_menu_bar))
-      // , _main_menu_action(new QWidgetAction(_main_menu_button))
-      ,
-      _main_menu_in_button(new QMenu("buttonmenu")),
-      _context_menu(new QMenu(this)),
-      _tree_view(new tv_t(knowtreeview_singleton_name, this))
-      // , _know_model_board(new KnowModel(_tree_view))
-      ,
-      _tools_layout(new QHBoxLayout())
-      // , _recordtree_search(new web::ToolbarSearch(this))
-      // , _recordtree_searchlayout(new QHBoxLayout())
-      ,
-      _adjustingscrollarea(new AdjustingScrollArea(_tree_view, this)),
-      _treescreenlayout(new QVBoxLayout())
+    // , _main_menu_bar(new QToolBar(this))
+    // , _main_menu_button(new QPushButton("", _main_menu_bar))
+    // , _main_menu_action(new QWidgetAction(_main_menu_button))
+    , _main_menu_in_button(new QMenu("buttonmenu"))
+    , _context_menu(new QMenu(this))
+    , _tree_view(new tv_t(knowtreeview_singleton_name, this))
+    // , _know_model_board(new KnowModel(_tree_view))
+    , _tools_layout(new QHBoxLayout())
+    // , _recordtree_search(new web::ToolbarSearch(this))
+    // , _recordtree_searchlayout(new QHBoxLayout())
+    , _adjustingscrollarea(new AdjustingScrollArea(_tree_view, this))
+    , _treescreenlayout(new QVBoxLayout())
 {
 	// , _appconfig(appconfig_)
 	// , _shadow_branch(new TreeModelKnow(this))

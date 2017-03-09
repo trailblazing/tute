@@ -347,7 +347,8 @@ HEADERS     =   \
     src/utility/variant.h \
     src/utility/for_each.h \
     src/utility/expose.h \
-    src/utility/strong_typedef.hxx
+    src/utility/strong_typedef.hxx \
+    src/utility/lease.h
 #    src/views/browser/cookiejar.h \
 
 
@@ -600,6 +601,8 @@ DISTFILES   +=          \
     resource/standardconfig/$${SOURCE_OS}/editorconf.ini \
     resource/standardconfig/$${SOURCE_OS}/entrance.ini \
     resource/standardconfig/$${SOURCE_OS}/stylesheet.css \
+    resource/standardconfig/$${SOURCE_OS}/custom_browser_tabbar_style.css \
+    resource/standardconfig/$${SOURCE_OS}/custom_hidable_tab_style.css \
     src/libraries/qtm/markdown_header.h.in \
     src/libraries/qtm/qtm-installer.nsi \
     src/libraries/qtm/qtm.rc \

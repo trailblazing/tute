@@ -213,133 +213,126 @@ extern const std::string editor_prefix;
 
 //#define editor_object _editor
 
-Blogger::Blogger(QString new_post_topic, QString new_post_content, QStringList hide_editor_tools_, const QByteArray& state_, Qt::WindowFlags flags) // , QWidget *parent
+Blogger::Blogger(QString new_post_topic, QString new_post_content, QStringList hide_editor_tools_, const QByteArray& state_, Qt::WindowFlags flags)
     : super(nullptr, flags)
-      //	  , _app(sapp_t::instance())//qobject_cast<sapp_t *>(qApp)
-      //	  , _editors_shared_full_path_name(
-      //		  [&]() -> QString {
-      //			  assert(brwoser_);
-      //			  assert(new_post_topic != "");
-      //			  QString path =
-      //QString(sapp_t::instance()->isSandbox() ? "%1/qtm-sandbox" :
-      //"%1/qtm-blog").arg(gl_paras->root_path()); // + "/" +
-      //globalparameters.target_os());
-      //			  if(!QDir(path).exists())
-      //				  if(!QDir::root().mkpath(path))
-      //critical_error("Can not create directory: \"" + path + "\"");
-      //			  return path;
-      //		  } ())
-      ,
-      _current_topic_name([&] {if("" == new_post_topic)new_post_topic = gl_para::_default_topic;return purify(new_post_topic); }()) //(tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()))
-      ,
-      _current_topic_full_folder_name([&]() -> QString {
-	      assert(gl_paras->editors_shared_full_path_name() != "");
-	      auto fn = gl_paras->editors_shared_full_path_name() + "/" + _current_topic_name;
-	      assert(fn != "");
-	      return fn;
-      }()),
-      _current_topic_full_config_name(_current_topic_full_folder_name + "/" + gl_para::_editor_conf_filename),
-      _topic_editor_config([&]() -> std::shared_ptr<QSettings> {
-	      if (!QDir(_current_topic_full_folder_name).exists())
-		      if (!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
-	      //			  if(!QFile(_current_topic_full_config_name).exists()){
-	      //				  if(!QFile::copy(QString(":/resource/standardconfig/")
-	      //+ gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename,
-	      //_current_topic_full_config_name)) critical_error(QString("Can not copy
-	      //\"") + ::gl_para::_editor_conf_filename + "\""); // throw
-	      //std::runtime_error("Can not copy document.ini");
-	      //			  }else if(new_post_topic ==
-	      //gl_para::_default_topic){
-	      auto conf_file_info =
-		  std::make_shared<QFileInfo>(_current_topic_full_config_name);
-	      conf_file_info = DiskHelper::recover_ini_file(conf_file_info, true);
-	      //			  }
-	      if ((QFile::ReadUser | QFile::WriteUser) !=
-		  (QFile::permissions(_current_topic_full_config_name) &
-		      (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_full_config_name, QFile::ReadUser | QFile::WriteUser);
-	      return std::make_shared<QSettings>(_current_topic_full_config_name, QSettings::IniFormat);
-      }()),
-      _local_storage_file_extension(_topic_editor_config->value("local_storage_file_ext", "cqt").toString()),
-      _filename(_current_topic_full_folder_name + "/" + _default_filename + "." + _local_storage_file_extension),
-      _dirty_indicator(new QLabel(this)),
-      _current_reply(nullptr) //	  , _tree_screen(tree_screen)      //	  , _browser_docker(browser_docker_)
-      ,
-      _vtab_record(gl_paras->vtab_record())
-      //	  , _profile(profile)
-      //	  , _flags(flags)
-      //	  , _style_source(style_source)
-      //	  , _find_screen(find_screen)
-      ,
-      _central_widget([&]() -> QWidget* {
-	      _central_widget = nullptr;
-	      auto cw = new QWidget(this);
-	      return cw;
-      }()),
-      _splitter([&]() -> QSplitter* {
-	      _splitter = nullptr;
-	      auto sp = new QSplitter(Qt::Horizontal, _central_widget);
-	      return sp;
-      }()),
-      _main_stack([&]() -> QStackedWidget* {
-	      _main_stack = nullptr;
-	      auto ms = new QStackedWidget(_central_widget);
-	      return ms;
-      }()),
-      _control_tab([&]() -> SideTabWidget* {
-	      _control_tab = nullptr;
-	      auto st =
-		  new SideTabWidget(gl_paras->editor_docker(), this, _topic_editor_config, _splitter, _central_widget);
-	      st->topic(_current_topic_name);
-	      st->title(_current_topic_name);
-	      return st;
-      }()),
-      _console([&]() -> TEXTEDIT_FOR_READ* {
-	      _console = nullptr;
-	      auto e = new TEXTEDIT_FOR_READ(_main_stack);
-	      return e;
-      }())
+    //	  , _app(sapp_t::instance())//qobject_cast<sapp_t *>(qApp)
+    //	  , _editors_shared_full_path_name(
+    //		  [&]() -> QString {
+    //			  assert(brwoser_);
+    //			  assert(new_post_topic != "");
+    //			  QString path =
+    //QString(sapp_t::instance()->isSandbox() ? "%1/qtm-sandbox" :
+    //"%1/qtm-blog").arg(gl_paras->root_path()); // + "/" +
+    //globalparameters.target_os());
+    //			  if(!QDir(path).exists())
+    //				  if(!QDir::root().mkpath(path))
+    //critical_error("Can not create directory: \"" + path + "\"");
+    //			  return path;
+    //		  } ())
+    , _current_topic_name([&] {if("" == new_post_topic)new_post_topic = gl_para::_default_topic;return purify(new_post_topic); }()) //(tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()))
+    , _current_topic_full_folder_name([&]() -> QString {
+	    assert(gl_paras->editors_shared_full_path_name() != "");
+	    auto fn = gl_paras->editors_shared_full_path_name() + "/" + _current_topic_name;
+	    assert(fn != "");
+	    return fn;
+    }())
+    , _current_topic_full_config_name(_current_topic_full_folder_name + "/" + gl_para::_editor_conf_filename)
+    , _topic_editor_config([&]() -> std::shared_ptr<QSettings> {
+	    if (!QDir(_current_topic_full_folder_name).exists())
+		    if (!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
+	    //			  if(!QFile(_current_topic_full_config_name).exists()){
+	    //				  if(!QFile::copy(QString(":/resource/standardconfig/")
+	    //+ gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename,
+	    //_current_topic_full_config_name)) critical_error(QString("Can not copy
+	    //\"") + ::gl_para::_editor_conf_filename + "\""); // throw
+	    //std::runtime_error("Can not copy document.ini");
+	    //			  }else if(new_post_topic ==
+	    //gl_para::_default_topic){
+	    auto conf_file_info =
+		std::make_shared<QFileInfo>(_current_topic_full_config_name);
+	    conf_file_info = DiskHelper::recover_ini_file(conf_file_info, true);
+	    //			  }
+	    if ((QFile::ReadUser | QFile::WriteUser) !=
+		(QFile::permissions(_current_topic_full_config_name) &
+		    (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_full_config_name, QFile::ReadUser | QFile::WriteUser);
+	    return std::make_shared<QSettings>(_current_topic_full_config_name, QSettings::IniFormat);
+    }())
+    , _local_storage_file_extension(_topic_editor_config->value("local_storage_file_ext", "cqt").toString())
+    , _filename(_current_topic_full_folder_name + "/" + _default_filename + "." + _local_storage_file_extension)
+    , _dirty_indicator(new QLabel(this))
+    , _current_reply(nullptr) //	  , _tree_screen(tree_screen)      //	  , _browser_docker(browser_docker_)
+    , _vtab_record(gl_paras->vtab_record())
+    //	  , _profile(profile)
+    //	  , _flags(flags)
+    //	  , _style_source(style_source)
+    //	  , _find_screen(find_screen)
+    , _central_widget([&]() -> QWidget* {
+	    _central_widget = nullptr;
+	    auto cw = new QWidget(this);
+	    return cw;
+    }())
+    , _splitter([&]() -> QSplitter* {
+	    _splitter = nullptr;
+	    auto sp = new QSplitter(Qt::Horizontal, _central_widget);
+	    return sp;
+    }())
+    , _main_stack([&]() -> QStackedWidget* {
+	    _main_stack = nullptr;
+	    auto ms = new QStackedWidget(_central_widget);
+	    return ms;
+    }())
+    , _control_tab([&]() -> SideTabWidget* {
+	    _control_tab = nullptr;
+	    auto st =
+		new SideTabWidget(gl_paras->editor_docker(), this, _topic_editor_config, _splitter, _central_widget);
+	    st->topic(_current_topic_name);
+	    st->title(_current_topic_name);
+	    return st;
+    }())
+    , _console([&]() -> TEXTEDIT_FOR_READ* {
+	    _console = nullptr;
+	    auto e = new TEXTEDIT_FOR_READ(_main_stack);
+	    return e;
+    }())
 // Set up editor widget
 #ifdef USE_WYEDIT
 
-	  ,
-      _editor([&]() -> TEXTEDIT* {
-	      _editor = nullptr;
-	      auto e = new TEXTEDIT(
+    , _editor([&]() -> TEXTEDIT* {
+	    _editor = nullptr;
+	    auto e = new TEXTEDIT(
 #ifdef USE_EDITOR_WRAP
-		  find_screen, this, hide_editor_tools_, _main_stack, ""
+		find_screen, this, hide_editor_tools_, _main_stack, ""
 #else
-		  _main_stack, this, _topic_editor_config, (appconfig->interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, true, true
+		_main_stack, this, _topic_editor_config, (appconfig->interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, true, true
 #endif // USE_EDITOR_WRAP
-		  );
-	      return e;
-      }())
+		);
+	    return e;
+    }())
 
 #else
-	  ,
-      _editor([&]() -> TEXTEDIT* {
-	      _editor = nullptr;
-	      auto e = new TEXTEDIT(_main_stack);
-	      return e;
-      }())
+    , _editor([&]() -> TEXTEDIT* {
+	    _editor = nullptr;
+	    auto e = new TEXTEDIT(_main_stack);
+	    return e;
+    }())
 #endif
 
-	  ,
-      _browser([&]() -> web::Browser* {
-	      _record_screen = nullptr;
-	      _browser = nullptr;
-	      auto b = new web::Browser(this, state_);
-	      return b;
-      }()),
-      _record_screen([&]() -> rs_t* {
-	      auto rs = _browser->record_screen();
-	      return rs;
-      }()),
-      _editor_docker(gl_paras->editor_docker()->prepend<Blogger>(this, flags)),
-      _super_menu([&]() -> SuperMenu* {
-	      _super_menu = nullptr;
-	      auto sm = new SuperMenu(this);
-	      return sm;
-      }())
+    , _browser([&]() -> web::Browser* {
+//	    _record_screen = nullptr;
+	    _browser = nullptr;
+	    auto b = new web::Browser(this, state_);
+	    return b;
+    }())
+//    , _record_screen([&]() -> rs_t* {
+//	    auto rs = _browser->record_screen();
+//	    return rs;
+//    }())
+    , _editor_docker(gl_paras->editor_docker()->prepend<Blogger>(this, flags))
+    , _super_menu([&]() -> SuperMenu* {
+	    _super_menu = nullptr;
+	    auto sm = new SuperMenu(this);
+	    return sm;
+    }())
 {
 	//
 
@@ -605,7 +598,7 @@ Blogger::Blogger(QString new_post_topic, QString new_post_content, QStringList h
 	// _console->hide();status
 	// _main_stack->setCurrentIndex(_console_id);
 	connect(this, &Blogger::topic_changed, _browser, &web::Browser::on_topic_changed);
-	connect(this, &Blogger::topic_changed, _record_screen, &rs_t::on_topic_changed);
+//	connect(this, &Blogger::topic_changed, _record_screen, &rs_t::on_topic_changed);
 }
 
 Blogger::~Blogger()
@@ -616,9 +609,9 @@ Blogger::~Blogger()
 	// if(_editor_dock->_editing_list.contains(this))
 	// _editor_dock->_editing_list.removeOne(this);
 	//	deleteLater();
-	if (_record_screen) connect(this, &Blogger::close_request, _record_screen, &rs_t::on_blogger_close);
+//	if (_record_screen) connect(this, &Blogger::close_request, _record_screen, &rs_t::on_blogger_close_requested);
 	if (_browser) {
-		connect(this, &Blogger::close_request, _browser, &web::Browser::on_blogger_close);
+		connect(this, &Blogger::close_request, _browser, &web::Browser::on_blogger_close_requested);
 		//		auto rs = _browser->record_screen();
 	}
 	emit close_request(this);
@@ -6234,13 +6227,13 @@ web::Browser* Blogger::browser()
 	return _browser;
 }
 
-void Blogger::on_record_screen_close()
-{
-	_record_screen = nullptr;
-	close();
-}
+//void Blogger::on_record_screen_close_requested()
+//{
+//	_record_screen = nullptr;
+//	close();
+//}
 
-void Blogger::on_browser_close_request()
+void Blogger::on_browser_close_requested()
 {
 	_browser = nullptr;
 	close();

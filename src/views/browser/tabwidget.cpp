@@ -108,163 +108,164 @@
 #include "models/record_table/record_model.h"
 #include "models/record_table/record_model_proxy.h"
 
-extern const char* custom_hidabletabwidget_style;
+//extern const char* custom_hidable_tab_style;
 extern const char* program_title;
 
-const char* custom_widget_style =
-    // "QTabWidget::pane {"
-    // "border: 0 px;"
-    // "}"
-    // "QTabBar::tab {"
-    //// "left 3 px;"
-    //// "background: transparent;"
-    //// "background-color: transparent;"
-    // "border-color: white;"
-    // "border-width: 1 px;"
-    // "border-style: solid;"
-    //// "alignment: left;"  // bottom
-    // "max-height: 16px;"
-    // "width: 100 px;"
-    // "max-width: 200px;"
-    //// "qproperty-alignment: AlignLeft;"             //  AlignCenter |
-    ///AlignVCenter;*/
-    // "qproperty-wordWrap: false;"
-    // "padding-bottom: 5px;"
-    //// "padding: 0 px;"
-    // "margin-left: 2 px;"
-    // "margin-right: 0 px;"
-    // "}"
+//const char* custom_browser_tabbar_style =
+//    // "QTabWidget::pane {"
+//    // "border: 0 px;"
+//    // "}"
+//    // "QTabBar::tab {"
+//    //// "left 3 px;"
+//    //// "background: transparent;"
+//    //// "background-color: transparent;"
+//    // "border-color: white;"
+//    // "border-width: 1 px;"
+//    // "border-style: solid;"
+//    //// "alignment: left;"  // bottom
+//    // "max-height: 16px;"
+//    // "width: 100 px;"
+//    // "max-width: 200px;"
+//    //// "qproperty-alignment: AlignLeft;"             //  AlignCenter |
+//    ///AlignVCenter;*/
+//    // "qproperty-wordWrap: false;"
+//    // "padding-bottom: 5px;"
+//    //// "padding: 0 px;"
+//    // "margin-left: 2 px;"
+//    // "margin-right: 0 px;"
+//    // "}"
 
-    // "QTabWidget::tab-bar {"
-    //// "background: transparent;"
-    //// "border-color: transparent;"
-    // "border-width: 0 px;"
-    // "border-style: solid;"
-    // "background-color: transparent;"
-    //// "alignment: bottom;"
-    // "width: 100 px;"
-    // "max-width : 200 px;"
-    // "text-align: left;"
-    //// "qproperty-alignment: AlignBottom;"
-    // "qproperty-wordWrap: false;"
-    // "padding-bottom: 0px;"
-    // "margin-left : 0 px;"
-    // "padding : 0 px;"
-    // "margin-right : 0 px;"
-    // "}"
-    // "QTabWidget{"
-    // "background: transparent;"
-    // "border-color: transparent;"
-    // "}"
-    // "QTabBar::tab:selected, QTabBar::tab:hover {"
-    // "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa,
-    // stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);"
-    // "font-color: black;"
-    // "}"
-    // "QTabBar::tab:selected {"
-    // "border-color: #9B9B9B;"
-    // "border-bottom-color: white;"	// #C2C7CB         /* same as pane color
-    // */
-    // "background-color: white;"
-    // "}"
-    // "QTabBar::tab:!selected {"
-    // "margin-left: 0px;"		/* make non-selected tabs look smaller
-    // */
-    // "background-color: transparent;"
-    // "border-bottom-color: transparent;"
-    // "}"
-    // "QTabBar::close-button {"
-    //// "image: url(:/New_UI/tab_close.png);"
-    //// "subcontrol-origin: padding;"
-    //// "subcontrol-position: right;"
-    // "width: 13px;"
-    // "height: 13px;"
-    //// "image: url(:/tab-close.png);"
-    //// "padding-left: -13px;"
+//    // "QTabWidget::tab-bar {"
+//    //// "background: transparent;"
+//    //// "border-color: transparent;"
+//    // "border-width: 0 px;"
+//    // "border-style: solid;"
+//    // "background-color: transparent;"
+//    //// "alignment: bottom;"
+//    // "width: 100 px;"
+//    // "max-width : 200 px;"
+//    // "text-align: left;"
+//    //// "qproperty-alignment: AlignBottom;"
+//    // "qproperty-wordWrap: false;"
+//    // "padding-bottom: 0px;"
+//    // "margin-left : 0 px;"
+//    // "padding : 0 px;"
+//    // "margin-right : 0 px;"
+//    // "}"
+//    // "QTabWidget{"
+//    // "background: transparent;"
+//    // "border-color: transparent;"
+//    // "}"
+//    // "QTabBar::tab:selected, QTabBar::tab:hover {"
+//    // "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa,
+//    // stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);"
+//    // "font-color: black;"
+//    // "}"
+//    // "QTabBar::tab:selected {"
+//    // "border-color: #9B9B9B;"
+//    // "border-bottom-color: white;"	// #C2C7CB         /* same as pane color
+//    // */
+//    // "background-color: white;"
+//    // "}"
+//    // "QTabBar::tab:!selected {"
+//    // "margin-left: 0px;"		/* make non-selected tabs look smaller
+//    // */
+//    // "background-color: transparent;"
+//    // "border-bottom-color: transparent;"
+//    // "}"
+//    // "QTabBar::close-button {"
+//    //// "image: url(:/New_UI/tab_close.png);"
+//    //// "subcontrol-origin: padding;"
+//    //// "subcontrol-position: right;"
+//    // "width: 13px;"
+//    // "height: 13px;"
+//    //// "image: url(:/tab-close.png);"
+//    //// "padding-left: -13px;"
 
-    // "}"
+//    // "}"
 
-    // hidden from css
-    "QTabWidget::pane {"
-    "border: 0 px;"
-    "}"
-    "QTabBar::tab {"
-    // "left 3 px;"
-    // "background: transparent;"
-    // "background-color: transparent;"
-    "border-color: white;"
-    "border-width: 0 px;" // "border-width: 1 px;"
-    "border-style: solid;"
-    // "alignment: left;"  // bottom
-    "max-height: 0 px;" // "max-height: 16px;"
-    "width: 0 px;"      // "width: 100 px;"
-    "max-width: 200px;"
-    // "qproperty-alignment: AlignLeft;"             //  AlignCenter |
-    // AlignVCenter;*/
-    "qproperty-wordWrap: false;"
-    "padding-bottom: 0 px;" // "padding-bottom: 5px;"
-    // "padding: 0 px;"
-    "margin-left: 0 px;" // "margin-left: 2 px;"
-    "margin-right: 0 px;"
-    "}"
+//    // hidden from css
+//    "QTabWidget::pane {"
+//    "border: 0 px;"
+//    "}"
+//    "QTabBar::tab {"
+//    // "left 3 px;"
+//    // "background: transparent;"
+//    // "background-color: transparent;"
+//    "border-color: white;"
+//    "border-width: 0 px;" // "border-width: 1 px;"
+//    "border-style: solid;"
+//    // "alignment: left;"  // bottom
+//    "max-height: 0 px;" // "max-height: 16px;"
+//    "width: 0 px;"      // "width: 100 px;"
+//    "max-width: 200px;"
+//    // "qproperty-alignment: AlignLeft;"             //  AlignCenter |
+//    // AlignVCenter;*/
+//    "qproperty-wordWrap: false;"
+//    "padding-bottom: 0 px;" // "padding-bottom: 5px;"
+//    // "padding: 0 px;"
+//    "margin-left: 0 px;" // "margin-left: 2 px;"
+//    "margin-right: 0 px;"
+//    "}"
 
-    "QTabWidget::tab-bar {"
-    // "background: transparent;"
-    // "border-color: transparent;"
-    "border-width: 0 px;"
-    "border-style: solid;"
-    "background-color: transparent;"
-    // "alignment: bottom;"
-    "width: 0 px;"      // "width: 100 px;"
-    "max-width : 0 px;" // "max-width : 200 px;"
-    "text-align: left;"
-    // "qproperty-alignment: AlignBottom;"
-    "qproperty-wordWrap: false;"
-    "padding-bottom: 0px;"
-    "margin-left : 0 px;"
-    "padding : 0 px;"
-    "margin-right : 0 px;"
-    "}"
-    "QTabWidget{"
-    "background: transparent;"
-    "border-color: transparent;"
-    "}"
-    "QTabBar::tab:selected, QTabBar::tab:hover {"
-    "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 0, stop: 0 #fafafa, "
-    "stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);" // "background:
-    // qlineargradient(x1:
-    // 0, y1: 0, x2:
-    // 0, y2: 1,
-    // stop: 0
-    // #fafafa,
-    // stop: 0.4
-    // #f4f4f4,
-    // stop: 0.5
-    // #e7e7e7,
-    // stop: 1.0
-    // #fafafa);"
-    "font-color: black;"
-    "}"
-    "QTabBar::tab:selected {"
-    "border-color: #9B9B9B;"
-    "border-bottom-color: white;" // #C2C7CB         /* same as pane color */
-    "background-color: white;"
-    "}"
-    "QTabBar::tab:!selected {"
-    "margin-left: 0px;" /* make non-selected tabs look smaller */
-    "background-color: transparent;"
-    "border-bottom-color: transparent;"
-    "}"
-    "QTabBar::close-button {"
-    // "image: url(:/New_UI/tab_close.png);"
-    // "subcontrol-origin: padding;"
-    // "subcontrol-position: right;"
-    "width: 0 px;"  // "width: 13px;"
-    "height: 0 px;" // "height: 13px;"
-    // "image: url(:/tab-close.png);"
-    // "padding-left: -13px;"
+//    "QTabWidget::tab-bar {"
+//    // "background: transparent;"
+//    // "border-color: transparent;"
+//    "border-width: 0 px;"
+//    "border-style: solid;"
+//    "background-color: transparent;"
+//    // "alignment: bottom;"
+//    "width: 0 px;"      // "width: 100 px;"
+//    "max-width : 0 px;" // "max-width : 200 px;"
+//    "text-align: left;"
+//    // "qproperty-alignment: AlignBottom;"
+//    "qproperty-wordWrap: false;"
+//    "padding-bottom: 0px;"
+//    "margin-left : 0 px;"
+//    "padding : 0 px;"
+//    "margin-right : 0 px;"
+//    "}"
+//    "QTabWidget{"
+//    "background: transparent;"
+//    "border-color: transparent;"
+//    "}"
+//    "QTabBar::tab:selected, QTabBar::tab:hover {"
+//    "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 0, stop: 0 #fafafa, "
+//    "stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);" // "background:
+//    // qlineargradient(x1:
+//    // 0, y1: 0, x2:
+//    // 0, y2: 1,
+//    // stop: 0
+//    // #fafafa,
+//    // stop: 0.4
+//    // #f4f4f4,
+//    // stop: 0.5
+//    // #e7e7e7,
+//    // stop: 1.0
+//    // #fafafa);"
+//    "font-color: black;"
+//    "}"
+//    "QTabBar::tab:selected {"
+//    "border-color: #9B9B9B;"
+//    "border-bottom-color: white;" // #C2C7CB         /* same as pane color */
+//    "background-color: white;"
+//    "}"
+//    "QTabBar::tab:!selected {"
+//    "margin-left: 0px;" /* make non-selected tabs look smaller */
+//    "background-color: transparent;"
+//    "border-bottom-color: transparent;"
+//    "}"
+//    "QTabBar::close-button {"
+//    // "image: url(:/New_UI/tab_close.png);"
+//    // "subcontrol-origin: padding;"
+//    // "subcontrol-position: right;"
+//    "width: 0 px;"  // "width: 13px;"
+//    "height: 0 px;" // "height: 13px;"
+//    // "image: url(:/tab-close.png);"
+//    // "padding-left: -13px;"
 
-    "}";
+//    "}";
+
 extern std::shared_ptr<gl_para> gl_paras;
 extern std::shared_ptr<AppConfig> appconfig;
 extern QMap<Qt::CheckState, QString> char_from_check_state;
@@ -676,7 +677,8 @@ namespace web {
 							      // QStyleOption(QStyleOption::Version,
 							      // QStyleOption::SO_Default),
 							      // this->size(), this
-			setStyleSheet(custom_widget_style);
+
+			set_css_style(this, gl_paras->root_path(), gl_paras->target_os(), gl_para::_custom_browser_tabbar_style); //setStyleSheet(custom_browser_tabbar_style);
 		}
 
 		void TabBar::selectTabAction()
@@ -789,9 +791,8 @@ namespace web {
 	    , _blogger(blogger_)
 	    , _browser_docker(gl_paras->browser_docker())
 	    , _browser(browser_)
-	    //		  , _record_screen(record_screen_)
 	    , _main_window(main_window_)
-	    , _rctrl(nullptr) // record_screen_->record_controller()
+	    //	    , _record_controller(nullptr) // record_screen_->record_controller()
 	    , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
 	    , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
 	    , _closetabaction(new QAction(QIcon(QLatin1String(":closetab.png")), tr("&Close Tab"), this))
@@ -802,10 +803,14 @@ namespace web {
 	    , _lineeditcompleter(nullptr) // new QCompleter(_completionModel, this)
 	    , _lineedits(new QStackedWidget(this))
 	    , _tabbar(new TabBar(this))
-	    , _profile(profile_) // globalparameters.profile()   //
-	    // QWebEngineProfile::defaultProfile()
+	    , _profile(profile_) // globalparameters.profile()   // QWebEngineProfile::defaultProfile()
 	    , _fullscreenview(nullptr)
 	    , _fullscreennotification(nullptr)
+	    , _record_screen([&]() -> rs_t* {
+		    _record_screen = nullptr;
+		    auto rs = new rs_t(_blogger, this);
+		    return rs;
+	    }())
 	{
 		//		assert(_record_controller); // _record_controller = new
 		//rctl_t(_editor_screen, this, _record_screen, _main_window);
@@ -1000,8 +1005,7 @@ namespace web {
 	{
 		auto pre_view = webView(_previous_index);
 		QWidget* lineEdit = _lineedits->widget(fromIndex);
-		if (!_rctrl)
-			_rctrl = _browser->record_screen()->record_controller();
+		auto _rctrl = _record_screen->record_controller();
 		_lineedits->removeWidget(lineEdit);
 		_lineedits->insertWidget(toIndex, lineEdit);
 
@@ -1062,13 +1066,10 @@ namespace web {
 		if (page) {
 			auto it = v->page()->host();
 			if (it) {
-				if (static_cast<QModelIndex>(
-					tree_screen->view()->source_model()->index(it))
-					.isValid()) {
+				if (static_cast<QModelIndex>(tree_screen->view()->source_model()->index(it)).isValid()) {
 					if (tree_screen->view()->current_item() != it)
 						tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
-					if (!_rctrl)
-						_rctrl = _browser->record_screen()->record_controller();
+					auto _rctrl = _record_screen->record_controller();
 					if (_rctrl->view()->current_item() != it)
 						_rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(index)));
 					if (page->title() != it->field<name_key>())
@@ -1170,8 +1171,7 @@ namespace web {
 				if (index_on_tree.isValid()) {
 					if (_target_item != _tree_view->current_item())
 						_tree_view->select_as_current(TreeIndex::require_treeindex([&] { return _tree_view->source_model(); }, _target_item));
-					if (!_rctrl)
-						_rctrl = _browser->record_screen()->record_controller();
+					auto _rctrl = _record_screen->record_controller();
 					if ((_rctrl->view()->current_item() != _target_item) || (currentWebView() != _target_item->page()->view()))
 						_rctrl->select_as_current(_rctrl->index<pos_proxy>(_target_item));
 				}
@@ -1472,8 +1472,7 @@ namespace web {
 	{ // boost::intrusive_ptr<TreeItem>
 		// tab_brother,
 		// boost::intrusive_ptr<TreeItem> target
-		if (!_rctrl)
-			_rctrl = _browser->record_screen()->record_controller();
+		auto _rctrl = _record_screen->record_controller();
 		if (count() > 30) {
 			auto _view = _rctrl->view();
 			auto current = _view->current_item();
@@ -1999,8 +1998,7 @@ namespace web {
 		// int current_index = currentIndex();
 		// if(index != current_index)index = current_index;
 		// if(index < 0)index = currentIndex();
-		if (!_rctrl)
-			_rctrl = _browser->record_screen()->record_controller();
+		auto _rctrl = _record_screen->record_controller();
 		if (index_to_close >= 0 && index_to_close < count()) { // if(index < 0 || index >= count())
 			// return;
 			// bool hasFocus = false;
@@ -2362,8 +2360,7 @@ namespace web {
 		if (next == count())
 			next = 0;
 		setCurrentIndex(next);
-		if (!_rctrl)
-			_rctrl = _browser->record_screen()->record_controller();
+		auto _rctrl = _record_screen->record_controller();
 		_rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(next)));
 	}
 
@@ -2381,8 +2378,7 @@ namespace web {
 		if (next < 0)
 			next = count() - 1;
 		setCurrentIndex(next);
-		if (!_rctrl)
-			_rctrl = _browser->record_screen()->record_controller();
+		auto _rctrl = _record_screen->record_controller();
 		_rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(next)));
 	}
 
@@ -2438,12 +2434,10 @@ namespace web {
 		stream << qint32(version);
 
 		QStringList tabs_url;
-		rctrl_t* rctrl = nullptr;
-		if (!_rctrl)
-			rctrl = _browser->record_screen()->record_controller();
-		else
-			rctrl = _rctrl;
-		auto _count = rctrl->row_count(); // count();
+		//		auto _rctrl = nullptr;
+		auto _rctrl = _record_screen->record_controller();
+
+		auto _count = _rctrl->row_count(); // count();
 		for (int i = 0; i < _count; ++i) {
 			// if(WebView *view = qobject_cast<WebView *>(widget(i))){
 			// auto url = view->page()->url().toString();
@@ -2454,7 +2448,7 @@ namespace web {
 			// ) tabs_url.append(url);
 			// }
 			//// else tabs_url.append(QString::null);
-			auto it = rctrl->index<boost::intrusive_ptr<i_t>>(pos_proxy(i));
+			auto it = _rctrl->index<boost::intrusive_ptr<i_t>>(pos_source(i));
 			if (it) {
 				auto url = it->field<url_key>();
 				if (url != url_value("") && url != web::Browser::_defaulthome && (it->field<pin_key>() != pin_value(bool_from_check_state[Qt::Unchecked]) || (it->page() && it->page()->view() == currentWebView())))
@@ -2734,27 +2728,15 @@ namespace web {
 		return _tabbar;
 	}
 
-	rctrl_t* TabWidget::record_controller()
-	{
-		return _rctrl;
-	}
-
-	void TabWidget::record_controller(rctrl_t* rctrl)
-	{
-		_rctrl = rctrl;
-	}
-
 	RecordModel* TabWidget::source_model()
 	{
-		if (!_rctrl)
-			_rctrl = _browser->record_screen()->record_controller();
+		auto _rctrl = _record_screen->record_controller();
 		return _rctrl->source_model();
 	}
 
 	rv_t* TabWidget::view()
 	{
-		if (!_rctrl)
-			_rctrl = _browser->record_screen()->record_controller();
+		auto _rctrl = _record_screen->record_controller();
 		return _rctrl->view();
 	}
 
@@ -3335,4 +3317,5 @@ namespace web {
 	// assert(_item_link->page_valid());
 	// return _item_link->page_link()->activate();
 	// }
+	rs_t* TabWidget::record_screen() { return _record_screen; }
 }

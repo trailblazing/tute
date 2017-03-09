@@ -436,8 +436,8 @@ class Blogger : public QMainWindow { // QWidget
 	void file_print_pdf();
 	void on_topic_changed(const QString& tp);
 
-	void on_record_screen_close();
-	void on_browser_close_request();
+//	void on_record_screen_close_requested();
+	void on_browser_close_requested();
 
     protected:
 	QTextBrowser* _preview_window;
@@ -499,7 +499,7 @@ class Blogger : public QMainWindow { // QWidget
 	QString _splitter_sizelist;
 
 	web::Browser* _browser = nullptr;
-	rs_t* _record_screen = nullptr;
+//	rs_t* _record_screen = nullptr;
 	web::Docker* _editor_docker;
 	SuperMenu* _super_menu;
 	// web::Browser *_browser = nullptr;

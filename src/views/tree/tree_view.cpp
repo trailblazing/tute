@@ -159,8 +159,7 @@ tv_t::tv_t(QString name, ts_t* tree_screen)
     , _tree_screen(tree_screen)
     , _know_model_board(new tkm_t(this))
     , _know_root(new tkm_t(_know_model_board->root_item(), this))
-    // create custom delegate
-    , _delegate(new HtmlDelegate(this))
+    , _delegate(new HtmlDelegate(this)) // create custom delegate
 {
 	setModel(_know_root);
 	// _know_model_board->init_from_xml(appconfig->tetra_dir() + "/" +
@@ -1625,7 +1624,7 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index,
 		// table of records
 		if (appconfig->interface_mode() == "mobile")
 			emit this->clicked(_host_index); // QModelIndex selIdx =
-							 // recordSourceModel->index(pos, 0);
+// recordSourceModel->index(pos, 0);
 
 #endif
 
@@ -1911,9 +1910,7 @@ web::WebView* tv_t::index_invoke(
 					boost::intrusive_ptr<RecordIndex> record_index =
 					    RecordIndex::instance(
 						[&] {
-							return browser_->tabmanager()
-							    ->record_controller()
-							    ->source_model();
+							return browser_->tabmanager()->record_screen()->record_controller()->source_model();
 						},
 						result_item); // record_previous_item,
 
@@ -2282,8 +2279,8 @@ void tv_t::encrypt(void)
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)->
 			// sychronize();
-			std::thread(&tkm_t::save, _know_model_board).detach(); // __know_model_board->save();
-									       //			gl_paras->main_window()->setEnabled(true);
+			know_model_save(); //std::thread(&tkm_t::save, _know_model_board).join(); //.hardware_concurrency(); //.detach(); // __know_model_board->save();
+			//			gl_paras->main_window()->setEnabled(true);
 			// Обновляеются на экране ветка и ее подветки
 			_know_root->update_index(index_tree(_index));
 		}
@@ -2317,8 +2314,8 @@ void tv_t::decrypt(void)
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)->
 			// sychronize();
-			std::thread(&tkm_t::save, _know_model_board).detach(); // __know_model_board->save();
-									       //			gl_paras->main_window()->setEnabled(true);
+			know_model_save(); //std::thread(&tkm_t::save, _know_model_board).join(); //.hardware_concurrency(); //.detach(); // __know_model_board->save();
+			//			gl_paras->main_window()->setEnabled(true);
 			// Обновляеются на экране ветка и ее подветки
 			_know_root->update_index(index_tree(_index));
 
@@ -2440,10 +2437,11 @@ boost::intrusive_ptr<i_t> tv_t::new_child(boost::intrusive_ptr<TreeIndex> _model
 	_know_model_board->synchronized(false);
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)->
-	std::thread(&tkm_t::save, _know_model_board).detach(); // __know_model_board->save();  // know_model_save();
+	know_model_save(); //std::thread(&tkm_t::save, _know_model_board).join(); //.hardware_concurrency(); //.detach(); // __know_model_board->save();  // know_model_save();
 
 	// find_object<MainWindow>("mainwindow")
-	gl_paras->main_window()->setEnabled(true);
+	gl_paras->main_window()
+	    ->setEnabled(true);
 	assert(result->name() == _name);
 
 	// assert(result == _current_model()->item(setto));
@@ -2813,7 +2811,7 @@ QList<boost::intrusive_ptr<i_t>> tv_t::move_children(
 void tv_t::paste_clipboard(
     boost::intrusive_ptr<TreeIndex>
 	_sibling_tree_index)
-{       // std::function<QString(const QModelIndex &,
+{ // std::function<QString(const QModelIndex &,
 	// ClipboardBranch *)>
 	// _model_paste_from_clipboard
 	// Добавление подветки из буфера обмена относительно указанного элемента
@@ -3201,9 +3199,9 @@ void tv_t::paste_clipboard(
 
 boost::intrusive_ptr<i_t>
 tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex // std::function<KnowModel
-						      // *()> _current_model,
-						      // QModelIndex
-						      // _current_index
+    // *()> _current_model,
+    // QModelIndex
+    // _current_index
     ,
     boost::intrusive_ptr<i_t> _source_item, const tv_t::substitute_condition& _substitute_condition, bool save_immediately)
 {
@@ -4416,7 +4414,10 @@ void tv_t::know_model_save(void)
 
 	// know_root_holder::know_root()->save();
 	// sychronize();
-	std::thread(&tkm_t::save, _know_model_board).detach(); // _know_model_board->save();
+
+	//	_know_model_board->save(); //
+	std::thread(&tkm_t::save, _know_model_board) //.join(); //.hardware_concurrency(); //
+	    .detach();                               // _know_model_board->save();
 }
 
 // Перечитывание дерева веток с диска
@@ -4908,7 +4909,7 @@ tv_t::cursor_focus(
 
 boost::intrusive_ptr<i_t> tv_t::intercept(
     boost::intrusive_ptr<i_t> result)
-{       // boost::intrusive_ptr<TreeIndex>
+{ // boost::intrusive_ptr<TreeIndex>
 	// modelindex){   // QString id
 	// auto prepared =
 	// know_root_holder::know_root()->item(know_root_holder::know_root()->index(TreeKnowModel::delegater(id)));
@@ -4931,8 +4932,8 @@ boost::intrusive_ptr<i_t> tv_t::intercept(
 	// reset();
 	//	gl_paras->main_window()->setDisabled(true);
 	// sychronize();
-	std::thread(&tkm_t::save, _know_model_board).detach(); // __know_model_board->save();
-							       //	gl_paras->main_window()->setEnabled(true);
+	know_model_save(); //std::thread(&tkm_t::save, _know_model_board).join(); //.hardware_concurrency(); //.detach(); // __know_model_board->save();
+	//	gl_paras->main_window()->setEnabled(true);
 	// if(_know_root && is_owner()) {
 	// delete _know_root;  // dangerous!
 	// _know_root = nullptr;

@@ -228,8 +228,12 @@ namespace web {
 			//			auto index = _vtab_record->indexOf(_record_screen);
 			//			if(index != -1)	emit _vtab_record->tabCloseRequested(index);
 			////_vtab_record->removeTab(index);
-			if (_record_screen) connect(this, &Browser::close_request, _record_screen, &rs_t::on_browser_close_request);
-			if (_blogger) connect(this, &Browser::close_request, _blogger, &Blogger::on_browser_close_request);
+			auto _record_screen = _tabmanager->record_screen();
+			if (_record_screen) {
+				connect(this, &Browser::close_request, _record_screen, &rs_t::on_browser_close_requested);
+			}
+			if (_blogger) connect(this, &Browser::close_request, _blogger, &Blogger::on_browser_close_requested);
+
 			emit close_request(this);
 		}
 		// HidableTabWidget *vtab_tree = _main_window->vtab_tree();
@@ -255,7 +259,7 @@ namespace web {
 		//// }
 		//		_layout->deleteLater();
 		//		_centralwidget->deleteLater();
-		if (_record_screen) _record_screen->deleteLater();
+		//		if (_record_screen) _record_screen->deleteLater();
 		if (_blogger) _blogger->deleteLater();
 	}
 
@@ -692,18 +696,11 @@ namespace web {
 	    , _autosaver(new AutoSaver(this))
 	    , _centralwidget(new QWidget(this))
 	    , _layout(new QVBoxLayout)
-	    , _blogger([&]() -> Blogger* {static_assert(Browser::initialize_prior_to<Blogger>::value == false, "Browser instance need a blogger is ready"); assert(blogger_); return blogger_; }())           // new Blogger(vtab_record, this, hide_editor_tools_, new_post_topic, new_post_content)
-	    , _tabmanager([&]() -> web::TabWidget* {_tabmanager = nullptr; auto t = new web::TabWidget(_blogger, this, _main_window, gl_paras->profile()); return t; }()) // (_record_screen->tabmanager())
-	    , _record_screen([&]() -> rs_t* {
-		    // before construct record_screen, we need final browser menu set up,
-		    // for record_view will need it to set up content menu
-		    init_main_menu();
-		    reset_find_screen_navigater();
-		    _record_screen = nullptr;
-		    auto rs = new rs_t(_blogger, this);
-		    _tabmanager->record_controller(rs->record_controller());
-		    return rs;
-	    }())
+	    , _blogger([&]() -> Blogger* {static_assert(Browser::initialize_prior_to<Blogger>::value == false, "Browser instance need a blogger was ready"); assert(blogger_); return blogger_; }())           // new Blogger(vtab_record, this, hide_editor_tools_, new_post_topic, new_post_content)
+	    , _tabmanager([&]() -> web::TabWidget* {
+			  _tabmanager = nullptr;
+			  auto t = new web::TabWidget(_blogger, this, _main_window, gl_paras->profile());
+			  return t; }()) // (_record_screen->tabmanager())
 	    , _browser_docker(gl_paras->browser_docker()->prepend(this))
 	    , _configuration_full_name(_blogger->current_topic_folder_name() + "/" + gl_para::_browser_conf_filename)
 	    , _configuration([&]() -> std::unique_ptr<QSettings> {
@@ -816,6 +813,7 @@ namespace web {
 		_find_screen->toolbarsearch()->lineedits(this->tabWidget()->lineEditStack());
 
 		//		auto _vtab_record = _record_screen->vtab_record();
+		auto _record_screen = _tabmanager->record_screen();
 		int index = _vtab_record->indexOf(_record_screen);
 		if (index != -1) {
 			if (_vtab_record->currentIndex() != index) {
@@ -828,7 +826,7 @@ namespace web {
 		if (!_tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b) {
 			    return b->host()->id() == _tree_screen->view()->current_item()->id();
 		    })) {
-			auto it = _tabmanager->record_controller()->view()->current_item();
+			auto it = _tabmanager->record_screen()->record_controller()->view()->current_item();
 			if (it) {
 				_tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] { return _tree_screen->view()->source_model(); }, it));
 			}
@@ -1217,7 +1215,7 @@ namespace web {
 		_edit_menu->addSeparator();
 
 		QAction* find_ = _edit_menu->addAction(tr("&Find"));
-		find_->setShortcuts(QKeySequence::Find);
+		find_->setShortcuts(QKeySequence::Find); //QKeySequence::fromString("Ctrl+F")
 		connect(find_, &QAction::triggered, this, &Browser::slotEditFind);
 		// new QShortcut(QKeySequence(Qt::Key_Slash), this, SLOT(slotEditFind()));
 
@@ -1508,6 +1506,55 @@ namespace web {
 		//_help_menu;
 		//				       };
 
+
+		auto reset_find_screen_navigater = [&]() {
+			//		_find_screen->historyhome(_historyhome);
+			//		_find_screen->historyforward(_historyforward);
+			//		_find_screen->historyback(_historyback);
+			//		_find_screen->stop(_stop);
+			//		_find_screen->reload(_reload);
+			//		_find_screen->stopreload(_stopreload);
+			_find_screen->replace_navigater(_navigater);
+			// auto mainwindow = _main_window;
+			// FindScreen *_find_screen = globalparameters.find_screen();
+			assert(_find_screen);
+			// QToolBar *navigater = findscreen->navigater();
+			// assert(navigater);
+			// navigater = addToolBar(tr("Navigation"));
+			// //mainwindow->addToolBar(tr("Navigation"));
+			// connect(navigater->toggleViewAction(), SIGNAL(toggled(bool)), this,
+			// SLOT(updateToolbarActionText(bool)));
+
+			// navigater->addAction(_historyforward);
+
+			// _stopreload = new QAction(navigater); //this
+
+			_reloadicon = QIcon(":/resource/pic/mobile_reload.svg"); // style()->standardIcon(QStyle::SP_BrowserReload);
+			_stopreload->setIcon(_reloadicon);
+
+			////navigater->addAction(_stopreload);
+
+			////navigater->addWidget(_tabmanager->lineEditStack());
+			// _toolbarsearch = _find_screen->toolbarsearch();
+			// assert(_toolbarsearch);
+			assert(_tabmanager->lineEditStack());
+
+			// if(_tabmanager->lineEditStack() == nullptr)
+			// _tabmanager->lineEditStack(_find_screen->toolbarsearch()->lineedits());
+
+			////_toolbarsearch = new ToolbarSearch(_tabmanager->lineEditStack(),
+			///findscreen->findtable(), navigater);
+
+			////navigater->addWidget(_toolbarsearch);
+
+			////connect(_toolbarsearch, SIGNAL(search(QUrl)), SLOT(loadUrl(QUrl)));   //
+			///move to Entrance
+
+			////_chasewidget = new ChaseWidget(findscreen->size(), findscreen); //this
+			////navigater->addWidget(_chasewidget);
+		};
+
+		//
 		reset_file_menu();
 		reset_tools_menu();
 		reset_edit_menu();
@@ -1527,53 +1574,6 @@ namespace web {
 		reset_find_screen_navigater();
 	}
 
-	void Browser::reset_find_screen_navigater()
-	{
-		//		_find_screen->historyhome(_historyhome);
-		//		_find_screen->historyforward(_historyforward);
-		//		_find_screen->historyback(_historyback);
-		//		_find_screen->stop(_stop);
-		//		_find_screen->reload(_reload);
-		//		_find_screen->stopreload(_stopreload);
-		_find_screen->replace_navigater(_navigater);
-		// auto mainwindow = _main_window;
-		// FindScreen *_find_screen = globalparameters.find_screen();
-		assert(_find_screen);
-		// QToolBar *navigater = findscreen->navigater();
-		// assert(navigater);
-		// navigater = addToolBar(tr("Navigation"));
-		// //mainwindow->addToolBar(tr("Navigation"));
-		// connect(navigater->toggleViewAction(), SIGNAL(toggled(bool)), this,
-		// SLOT(updateToolbarActionText(bool)));
-
-		// navigater->addAction(_historyforward);
-
-		// _stopreload = new QAction(navigater); //this
-
-		_reloadicon = QIcon(":/resource/pic/mobile_reload.svg"); // style()->standardIcon(QStyle::SP_BrowserReload);
-		_stopreload->setIcon(_reloadicon);
-
-		////navigater->addAction(_stopreload);
-
-		////navigater->addWidget(_tabmanager->lineEditStack());
-		// _toolbarsearch = _find_screen->toolbarsearch();
-		// assert(_toolbarsearch);
-		assert(_tabmanager->lineEditStack());
-
-		// if(_tabmanager->lineEditStack() == nullptr)
-		// _tabmanager->lineEditStack(_find_screen->toolbarsearch()->lineedits());
-
-		////_toolbarsearch = new ToolbarSearch(_tabmanager->lineEditStack(),
-		///findscreen->findtable(), navigater);
-
-		////navigater->addWidget(_toolbarsearch);
-
-		////connect(_toolbarsearch, SIGNAL(search(QUrl)), SLOT(loadUrl(QUrl)));   //
-		///move to Entrance
-
-		////_chasewidget = new ChaseWidget(findscreen->size(), findscreen); //this
-		////navigater->addWidget(_chasewidget);
-	}
 
 	void Browser::slotShowBookmarksDialog()
 	{
@@ -1823,22 +1823,15 @@ namespace web {
 	{
 		if (_tabmanager->count() > 1) {
 			int ret = QMessageBox::warning(
-			    this, QString(), tr("Are you sure you want to close the window?"
-						"  There are %1 tabs open")
-						 .arg(_tabmanager->count()),
+			    this, QString(), tr("Are you sure you want to close the window?  There are %1 tabs open").arg(_tabmanager->count()),
 			    QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 			if (ret == QMessageBox::No) {
 				event->ignore();
-
 				return;
 			}
 		}
 		for (int i = 0; i < _tabmanager->count(); i++) _tabmanager->webView(i)->close();
-		//		{
-		//			HidableTab *_vtab_record = _main_window->vtab_record();
-		//			auto index = _vtab_record->indexOf(_record_screen);
-		//			if(index != -1) _vtab_record->removeTab(index);
-		//		}
+
 		event->accept();
 		deleteLater();
 	}
@@ -2224,6 +2217,7 @@ namespace web {
 		// assert(dp.first);
 		if (_browser_docker->widget() != this) _browser_docker->setWidget(this);
 		auto _vtab_record = _main_window->vtab_record();
+		auto _record_screen = _tabmanager->record_screen();
 		if (_vtab_record->currentWidget() != _record_screen && make_current) _vtab_record->setCurrentWidget(_record_screen);
 		assert(view);
 		assert(result->binder()->integrity_external(result, view->page()));
@@ -2233,6 +2227,7 @@ namespace web {
 
 	rs_t* Browser::record_screen()
 	{
+		auto _record_screen = _tabmanager->record_screen();
 		return _record_screen;
 	}
 
@@ -2249,19 +2244,21 @@ namespace web {
 	{
 		return _blogger;
 	}
-	void Browser::on_blogger_close()
+	void Browser::on_blogger_close_requested()
 	{
-		if (_blogger) _blogger->deleteLater();
+		//		if (_blogger) _blogger->deleteLater();
 		_blogger = nullptr;
 		close();
-	}
-	void Browser::on_record_screen_close()
-	{
-		if (_record_screen) _record_screen->deleteLater();
-		_record_screen = nullptr;
-		close();
+		auto _record_screen = _tabmanager->record_screen();
+		_record_screen->on_blogger_close_requested();
 	}
 
+	void Browser::on_record_screen_close_requested()
+	{
+		//		if (_record_screen) _record_screen->deleteLater();
+		//		_record_screen = nullptr;
+		close();
+	}
 
 
 	void Browser::on_topic_changed(const QString& original_topic_, const QString& topic_, bool append_mode)
@@ -2304,6 +2301,8 @@ namespace web {
 			this->restore_state(new_topic); //lineedit_topic_->setText(original_topic_name);
 		}
 		//                }
+		auto _record_screen = _tabmanager->record_screen();
+		_record_screen->on_topic_changed(original_topic_, new_topic, append_mode);
 		this->save();
 	}
 }

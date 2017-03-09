@@ -1133,9 +1133,7 @@ namespace web {
 			it->topic_append(gl_para::_default_topic);
 			page = _browser_new
 				   ->bind(RecordIndex::instance([&] {
-					   return _browser_new->tabmanager()
-					       ->record_controller()
-					       ->source_model();
+					   return _browser_new->tabmanager()->record_screen()->record_controller()->source_model();
 				   },
 				       it))
 				   ->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1))
@@ -2265,7 +2263,7 @@ namespace web {
 				auto _browser = gl_paras->main_window()->browser(_host);
 				auto record_index = RecordIndex::instance(
 				    [&] {
-					    return _browser->tabmanager()->record_controller()->source_model();
+					    return _browser->tabmanager()->record_screen()->record_controller()->source_model();
 				    },
 				    _host);
 

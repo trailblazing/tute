@@ -94,13 +94,14 @@ namespace web {
         Searches are turned into urls that use Google to perform search
  */
 	ToolbarSearch::ToolbarSearch(
-	    QWidget* parent) // QStackedWidget *lineedits, QLineEdit *findtext,
-	    : SearchLineEdit(parent),
-	      _autosaver(new AutoSaver(this)),
-	      _maxsavedsearches(10),
-	      _stringlistmodel(new QStringListModel(this)),
-	      _lineedits(nullptr), // new QStackedWidget(this))  // , _lineedits(lineedits)
-	      _findtext(new QLineEdit(this))
+	    QWidget* parent // QStackedWidget *lineedits, QLineEdit *findtext,
+	    )
+	    : SearchLineEdit(parent)
+	    , _autosaver(new AutoSaver(this))
+	    , _maxsavedsearches(10)
+	    , _stringlistmodel(new QStringListModel(this))
+	    , _lineedits(nullptr) // new QStackedWidget(this))  // , _lineedits(lineedits)
+	    , _findtext(new QLineEdit(this))
 	{ // , _findtext(findtext)
 		// _lineedits->setVisible(false);
 		_findtext->setVisible(false);
@@ -312,9 +313,8 @@ namespace web {
 				// auto browser =
 				// gl_paras->main_window()->new_editing_window(_findtext->text())->record_screen()->browser();//
 				// activated_browser();
-				auto ctrl = browser->tabmanager()->record_controller();
-				auto last = ctrl->source_model()->item(
-				    pos_source(ctrl->source_model()->count() - 1));
+				auto ctrl = browser->tabmanager()->record_screen()->record_controller();
+				auto last = ctrl->source_model()->item(pos_source(ctrl->source_model()->count() - 1));
 				// auto	current_item_	= ctrl->view()->current_item();	//
 				// source_model()->item(pos_source(0));
 				////	    auto	child_linkers		=
@@ -326,10 +326,8 @@ namespace web {
 					// auto it = il->host();
 					if (!ctrl->source_model()->item(
 						[&](const id_value id) { return id == it->id(); })) {
-						boost::intrusive_ptr<RecordIndex> record_index =
-						    RecordIndex::instance([&] { return ctrl->source_model(); }, it,
-							last); // current_item_
-						last = it;     // current_item_ = it;	//
+						boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return ctrl->source_model(); }, it, last); // current_item_
+						last = it;                                                                                                              // current_item_ = it;	//
 						// if(record_index){
 						// if(  (candidate->parent() != _session_root_item->parent())		//
 						// _current_item->parent())
@@ -434,15 +432,11 @@ namespace web {
 		// QString result;
 		auto element = _child_items.last(); // acrosss thread
 		// auto _vtab_record = globalparameters.main_window()->vtab_record();
-		auto browser =
-		    element->page()
-			->browser(); // gl_paras->main_window()->activated_browser(gl_para::_what_ever_topic);
-		auto record_controller = browser->tabmanager()->record_controller();
+		auto browser = element->page()->browser(); // gl_paras->main_window()->activated_browser(gl_para::_what_ever_topic);
+		auto record_controller = browser->tabmanager()->record_screen()->record_controller();
 		// auto					tab_brother		=
 		// record_controller->view()->current_item();	// acrosss thread
-		boost::intrusive_ptr<RecordIndex> record_index =
-		    RecordIndex::instance([&] { return record_controller->source_model(); },
-			element); // tab_brother
+		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return record_controller->source_model(); }, element); // tab_brother
 		// if(record_index){
 		// if(  (candidate->parent() != _session_root_item->parent())		//
 		// _current_item->parent())
@@ -457,8 +451,7 @@ namespace web {
 		// }else{
 		// auto previous_item = _source_model()->item(tree_view->previous_index());
 		auto result = browser->bind(record_index);
-		result->activate(
-		    std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
+		result->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
 		_child_items.pop_back();
 		emit result_ready();
 	}

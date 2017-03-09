@@ -66,7 +66,7 @@ class rs_t : public QWidget {
 #endif
 
     public:
-	rs_t(Blogger* blogger_, web::Browser* browser_);
+	rs_t(Blogger* blogger_, web::TabWidget* tabmanager_);
 
 	virtual ~rs_t();
 
@@ -95,8 +95,8 @@ class rs_t : public QWidget {
 	// Обновление панели инструментов
 	void tools_update(); // W_SLOT(tools_update)
 
-	void on_blogger_close();
-	void on_browser_close_request();
+	void on_blogger_close_requested();
+	void on_browser_close_requested();
 
 
 	void on_topic_changed(const QString& original_topic_, const QString& new_topic_, bool append_mode = false);
@@ -161,7 +161,8 @@ class rs_t : public QWidget {
 	QString _treepath;
 
 	// EditingWindow *_editing_window = nullptr;
-	web::Browser* _browser;
+//	web::Browser* _browser;
+//	web::TabWidget* _tabmanager;
 	rctrl_t* _rctrl; // web::TabWidget	*_tabmanager;
 	VerticalScrollArea* _vertical_scrollarea;
 

@@ -276,18 +276,22 @@ extern std::shared_ptr<gl_para> gl_paras;
 W_OBJECT_IMPL(RecordModel)
 #endif
 
+//void RecordModel::on_rctrl_close_requested()
+//{
+//	_record_controller = nullptr;
+//	deleteLater();
+//}
 // Конструктор модели
-RecordModel::RecordModel(rctrl_t* record_controller)  // TreeScreen
-                                                      // *_tree_screen//,
-                                                      // FindScreen
-                                                      // *_find_screen//,
-                                                      // RecordScreen
-                                                      // *_record_screen
-    // , web::TabWidget *_tabmanager
-    : QAbstractTableModel(record_controller)  // _record_controller	//
-      // , pages_container(_tabmanager)
-      ,
-      _record_controller(record_controller) {
+// TreeScreen *_tree_screen//, FindScreen *_find_screen//, RecordScreen *_record_screen, web::TabWidget *_tabmanager
+RecordModel::RecordModel(rctrl_t* record_controller)
+    : QAbstractTableModel(record_controller) // _record_controller, pages_container(_tabmanager)
+    , _rctrl_borrower(
+	  //          [&] {
+	  //                  connect(record_controller, &rctrl_t::close_request, this, &RecordModel::on_rctrl_close_requested);
+	  //                  return record_controller;
+	  //          }()
+	  real_renter_constructin<rctrl_t>(record_controller))
+{
 	// _browser_pages->init_from_xml(appconfig->datadir() + "/default_page.xml");
 	// _browser_pages->root_item()->field("id", "0");  // get_unical_id()
 	// _browser_pages->root_item()->field("name", "_shadow_branch");
@@ -307,20 +311,22 @@ RecordModel::RecordModel(rctrl_t* record_controller)  // TreeScreen
 }
 
 // Деструктор модели
-RecordModel::~RecordModel() {
+RecordModel::~RecordModel()
+{
 	// delete _browser_pages;   // current it created from tabmanager
 	return;
 }
 
 // Предоставление данных табличной модели
 // Provide tabular data model
-QVariant RecordModel::data(const QModelIndex& index, int role) const {
+QVariant RecordModel::data(const QModelIndex& index, int role) const
+{
 
 	//// Если таблица данных не создана
 	// if(count() == 0)    // if(!browser_pages())    // if(!_table)
 	// return QVariant();
 	// Если таблица пустая
-	if (0 == count())  // if(_table->size() == 0)
+	if (0 == count()) // if(_table->size() == 0)
 		return QVariant();
 	// Если индекс недопустимый, возвращается пустой объект
 	if (!index.isValid())
@@ -339,7 +345,7 @@ QVariant RecordModel::data(const QModelIndex& index, int role) const {
 			QString key_name = show_fields.value(index.column());
 
 			//			auto it = item(pos_source(index.row()));
-			QString field = it->field_dynamic(key_name);  //item(pos_source(index.row()))->_field_data[key_name];
+			QString field = it->field_dynamic(key_name); //item(pos_source(index.row()))->_field_data[key_name];
 			// Некоторые данные при отрисовке в таблице преобразуются в "экранные"
 			// представления
 			// Преобразование возможно только для отображаемой в таблице информации
@@ -356,27 +362,27 @@ QVariant RecordModel::data(const QModelIndex& index, int role) const {
 					return fieldDateTime.toString(appconfig->custom_datetime_format());
 			} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<name_key>::value) {
 				return "<b>" + detail::to_qstring(it->field<name_key>()) + "</b>";
-			} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<has_attach_key>::value) {  // "hasAttach"// Наличие аттачей
+			} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<has_attach_key>::value) { // "hasAttach"// Наличие аттачей
 				if (boost::fusion::at_key<has_attach_key>(it->_fields_data_map) == has_attach_value(false))
-					return "";  //Attachey If not, an empty string is displayed. This improves readability // Если аттачей нет, выводится пустая строка. Это повышает читабельность
+					return ""; //Attachey If not, an empty string is displayed. This improves readability // Если аттачей нет, выводится пустая строка. Это повышает читабельность
 				else
-					return tr("Yes");                                                                       // На русский перевести как "Есть"
-			} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<attach_size_key>::value) {  // "attachCount"   // Количество аттачей
+					return tr("Yes");                                                              // На русский перевести как "Есть"
+			} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<attach_size_key>::value) { // "attachCount"   // Количество аттачей
 				if (boost::fusion::at_key<attach_size_key>(it->_fields_data_map) == attach_size_value(0))
-					return "";  // Если количество аттачей нуливое, выводится пустая
-				                // строка. Это повышает читабельность
+					return ""; // Если количество аттачей нуливое, выводится пустая
+						   // строка. Это повышает читабельность
 				else
 					return detail::to_qstring(boost::fusion::at_key<attach_size_key>(it->_fields_data_map));
-			} else if (role == Qt::UserRole || role == Qt::EditRole) {  // just a test
+			} else if (role == Qt::UserRole || role == Qt::EditRole) { // just a test
 #ifdef USE_STAR_RATING
 				StarRating star_rating = qvariant_cast<StarRating>(index.data());
 				// pixmap.load(":/resource/pic/butterfly-right.svg");
-				return QVariant::fromValue(star_rating);  // pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
+				return QVariant::fromValue(star_rating); // pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
 #endif
 				return field;
 			} else if (role == SORT_ROLE) {
 				if (key_name == boost::mpl::c_str<rating_key>::value)
-					return detail::to_qstring(boost::fusion::at_key<rating_key>(it->_fields_data_map));  //field.toULongLong();
+					return detail::to_qstring(boost::fusion::at_key<rating_key>(it->_fields_data_map)); //field.toULongLong();
 				return field;
 			} else
 				return field;
@@ -397,12 +403,13 @@ QVariant RecordModel::data(const QModelIndex& index, int role) const {
 
 // Save the input data at the specified index   // Сохранение вводимых данных по
 // указанному индексу
-bool RecordModel::setData(const QModelIndex& index, const QVariant& value, int role) {
+bool RecordModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
 	//// Если таблица данных не создана
 	// if(!browser_pages())    // if(!_table)//
 	// return false;
 	// Если таблица пустая
-	if (0 == count())  // if(_table->size() == 0)
+	if (0 == count()) // if(_table->size() == 0)
 		return false;
 	// Если индекс недопустимый
 	if (!index.isValid())
@@ -424,12 +431,15 @@ bool RecordModel::setData(const QModelIndex& index, const QVariant& value, int r
 			// Изменяется поле в таблице конечных записей
 			// _table
 			item(pos_source(index.row()))->field_dynamic(field_name, cell_value);
-			if (_record_controller->view()->is_field_type_column(boost::mpl::c_str<rating_key>::value, index.column())) {
-				// _record_controller->view()->edit(index);
-				// _record_controller->close_context();
-			} else
-				emit dataChanged(index, index);  // Посылается сигнал что данные были изменены
-
+			rv_t* view = nullptr;
+			(*_rctrl_borrower)(view, &rctrl_t::view);
+			if (view) {
+				if (view->is_field_type_column(boost::mpl::c_str<rating_key>::value, index.column())) {
+					// _record_controller->view()->edit(index);
+					// _record_controller->close_context();
+				} else
+					emit dataChanged(index, index); // Посылается сигнал что данные были изменены
+			}
 			return true;
 		}
 	}
@@ -445,13 +455,13 @@ bool RecordModel::setData(const QModelIndex& index, const QVariant& value, int r
 // }
 
 #ifdef USE_STAR_RATING
-	if (role == Qt::UserRole) {  // just a test
+	if (role == Qt::UserRole) { // just a test
 		StarRating star_rating = qvariant_cast<StarRating>(index.data());
 		// pixmap.load(":/resource/pic/butterfly-right.svg");
 		star_rating.star_count(qvariant_cast<int>(value));
 
-		return true;  // pixmap.scaled(16, 16, Qt::KeepAspectRatio,
-		              // Qt::FastTransformation);
+		return true; // pixmap.scaled(16, 16, Qt::KeepAspectRatio,
+			     // Qt::FastTransformation);
 	}
 #endif
 
@@ -460,7 +470,8 @@ bool RecordModel::setData(const QModelIndex& index, const QVariant& value, int r
 }
 
 // Получение заголовков столбцов и строк
-QVariant RecordModel::headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant RecordModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
 	// QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO:
 	// Заменить на показываемые поля
 	QStringList showFields = appconfig->record_table_show_fields();
@@ -485,17 +496,24 @@ QVariant RecordModel::headerData(int section, Qt::Orientation orientation, int r
 }
 
 // Сколько записей в таблице
-int RecordModel::rowCount(const QModelIndex& parent) const {
+int RecordModel::rowCount(const QModelIndex& parent) const
+{
 	Q_UNUSED(parent);
 
 	// if(!browser_pages())    // if(!_table)
 	// return 0;
 
-	return _record_controller->tabmanager()->count();
+	web::TabWidget* tab = nullptr;
+	(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+	if (tab)
+		return tab->count();
+	else
+		return -1;
 }
 
 // Сколько столбцов в таблице
-int RecordModel::columnCount(const QModelIndex& parent) const {
+int RecordModel::columnCount(const QModelIndex& parent) const
+{
 	Q_UNUSED(parent);
 
 	static int previousColumnCount = 0;
@@ -508,7 +526,8 @@ int RecordModel::columnCount(const QModelIndex& parent) const {
 	return currentColumnCount;
 }
 
-void RecordModel::remove_child(boost::intrusive_ptr<i_t> it) {
+void RecordModel::remove_child(boost::intrusive_ptr<i_t> it)
+{
 	for (int i = 0; i < size(); i++)
 		if (item(pos_source(i)) == it)
 			removeRows(i, 1);
@@ -520,7 +539,8 @@ void RecordModel::remove_child(boost::intrusive_ptr<i_t> it) {
 // Delete rows in the table
 // Note: Override removeRows () method affects the removeRow (),
 // Because it simply calls removeRows () to remove a single line
-bool RecordModel::removeRows(int row, int count, const QModelIndex& parent) {
+bool RecordModel::removeRows(int row, int count, const QModelIndex& parent)
+{
 	Q_UNUSED(parent);
 	if (row < 0 || row >= rowCount() || (row + count - 1) < 0 || (row + count - 1) >= rowCount()) {
 		critical_error("Bad arguments in RecordModel::removeRows(). row: " + QString::number(row) + " count: " + QString::number(count));
@@ -531,20 +551,20 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex& parent) {
 
 	// auto view = _reocrd_controller->view();
 
-	beginRemoveRows(QModelIndex(), row, row + count - 1);  // index   //
+	beginRemoveRows(QModelIndex(), row, row + count - 1); // index   //
 
-//	// QVector<QString> ids;
+	//	// QVector<QString> ids;
 
-//	//// Удаляются строки непосредственно в таблице
-//	// for(int i = row; i < row + count; ++i) {
-//	// ids.append(child(i)->id());
+	//	//// Удаляются строки непосредственно в таблице
+	//	// for(int i = row; i < row + count; ++i) {
+	//	// ids.append(child(i)->id());
 
-//	// }
-//	QAbstractTableModel::removeRow(row, parent);
-//	// _record_controller->remove_children(ids); // recursive called
+	//	// }
+	//	QAbstractTableModel::removeRow(row, parent);
+	//	// _record_controller->remove_children(ids); // recursive called
 
-//	// view->reset();
-//	// view->setModel(this);   // wrong operation! this is not the proxy model
+	//	// view->reset();
+	//	// view->setModel(this);   // wrong operation! this is not the proxy model
 	endRemoveRows();
 
 	return true;
@@ -620,19 +640,23 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex& parent) {
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_item) {  // , int mode
+web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_item)
+{ // , int mode
 	// const index_source source_pos_index,
 	pos_source returned_position(-1);
 	web::WebView* view = nullptr;
 	auto insert_new_tab = [&](
 	    pos_source& returned_position,
-	    boost::intrusive_ptr<i_t> _item) {  // , const pos_source source_insert_pos
+	    boost::intrusive_ptr<i_t> _item) { // , const pos_source source_insert_pos
 		// if(selected_position == -1) {
-		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return this; }, _item);  // , _record_controller->tabmanager()->count() > 0 ?
-		                                                                                                      // _record_controller->tabmanager()->webView((int)
-		                                                                                                      // source_insert_pos)->page()->binder()->host() : nullptr
+		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return this; }, _item); // , _record_controller->tabmanager()->count() > 0 ?
+														     // _record_controller->tabmanager()->webView((int)
+														     // source_insert_pos)->page()->binder()->host() : nullptr
 		// if(record_index)
-		view = _record_controller->tabmanager()->newTab(record_index);  // , _item->field("name")
+		web::TabWidget* tab = nullptr;
+		(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+		if (tab)
+			view = tab->newTab(record_index); // , _item->field("name")
 		// else{
 		// view = _record_controller->tabmanager()->webView((int)source_insert_pos);
 		// view->page()->binder()->host()->activate(std::bind(&web::Entrance::find,
@@ -641,7 +665,7 @@ web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_ite
 		///function QTabWidget::addTab
 		// }
 		assert(view);
-		returned_position = position(id_value(_item->field<id_key>()));  // pos_source(_record_controller->tabmanager()->indexOf(view));
+		returned_position = position(id_value(_item->field<id_key>())); // pos_source(_record_controller->tabmanager()->indexOf(view));
 		insertRow(returned_position, QModelIndex());
 		return view;
 	};
@@ -651,8 +675,8 @@ web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_ite
 		// Q_UNUSED(pos_index) // to be used
 		// Q_UNUSED(mode)	// to be used
 		// if(- 1 == (int) source_insert_pos)source_insert_pos = 0;
-		auto brother = current_item();  // item(source_insert_pos);
-		beginResetModel();              // Подумать, возможно нужно заменить на beginInsertRows
+		auto brother = current_item(); // item(source_insert_pos);
+		beginResetModel();             // Подумать, возможно нужно заменить на beginInsertRows
 		if (_target_item->binder()) {
 			// if(_item->binder()->page()){
 			// view = _item->binder()->page()->view();	// activate();
@@ -660,19 +684,23 @@ web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_ite
 				return url_equal(detail::to_string(b->host()->field<home_key>()), detail::to_string(_target_item->field<home_key>())) && b->host()->field<id_key>() == _target_item->field<id_key>();
 			});
 			if (v) {
-				if (v->tabmanager() != _record_controller->tabmanager()) {
+				web::TabWidget* tab = nullptr;
+				(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+
+				if (tab && v->tabmanager() != tab) {
 					v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
 					// if(selected_position == - 1)
 					// selected_position =
-					view = insert_new_tab(returned_position, _target_item);  // , source_insert_pos
+					view = insert_new_tab(returned_position, _target_item); // , source_insert_pos
 				} else {
-					returned_position = position(id_value(_target_item->field<id_key>()));  // pos_source(_record_controller->tabmanager()->indexOf(view));
-														// // _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+					returned_position = position(id_value(_target_item->field<id_key>())); // pos_source(_record_controller->tabmanager()->indexOf(view));
+													       // // _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
 					view = v;
 				}
+
 			} else {
 				// selected_position =
-				view = insert_new_tab(returned_position, _target_item);  // , source_insert_pos
+				view = insert_new_tab(returned_position, _target_item); // , source_insert_pos
 			}
 			// Вставка новых данных в таблицу конечных записей
 			// accomplished by TabWidget::addTab in TabWidget::newTab?
@@ -682,38 +710,40 @@ web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_ite
 			assert(view);
 		} else {
 			auto _tree_view = gl_paras->tree_screen()
-			                      ->view();  // auto	this_index		=
+					      ->view(); // auto	this_index		=
 			// TreeIndex::instance([&] {return
 			// _tree_view->source_model();}, brother);
 			auto target_url = _target_item->field<url_key>();
-			auto _target_item =  // this_index->
+			auto _target_item = // this_index->
 			    TreeIndex::require_item(
-			        target_url,
-			        std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-			        [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-					return url_equal(detail::to_string(it_->field<home_key>()), detail::to_string(target_url)) || url_equal(detail::to_string(it_->field<url_key>()), detail::to_string(target_url));  // return it_->field<url_type>() == target_url.toString();
-				    });
+				target_url,
+				std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+				[&](boost::intrusive_ptr<const i_t> it_) -> bool {
+					return url_equal(detail::to_string(it_->field<home_key>()), detail::to_string(target_url)) || url_equal(detail::to_string(it_->field<url_key>()), detail::to_string(target_url)); // return it_->field<url_type>() == target_url.toString();
+				});
 
-			view = insert_new_tab(returned_position, _target_item);  // , source_insert_pos
+			view = insert_new_tab(returned_position, _target_item); // , source_insert_pos
 			assert(returned_position != -1);
 			assert(view);
 		}
 		assert(item(returned_position) == _target_item || _target_item->field<url_key>() == web::Browser::_defaulthome || _target_item->field<url_key>() == url_value(""));
 		assert(view);
-		endResetModel();  // Подумать, возможно нужно заменить на endInsertRows
+		endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
 	}
 	assert(view);
 
-	return view;  // selected_position;
+	return view; // selected_position;
 }
 
-void RecordModel::on_table_config_changed(void) {
+void RecordModel::on_table_config_changed(void)
+{
 	beginResetModel();
 	endResetModel();
 }
 
-void RecordModel::reset_internal_data() {
-	QAbstractTableModel::resetInternalData();  // clear
+void RecordModel::reset_internal_data()
+{
+	QAbstractTableModel::resetInternalData(); // clear
 }
 
 // QString RecordModel::field(int pos, QString name){
@@ -724,7 +754,8 @@ void RecordModel::reset_internal_data() {
 // return result;
 // }
 
-void RecordModel::fields(int pos, QMap<QString, QString> data) {
+void RecordModel::fields(int pos, QMap<QString, QString> data)
+{
 	if (pos >= 0 && pos < count()) {
 		// QMap<QString, QString>::iterator
 		for (auto i = data.begin(); i != data.end(); i++)
@@ -732,7 +763,8 @@ void RecordModel::fields(int pos, QMap<QString, QString> data) {
 	}
 }
 
-QModelIndex RecordModel::index(int row, int column, const QModelIndex& parent) const {
+QModelIndex RecordModel::index(int row, int column, const QModelIndex& parent) const
+{
 	// (void) parent;
 	QModelIndex result;
 	// auto	tab =
@@ -740,16 +772,21 @@ QModelIndex RecordModel::index(int row, int column, const QModelIndex& parent) c
 	// assert(tab);// this will encounter failures under debug buid when copy
 	// paste codes
 	// assert(_record_controller->tabmanager());
-	if (column >= 0 && column < _record_controller->tabmanager()->count()) {
-		auto it = item(pos_source(column));
-		result = createIndex(row, column, static_cast<void*>(it.get()));
+	web::TabWidget* tab = nullptr;
+	(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+	if (tab) {
+		if (column >= 0 && column < tab->count()) {
+			auto it = item(pos_source(column));
+			result = createIndex(row, column, static_cast<void*>(it.get()));
+		}
 	} else
 		result = QAbstractTableModel::index(row, column, parent);
 	return result;
 	// return QAbstractTableModel::index(row, column, parent);
 }
 
-index_source RecordModel::index(boost::intrusive_ptr<i_t> it) const {
+index_source RecordModel::index(boost::intrusive_ptr<i_t> it) const
+{
 	index_source result;
 	if (it) {
 		for (int i = 0; i < count(); i++) {
@@ -766,7 +803,8 @@ index_source RecordModel::index(boost::intrusive_ptr<i_t> it) const {
 	return result;
 }
 
-index_source RecordModel::fake_index(boost::intrusive_ptr<i_t> it) const {
+index_source RecordModel::fake_index(boost::intrusive_ptr<i_t> it) const
+{
 	index_source result;
 	if (it)
 		result = createIndex(0, 0, static_cast<void*>(it.get()));
@@ -786,17 +824,18 @@ index_source RecordModel::fake_index(boost::intrusive_ptr<i_t> it) const {
 // }
 
 boost::intrusive_ptr<i_t>
-RecordModel::item(const std::function<bool(const id_value)> _equal) const {
+RecordModel::item(const std::function<bool(const id_value)> _equal) const
+{
 	boost::intrusive_ptr<i_t> result = nullptr;
 	for (int _index = 0; _index < count(); _index++) {
-		auto it = _record_controller->tabmanager()
-		              ->webView((int)_index)
-		              ->page()
-		              ->binder()
-		              ->host();  // item(pos_source(i));
-		if (_equal(it->id())) {
-			result = it;
-			break;
+		web::TabWidget* tab = nullptr;
+		(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+		if (tab) {
+			auto it = tab->webView(_index)->page()->binder()->host(); // item(pos_source(i));
+			if (_equal(it->id())) {
+				result = it;
+				break;
+			}
 		}
 	}
 	return result;
@@ -876,18 +915,19 @@ RecordModel::item(const std::function<bool(const id_value)> _equal) const {
 // return r;
 // }
 
-boost::intrusive_ptr<i_t> RecordModel::item(const pos_source _index) const {
+boost::intrusive_ptr<i_t> RecordModel::item(const pos_source _index) const
+{
 	boost::intrusive_ptr<i_t> r(nullptr);
 	if (_index >= 0 && _index < size()) {
-		assert(_record_controller->tabmanager()->webView((int)_index)->page()->binder());
-		r = _record_controller->tabmanager()
-		        ->webView((int)_index)
-		        ->page()
-		        ->binder()
-		        ->host();
+		web::TabWidget* tab = nullptr;
+		(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+		if (tab) {
+			assert(tab->webView(static_cast<int>(_index))->page()->binder());
+			r = tab->webView(static_cast<int>(_index))->page()->binder()->host();
 
-		assert(r);  // if find_recursive get new item from tree, there will be no
-		            // item_link? because I move it?
+			assert(r); // if find_recursive get new item from tree, there will be no
+				   // item_link? because I move it?
+		}
 	}
 	return r;
 }
@@ -899,8 +939,9 @@ boost::intrusive_ptr<i_t> RecordModel::item(const pos_source _index) const {
 // return item;
 // }
 
-rctrl_t* RecordModel::reocrd_controller() const {
-	return _record_controller;
+std::shared_ptr<borrower<rctrl_t>> RecordModel::rctrl_borrower() const
+{
+	return _rctrl_borrower;
 }
 
 // bool RecordModel::remove_child(int index)
@@ -962,36 +1003,50 @@ rctrl_t* RecordModel::reocrd_controller() const {
 //// #endif
 // }
 
-boost::intrusive_ptr<i_t> RecordModel::current_item() const {
+boost::intrusive_ptr<i_t> RecordModel::current_item() const
+{
 	boost::intrusive_ptr<i_t> result(nullptr);
 	// #ifdef USE_LOAD_ON_FOUND
 	web::WebView* v = nullptr;
-	v = _record_controller->tabmanager()->currentWebView();
-	auto page = v ? v->page() : nullptr;
-	if (page) {
-		auto binder = page->binder();
-		if (binder) {
-			result = binder->host();
-			//			assert(result);
+	web::TabWidget* tab = nullptr;
+	(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+	if (tab) {
+		v = tab->currentWebView();
+		auto page = v ? v->page() : nullptr;
+		if (page) {
+			auto binder = page->binder();
+			if (binder) {
+				result = binder->host();
+				//			assert(result);
+			}
 		}
-	}
-	// #else
-	// result = item(_record_controller->index<pos_source>(current_index()));
+		// #else
+		// result = item(_record_controller->index<pos_source>(current_index()));
 
-	// #endif
-	// assert(result);
-	return result;  // _tabmanager->currentWebView()->page()->binder()->host();
+		// #endif
+		// assert(result);
+	}
+	return result; // _tabmanager->currentWebView()->page()->binder()->host();
 }
 
-index_source RecordModel::current_index() const {
+index_source RecordModel::current_index() const
+{
 	index_source result;
-	index_proxy index_proxy_(
-	    _record_controller->view()->selectionModel()->currentIndex());
-	auto current = current_item();
-	if (static_cast<QModelIndex>(index_proxy_).isValid())
-		result = _record_controller->index<index_source>(index_proxy_);
-	else if (current)
-		result = index(current);
+	rv_t* view = nullptr;
+	(*_rctrl_borrower)(view, &rctrl_t::view);
+	if (view) {
+		const index_proxy index_proxy_(view->selectionModel()->currentIndex());
+		auto current = current_item();
+		if (static_cast<QModelIndex>(index_proxy_).isValid()) {
+			index_source is;
+//			index_source (rctrl_t::*index_function)(const index_proxy&) const = &rctrl_t::index<index_source>;
+			(*_rctrl_borrower)(is, &rctrl_t::index<index_source>, index_proxy_);
+			if (static_cast<QModelIndex>(is).isValid()) {
+				result = is;
+			}
+		} else if (current)
+			result = index(current);
+	}
 	return result;
 	//// #ifdef USE_LOAD_ON_FOUND
 	// index(current_item());
@@ -1000,8 +1055,12 @@ index_source RecordModel::current_index() const {
 	//// #endif
 }
 
-void RecordModel::position(pos_source _index) {
-	_record_controller->tabmanager()->setCurrentIndex((int)_index);
+void RecordModel::position(pos_source _index)
+{
+	web::TabWidget* tab = nullptr;
+	(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+	if (tab)
+		tab->setCurrentIndex(static_cast<int>(_index));
 }
 
 // PosSource RecordModel::position()const
@@ -1009,18 +1068,24 @@ void RecordModel::position(pos_source _index) {
 // return PosSource(_tabmanager->currentIndex());
 // }
 
-pos_source RecordModel::position(id_value id) const {
+pos_source RecordModel::position(id_value id) const
+{
 	pos_source result(-1);
-	for (int i = 0; i < _record_controller->tabmanager()->count(); i++) {
-		if (_record_controller->tabmanager()->webView(i)->page()->host()->id() == id) {
-			result = pos_source(i);
-			break;
+	web::TabWidget* tab = nullptr;
+	(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+	if (tab) {
+		for (int i = 0; i < tab->count(); i++) {
+			if (tab->webView(i)->page()->host()->id() == id) {
+				result = pos_source(i);
+				break;
+			}
 		}
 	}
 	return result;
 }
 
-Qt::ItemFlags RecordModel::flags(const QModelIndex& index) const {
+Qt::ItemFlags RecordModel::flags(const QModelIndex& index) const
+{
 	if (!index.isValid())
 		return Qt::ItemIsEnabled;
 	return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
@@ -1040,38 +1105,51 @@ Qt::ItemFlags RecordModel::flags(const QModelIndex& index) const {
 // return result;
 // }
 
-int RecordModel::count() const {
-	return _record_controller->tabmanager()->count();
+int RecordModel::count() const
+{
+	web::TabWidget* tab = nullptr;
+	(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+	if (tab)
+		return tab->count();
+	else
+		return -1;
 }
 
-int RecordModel::size() const {
-	return _record_controller->tabmanager()->count();
+int RecordModel::size() const
+{
+	return count();
 }
 
-int RecordModel::move(const pos_source pos, const pos_source target) {
+int RecordModel::move(const pos_source pos, const pos_source target)
+{
 	beginResetModel();
 
+	web::TabWidget* tab = nullptr;
+	(*_rctrl_borrower)(tab, &rctrl_t::tabmanager);
+
 	pos_source new_pos = pos;
-	if (target < pos) {  // move up
+	if (target < pos) { // move up
 		if (pos > 0) {
-			new_pos = (-1 == target) ? pos_source((int)pos - 1) : target;
-			_record_controller->tabmanager()->tabbar()->moveTab((int)pos, (int)new_pos);  // moveTab(pos, new_pos);
-												      // auto source_index =
-												      // static_cast<QModelIndex>(_record_controller->index<index_source>(pos));
-												      // auto target_index =
-												      // static_cast<QModelIndex>(_record_controller->index<index_source>(new_pos));
-												      // this->moveRow(source_index.parent(), source_index.row(),
-												      // target_index.parent(), target_index.row());
-												      ////	    emit
-												      ///_record_controller->view()->tabMoved(static_cast<int>(pos),
-												      ///static_cast<int>(new_pos));
+			new_pos = (-1 == target) ? pos_source(static_cast<int>(pos) - 1) : target;
+			if (tab)
+				tab->tabbar()->moveTab(static_cast<int>(pos), static_cast<int>(new_pos)); // moveTab(pos, new_pos);
+													  // auto source_index =
+													  // static_cast<QModelIndex>(_record_controller->index<index_source>(pos));
+													  // auto target_index =
+													  // static_cast<QModelIndex>(_record_controller->index<index_source>(new_pos));
+													  // this->moveRow(source_index.parent(), source_index.row(),
+													  // target_index.parent(), target_index.row());
+													  ////	    emit
+													  ///_record_controller->view()->tabMoved(static_cast<int>(pos),
+													  ///static_cast<int>(new_pos));
 		}
-	} else if (target > pos) {  // move down
+	} else if (target > pos) { // move down
 		if (pos < count() - 1) {
-			new_pos = (target == 1 && pos != 0) ? pos_source((int)pos + 1) : target;
-			_record_controller->tabmanager()->tabbar()->moveTab((int)pos, (int)new_pos);  // moveTab(pos, new_pos);
-												      // emit _record_controller->view()->tabMoved(static_cast<int>(pos),
-												      // static_cast<int>(new_pos));
+			new_pos = (target == 1 && pos != 0) ? pos_source(static_cast<int>(pos) + 1) : target;
+			if (tab)
+				tab->tabbar()->moveTab(static_cast<int>(pos), static_cast<int>(new_pos)); // moveTab(pos, new_pos);
+													  // emit _record_controller->view()->tabMoved(static_cast<int>(pos),
+													  // static_cast<int>(new_pos));
 		}
 	}
 	endResetModel();

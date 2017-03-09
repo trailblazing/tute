@@ -436,7 +436,7 @@ void EditorWrap::pin(const QString &pin_) {
 		// record_screens()->record_controller();
 		if (_tabmanager) {
 			RecordModel *source_model = _tabmanager->source_model();
-			auto _record_controller = _tabmanager->record_controller();
+			auto _record_controller = _tabmanager->record_screen()->record_controller();
 			rv_t *record_view = _tabmanager->view();
 			pos_source pos_source_(
 			    _tabmanager->currentIndex());  // first_selectionpos();

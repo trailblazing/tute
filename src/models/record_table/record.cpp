@@ -92,7 +92,7 @@ struct element_fullfill {
 #endif // USE_CXX_14
 		//		std::enable_if<sd::STATIC_SAME<index_type, id_type>::value,
 		//check_id>::type();
-		detail::static_if<sd::equal<key_type, id_key>::value>([&]() {
+		detail::static_if<sd::equal_type<key_type, id_key>::value>([&]() {
 			auto dir = QString(boost::fusion::at_key<dir_key>(_this->_fields_data_map));
 			if (id_value("") == boost::fusion::at_key<id_key>(_this->_fields_data_map))
 				boost::fusion::at_key<id_key>(_this->_fields_data_map) = dir.length() > 0 ? dir : get_unical_id();

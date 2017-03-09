@@ -150,5 +150,7 @@
         <file>resource/pic/back_to_top.svg</file>
         <file>resource/pic/pull.svg</file>
         <file>resource/pic/edit_switch.svg</file>
+        <file>resource/standardconfig/any/custom_browser_tabbar_style.css</file>
+        <file>resource/standardconfig/any/custom_hidable_tab_style.css</file>
     </qresource>
 </RCC>

@@ -35,13 +35,18 @@ RecordIndex::bind( // const std::function<RecordModel *()> &current_model_,
     bool make_current) noexcept
 {
 	boost::intrusive_ptr<i_t> result(nullptr);
-	rctrl_t* ctrl = _current_model()->reocrd_controller(); // current_model_()
-	web::Browser* browser_ = ctrl->tabmanager()->browser();
+	auto ctrl = _current_model()->rctrl_borrower(); // current_model_()
+	web::TabWidget* tab;
+	(*ctrl)(tab, &rctrl_t::tabmanager);
+
+	web::Browser* browser_ = nullptr;
+
+	if (tab) browser_ = tab->browser();
 
 	assert(_host);
-	if (_host) {
+	if (_host && browser_) {
 		auto url = _host->field<url_key>();
-		if (url != "") { // && url != web::Browser::_defaulthome
+		if (url != url_value("")) { // && url != web::Browser::_defaulthome
 			// if(sibling_item_ != _host){
 			// index_source sibling_index_ = sibling_item_ ?
 			// current_model_()->index(sibling_item_) :
@@ -71,9 +76,13 @@ RecordIndex::instance(const std::function<RecordModel*()>& current_model_, boost
 	boost::intrusive_ptr<RecordIndex> result(nullptr);
 	assert(host_);
 	if (sibling_item_ == host_) {
-		sibling_item_ = current_model_()->_record_controller->tabmanager()->sibling(sibling_item_); // sibling_s(sibling_item_);
-													    // if(! sibling_item_)throw std::runtime_error(formatter() << "sibling_item_
-													    // == host_; host_ has already been inside the record view");
+		web::TabWidget* tab = nullptr;
+		(*current_model_()->rctrl_borrower())(tab, &rctrl_t::tabmanager);
+		if (tab) {
+			sibling_item_ = tab->sibling(sibling_item_); // sibling_s(sibling_item_);
+								     // if(! sibling_item_)throw std::runtime_error(formatter() << "sibling_item_
+								     // == host_; host_ has already been inside the record view");
+		}
 	}
 	index_source sibling_index_;
 	if (sibling_item_)
@@ -182,7 +191,7 @@ boost::intrusive_ptr<i_t> RecordIndex::synchronize(
 			    return url_equal(detail::to_string(b->host()->field<home_key>()), detail::to_string(host_->field<home_key>()));
 		    });
 		if (v) {
-			auto rctrl = v->tabmanager()->record_controller();
+			auto rctrl = v->tabmanager()->record_screen()->record_controller();
 			auto current_model_ = [&] { return rctrl->source_model(); };
 			auto alternative_item = v->page()->host();
 			auto url = detail::to_string(alternative_item->field<url_key>()); // host_->field<url_type>();
