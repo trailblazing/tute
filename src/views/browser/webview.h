@@ -51,14 +51,16 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+#include "utility/lease.h"
 // #include "models/record_table/Record.h"
 // #include "models/tree/TreeItem.h"
 #include "controllers/record_table/record_controller.h"
 #include "libraries/global_parameters.h"
-#include "libraries/qt_single_application5/qtsingleapplication.h"
+//#include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
 #include "models/tree/binder.hxx"
+#include "views/browser/browser.h"
 #include "views/browser/featurepermissionbar.h"
 #include "views/record_table/record_screen.h"
 #include "views/record_table/record_view.h"
@@ -78,9 +80,9 @@ class QSslError;
 QT_END_NAMESPACE
 
 extern std::shared_ptr<gl_para> gl_paras;
-extern boost::intrusive_ptr<Record> check_record(const QUrl& _url);
+//extern boost::intrusive_ptr<r_t> check_record(const QUrl& _url);
 
-class Record;
+class r_t;
 struct Binder;
 class i_t;
 class tm_t;
@@ -98,6 +100,7 @@ namespace web {
 	class PopupWindow;
 	class WebView;
 	class TabWidget;
+	template <typename>
 	class Docker;
 
 #ifdef USE_POPUP_WINDOW
@@ -109,15 +112,15 @@ namespace web {
 		Q_OBJECT
 #endif
 	    signals:
-		void loadingUrl(const QUrl& url)
+
 #if QT_VERSION == 0x050600
-		    W_SIGNAL(loadingUrl, (const QUrl&), url) //
+		void loadingUrl(const QUrl& url) W_SIGNAL(loadingUrl, (const QUrl&), url); //
 #else
-		    ;
+		void loadingUrl(const QUrl& url);
 
 #endif
-		    public
-		    : PopupPage(PopupView* view_, Browser* browser_, Profile* profile_);
+	    public:
+		PopupPage(PopupView* view_, Browser* browser_, Profile* profile_);
 		Browser* browser();
 
 	    protected:
@@ -142,7 +145,7 @@ namespace web {
 
 		// set the webview mousepressedevent
 		PopupView* _view;
-		Browser* _browser;
+		browser_ref _browser;
 		Qt::KeyboardModifiers _keyboard_modifiers;
 		Qt::MouseButtons _pressed_buttons;
 		QUrl _loading_url;
@@ -174,8 +177,7 @@ namespace web {
 
 #if QT_VERSION == 0x050600
 
-		void become_current(boost::intrusive_ptr<::Binder> _binder)
-		    W_SIGNAL(become_current, (boost::intrusive_ptr<::Binder>), _binder);
+		void become_current(boost::intrusive_ptr<::Binder> _binder) W_SIGNAL(become_current, (boost::intrusive_ptr<::Binder>), _binder);
 #else
 		void become_current(boost::intrusive_ptr<::Binder> _binder);
 #endif
@@ -193,7 +195,11 @@ namespace web {
 		// typedef typename Binder::page_helper page_helper;
 
 	    public:
-		WebPage(Profile* profile, boost::intrusive_ptr<i_t> item, ts_t* tree_screen, Blogger* blogger_, web::Docker* browser_docker_, Browser* browser, TabWidget* tabmanager, rctrl_t* record_controller, WebView* parent = 0);
+		WebPage(Profile* profile, boost::intrusive_ptr<i_t> item, ts_t* tree_screen,
+		    Blogger* blogger_,
+		    web::Docker<web::Browser>* browser_docker_, web::Browser* browser, web::TabWidget* tabmanager,
+		    rctrl_t* rctrl_,
+		    WebView* parent = 0);
 
 		~WebPage();
 
@@ -201,7 +207,7 @@ namespace web {
 		Browser* browser();
 		WebView* view(); // {assert(_view); return _view;}
 
-		rctrl_t* record_controller(); // {return _record_controller;}
+		rctrl_t* record_ctrl(); // {return _record_controller;}
 		WebView* activate();
 		WebView* load(boost::intrusive_ptr<i_t> item, bool checked = true);
 
@@ -288,11 +294,11 @@ namespace web {
 	    private:
 		Profile* _profile;
 		ts_t* _tree_screen;
-		Blogger* _blogger;
-		web::Docker* _browser_docker;
-		Browser* _browser;
-		TabWidget* _tabmanager;
-		rctrl_t* _record_controller;
+		blogger_ref _blogger;
+		web::Docker<web::Browser>* _browser_docker;
+		browser_ref _browser;
+		tabwidget_ref _tab_widget;
+		rctrl_ref _rctrl;
 
 		WebView* _view;
 
@@ -309,7 +315,7 @@ namespace web {
 
 		friend class TabWidget;
 		friend class WebView;
-		friend class Record;
+		friend class r_t;
 	};
 
 #ifdef USE_POPUP_WINDOW
@@ -346,13 +352,14 @@ namespace web {
 		void wheelEvent(QWheelEvent* event);
 
 	    signals:
-		void iconChanged()
+
 #if QT_VERSION == 0x050600
-		    W_SIGNAL(iconChanged) //
+		void iconChanged() W_SIGNAL(iconChanged); //
 #else
-		    ;
+		void iconChanged();
 #endif
-		    private slots : void setProgress(int progress);
+	    private slots:
+		void setProgress(int progress);
 		void loadFinished(bool success);
 		void setStatusBarText(const QString& string);
 		void openLinkInNewTab();
@@ -385,7 +392,12 @@ namespace web {
 	    public:
 		WebView(boost::intrusive_ptr<i_t> host_,
 		    Profile* profile, // , bool openinnewtab
-		    ts_t* tree_screen, Blogger* editentry, Docker* entrance, Browser* browser, TabWidget* tabmanager, rctrl_t* record_controller);
+		    ts_t* tree_screen,
+		    Blogger* blogger_,
+		    web::Docker<web::Browser>* entrance,
+		    web::Browser* browser,
+		    web::TabWidget* tabmanager,
+		    rctrl_t* rctrl_);
 
 		~WebView();
 		WebPage* page() const;
@@ -401,12 +413,11 @@ namespace web {
 		QString lastStatusBarText() const;
 		int progress() const;
 
-		rctrl_t* record_controller(); // {return _record_controller;}
-		void
-		record_controller(rctrl_t* _record_controller); // {this->_record_controller =
-								// _record_controller;}
+		rctrl_t* record_ctrl(); // {return _record_controller;}
+					//		void record_ctrl(rctrl_t* rctrl_); // {this->_record_controller =
+		// _record_controller;}
 
-		TabWidget* const& tabmanager() const;
+		TabWidget* tabmanager() const;
 
 		void current_view_global_consistency();
 
@@ -419,22 +430,22 @@ namespace web {
 		void wheelEvent(QWheelEvent* event);
 		void focusOutEvent(QFocusEvent* event);
 	    signals:
-		void iconChanged()
+
 #if QT_VERSION == 0x050600
-		    W_SIGNAL(iconChanged) //
+		void iconChanged() W_SIGNAL(iconChanged); //
 #else
-		    ;
+		void iconChanged();
 #endif
-		    void close_requested()
+
 #if QT_VERSION == 0x050600
-			W_SIGNAL(close_requested) //
+		void close_requested() W_SIGNAL(close_requested); //
 #else
-		    ;
+		void close_requested();
 #endif
-		    public slots :
-		    // void loadFinished(bool success);
-		    // void openLinkInNewTab();
-		    void on_close_requested();
+	    public slots:
+		// void loadFinished(bool success);
+		// void openLinkInNewTab();
+		void on_close_requested();
 	    private slots:
 		void setProgress(int progress);
 
@@ -448,9 +459,9 @@ namespace web {
 
 		// void onCloseTab(int index);
 	    private:
-		Browser* _browser;
-		TabWidget* _tabmanager;
-		rctrl_t* _record_controller;
+		browser_ref _browser;
+		tabwidget_ref _tab_widget;
+		rctrl_ref _rctrl;
 
 		WebPage* _page;
 		QString _statusbartext;
@@ -473,7 +484,7 @@ namespace web {
 		Q_OBJECT
 #endif
 	    public:
-		PopupWindow(Browser* browser_, Profile* profile_);
+		PopupWindow(web::Browser* browser_, Profile* profile_);
 
 		QWebEnginePage* page() const
 		{
@@ -489,7 +500,7 @@ namespace web {
 		void adjustGeometry(const QRect& newGeometry);
 
 	    private:
-		Browser* _browser;
+		browser_ref _browser;
 		QLineEdit* _addressbar;
 		PopupView* _view;
 	};

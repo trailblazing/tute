@@ -48,8 +48,8 @@
 #include <QSystemTrayIcon>
 
 #include "hidable_tab.h"
-
-
+#include "libraries/global_parameters.h"
+#include "utility/lease.h"
 // #include "libraries/GlobalParameters.h"
 // #include "models/app_config/AppConfig.h"
 // #include "models/database_config/DataBaseConfig.h"
@@ -65,6 +65,7 @@ extern const std::string program_title_string;
 extern const char* meta_editor_singleton_name;
 
 namespace web {
+	template <typename>
 	class Docker;
 	class Browser;
 	class DownloadManager;
@@ -146,7 +147,7 @@ class wn_t : public QMainWindow {
 	QSplitter* h_record_splitter() const;
 	QSplitter* h_tree_splitter() const;
 	// std::vector<tsv_t *>	tree_viewers() const;
-	std::set<rs_t*> record_screens() const;
+
 	web::WebView*
 	find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal) const;
 
@@ -159,6 +160,8 @@ class wn_t : public QMainWindow {
 	web::Browser* browser(const initia_t& it, bool force = true);
 
 	QAction* quit_action() const;
+
+	std::set<web::Browser*> browsers() const;
     public slots:
 	void application_exit(void);
 	void application_fast_exit(void);
@@ -166,6 +169,7 @@ class wn_t : public QMainWindow {
 
 	void on_expand_edit_area(bool flag);
 	void synchronize_title(const QString& title_);
+	//	void on_tabCloseRequested(int index);
     private slots:
 	void file_new(void);
 	void file_open(void);
@@ -240,9 +244,9 @@ class wn_t : public QMainWindow {
 	QMenu* _toolsmenu;
 	QMenu* _helpmenu;
 
-	web::Docker* _browser_docker;
+	web::Docker<web::Browser>* _browser_docker;
 	HidableTab* _vtab_record;
-	web::Docker* _editor_docker;
+	web::Docker<Blogger>* _editor_docker;
 	ts_t* _tree_screen;
 	FindScreen* _find_screen;
 	// web::DownloadManager	*_download;
@@ -273,12 +277,16 @@ template <>
 web::Browser*
 wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bool force);
 template <>
-web::Browser* wn_t::browser<QUrl>(const QUrl& url_, bool force);
+web::Browser*
+wn_t::browser<QUrl>(const QUrl& url_, bool force);
 template <>
-web::Browser* wn_t::browser<url_value>(const url_value& url_, bool force);
+web::Browser*
+wn_t::browser<url_value>(const url_value& url_, bool force);
 template <>
-web::Browser* wn_t::browser<QByteArray>(const QByteArray& state_, bool force);
+web::Browser*
+wn_t::browser<QByteArray>(const QByteArray& state_, bool force);
 template <>
-web::Browser* wn_t::browser<QString>(const QString& topic, bool force);
+web::Browser*
+wn_t::browser<QString>(const QString& topic, bool force);
 
 #endif

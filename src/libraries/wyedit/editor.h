@@ -20,6 +20,7 @@
 #include "editor_find_dialog.h"
 #include "editor_show_text.h"
 #include "libraries/fixed_parameters.h"
+#include "libraries/global_parameters.h"
 
 extern const std::string editor_prefix;
 
@@ -120,97 +121,97 @@ class Editor : public QWidget {
 	Q_OBJECT
 #endif
 
-	public:
-	Editor(QStackedWidget *main_stack, Blogger *blogger_, std::shared_ptr<QSettings> topic_editor_config_, int mode, QStringList hide_editor_tools, bool enable_assembly = false, bool enable_random_seed = false);
+    public:
+	Editor(QStackedWidget* main_stack, Blogger *blogger_, std::shared_ptr<QSettings> topic_editor_config_, int mode, QStringList hide_editor_tools, bool enable_assembly = false, bool enable_random_seed = false);
 	~Editor(void);
 
 	std::shared_ptr<EditorConfig> _editor_config;
-	std::unique_ptr<EditorFindDialog> _find_dialog;  // Виджет поиска
+	std::unique_ptr<EditorFindDialog> _find_dialog; // Виджет поиска
 	// Кнопки форматирования текста
-	FlatToolButton *_bold = nullptr;
-	FlatToolButton *_italic = nullptr;
-	FlatToolButton *_underline = nullptr;
-	FlatToolButton *_monospace = nullptr;
-	FlatToolButton *_code = nullptr;
-	FlatToolButton *_clear = nullptr;
+	FlatToolButton* _bold = nullptr;
+	FlatToolButton* _italic = nullptr;
+	FlatToolButton* _underline = nullptr;
+	FlatToolButton* _monospace = nullptr;
+	FlatToolButton* _code = nullptr;
+	FlatToolButton* _clear = nullptr;
 
-	FlatToolButton *_numeric_list = nullptr;
-	FlatToolButton *_dot_list = nullptr;
+	FlatToolButton* _numeric_list = nullptr;
+	FlatToolButton* _dot_list = nullptr;
 
-	FlatToolButton *_indent_plus = nullptr;
-	FlatToolButton *_indent_minus = nullptr;
+	FlatToolButton* _indent_plus = nullptr;
+	FlatToolButton* _indent_minus = nullptr;
 
-	FlatToolButton *_align_left = nullptr;
-	FlatToolButton *_align_center = nullptr;
-	FlatToolButton *_align_right = nullptr;
-	FlatToolButton *_align_width = nullptr;
+	FlatToolButton* _align_left = nullptr;
+	FlatToolButton* _align_center = nullptr;
+	FlatToolButton* _align_right = nullptr;
+	FlatToolButton* _align_width = nullptr;
 
-	FlatToolButton *_action_open = nullptr;
-	FlatToolButton *_action_save = nullptr;
+	FlatToolButton* _action_open = nullptr;
+	FlatToolButton* _action_save = nullptr;
 	// , *action_Bold
 	// , *action_Italic
 	// , *action_Underline
 	// , *action_Blockquote
-	FlatToolButton *_action_link = nullptr;
-	FlatToolButton *_action_image = nullptr;
-	FlatToolButton *_action_more = nullptr;
-	FlatToolButton *_action_preview = nullptr;
-	FlatToolButton *_action_blog_this = nullptr;
+	FlatToolButton* _action_link = nullptr;
+	FlatToolButton* _action_image = nullptr;
+	FlatToolButton* _action_more = nullptr;
+	FlatToolButton* _action_preview = nullptr;
+	FlatToolButton* _action_blog_this = nullptr;
 
-	FlatToolButton *_settings = nullptr;
+	FlatToolButton* _settings = nullptr;
 
 	// QFontComboBox
-	FlatFontComboBox *_font_select = nullptr;
-	FlatComboBox *_font_size = nullptr;
-	FlatToolButton *_font_color = nullptr;
+	FlatFontComboBox* _font_select = nullptr;
+	FlatComboBox* _font_size = nullptr;
+	FlatToolButton* _font_color = nullptr;
 
-	FlatToolButton *_show_html = nullptr;
-	FlatToolButton *_find_text = nullptr;
-	FlatToolButton *_show_formatting = nullptr;
+	FlatToolButton* _show_html = nullptr;
+	FlatToolButton* _find_text = nullptr;
+	FlatToolButton* _show_formatting = nullptr;
 
-	FlatToolButton *_create_table = nullptr;
-	FlatToolButton *_table_remove_row = nullptr;
-	FlatToolButton *_table_remove_col = nullptr;
-	FlatToolButton *_table_add_row = nullptr;
-	FlatToolButton *_table_add_col = nullptr;
-	FlatToolButton *_table_merge_cells = nullptr;
-	FlatToolButton *_table_split_cell = nullptr;
+	FlatToolButton* _create_table = nullptr;
+	FlatToolButton* _table_remove_row = nullptr;
+	FlatToolButton* _table_remove_col = nullptr;
+	FlatToolButton* _table_add_row = nullptr;
+	FlatToolButton* _table_add_col = nullptr;
+	FlatToolButton* _table_merge_cells = nullptr;
+	FlatToolButton* _table_split_cell = nullptr;
 
-	FlatToolButton *_insert_image_from_file = nullptr;
-	FlatToolButton *_expand_edit_area = nullptr;
-	FlatToolButton *_expand_tools_lines = nullptr;
-	FlatToolButton *_save = nullptr;
+	FlatToolButton* _insert_image_from_file = nullptr;
+	FlatToolButton* _expand_edit_area = nullptr;
+	FlatToolButton* _expand_tools_lines = nullptr;
+	FlatToolButton* _save = nullptr;
 
-	FlatToolButton *_back = nullptr;
+	FlatToolButton* _back = nullptr;
 	// FlatToolButton		*_freeze		= nullptr;          // reserved for read
 	// only
-	FlatToolButton *_find_in_base = nullptr;
+	FlatToolButton* _find_in_base = nullptr;
 
-	FlatToolButton *_show_text = nullptr;
+	FlatToolButton* _show_text = nullptr;
 
-	FlatToolButton *_to_attach = nullptr;
+	FlatToolButton* _to_attach = nullptr;
 	QIcon _icon_attach_exists =
-	    QIcon(":/resource/pic/attach_exists.svg");  // Иконка, когда аттачи есть
+	    QIcon(":/resource/pic/attach_exists.svg"); // Иконка, когда аттачи есть
 	QIcon _icon_attach_not_exists =
-	    QIcon(":/resource/pic/attach.svg");  // Иконка, когда аттачей нет
+	    QIcon(":/resource/pic/attach.svg"); // Иконка, когда аттачей нет
 
-	IndentSlider *_indent_slider = nullptr;
+	IndentSlider* _indent_slider = nullptr;
 
 	// Горизонтальная линейка, содержащая кнопки форматирования
-	QVBoxLayout *_textformat_buttons_layout = nullptr;
-	QToolBar *_tools_line_0 = nullptr;
-	QToolBar *_tools_line_1 = nullptr;
+	QVBoxLayout* _textformat_buttons_layout = nullptr;
+	QToolBar* _tools_line_0 = nullptr;
+	QToolBar* _tools_line_1 = nullptr;
 
 	// Вертикальная группировалка линеек кнопок и области редактирования
-	QVBoxLayout *full_layout = nullptr;
+	QVBoxLayout* full_layout = nullptr;
 // Editentry *_editentry;
 //// Контекстное меню редактора
 // EditorContextMenu   *_editor_context_menu = nullptr;
 
 #ifdef ADD_ACTIONS_BY_NAME
-	void add_action_by_name(QString toolName, QToolBar *line);
+	void add_action_by_name(QString toolName, QToolBar* line);
 #endif
-	const char *version(void);
+	const char* version(void);
 
 	// void init_enable_assembly(bool flag);
 	//	static QString init_config_file_name(QString config_full_name);
@@ -222,12 +223,12 @@ class Editor : public QWidget {
 	void textarea_editable(bool editable);
 	QString textarea(void);
 	QTextCursor textCursor() const;
-	void setTextCursor(const QTextCursor &cursor);
-	void insertPlainText(const QString &text);
-	void setPlainText(const QString &text);
+	void setTextCursor(const QTextCursor& cursor);
+	void insertPlainText(const QString& text);
+	void setPlainText(const QString& text);
 	QString toPlainText() const;
 	void ensureCursorVisible() const;
-	QTextDocument *document(void);
+	QTextDocument* document(void);
 	void textarea_modified(bool modify);
 	bool textarea_modified(void);
 
@@ -241,22 +242,22 @@ class Editor : public QWidget {
 	void file_name(QString _file_name);
 	QString file_name(void);
 
-	static void editor_load_callback(QObject *editor, QString &load_text);
-	static void editor_save_callback(QObject *editor, const QString &save_text);
+	static void editor_load_callback(QObject* editor, QString& load_text);
+	static void editor_save_callback(QObject* editor, const QString& save_text);
 	void save_textarea();
 	bool save_textarea_text();
 	bool save_textarea_images(int mode);
 	bool load_textarea();
 
 	// Методы установки нестандартных процедур чтения и сохранения текста
-	const std::function<void(QObject *editor, QString saveString)>
+	const std::function<void(QObject* editor, QString saveString)>
 	save_callback() const;
 	void save_callback(
-	    const std::function<void(QObject *editor, QString saveString)> &func);
+	    const std::function<void(QObject* editor, QString saveString)>& func);
 
-	std::function<void(QObject *editor, QString &String)> load_callback() const;
+	std::function<void(QObject* editor, QString& String)> load_callback() const;
 	void load_callback(
-	    const std::function<void(QObject *editor, QString &String)> &func);
+	    const std::function<void(QObject* editor, QString& String)>& func);
 
 	// Метод установки функции переключения на предыдущее окно (для мобильного
 	// интерфейса)
@@ -269,12 +270,11 @@ class Editor : public QWidget {
 	// которые может хранить объект редактора
 
 	template <typename field_key_type>
-	void misc_field(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map const, field_key_type>::type>::type& value);  // , typename field_type_switch = typename
+	void misc_field(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map const, field_key_type>::type>::type& value); // , typename field_type_switch = typename
 
 
 	template <typename field_key_type>
 	typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, field_key_type>::type>::type misc_field() const;
-
 
 
 	void clear_all_misc_field(void);
@@ -296,7 +296,7 @@ class Editor : public QWidget {
 	// SuperMenu *context_menu();
 
 	enum { SAVE_IMAGES_SIMPLE = 0,
-		   SAVE_IMAGES_REMOVE_UNUSED = 1 };
+		SAVE_IMAGES_REMOVE_UNUSED = 1 };
 
 	enum {
 		DIRFILEEMPTY_REACTION_SHOW_ERROR,
@@ -304,42 +304,42 @@ class Editor : public QWidget {
 	};
 
 	enum { WYEDIT_DESKTOP_MODE = 0,
-		   WYEDIT_MOBILE_MODE = 1 };
+		WYEDIT_MOBILE_MODE = 1 };
 
-	signals:
+    signals:
 
 	// Сигналы установки отступов на линейке с движками
 	// согласно текущему форматированию
 	void send_set_textindent_pos(int i)
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(send_set_textindent_pos, (int), i)  //
+	    W_SIGNAL(send_set_textindent_pos, (int), i) //
 #else
 	    ;
 #endif
 	    void send_set_leftindent_pos(int i)
 #if QT_VERSION == 0x050600
-	        W_SIGNAL(send_set_leftindent_pos, (int), i)  //
+		W_SIGNAL(send_set_leftindent_pos, (int), i) //
 #else
 	    ;
 #endif
 
 	    void send_set_rightindent_pos(int i)
 #if QT_VERSION == 0x050600
-	        W_SIGNAL(send_set_rightindent_pos, (int), i)  //
+		W_SIGNAL(send_set_rightindent_pos, (int), i) //
 #else
 	    ;
 #endif
 
 	    void send_expand_edit_area(bool flag)
 #if QT_VERSION == 0x050600
-	        W_SIGNAL(send_expand_edit_area, (bool), flag)  //
+		W_SIGNAL(send_expand_edit_area, (bool), flag) //
 #else
 	    ;
 #endif
 
 	    void wyedit_find_in_base_clicked()
 #if QT_VERSION == 0x050600
-	        W_SIGNAL(wyedit_find_in_base_clicked)  //
+		W_SIGNAL(wyedit_find_in_base_clicked) //
 #else
 	    ;
 #endif
@@ -348,7 +348,7 @@ class Editor : public QWidget {
 
 	    void on_update_indentline_geometry_slot(void);
 
-	private slots:
+    private slots:
 
 	// Действия в области редактирования
 	void on_bold_clicked(void);
@@ -368,7 +368,7 @@ class Editor : public QWidget {
 	void on_alignright_clicked(void);
 	void on_alignwidth_clicked(void);
 
-	void on_fontselect_changed(const QFont &font);
+	void on_fontselect_changed(const QFont& font);
 	void on_fontsize_changed(int i);
 	void on_fontcolor_clicked();
 
@@ -399,7 +399,7 @@ class Editor : public QWidget {
 	void on_to_attach_clicked(void);
 
 	void
-	on_cursor_position_changed(void);  // Слот, контролирущий перемещение курсора
+	on_cursor_position_changed(void); // Слот, контролирущий перемещение курсора
 	void on_selection_changed(void);
 	void on_undo(void);
 	void on_redo(void);
@@ -408,7 +408,7 @@ class Editor : public QWidget {
 	void paste(void);
 	void on_selectAll(void);
 
-	void on_findtext_signal_detect(const QString &text, QTextDocument::FindFlags flags);
+	void on_findtext_signal_detect(const QString& text, QTextDocument::FindFlags flags);
 
 	// Слоты обработки перемещения движков настройки отступов
 	void on_indentline_change_textindent_pos(int i);
@@ -417,17 +417,17 @@ class Editor : public QWidget {
 	void on_indentline_mouse_release(void);
 
 	// Открытие контекстного меню
-	void on_custom_contextmenu_requested(const QPoint &_position);
+	void on_custom_contextmenu_requested(const QPoint& _position);
 
 	void on_context_menu_edit_image_properties(void);
 
 	// void onModificationChanged(bool flag);
 
-	protected:
+    protected:
 	// Область редактирования текста
-	EditorTextArea *_text_area;
+	EditorTextArea* _text_area;
 
-	private:
+    private:
 	bool _init_data_enable_assembly = true;
 	// QString _init_data_config_file_name	= "";
 	bool _init_data_enable_random_seed = false;
@@ -437,11 +437,11 @@ class Editor : public QWidget {
 	QString _work_directory;
 	QString _work_file_name;
 
-	int _view_mode;  // ежим отображения редактора - WYEDIT_DESKTOP_MODE или
-	                 // WYEDIT_MOBILE_MODE
-	Blogger *_blog;
+	int _view_mode; // ежим отображения редактора - WYEDIT_DESKTOP_MODE или
+			// WYEDIT_MOBILE_MODE
+	blogger_ref _blogger;
 
-	private:
+    private:
 	void setup_signals(void);
 	void setup_buttons(void);
 	void setup_editor_area(void);
@@ -469,7 +469,7 @@ class Editor : public QWidget {
 	void update_align_button_higlight(bool activate);
 	void update_outline_button_higlight(void);
 	void set_outline_button_higlight(int button, bool active);
-	bool is_key_for_tool_line_update(QKeyEvent *event);
+	bool is_key_for_tool_line_update(QKeyEvent* event);
 
 	// Метод, переключающий состояние видимости полной панели инструментов
 	// Если вызывается без параметра, метод сам переключает
@@ -479,8 +479,8 @@ class Editor : public QWidget {
 
 	// Переопределяется слот обработки клавиш
 	// нужен для определения момента undo/redo
-	virtual void keyPressEvent(QKeyEvent *event);
-	virtual void keyReleaseEvent(QKeyEvent *event);
+	virtual void keyPressEvent(QKeyEvent* event);
+	virtual void keyReleaseEvent(QKeyEvent* event);
 
 	void setup_closebutton(void);
 	void assembly_closebutton(void);
@@ -494,17 +494,17 @@ class Editor : public QWidget {
 	int _current_left_indent;
 	int _current_right_indent;
 
-	QColor _buttons_select_color;  // Цвет рамки выделенных кнопок
+	QColor _buttons_select_color; // Цвет рамки выделенных кнопок
 
-	bool _expand_edit_area_flag;  // аспахнуто ли на максимум окно редактора
+	bool _expand_edit_area_flag; // аспахнуто ли на максимум окно редактора
 
 	// Указатели на переопределенные функции записи и чтения редактируемого текста
-	std::function<void(QObject *editor, QString saveString)>
-	    save_callback_func;  // void (*save_callback_func)(QObject *editor, QString
-	                         // saveString);
-	std::function<void(QObject *editor, QString &String)>
-	    load_callback_func;  // void (*load_callback_func)(QObject *editor, QString
-	                         // &loadString);
+	std::function<void(QObject* editor, QString saveString)>
+	    save_callback_func; // void (*save_callback_func)(QObject *editor, QString
+				// saveString);
+	std::function<void(QObject* editor, QString& String)>
+	    load_callback_func; // void (*load_callback_func)(QObject *editor, QString
+				// &loadString);
 
 	// Указатель на функцию переключения на предыдущее окно (для мобильного
 	// интерфейса)
@@ -517,7 +517,7 @@ class Editor : public QWidget {
 	// Обычно используются для запоминания нестандартного набора данных
 	// в объекте редактора, и считываются из функции обратного вызова
 	// Fields to store arbitrary data. Commonly used for storing custom data set Object Editor, and read from the callback function
-	full_fields_map _misc_fields;//QMap<QString, QString> _misc_fields;
+	full_fields_map _misc_fields; //QMap<QString, QString> _misc_fields;
 
 	int _dir_file_empty_reaction = DIRFILEEMPTY_REACTION_SHOW_ERROR;
 	QStringList _tools_name_list_in_line_0;
@@ -525,8 +525,8 @@ class Editor : public QWidget {
 
 	// Список инструментов, которые ненужно подгружать
 	QStringList _disable_tool_list;
-	FlatToolButton *_close_button;
-	QVBoxLayout *_toolsarea_of_close_button;
+	FlatToolButton* _close_button;
+	QVBoxLayout* _toolsarea_of_close_button;
 
 	enum {
 		BT_BOLD,
@@ -545,7 +545,7 @@ class Editor : public QWidget {
 	friend class Blogger;
 	friend class SuperMenu;
 
-	protected:
+    protected:
 	// virtual void resizeEvent(QResizeEvent *e);
 };
 
@@ -553,7 +553,7 @@ class Editor : public QWidget {
 #ifndef EDITOR_EXTERN_MISC_FIELD_GET_DECLARATION
 #define EDITOR_EXTERN_MISC_FIELD_GET_DECLARATION(key_type) \
 	extern template typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, key_type>::type>::type Editor::misc_field<key_type>() const;
-#endif  // EDITOR_EXTERN_MISC_FIELD_GET_DECLARATION
+#endif // EDITOR_EXTERN_MISC_FIELD_GET_DECLARATION
 
 EDITOR_EXTERN_MISC_FIELD_GET_DECLARATION(id_key)
 EDITOR_EXTERN_MISC_FIELD_GET_DECLARATION(pin_key)
@@ -574,7 +574,7 @@ EDITOR_EXTERN_MISC_FIELD_GET_DECLARATION(attach_size_key)
 #ifndef EDITOR_EXTERN_MISC_FIELD_SET_DECLARATION
 #define EDITOR_EXTERN_MISC_FIELD_SET_DECLARATION(key_type) \
 	extern template void Editor::misc_field<key_type>(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map const, key_type>::type>::type& value);
-#endif  // EDITOR_EXTERN_MISC_FIELD_SET_DECLARATION
+#endif // EDITOR_EXTERN_MISC_FIELD_SET_DECLARATION
 
 EDITOR_EXTERN_MISC_FIELD_SET_DECLARATION(id_key)
 EDITOR_EXTERN_MISC_FIELD_SET_DECLARATION(pin_key)

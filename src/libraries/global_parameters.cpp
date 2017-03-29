@@ -22,8 +22,10 @@
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "libraries/window_switcher.h"
 #include "views/app_config/app_config_dialog.h"
+#include "views/browser/browser.h"
 #include "views/browser/docker.h"
 #include "views/browser/downloadmanager.h"
+#include "views/browser/tabwidget.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/hidable_tab.h"
 #include "views/main_window/main_window.h"
@@ -962,12 +964,12 @@ ts_t* gl_para::tree_screen() const
 	return _tree_screen;
 }
 
-web::Docker* gl_para::browser_docker() const
+web::Docker<web::Browser>* gl_para::browser_docker() const
 {
 	return _browser_docker;
 }
 
-void gl_para::browser_docker(web::Docker*& b)
+void gl_para::browser_docker(web::Docker<web::Browser>*& b)
 {
 	_browser_docker = b;
 }
@@ -977,9 +979,24 @@ void gl_para::push_record_screen(rs_t* point)
 	_table_screens.push_back(point);
 }
 
-std::set<rs_t*> gl_para::record_screens() const
+#ifdef USE_SIGNAL_CLOSE
+std::set<sd::intrusive_ptr<rs_t>>
+#else
+std::set<rs_t*>
+#endif //USE_SIGNAL_CLOSE
+gl_para::record_screens() const
 {
-	return _mainwindow->record_screens();
+#ifdef USE_SIGNAL_CLOSE
+	std::set<sd::intrusive_ptr<rs_t>>
+#else
+	std::set<rs_t*>
+#endif //USE_SIGNAL_CLOSE
+	    result;
+	for (auto& bro : _mainwindow->browsers()) {
+		auto rs = bro->tab_widget()->record_screen();
+		if (result.find(rs) != result.end()) result.insert(rs);
+	}
+	return result;
 }
 
 // RecordScreen *GlobalParameters::page_screen() {return _page_screen; }
@@ -997,12 +1014,12 @@ FindScreen* gl_para::find_screen() const
 	return _find_screen;
 }
 
-void gl_para::editor_docker(web::Docker* point)
+void gl_para::editor_docker(web::Docker<Blogger>* point)
 {
 	_editor_docker = point;
 }
 
-web::Docker* gl_para::editor_docker() const
+web::Docker<Blogger>* gl_para::editor_docker() const
 {
 	return _editor_docker;
 }

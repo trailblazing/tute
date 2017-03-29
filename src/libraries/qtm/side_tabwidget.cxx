@@ -5,7 +5,7 @@
 #include "views/attach_table/attach_table_screen.h"
 #include "views/browser/docker.h"
 
-SideTabWidget::SideTabWidget(web::Docker* editor_docker_, Blogger* blogger_, std::shared_ptr<QSettings> topic_editor_config_, QSplitter* splitter, QWidget* parent)
+SideTabWidget::SideTabWidget(web::Docker<Blogger>* editor_docker_, Blogger* blogger_, std::shared_ptr<QSettings> topic_editor_config_, QSplitter* splitter, QWidget* parent)
     : HidableTab(editor_docker_, splitter, topic_editor_config_, "geometry", "splitter_sizelist", "collapsed", parent)
     //	  , _editor_docker(editor_docker_)
     , _blogger(blogger_)

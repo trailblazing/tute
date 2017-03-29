@@ -10,8 +10,7 @@
 #include <QString>
 
 template <typename return_type, typename... Arg>
-using _interface =
-    sd::_interface<return_type, Arg..., sd::meta_info<std::shared_ptr<void>>>;
+using _interface = sd::_interface<sd::meta_info<std::shared_ptr<void>>, return_type, Arg...>;
 
 struct Binder;
 class i_t;
@@ -26,19 +25,19 @@ struct Binder
     : public boost::intrusive_ref_counter<Binder, boost::thread_safe_counter> { // : public
 										// std::enable_shared_from_this<coupler>
     public:
-	typedef _interface<void(boost::intrusive_ptr<i_t>)> item_interface_set;
-	typedef _interface<void(web::WebPage*)> page_interface_set;
-	typedef _interface<boost::intrusive_ptr<i_t>() const> item_interface;
-	typedef _interface<web::WebPage*() const> page_interface;
-	typedef _interface<web::WebView*()> bind_interface; // , boost::intrusive_ptr<TreeItem>
-							    // (TreeItem::*)(web::WebPage *)
+	typedef _interface<void(boost::intrusive_ptr<i_t>)> item_set;
+	typedef _interface<void(web::WebPage*)> page_set;
+	typedef _interface<boost::intrusive_ptr<i_t>() const> item_get;
+	typedef _interface<web::WebPage*() const> page_get;
+	typedef _interface<web::WebView*()> bind_set; // , boost::intrusive_ptr<TreeItem>
+						      // (TreeItem::*)(web::WebPage *)
 	typedef _interface<web::WebView*()> activate_interface;
 	typedef _interface<QString()> binder_type_interface;
 
-	typedef std::shared_ptr<item_interface> item_helper;
-	typedef std::shared_ptr<page_interface> page_helper;
-	typedef std::shared_ptr<bind_interface> bind_helper; // , boost::intrusive_ptr<TreeItem>
-							     // (TreeItem::*)(web::WebPage *)
+	typedef std::shared_ptr<item_get> item_helper;
+	typedef std::shared_ptr<page_get> page_helper;
+	typedef std::shared_ptr<bind_set> bind_helper; // , boost::intrusive_ptr<TreeItem>
+						       // (TreeItem::*)(web::WebPage *)
 	typedef std::shared_ptr<activate_interface> activate_helper;
 
 	typedef std::function<boost::intrusive_ptr<i_t>()> item_exist;
@@ -72,16 +71,16 @@ struct Binder
 	    std::shared_ptr<item_consistency>, std::shared_ptr<page_consistency>>
 	    shared_status_type;
 
-	Binder(item_interface_set _item_linker_set, page_interface_set _page_linker_set, item_interface _host_linker, page_interface _page_linker, bind_interface _bind_helper, activate_interface _activate_helper, binder_type_interface _binder_type);
+	Binder(item_set _item_linker_set, page_set _page_linker_set, item_get _host_linker, page_get _page_linker, bind_set _bind_helper, activate_interface _activate_helper, binder_type_interface _binder_type);
 
 	// this design make a long time compiling!!!
 	template <typename T>
 	inline Binder(std::shared_ptr<T> ar)
-	    : _item_linker_set(item_interface_set(&T::host, ar))
-	    , _page_linker_set(page_interface_set(&T::page, ar))
-	    , _host_linker(item_interface(&T::host, ar))
-	    , _page_linker(page_interface(&T::page, ar))
-	    , _bind_helper(bind_interface(&T::bind, ar))
+	    : _item_linker_set(item_set(&T::host, ar))
+	    , _page_linker_set(page_set(&T::page, ar))
+	    , _host_linker(item_get(&T::host, ar))
+	    , _page_linker(page_get(&T::page, ar))
+	    , _bind_helper(bind_set(&T::bind, ar))
 	    , _activate_helper(activate_interface(&T::activator, ar))
 	    , _binder_type(binder_type_interface(&T::binder_type))
 	    , _status(state_impl())
@@ -132,11 +131,11 @@ struct Binder
 	//        bind_helper     _bind_helper;
 	//        activate_helper _activate_helper;
 
-	item_interface_set _item_linker_set;
-	page_interface_set _page_linker_set;
-	item_interface _host_linker;
-	page_interface _page_linker;
-	bind_interface _bind_helper;
+	item_set _item_linker_set;
+	page_set _page_linker_set;
+	item_get _host_linker;
+	page_get _page_linker;
+	bind_set _bind_helper;
 	activate_interface _activate_helper;
 	binder_type_interface _binder_type;
 	status_type _status;

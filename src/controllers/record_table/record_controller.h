@@ -3,6 +3,8 @@
 
 #include <QModelIndexList>
 
+
+#include "libraries/global_parameters.h"
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
 #include "models/tree/tree_item.h"
@@ -19,7 +21,7 @@ extern const int add_new_record_to_end;
 extern const int add_new_record_before;
 extern const int add_new_record_after;
 
-class Record;
+class r_t;
 class rv_t;
 class vector_t;
 class RecordModel;
@@ -36,6 +38,7 @@ class AppConfig;
 class Blogger;
 
 namespace web {
+	template <typename>
 	class Docker;
 	class Browser;
 	class WebView;
@@ -49,32 +52,32 @@ struct index_proxy;
 struct index_source;
 struct id_value;
 
-class rctrl_t : public can_rent {
+class rctrl_t : public QObject
+#ifdef USE_SIGNAL_CLOSE
+		,
+		public boost::intrusive_ref_counter<rctrl_t, boost::thread_safe_counter>,
+		public sd::renter //<rctrl_t>
+#endif                            //USE_SIGNAL_CLOSE
+{
 #if QT_VERSION == 0x050600
 	W_OBJECT(rctl_t)
 #else
 	Q_OBJECT
 #endif
     public:
-	typedef can_rent super;
+	typedef QObject super;
 	// typedef TreeItem::bind_helper       bind_helper;
 	// typedef TreeItem::activate_helper   active_helper;
-	rctrl_t(Blogger* blogger_, web::TabWidget* tabmanager_, rs_t* record_screen_);
+	rctrl_t(Blogger *blogger_, web::TabWidget *tabmanager_, rs_t *record_screen_);
 	virtual ~rctrl_t();
 
 	// void init(void);
 
-	rv_t* view(void);
+	rv_t* view(void) const;
 	RecordModel* source_model(); // {return _source_model;}
 	RecordProxyModel* proxy_model();
-	web::TabWidget* tabmanager()
-	{
-		return _tabmanager;
-	}
-	void tabmanager(web::TabWidget* tab_)
-	{
-		_tabmanager = tab_;
-	}
+	web::TabWidget *tab_widget();
+	//	void tab_widget(web::TabWidget* tab_);
 	boost::intrusive_ptr<i_t> index_invoke(const index_proxy& index_proxy_, bool force_update = false);
 
 	// bool is_tree_item_exists(void);
@@ -145,18 +148,16 @@ class rctrl_t : public can_rent {
 	// *main_window, MetaEditor *_editor_screen);
 	// bool no_view() {return _no_view;}
 
-	rs_t* record_screen()
-	{
-		return _record_screen;
-	}
+	rs_t *record_screen();
 
 	// RecordController *reocrd_controller() {return this;}
 	// RecordController *reocrd_controller()const {return
 	// const_cast<RecordController *>(this);}
 
-	Blogger* editing_window();
-//    signals:
-//	void close_request(QObject*);
+	Blogger *blogger();
+	//    signals:
+	//	void close_request(QObject*);
+	//	sd::shared_ptr<rctrl_t> renter() const;
     public slots:
 
 	// Вызов действий для копирования записей в буфер обмена с удалением
@@ -197,30 +198,29 @@ class rctrl_t : public can_rent {
 	// Печать таблицы конечных записей
 	void on_print_click(void);
 
-	void select_as_current(
-	    pos_proxy pos_proxy_); // , const int mode = add_new_record_after
+	void select_as_current(pos_proxy pos_proxy_); // , const int mode = add_new_record_after
 	// void cursor_to_index(boost::intrusive_ptr<TreeItem> it);
-	void on_sort_request(int logicalIndex, Qt::SortOrder order);
+	void on_sort_requested(int logicalIndex, Qt::SortOrder order);
 
     protected:
 	// void browser_update(const PosSource pos_source_);
 
 	// bool                _no_view = true;
-	web::TabWidget* _tabmanager; //
-	RecordModel* _source_model;  // Class, advanced by QAbstractTableModel   //
+	tabwidget_ref _tab_widget; //
+
+	//	sd::shared_ptr<rctrl_t> _renter; //	std::shared_ptr<boost::signals2::signal<void(rctrl_t*)>> _close_request;
+	RecordModel* _source_model; // Class, advanced by QAbstractTableModel   //
 	// Класс, расширенный от QAbstractTableModel
 	RecordProxyModel* _proxy_model;
 	rv_t* _view;
-	rs_t* _record_screen;
-	Blogger* _blogger;
+	rs_ref _record_screen;
+	blogger_ref _blogger;
 	//	wn_t *_main_window;
-
+	//	bool _closed = false;
 	// web::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex>
 	// record_index_, bool make_current = true);	// , const int mode =
 	// add_new_record_after	// add_new_record_after
-	web::WebView* addnew_item(
-	    boost::intrusive_ptr<RecordIndex> record_index_,
-	    bool make_current = true); // , const int mode = add_new_record_after
+	web::WebView* addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true); // , const int mode = add_new_record_after
 	boost::intrusive_ptr<i_t>
 	synchronize(boost::intrusive_ptr<RecordIndex> record_index_);
 	void edit_field(pos_source pos, const pin_value& pin, const name_value& name, const author_value& author, const home_value& home, const url_value& url, const tags_value& tags);
@@ -241,6 +241,7 @@ class rctrl_t : public can_rent {
 	// register_record(boost::intrusive_ptr<Record> record);
 
 	// friend Record *register_record(const QUrl &_url);
+
 	friend struct RecordIndex;
 	friend class web::TabWidget;
 };

@@ -325,7 +325,7 @@ boost::intrusive_ptr<i_t> vector_t::child_direct(const QUrl& url) const {
 // auto it = _child_items.value(i);
 
 // if(it->field("id") == item->field("id")) {
-// assert(it->is_registered_to_record_controller());
+// assert(it->is_registered_to_record_ctrl());
 // pos = i;
 // break;
 // }
@@ -1077,7 +1077,7 @@ boost::intrusive_ptr<i_t> vector_t::delete_permanent(
 				     }))) {
 				if (it->binder()) {
 					assert(web_view->page() == it->page());
-					it->page()->record_controller()->remove(it->id());
+					it->page()->record_ctrl()->remove(it->id());
 				}
 			}
 			// if(_it->integrity_internal())
@@ -1245,7 +1245,7 @@ boost::intrusive_ptr<i_t> vector_t::delete_permanent_recursive(
 					}))) {
 					if (it->binder()) {
 						assert(web_view->page() == it->page());
-						it->page()->record_controller()->remove(it->id());
+						it->page()->record_ctrl()->remove(it->id());
 					}
 				}
 				if (it->binder()) {

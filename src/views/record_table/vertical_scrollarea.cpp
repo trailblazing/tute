@@ -16,12 +16,13 @@ W_OBJECT_IMPL(VerticalScrollArea)
 #endif
 
 VerticalScrollArea::VerticalScrollArea(
-    rv_t *_record_view  // std::shared_ptr<sd::_interface<void(QResizeEvent *),
-                        // sd::meta_info<void *>>> interface
+    rv_t* _record_view // std::shared_ptr<sd::_interface<void(QResizeEvent *),
+		       // sd::meta_info<void >>> interface
     ,
-    QWidget *parent)
+    QWidget* parent)
     : QScrollArea(parent)
-    , _record_view(_record_view) {  // _interface(interface)
+    , _record_view(_record_view)
+{ // _interface(interface)
 	setWidgetResizable(true);
 	setFrameStyle(QFrame::NoFrame);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -50,7 +51,8 @@ VerticalScrollArea::VerticalScrollArea(
 	// setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 }
 
-bool VerticalScrollArea::eventFilter(QObject *obj, QEvent *ev) {
+bool VerticalScrollArea::eventFilter(QObject* obj, QEvent* ev)
+{
 	// This works because QScrollArea::setWidget installs an eventFilter on the
 	// widget
 	if (obj && obj == widget() && ev->type() == QEvent::Resize) {
@@ -65,12 +67,13 @@ bool VerticalScrollArea::eventFilter(QObject *obj, QEvent *ev) {
 		////        widget()
 		// ->resizeEvent(static_cast<QResizeEvent *>(e));
 
-		_record_view->resizeEvent(static_cast<QResizeEvent *>(ev));  // (*_interface)(static_cast<QResizeEvent *>(ev));
+		_record_view->resizeEvent(static_cast<QResizeEvent*>(ev)); // (*_interface)(static_cast<QResizeEvent *>(ev));
 	}
 	return QScrollArea::eventFilter(obj, ev);
 }
 
-void VerticalScrollArea::wheelEvent(QWheelEvent *event) {  // does not work
+void VerticalScrollArea::wheelEvent(QWheelEvent* event)
+{ // does not work
 	x -= (event->delta() / 120) * 10;
 	verticalScrollBar()->setValue(x);
 }

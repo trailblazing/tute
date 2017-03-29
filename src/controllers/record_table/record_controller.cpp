@@ -68,16 +68,21 @@ W_OBJECT_IMPL(rctl_t)
 
 rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_find_screen // ,
     web::TabWidget* tabmanager_, rs_t* record_screen_)
+#ifdef USE_SIGNAL_CLOSE
+    : super()
+    , sd::renter() //sd::renter<rctrl_t>()
+#else
     : super(record_screen_)
-    , _tabmanager(tabmanager_) // nullptr
-    , _source_model(new RecordModel(this))
+#endif                                     //USE_SIGNAL_CLOSE
+    , _tab_widget(tabmanager_)             // nullptr
+    , _source_model(new RecordModel(this)) // so, you need boost::intursive_ptr
     , _proxy_model(new RecordProxyModel(this))
     , _view([&]() -> rv_t* {
 	    _view = nullptr;
 	    assert(record_screen_);
 	    auto r = new rv_t(record_screen_, this);
 	    return r;
-    }()) // , qobject_cast<QWidget * >(RecordTableScreen)
+    }())
     , _record_screen(record_screen_)
     , _blogger(blogger_)
 {
@@ -85,13 +90,13 @@ rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_fi
 	// setObjectName(screen_name + "_controller");
 
 	// _tree_screen->reocrd_controller =
-	// std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController
+	// std::make_shared<sd::_interface<sd::meta_info<void >, RecordController
 	// *>>("", &RecordController::reocrd_controller, this);
 	// _find_screen->reocrd_controller =
-	// std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController
+	// std::make_shared<sd::_interface<sd::meta_info<void >, RecordController
 	// *>>("", &RecordController::reocrd_controller, this);
 
-	// _find_screen->toolbarsearch()->lineedits(_tabmanager->lineEditStack());
+	// _find_screen->toolbarsearch()->lineedits(_tab_widget->lineEditStack());
 
 	// Инициализируется область со списком записей
 	// view = new RecordTableView(qobject_cast<QWidget *>(parent));   // Вид
@@ -111,11 +116,31 @@ rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_fi
 	_view->setModel(_proxy_model);
 	// init();
 	// _no_view = false;
-	connect(_view, &rv_t::tabMoved, _tabmanager, &web::TabWidget::moveTab);
+	connect(_view, &rv_t::tabMoved, &*_tab_widget, &web::TabWidget::moveTab);
+#ifdef USE_SIGNAL_CLOSE
+	destroy_transfer([&](sd::renter* const r) {
+		(void)r;
+		if (r != this) { //&& !this->_destroyed_request_sent
+			this->_destroyed_request_sent = true;
+			//			delete this; //this->deleteLater();
+		}
+	});
+	//	close_connect(std::bind(&web::TabWidget::close_requested_from_others, _tab_widget, static_cast<sd::renter* const>(this)));
+	if (_record_screen) {
+		destroy_transfer(_record_screen->destroy_trigger_from_others()
+		    //		[&](renter* const r) {
+		    //			(void)r;
+		    //			if (_record_screen && _record_screen != r && !_record_screen->close_request_sent() && !_record_screen->destroy_request_sent()) _record_screen->destroy_requested_from_others(r);
+		    //		}
+		    );
+	}
+#endif //USE_SIGNAL_CLOSE
 }
 
 rctrl_t::~rctrl_t()
 {
+	//	this->_destroyed_request_triggered = true;
+	//	_renter.trigger();
 	// delete
 	// _view->deleteLater();
 	// delete
@@ -129,7 +154,7 @@ rctrl_t::~rctrl_t()
 // _view->init();
 // }
 
-rv_t* rctrl_t::view(void)
+rv_t* rctrl_t::view(void) const
 {
 	return _view;
 }
@@ -187,8 +212,8 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			// Установка засветки на нужный индекс
 			// Set the backlight to the desired index
 			_view->selectionModel()->setCurrentIndex(index_proxy_, current_tree_current_index_mode); // selIdx   //
-														 // QItemSelectionModel::Select    //
-														 // ClearAndSelect
+			// QItemSelectionModel::Select    //
+			// ClearAndSelect
 			_view->setCurrentIndex(index_proxy_);
 			_view->edit(index_proxy_);
 
@@ -206,8 +231,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			// processed signal line change to the selection model)
 			// Therefore, the recording must be made a virtual click to fill the final
 			// table of records
-			if (appconfig->interface_mode() == "mobile")
-				emit _view->clicked(static_cast<QModelIndex>(index_proxy_));
+			if (appconfig->interface_mode() == "mobile") emit _view->clicked(static_cast<QModelIndex>(index_proxy_));
 			// QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
 			// emit _view->clicked(static_cast<QModelIndex>(index_proxy_));	//
@@ -216,12 +240,10 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			// this->setFocus();   // ?
 			pos_source pos_source_ = index<pos_source>(pos_proxy_);
 			auto it = index<boost::intrusive_ptr<i_t>>(pos_source_);
-			if (this->_view->hasFocus()) { // view is the curretn controller
-				if (_tabmanager->currentIndex() != static_cast<int>(pos_source_))
-					_tabmanager->select_as_current(it->page()->view()); // setCurrentIndex(static_cast<int>(pos_source_));
+			if (this->_view->hasFocus()) {                                                                                                // view is the curretn controller
+				if (_tab_widget->currentIndex() != static_cast<int>(pos_source_)) _tab_widget->select_as_current(it->page()->view()); // setCurrentIndex(static_cast<int>(pos_source_));
 				auto tree_screen = gl_paras->main_window()->tree_screen();
-				if (tree_screen->view()->current_item() != it)
-					tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
+				if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
 			}
 			if (it)
 				if (it->page()) it->page()->metaeditor_sychronize();
@@ -246,8 +268,8 @@ boost::intrusive_ptr<i_t> rctrl_t::index_invoke(const index_proxy& index_proxy_,
 	qDebug() << "rctrl_t::index_invoke() : current item num " << pos_source_;
 
 	_view->setFocus(); // select_as_current(index<pos_proxy>(pos_source_));
-			   // //    select_as_current(index<pos_proxy>(index_proxy_));
-			   // // ?
+	// //    select_as_current(index<pos_proxy>(index_proxy_));
+	// // ?
 
 	result = source_model()->item(pos_source_);
 	// auto	ov	= result->page()->view();
@@ -612,11 +634,8 @@ void rctrl_t::sychronize_attachtable_to_item(const pos_source pos)
 	// auto table = _source_model->tree_item();
 
 	// Устанавливается таблица приаттаченных файлов
-	AttachTableController* attachTableController =
-	    gl_paras
-		->attachtable_controller(); // find_object<AttachTableController>("attachTableController");
-	attachTableController->attach_table_data(
-	    _source_model->item(pos)->attach_table());
+	AttachTableController* attachTableController = gl_paras->attachtable_controller(); // find_object<AttachTableController>("attachTableController");
+	attachTableController->attach_table_data(_source_model->item(pos)->attach_table());
 }
 
 // bool RecordController::is_tree_item_exists(void)
@@ -663,6 +682,16 @@ RecordProxyModel* rctrl_t::proxy_model()
 	return _proxy_model;
 }
 
+web::TabWidget* rctrl_t::tab_widget()
+{
+	return static_cast<web::TabWidget*>(_tab_widget);
+}
+
+//void rctrl_t::tab_widget(web::TabWidget* tab_)
+//{
+//	_tab_widget = tab_;
+//}
+
 // void RecordController::init_source_model(TreeModelKnow *_shadow_branch,
 // MainWindow *main_window, MetaEditor *_editor_screen)
 // {
@@ -672,7 +701,7 @@ RecordProxyModel* rctrl_t::proxy_model()
 //// Обновление набора данных с последующим выбором первой строки
 //// может быть очень длительным, поэтому показывается что процесс выполняется
 //// QCursor cursor_wait=QCursor(Qt::BusyCursor);
-//// qApp->setOverrideCursor(cursor_wait);
+//// sapp_t::instance()->setOverrideCursor(cursor_wait);
 ////    find_object<MainWindow>("mainwindow")
 // main_window->setCursor(Qt::BusyCursor);
 
@@ -717,7 +746,7 @@ RecordProxyModel* rctrl_t::proxy_model()
 // qobject_cast<RecordScreen *>(parent())->tools_update();
 // }
 
-//// qApp->restoreOverrideCursor();
+//// sapp_t::instance()->restoreOverrideCursor();
 ////    find_object<MainWindow>("mainwindow")
 // main_window->unsetCursor();
 
@@ -747,7 +776,7 @@ RecordProxyModel* rctrl_t::proxy_model()
 //// Обновление набора данных с последующим выбором первой строки
 //// может быть очень длительным, поэтому показывается что процесс выполняется
 //// QCursor cursor_wait=QCursor(Qt::BusyCursor);
-//// qApp->setOverrideCursor(cursor_wait);
+//// sapp_t::instance()->setOverrideCursor(cursor_wait);
 // find_object<MainWindow>("mainwindow")->setCursor(Qt::BusyCursor);
 
 //// Pointer to the data reported to the data source    // Указатель на данные
@@ -790,7 +819,7 @@ RecordProxyModel* rctrl_t::proxy_model()
 // qobject_cast<RecordScreen *>(parent())->tools_update();
 // }
 
-//// qApp->restoreOverrideCursor();
+//// sapp_t::instance()->restoreOverrideCursor();
 // find_object<MainWindow>("mainwindow")->unsetCursor();
 
 ////
@@ -809,7 +838,7 @@ RecordProxyModel* rctrl_t::proxy_model()
 //// Обновление набора данных с последующим выбором первой строки
 //// может быть очень длительным, поэтому показывается что процесс выполняется
 //// QCursor cursor_wait=QCursor(Qt::BusyCursor);
-//// qApp->setOverrideCursor(cursor_wait);
+//// sapp_t::instance()->setOverrideCursor(cursor_wait);
 // find_object<MainWindow>("mainwindow")->setCursor(Qt::BusyCursor);
 
 //// Pointer to the data reported to the data source    // Указатель на данные
@@ -852,7 +881,7 @@ RecordProxyModel* rctrl_t::proxy_model()
 // qobject_cast<RecordScreen *>(parent())->tools_update();
 // }
 
-//// qApp->restoreOverrideCursor();
+//// sapp_t::instance()->restoreOverrideCursor();
 // find_object<MainWindow>("mainwindow")->unsetCursor();
 
 // qDebug() << "In RecordTableView set new model stop";
@@ -876,15 +905,14 @@ void rctrl_t::add_items_to_clipboard(ClipboardRecords* clipboardRecords, QModelI
 		// файлов)
 		boost::intrusive_ptr<i_t> record =
 		    _source_model->item(pos_source(((QModelIndex)index_).row()));
-		if (record->is_lite())
-			record->to_fat();
+		if (record->is_lite()) record->to_fat();
 		clipboardRecords->add_record(record);
 	}
 }
 
 int rctrl_t::row_count(void) const
 {
-	return _tabmanager->count(); //_proxy_model->rowCount();
+	return _tab_widget->count(); //_proxy_model->rowCount();
 }
 
 //// Get the number of the first highlighted item on the screen   // Получение
@@ -941,8 +969,8 @@ int rctrl_t::row_count(void) const
 
 ////    PosSource tab_index = _source_model->position(id);
 
-////    if(_tabmanager->currentIndex() != (int)pos_source_)
-///_tabmanager->setCurrentIndex((int)pos_source_);
+////    if(_tab_widget->currentIndex() != (int)pos_source_)
+///_tab_widget->setCurrentIndex((int)pos_source_);
 // }
 
 // IndexSource RecordController::index_source(IdType id) const
@@ -1110,10 +1138,8 @@ void rctrl_t::paste(void)
 {
 	// Проверяется, содержит ли буфер обмена данные нужного формата
 	const QMimeData* mimeData = QApplication::clipboard()->mimeData();
-	if (mimeData == nullptr)
-		return;
-	if (!(mimeData->hasFormat(QString(gl_para::_program_instance_name) + "/records")))
-		return;
+	if (mimeData == nullptr) return;
+	if (!(mimeData->hasFormat(QString(gl_para::_program_instance_name) + "/records"))) return;
 	// Создается ссылка на буфер обмена
 	QClipboard* clipboardBuf = QApplication::clipboard();
 
@@ -1310,8 +1336,12 @@ web::WebView* rctrl_t::addnew_blank()
 
 	// Введенные данные добавляются (все только что введенные данные передаются в
 	// функцию addNew() незашифрованными)
-	return addnew_item(RecordIndex::instance([&] { return _source_model; }, it),
-	    true); // , mode
+	return addnew_item(RecordIndex::instance([&] { return _source_model; }, it), true); // , mode
+}
+
+rs_t* rctrl_t::record_screen()
+{
+	return static_cast<rs_t*>(_record_screen);
 }
 
 //// Вызов окна добавления данных в таблицу конечных записей
@@ -1380,9 +1410,7 @@ web::WebView* rctrl_t::addnew_blank()
 
 // Функция добавления новой записи в таблицу конечных записей
 // Принимает полный формат записи
-web::WebView*
-rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_,
-    bool make_current)
+web::WebView* rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current)
 { // , const int mode
 	// boost::intrusive_ptr<TreeItem> item_target = record_index_->host();
 
@@ -1406,9 +1434,8 @@ rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_,
 	// todo: сделать заполнение таблицы приаттаченных файлов
 	// Record record;
 	// if(record.isLite())record.switchToFat();
-	if (item_target->is_lite())
-		item_target->to_fat(); // I met this!!! but before in, I am sure I called
-				       // to_fat() already. just at delete?
+	if (item_target->is_lite()) item_target->to_fat(); // I met this!!! but before in, I am sure I called
+	// to_fat() already. just at delete?
 	assert(!item_target->is_lite());
 
 	// record.setText(addNewRecordWin.getField("text"));
@@ -1486,10 +1513,10 @@ rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_,
 		[&](const id_value id) { return id == item_target->id(); })) {
 		v = _source_model->insert_new_item(
 		    item_target); // , mode	// source_position_index,
-		selected_source_position = _tabmanager->webViewIndex(v);
+		selected_source_position = _tab_widget->webViewIndex(v);
 	} else {
 		selected_source_position = _source_model->position(item_target->id());
-		v = _tabmanager->webView(static_cast<int>(selected_source_position));
+		v = _tab_widget->webView(static_cast<int>(selected_source_position));
 	}
 	assert(selected_source_position != -1);
 	assert(_source_model->item(selected_source_position) == item_target || item_target->field<url_key>() == url_value("") || item_target->field<url_key>() == web::Browser::_defaulthome);
@@ -1501,8 +1528,7 @@ rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_,
 	_source_model->on_table_config_changed();
 	_proxy_model->setSourceModel(_source_model);
 	_view->setModel(_proxy_model);
-	if (make_current)
-		select_as_current(index<pos_proxy>(selected_source_position)); // , mode // modify _source_model? yeah
+	if (make_current) select_as_current(index<pos_proxy>(selected_source_position)); // , mode // modify _source_model? yeah
 
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1783,8 +1809,7 @@ void rctrl_t::close_context(void)
 		}
 	}
 	remove(delete_ids);
-	if (_view->currentIndex().row() != _tabmanager->currentIndex())
-		select_as_current(pos_proxy(_tabmanager->currentIndex())); // }
+	if (_view->currentIndex().row() != _tab_widget->currentIndex()) select_as_current(pos_proxy(_tab_widget->currentIndex())); // }
 }
 
 void rctrl_t::remove(id_value delete_id)
@@ -1901,17 +1926,17 @@ void rctrl_t::remove(QVector<id_value> delete_ids)
 				if (item1 && item2) {
 					web::WebView* v1 = nullptr;
 					web::WebView* v2 = nullptr;
-					if ((v1 = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b) {
+					if ((v1 = _tab_widget->find([&](boost::intrusive_ptr<const ::Binder> b) {
 						    return url_equal(b->host()->field<url_key>(), item1->field<url_key>()) && b->host()->id() == item1->id();
 					    })) &&
-					    (v2 = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b) {
+					    (v2 = _tab_widget->find([&](boost::intrusive_ptr<const ::Binder> b) {
 						    return url_equal(b->host()->field<url_key>(), item2->field<url_key>()) && b->host()->id() == item1->id();
 					    }))) {
 						assert(v1->page()->binder()->host() == item1);
 						assert(v2->page()->binder()->host() == item2);
-						auto index1 = _tabmanager->webViewIndex(v1);
+						auto index1 = _tab_widget->webViewIndex(v1);
 						assert(index1 != -1);
-						auto index2 = _tabmanager->webViewIndex(v2);
+						auto index2 = _tab_widget->webViewIndex(v2);
 						assert(index2 != -1);
 						result = index1 < index2;
 					}
@@ -1937,20 +1962,19 @@ void rctrl_t::remove(QVector<id_value> delete_ids)
 				    _source_model->item([&](const id_value id_) { return id_ == id; });
 				if (item) {
 					web::WebView* v = nullptr;
-					if ((v = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b) {
+					if ((v = _tab_widget->find([&](boost::intrusive_ptr<const ::Binder> b) {
 						    return url_equal(b->host()->field<url_key>(), item->field<url_key>()) && b->host()->id() == item->id();
 					    }))) { // "url"
-						// item_to_be_deleted->unique_page()
-						////            int index =
-						///_tabmanager->indexOf(item->unique_page()->view());
-						////            if(index != -1)_tabmanager->closeTab(index);
+						   // item_to_be_deleted->unique_page()
+						   ////            int index =
+						   ///_tab_widget->indexOf(item->unique_page()->view());
+						   ////            if(index != -1)_tab_widget->closeTab(index);
 						assert(v->page()->binder()->host() == item);
-						auto index = _tabmanager->webViewIndex(v);
+						auto index = _tab_widget->webViewIndex(v);
 						assert(index != -1);
 						// _source_model->remove_child(item);  // doing nothing
-						_tabmanager->closeTab(
-						    index); // _tabmanager->indexOf(item->bounded_page()->view())
-						_new_index = _tabmanager->currentIndex();
+						_tab_widget->closeTab(index); // _tab_widget->indexOf(item->bounded_page()->view())
+						_new_index = _tab_widget->currentIndex();
 						changed = true;
 						// if(0 == i){
 						////				_first_delete	= v;
@@ -1966,9 +1990,9 @@ void rctrl_t::remove(QVector<id_value> delete_ids)
 				// globalparameters.find_screen()->remove_id(id);  // ?
 			}
 			(void)changed;
-			// _new_view = _tabmanager->sibling(_first_delete);
+			// _new_view = _tab_widget->sibling(_first_delete);
 		}
-		// if(_tabmanager->count() > 0)_new_view = _tabmanager->currentWebView();
+		// if(_tab_widget->count() > 0)_new_view = _tab_widget->currentWebView();
 		return _new_view;
 	};
 
@@ -1984,7 +2008,7 @@ void rctrl_t::remove(QVector<id_value> delete_ids)
 	QVector<int> del_rows;
 	// QModelIndexList::iterator it;
 	for (auto del_id : delete_ids) { // for(it = items_for_delete.begin(); it !=
-					 // items_for_delete.end(); it++) {
+		// items_for_delete.end(); it++) {
 		QModelIndex curr_idx;
 		curr_idx = index<index_source>(del_id); // index<IndexProxy>(del_id); //*it;
 
@@ -2022,8 +2046,7 @@ void rctrl_t::remove(QVector<id_value> delete_ids)
 		id_value id = delete_ids[i];
 		auto item =
 		    _source_model->item([&](const id_value id_) { return id_ == id; });
-		if (item)
-			pre.push_back(id);
+		if (item) pre.push_back(id);
 	}
 	bool changed = false;
 	pages_remove_from_browser(pre);
@@ -2046,19 +2069,17 @@ void rctrl_t::remove(QVector<id_value> delete_ids)
 		_view->reset();
 		_proxy_model->setSourceModel(_source_model);
 		_view->setModel(_proxy_model);
-		if (_tabmanager->count() > 0) {
+		if (_tab_widget->count() > 0) {
 			//			web::WebView *_new_view = nullptr;
-			auto _new_index = _tabmanager->currentIndex();
-			web::WebView* _new_view = _tabmanager->webView(_new_index);
-			if (_new_view != _tabmanager->currentWebView())
-				_tabmanager->select_as_current(_new_view);
-			// _new_view = _tabmanager->currentWebView();
+			auto _new_index = _tab_widget->currentIndex();
+			web::WebView* _new_view = _tab_widget->webView(_new_index);
+			if (_new_view != _tab_widget->currentWebView()) _tab_widget->select_as_current(_new_view);
+			// _new_view = _tab_widget->currentWebView();
 			auto _binder = _new_view->page()->binder();
 			if (_new_view && _binder) {
 				auto it = _binder->host();
 				auto index_ = index<pos_proxy>(it->id());
-				if (_view->current_item() != it)
-					this->select_as_current(index_);
+				if (_view->current_item() != it) this->select_as_current(index_);
 				// for(auto id : real_delete_ids){
 				// IndexProxy index_ = index<IndexProxy>(id);	// invalid
 				// emit _view->dataChanged(index_, index_);
@@ -2163,7 +2184,7 @@ void rctrl_t::remove(QVector<id_value> delete_ids)
 // globalparameters.tree_screen()->tree_view()->know_model_save();
 // }
 
-void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order)
+void rctrl_t::on_sort_requested(int logicalIndex, Qt::SortOrder order)
 {
 	// _proxy_model->setDynamicSortFilter(true);
 	_proxy_model->setFilterKeyColumn(logicalIndex);
@@ -2192,8 +2213,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order)
 	_proxy_model->setSortRole(SORT_ROLE);
 
 	std::vector<web::WebView*> v_list;
-	for (int index_ = 0; index_ < _tabmanager->count(); index_++)
-		v_list.push_back(_tabmanager->webView(index_));
+	for (int index_ = 0; index_ < _tab_widget->count(); index_++) v_list.push_back(_tab_widget->webView(index_));
 	if (order == Qt::AscendingOrder) {
 		if (header_title == pin_field_description) {
 			// std::sort(v_list.begin(), v_list.end(), [&](web::WebView *v0,
@@ -2203,10 +2223,9 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order)
 			// });
 			// int t = 0;
 			for (auto v : v_list) {
-				if (v->page()->host()->field<pin_key>() != pin_value(bool_from_check_state[Qt::Unchecked]))
-					_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(0)); // , index<pos_source>(pos_proxy(_tabmanager->count() -
-														      // 1))
-														      // t ++;
+				if (v->page()->host()->field<pin_key>() != pin_value(bool_from_check_state[Qt::Unchecked])) _source_model->move(pos_source(_tab_widget->webViewIndex(v)), pos_source(0)); // , index<pos_source>(pos_proxy(_tab_widget->count() -
+																									  // 1))
+																									  // t ++;
 			}
 		} else if (header_title == title_field_description) {
 			std::sort(v_list.begin(), v_list.end(), [&](web::WebView* v0, web::WebView* v1) {
@@ -2215,7 +2234,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order)
 			});
 			int t = 0;
 			for (auto v : v_list) {
-				_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(t));
+				_source_model->move(pos_source(_tab_widget->webViewIndex(v)), pos_source(t));
 				t++;
 			}
 		} else if (header_title == rating_field_description) {
@@ -2224,7 +2243,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order)
 			});
 			int t = 0;
 			for (auto v : v_list) {
-				_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(t));
+				_source_model->move(pos_source(_tab_widget->webViewIndex(v)), pos_source(t));
 				t++;
 			}
 		}
@@ -2237,8 +2256,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order)
 			// });
 			// int t = 0;
 			for (auto v : v_list) {
-				if (v->page()->host()->field<pin_key>() != pin_value(bool_from_check_state[Qt::Unchecked]))
-					_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(_tabmanager->count() - 1));
+				if (v->page()->host()->field<pin_key>() != pin_value(bool_from_check_state[Qt::Unchecked])) _source_model->move(pos_source(_tab_widget->webViewIndex(v)), pos_source(_tab_widget->count() - 1));
 				// t ++;
 			} //
 		} else if (header_title == title_field_description) {
@@ -2248,7 +2266,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order)
 			});
 			int t = 0;
 			for (auto v : v_list) {
-				_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(t));
+				_source_model->move(pos_source(_tab_widget->webViewIndex(v)), pos_source(t));
 				t++;
 			}
 		} else if (header_title == rating_field_description) {
@@ -2257,7 +2275,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order)
 			});
 			int t = 0;
 			for (auto v : v_list) {
-				_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(t));
+				_source_model->move(pos_source(_tab_widget->webViewIndex(v)), pos_source(t));
 				t++;
 			}
 		}
@@ -2289,8 +2307,8 @@ void rctrl_t::on_sort_click(void)
 
 		// Включается сортировка по нужному столбцу
 		int n = _record_screen->_sort->data().toInt(); // В actionSort хранится
-							       // номер столбца, по которому
-							       // нужно сортировать
+		// номер столбца, по которому
+		// нужно сортировать
 		qDebug() << "Sort column number " << n;
 		_proxy_model->sort(n, Qt::DescendingOrder);
 
@@ -2340,20 +2358,19 @@ void rctrl_t::on_print_click(void)
 {
 	// RecordScreen *parentPointer = qobject_cast<RecordScreen *>(parent());
 
-	RecordPrint print_dialog(_record_screen); // parentPointer
+	RecordPrint print_dialog(static_cast<rs_t*>(_record_screen)); // parentPointer
 	print_dialog.setModel(_proxy_model);
 	print_dialog.generateHtmlTableFromModel();
 	print_dialog.setTitleToHtml(
 	    record_screen()
 		->objectName()); // _source_model->_browser_pages->path_as_name_with_delimiter("
-				 // / ")
+	// / ")
 
 	print_dialog.exec();
 }
 
 // record url may be empty or web::Browser::_defaulthome
-boost::intrusive_ptr<i_t>
-rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
+boost::intrusive_ptr<i_t> rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
 {
 	boost::intrusive_ptr<i_t> it = record_index_->host();
 	boost::intrusive_ptr<i_t> _found_item =
@@ -2369,9 +2386,9 @@ rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
 	//// if(record.isLite())record.switchToFat();
 	//// assert(!item->is_lite());
 	// if(it->is_lite())it->to_fat();
-	//// item->is_registered_to_record_controller_and_tabmanager(true);
+	//// item->is_registered_to_record_controller_and_tab_widget(true);
 	// v		= this->addnew_item_fat(record_index_, add_new_record_after);
-	// source_position = _tabmanager->webViewIndex(v);	//
+	// source_position = _tab_widget->webViewIndex(v);	//
 	// recordTableController->autoAddNewAfterContext();
 	// assert(source_position != - 1);
 
@@ -2379,7 +2396,7 @@ rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
 	// }else
 	{
 		source_position = _source_model->position(_found_item->id());
-		v = _tabmanager->webView(static_cast<int>(source_position));
+		v = _tab_widget->webView(static_cast<int>(source_position));
 	}
 	_found_item = v->page()->binder()->host();
 	assert(_found_item == _source_model->item(source_position));
@@ -2396,8 +2413,7 @@ rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
 	assert(url_equal(_found_item->field<url_key>(), it->field<url_key>()));
 	// }
 	// assert(_record);
-	if (_found_item->is_lite())
-		_found_item->to_fat();
+	if (_found_item->is_lite()) _found_item->to_fat();
 	// }
 	// if(_view->current_item() != _item) {
 	// auto current_item = _view->current_item();
@@ -2504,7 +2520,7 @@ rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
 ////    item->record_binder(_record_binder);
 ////    //    item->activator(activator);
 
-////    //    item->is_registered_to_record_controller_and_tabmanager(false);
+////    //    item->is_registered_to_record_controller_and_tab_widget(false);
 
 // if(!item->record_binder()) {
 
@@ -2712,7 +2728,7 @@ rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
 ////            //            _item =
 ///register_item_to_browser_source_model(_source_item);
 
-//// _source_item->is_registered_to_record_controller_and_tabmanager(false);
+//// _source_item->is_registered_to_record_controller_and_tab_widget(false);
 ////            // _source_item->self_bind();
 // _result = _source_item;
 // } else {
@@ -2728,12 +2744,12 @@ rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
 ////            //            _result->binder(generator);
 ////            //            _result->activator(activator);
 
-//// _result->is_registered_to_record_controller_and_tabmanager(false);
+//// _result->is_registered_to_record_controller_and_tab_widget(false);
 ////            // _item->self_bind();
 // }
 
 // assert(!_result->is_lite());
-//// assert(_result->is_registered_to_record_controller_and_tabmanager());
+//// assert(_result->is_registered_to_record_controller_and_tab_widget());
 
 // } else {
 // item_is_brand_new = true;
@@ -2840,7 +2856,7 @@ rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
 
 ////            //            _item =
 ///register_item_to_browser_source_model(item);
-////            item->is_registered_to_record_controller_and_tabmanager(true);
+////            item->is_registered_to_record_controller_and_tab_widget(true);
 ////            // item->self_bind();
 ////            //                assert(_record);
 ////            //                assert(_record->is_registered());
@@ -2859,7 +2875,7 @@ rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
 ////            //            _result->binder(generator);
 ////            //            _result->activator(activator);
 
-//// _result->is_registered_to_record_controller_and_tabmanager(true);
+//// _result->is_registered_to_record_controller_and_tab_widget(true);
 ////            // _item->self_bind();
 // }
 
@@ -2898,7 +2914,7 @@ rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
 ////    //    _result->activator(activator);
 
 // assert(_result != _know_model_board->root_item());
-////    // assert(_result->is_registered_to_record_controller_and_tabmanager());
+////    // assert(_result->is_registered_to_record_controller_and_tab_widget());
 ////    assert(_result->field("url") == _url.toString());   // maybe other url
 ///loaded !
 ////    //    } // browser_pages
@@ -2933,8 +2949,7 @@ pos_proxy rctrl_t::index<pos_proxy>(const pos_source& source_pos) const
 template <>
 pos_proxy rctrl_t::index<pos_proxy>(const index_proxy& index_) const
 {
-	if (!static_cast<QModelIndex>(index_).isValid())
-		return pos_proxy(-1);
+	if (!static_cast<QModelIndex>(index_).isValid()) return pos_proxy(-1);
 	return pos_proxy(static_cast<QModelIndex>(index_).row());
 }
 
@@ -2962,8 +2977,7 @@ pos_proxy rctrl_t::index<pos_proxy>(const boost::intrusive_ptr<i_t>& it) const
 template <>
 pos_source rctrl_t::index<pos_source>(const pos_proxy& pos_proxy_) const
 {
-	if (-1 == pos_proxy_)
-		return pos_source(-1);
+	if (-1 == pos_proxy_) return pos_source(-1);
 	QModelIndex fake_source_index = _proxy_model->mapToSource(_proxy_model->index(static_cast<int>(pos_proxy_), 0));
 
 	return pos_source(fake_source_index.row());
@@ -2980,8 +2994,7 @@ pos_source rctrl_t::index<pos_source>(const index_proxy& ip) const
 template <>
 pos_source rctrl_t::index<pos_source>(const index_source& index_) const
 {
-	if (!static_cast<QModelIndex>(index_).isValid())
-		return pos_source(-1);
+	if (!static_cast<QModelIndex>(index_).isValid()) return pos_source(-1);
 	return pos_source(static_cast<QModelIndex>(index_).row());
 }
 
@@ -2992,8 +3005,7 @@ pos_source rctrl_t::index<pos_source>(const id_value& id) const
 }
 
 template <>
-pos_source
-rctrl_t::index<pos_source>(const boost::intrusive_ptr<i_t>& it) const
+pos_source rctrl_t::index<pos_source>(const boost::intrusive_ptr<i_t>& it) const
 {
 	return index<pos_source>(it->id());
 }
@@ -3007,8 +3019,7 @@ index_proxy rctrl_t::index<index_proxy>(const pos_source& pos_source_) const
 template <>
 index_proxy rctrl_t::index<index_proxy>(const pos_proxy& pos_proxy_) const
 {
-	if (pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount())
-		return index_proxy(QModelIndex());
+	if (pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount()) return index_proxy(QModelIndex());
 	auto pos_source_ = index<pos_source>(pos_proxy_);
 	auto it = _source_model->item(pos_source_);
 	auto index_source_ = _source_model->index(it);
@@ -3018,19 +3029,16 @@ index_proxy rctrl_t::index<index_proxy>(const pos_proxy& pos_proxy_) const
 }
 
 template <>
-index_proxy
-rctrl_t::index<index_proxy>(const index_source& index_source_) const
+index_proxy rctrl_t::index<index_proxy>(const index_source& index_source_) const
 {
-	if (!static_cast<QModelIndex>(index_source_).isValid())
-		return index_proxy(QModelIndex());
+	if (!static_cast<QModelIndex>(index_source_).isValid()) return index_proxy(QModelIndex());
 	QModelIndex index_ = _proxy_model->mapFromSource(index_source_); // ((QModelIndex) sourceIndex).row(), 0)// (QModelIndex)sourceIndex
 
 	return index_proxy(index_);
 }
 
 template <>
-index_proxy rctrl_t::index<index_proxy>(
-    const id_value& id) const // Выясняется ссылка на таблицу конечных данных
+index_proxy rctrl_t::index<index_proxy>(const id_value& id) const // Выясняется ссылка на таблицу конечных данных
 {
 	// auto table = _source_model->tree_item();
 
@@ -3042,8 +3050,7 @@ index_proxy rctrl_t::index<index_proxy>(
 }
 
 template <>
-index_proxy
-rctrl_t::index<index_proxy>(const boost::intrusive_ptr<i_t>& it) const
+index_proxy rctrl_t::index<index_proxy>(const boost::intrusive_ptr<i_t>& it) const
 {
 	return index<index_proxy>(it->id());
 }
@@ -3057,11 +3064,9 @@ index_source rctrl_t::index<index_source>(const pos_source& pos_source_) const
 }
 
 template <>
-index_source
-rctrl_t::index<index_source>(const index_proxy& index_proxy_) const
+index_source rctrl_t::index<index_source>(const index_proxy& index_proxy_) const
 {
-	if (!static_cast<QModelIndex>(index_proxy_).isValid())
-		return index_source(QModelIndex());
+	if (!static_cast<QModelIndex>(index_proxy_).isValid()) return index_source(QModelIndex());
 	// QModelIndex index		=
 	// _proxy_model->mapToSource(_proxy_model->index(((QModelIndex)
 	// proxyIndex).row(), 0));
@@ -3073,8 +3078,7 @@ rctrl_t::index<index_source>(const index_proxy& index_proxy_) const
 template <>
 index_source rctrl_t::index<index_source>(const pos_proxy& pos_proxy_) const
 {
-	if (pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount())
-		return index_source(QModelIndex());
+	if (pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount()) return index_source(QModelIndex());
 	// IndexProxy proxyIndex = index<IndexProxy>(pos_proxy_);
 	// index_source
 	// index_(_proxy_model->mapToSource(_proxy_model->index((int)pos_proxy_, 0)));
@@ -3085,8 +3089,7 @@ index_source rctrl_t::index<index_source>(const pos_proxy& pos_proxy_) const
 }
 
 template <>
-index_source rctrl_t::index<index_source>(
-    const id_value& id) const // Выясняется ссылка на таблицу конечных данных
+index_source rctrl_t::index<index_source>(const id_value& id) const // Выясняется ссылка на таблицу конечных данных
 {
 	// Номер записи в Source данных
 	pos_source pos_source_ = _source_model->position(id);
@@ -3098,8 +3101,7 @@ index_source rctrl_t::index<index_source>(
 }
 
 template <>
-index_source
-rctrl_t::index<index_source>(const boost::intrusive_ptr<i_t>& it) const
+index_source rctrl_t::index<index_source>(const boost::intrusive_ptr<i_t>& it) const
 {
 	// return index<index_source>(it->id());
 	return _source_model->index(it);
@@ -3136,41 +3138,38 @@ id_value rctrl_t::index<id_value>(const boost::intrusive_ptr<i_t>& it) const
 }
 
 template <>
-boost::intrusive_ptr<i_t>
-rctrl_t::index<boost::intrusive_ptr<i_t>>(const pos_source& ps) const
+boost::intrusive_ptr<i_t> rctrl_t::index<boost::intrusive_ptr<i_t>>(const pos_source& ps) const
 {
 	return _source_model->item(ps);
 }
 
 template <>
-boost::intrusive_ptr<i_t>
-rctrl_t::index<boost::intrusive_ptr<i_t>>(const index_proxy& ip) const
+boost::intrusive_ptr<i_t> rctrl_t::index<boost::intrusive_ptr<i_t>>(const index_proxy& ip) const
 {
 	return _source_model->item(index<pos_source>(ip));
 }
 
 template <>
-boost::intrusive_ptr<i_t>
-rctrl_t::index<boost::intrusive_ptr<i_t>>(const pos_proxy& pp) const
+boost::intrusive_ptr<i_t> rctrl_t::index<boost::intrusive_ptr<i_t>>(const pos_proxy& pp) const
 {
 	return _source_model->item(index<pos_source>(pp));
 }
 
 template <>
-boost::intrusive_ptr<i_t>
-rctrl_t::index<boost::intrusive_ptr<i_t>>(const index_source& is) const
+boost::intrusive_ptr<i_t> rctrl_t::index<boost::intrusive_ptr<i_t>>(const index_source& is) const
 {
 	return _source_model->item(index<pos_source>(is));
 }
 
 template <>
-boost::intrusive_ptr<i_t>
-rctrl_t::index<boost::intrusive_ptr<i_t>>(const id_value& id) const
+boost::intrusive_ptr<i_t> rctrl_t::index<boost::intrusive_ptr<i_t>>(const id_value& id) const
 {
 	return _source_model->item(index<pos_source>(id));
 }
 
-Blogger* rctrl_t::editing_window()
+Blogger* rctrl_t::blogger()
 {
-	return _blogger;
+	return static_cast<Blogger*>(_blogger);
 }
+
+//sd::shared_ptr<rctrl_t> rctrl_t::renter() const { return _renter; }

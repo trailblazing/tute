@@ -19,20 +19,20 @@ class VerticalScrollArea : public QScrollArea {
 	Q_OBJECT
 #endif
 
-	// std::shared_ptr<sd::_interface<void(QResizeEvent *), sd::meta_info<void *>
+	// std::shared_ptr<sd::_interface<void(QResizeEvent *), sd::meta_info<void >
 	// > > _interface;
-	rv_t *_record_view;
+	rv_t* _record_view;
 
-	public:
-	explicit VerticalScrollArea(rv_t *_record_view, QWidget *parent = 0);
+    public:
+	explicit VerticalScrollArea(rv_t* _record_view, QWidget* parent = 0);
 
-	virtual bool eventFilter(QObject *obj, QEvent *ev);
+	virtual bool eventFilter(QObject* obj, QEvent* ev);
 
-	protected:
+    protected:
 #ifndef QT_NO_WHEELEVENT
-	void wheelEvent(QWheelEvent *);
+	void wheelEvent(QWheelEvent*);
 #endif
 	int x = 0;
 };
 
-#endif  // VERTICALSCROLLAREA_H
+#endif // VERTICALSCROLLAREA_H

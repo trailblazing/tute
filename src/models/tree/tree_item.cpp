@@ -71,12 +71,12 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem> _parent_item, boost::intrusive
 // }
 
 i_t::i_t(boost::intrusive_ptr<i_t> host_parent, const full_fields_map& field_data_static_map_, const QDomElement& _dom_element, int pos, int mode)
-    : Record(field_data_static_map_)
+    : r_t(field_data_static_map_)
     , vector_t(_dom_element, host_parent ? host_parent->is_crypt() : false)
     , dom_from_treeitem_impl(
           [&](std::shared_ptr<QDomDocument> doc)
 	      -> QDomElement { // QDomElement node = doc->createElement("node");
-		      QDomElement record = Record::dom_from_record_impl(doc);
+		      QDomElement record = r_t::dom_from_record_impl(doc);
 		      if (vector_t::count_direct() > 0) {
 			      QDomElement children = vector_t::dom_from_itemsflat_impl(doc);
 			      record.appendChild(children);
@@ -209,12 +209,12 @@ i_t::i_t(boost::intrusive_ptr<i_t> host_parent, const full_fields_map& field_dat
 }
 
 i_t::i_t(const full_fields_map& field_data_static_map_, const QDomElement& _dom_element)
-    : Record(field_data_static_map_)
+    : r_t(field_data_static_map_)
     , vector_t(_dom_element, false)
     , dom_from_treeitem_impl(
           [&](std::shared_ptr<QDomDocument> doc) -> QDomElement {
 		  // QDomElement node = doc->createElement("node");
-		  QDomElement record = Record::dom_from_record_impl(doc);
+		  QDomElement record = r_t::dom_from_record_impl(doc);
 		  if (vector_t::count_direct() > 0) {
 			  QDomElement children = vector_t::dom_from_itemsflat_impl(doc);
 			  record.appendChild(children);
@@ -468,7 +468,7 @@ i_t::~i_t()
 	////        //
 	////    }
 
-	// binder_reset();
+	binder_reset();
 }
 
 //// Возвращение ссылки на потомка, который хранится в списке childItems
@@ -2005,12 +2005,12 @@ int i_t::move_dn(void)
 
 void i_t::move_up(int pos)
 {
-    vector_t::move_up(pos);
+	vector_t::move_up(pos);
 }
 
 void i_t::move_dn(int pos)
 {
-    vector_t::move_dn(pos);
+	vector_t::move_dn(pos);
 }
 
 //// Путь к элементу (список идентификаторов от корня до текущего элемента)
@@ -2113,9 +2113,9 @@ void i_t::to_encrypt(void)
 		for (int i = 0; i < count_direct(); i++)
 			child_direct(i)->to_encrypt();
 		if (is_lite())
-			Record::to_encrypt_and_save_lite();
+			r_t::to_encrypt_and_save_lite();
 		else
-			Record::to_encrypt_and_save_fat();
+			r_t::to_encrypt_and_save_fat();
 	}
 }
 
@@ -2141,9 +2141,9 @@ void i_t::to_decrypt(void)
 		for (int i = 0; i < count_direct(); i++)
 			child_direct(i)->to_decrypt();
 		if (is_lite())
-			Record::to_decrypt_and_save_lite();
+			r_t::to_decrypt_and_save_lite();
 		else
-			Record::to_decrypt_and_save_fat();
+			r_t::to_decrypt_and_save_fat();
 	}
 }
 
@@ -2293,7 +2293,7 @@ void i_t::dom_to_records(const QDomElement& _record_dom_element)
 				assert(_linker->host().get() == this);
 				assert(_linker->host_parent().get() != this);
 			}
-			Record::dom_to_record(_dom_element);
+			r_t::dom_to_record(_dom_element);
 			if (_linker) {
 				assert(_linker->host().get() == this);
 				assert(_linker->host_parent().get() != this);
@@ -2650,7 +2650,7 @@ QDomElement i_t::dom_from_treeitem()
 {
 	std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
 	// QDomElement node = QDomDocument().createElement("node");
-	QDomElement record = Record::dom_from_record_impl(doc);
+	QDomElement record = r_t::dom_from_record_impl(doc);
 	if (vector_t::count_direct() > 0) {
 		QDomElement children = vector_t::dom_from_itemsflat_impl(doc);
 		record.appendChild(children);
@@ -2792,14 +2792,19 @@ web::WebView* i_t::bind()
 				new ::Binder(std::make_shared<web::WebPage::Binder>(this, page_)); // _binder->host(this);
 				view = page_->view();
 			} else { // if(!page_ || (!host_ && !page_))
-				auto _browser = gl_paras->main_window()->browser<boost::intrusive_ptr<i_t>>(this);
+				auto browser_ = gl_paras->main_window()->browser<boost::intrusive_ptr<i_t>>(this);
 				auto record_index = RecordIndex::instance(
 				    [&] {
-					    return _browser->record_screen()->record_controller()->source_model();
+					    RecordModel* rm = nullptr;
+					    auto rctrl = browser_->tab_widget()->record_screen()->record_ctrl();
+					    if (rctrl) {
+						    rm = rctrl->source_model();
+					    }
+					    return rm;
 				    },
 				    this);
 				// if(!page_)
-				page_ = _browser->bind(record_index)->page();
+				page_ = browser_->bind(record_index)->page();
 			}
 		} else if ((host_ && host_ != this) || (page_ && page_->binder() != _binder)) {
 			page_->bind(this);
@@ -2807,14 +2812,19 @@ web::WebView* i_t::bind()
 		} // else view = page_->view();
 		view = page_->view();
 	} else {
-		auto _browser = gl_paras->main_window()->browser<boost::intrusive_ptr<i_t>>(this);
+		auto browser_ = gl_paras->main_window()->browser<boost::intrusive_ptr<i_t>>(this);
 		auto record_index = RecordIndex::instance(
 		    [&] {
-			    return _browser->record_screen()->record_controller()->source_model();
+			    RecordModel* rm = nullptr;
+			    auto rctrl = browser_->tab_widget()->record_screen()->record_ctrl();
+			    if (rctrl) {
+				    rm = rctrl->source_model();
+			    }
+			    return rm;
 		    },
 		    this);
 		// if(!page_)
-		auto page_ = _browser->bind(record_index)->page();
+		auto page_ = browser_->bind(record_index)->page();
 		new ::Binder(std::make_shared<web::WebPage::Binder>(this, page_));
 		view = page_->view();
 	}
@@ -2909,7 +2919,7 @@ web::WebView* i_t::activate(
 
 bool i_t::is_empty() const
 {
-	return static_cast<const Record*>(this)->is_empty() && static_cast<const vector_t*>(this)->is_empty();
+	return static_cast<const r_t*>(this)->is_empty() && static_cast<const vector_t*>(this)->is_empty();
 }
 
 boost::intrusive_ptr<Binder> i_t::binder()
@@ -3000,7 +3010,7 @@ void i_t::binder_reset()
 		// std::function<void(boost::intrusive_ptr<TreeItem>)>
 		// close_tab_recursive = [&](boost::intrusive_ptr<TreeItem> it)->void {
 		// if(it->is_registered_to_browser())   // item_to_be_deleted->unique_page()
-		// it->bounded_page()->record_controller()->page_remove(it->id()); //
+		// it->bounded_page()->record_ctrl()->page_remove(it->id()); //
 		// (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
 
 		// if(it->count_direct() > 0)

@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 2.8)
+include_directories("../src/")
+set (CMAKE_CXX_STANDARD 14)
+add_compile_options(-g -pthread)
+#add_compile_options(-g -lpthread)
+project(test)
+add_executable(${PROJECT_NAME} "main.cxx" "main.h")

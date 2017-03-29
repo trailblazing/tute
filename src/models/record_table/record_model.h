@@ -14,8 +14,8 @@
 
 #include <boost/serialization/strong_typedef.hpp>
 
+#include "libraries/global_parameters.h"
 #include "models/record_table/record_index.hxx"
-
 // #include "models/tree/TreeItem.h"
 
 #include "utility/lease.h"
@@ -34,7 +34,7 @@ extern const int add_new_record_to_end;
 extern const int add_new_record_before;
 extern const int add_new_record_after;
 
-class Record;
+class r_t;
 class vector_t;
 class i_t;
 class tkm_t;
@@ -53,6 +53,7 @@ struct index_source;
 struct id_value;
 
 namespace web {
+	template <typename>
 	class Docker;
 	class Browser;
 	class TabWidget;
@@ -61,16 +62,16 @@ namespace web {
 
 // struct pages_container {
 // public:
-// explicit pages_container(web::TabWidget *_tabmanager);
+// explicit pages_container(web::TabWidget *_tab_widget);
 // ~pages_container();
-// web::TabWidget      *tabmanager(){return _tabmanager;}
+// web::TabWidget      *tabmanager(){return _tab_widget;}
 
 //// void browser_pages(ItemsFlat *_browser_pages);
 //// ItemsFlat *browser_pages();
 //// ItemsFlat *browser_pages()const;
 
 // protected:
-// web::TabWidget  *_tabmanager;
+// web::TabWidget  *_tab_widget;
 //// ItemsFlat           *_browser_pages;
 // };
 
@@ -84,10 +85,10 @@ class RecordModel : public QAbstractTableModel // , public pages_container
 	// By the closed (private) function models can have access controller   // К
 	// закрытым (private) функциям модели может иметь доступ контроллер
 	friend class rctrl_t;
-	friend class web::Docker;
+	//	friend class web::Docker<web::Browser>;
 
     public:
-	RecordModel(rctrl_t* record_controller); // , RecordScreen *_record_screen
+	RecordModel(rctrl_t* record_ctrl_); // , RecordScreen *_record_screen
 
 	~RecordModel();
 
@@ -152,9 +153,10 @@ class RecordModel : public QAbstractTableModel // , public pages_container
 	// *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
 
 	// ItemsFlat *browser_pages()const {return pages_container::browser_pages();}
-	std::shared_ptr<borrower<rctrl_t>> rctrl_borrower() const;
 
-	int count() const; // {return _tabmanager->count();}
+	rctrl_t* record_ctrl() const;
+
+	int count() const; // {return _tab_widget->count();}
 
 	// boost::intrusive_ptr<TreeItem>	sibling_s(boost::intrusive_ptr<TreeItem>
 	// it) const;// override
@@ -201,7 +203,7 @@ class RecordModel : public QAbstractTableModel // , public pages_container
 	// TreeModelKnow *_browser_pages;  //
 	// boost::intrusive_ptr<TreeItem> _shadow_branch_root;	// keep it flat
 
-	std::shared_ptr<borrower<rctrl_t>> _rctrl_borrower;
+	rctrl_ref _rctrl;
 	friend class rs_t;
 	friend class web::TabWidget;
 	friend struct RecordIndex;

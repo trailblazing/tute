@@ -1,6 +1,7 @@
 #ifndef TREEINDEX_HXX
 #define TREEINDEX_HXX
 
+#include "utility/lease.h"
 #include "utility/strong_typedef.hxx"
 #include <QModelIndex>
 #include <QUrl>
@@ -23,7 +24,7 @@ class RecordModel;
 struct url_value;
 
 namespace web {
-class Browser;
+	class Browser;
 }
 
 BOOST_STRONG_TYPEDEF_EXTENSION(QModelIndex, index_tree)
@@ -38,28 +39,28 @@ struct TreeLevel
 	static boost::intrusive_ptr<TreeLevel>
 	instance(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusive_ptr<i_t> _to_be_operated);
 
-	private:
-	TreeLevel(boost::intrusive_ptr<TreeIndex> tree_index, boost::intrusive_ptr<i_t> to_be_merged, tv_t *tree_view);
+    private:
+	TreeLevel(boost::intrusive_ptr<TreeIndex> tree_index, boost::intrusive_ptr<i_t> to_be_merged, tv_t* tree_view);
 	//	boost::intrusive_ptr<TreeItem>			move_impl(const int pos = 0,
 	//const int mode = add_new_record_after);
 	boost::intrusive_ptr<TreeIndex> _tree_index;
 	boost::intrusive_ptr<i_t> _to_be_operated;
-	tv_t *_tree_view;
+	tv_t* _tree_view;
 	friend struct TreeIndex;
 	friend class tkm_t;
 };
 
 struct TreeIndex
     : public boost::intrusive_ref_counter<TreeIndex, boost::thread_safe_counter> {
-	public:
+    public:
 	typedef std::function<bool(boost::intrusive_ptr<const i_t>)> equal_url;
-	typedef std::function<bool(boost::intrusive_ptr<const i_t>, const url_value &)> equal_url_t;
+	typedef std::function<bool(boost::intrusive_ptr<const i_t>, const url_value&)> equal_url_t;
 	typedef std::function<bool(boost::intrusive_ptr<const i_t>, boost::intrusive_ptr<const i_t>)> equal_t;
-	typedef std::function<bool(boost::intrusive_ptr<const Linker>)> substitute_condition;                                             // , boost::intrusive_ptr<const Linker>
-	typedef std::function<bool(boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)> substitute_condition_double;  //
-	typedef std::function<boost::intrusive_ptr<i_t>(boost::intrusive_ptr<TreeIndex>, boost::intrusive_ptr<i_t>, const substitute_condition &, bool)> insert_strategy;
+	typedef std::function<bool(boost::intrusive_ptr<const Linker>)> substitute_condition;                                            // , boost::intrusive_ptr<const Linker>
+	typedef std::function<bool(boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)> substitute_condition_double; //
+	typedef std::function<boost::intrusive_ptr<i_t>(boost::intrusive_ptr<TreeIndex>, boost::intrusive_ptr<i_t>, const substitute_condition&, bool)> insert_strategy;
 
-	std::function<tkm_t *()> current_model() const;
+	std::function<tkm_t*()> current_model() const;
 	//	index_tree host_parent_index() const;
 	index_tree host_index() const;
 
@@ -70,15 +71,15 @@ struct TreeIndex
 	//*()> &current_model, boost::intrusive_ptr<TreeItem> host_parent, int
 	//sibling_order = 0);
 	static boost::intrusive_ptr<TreeIndex>
-	require_treeindex(const std::function<tkm_t *()> &current_model_, boost::intrusive_ptr<i_t> host_);
+	require_treeindex(const std::function<tkm_t*()>& current_model_, boost::intrusive_ptr<i_t> host_);
 	static boost::intrusive_ptr<i_t>
-	require_item(const url_value &find_url_, const insert_strategy &tree_view_insert_strategy_, equal_url equal_);
+	require_item(const url_value& find_url_, const insert_strategy& tree_view_insert_strategy_, equal_url equal_);
 
 	boost::intrusive_ptr<i_t>
-	bind(const url_value &_find_url, const insert_strategy &_view_insert_strategy, equal_url _equal, web::Browser *_recommend_browser = nullptr);  // boost::intrusive_ptr<TreeItem>   tab_brother,
+	bind(const url_value& _find_url, const insert_strategy& _view_insert_strategy, equal_url _equal, web::Browser* _recommend_browser = nullptr); // boost::intrusive_ptr<TreeItem>   tab_brother,
 
 	static boost::intrusive_ptr<i_t>
-	activate(const std::function<tkm_t *()> &current_model_, boost::intrusive_ptr<i_t> host_, const url_value &find_url_, const insert_strategy &view_insert_strategy_, equal_url equal_) noexcept;
+	activate(const std::function<tkm_t*()>& current_model_, boost::intrusive_ptr<i_t> host_, const url_value& find_url_, const insert_strategy& view_insert_strategy_, equal_url equal_) noexcept;
 	//    boost::intrusive_ptr<TreeItem>
 	//    item_bind(boost::intrusive_ptr<RecordModel::ModelIndex> modelindex
 	//                                             , const
@@ -94,11 +95,11 @@ struct TreeIndex
 	static boost::intrusive_ptr<const i_t>
 	is_ancestor_of(boost::intrusive_ptr<const i_t> target, boost::intrusive_ptr<const i_t> reference);
 
-	protected:
-	private:
-	TreeIndex(const std::function<tkm_t *()> &current_model_, boost::intrusive_ptr<i_t> host_, const index_tree &host_index_, const int sibling_order_);
+    protected:
+    private:
+	TreeIndex(const std::function<tkm_t*()>& current_model_, boost::intrusive_ptr<i_t> host_, const index_tree& host_index_, const int sibling_order_);
 
-	std::function<tkm_t *()> _current_model;
+	std::function<tkm_t*()> _current_model;
 	boost::intrusive_ptr<i_t> _host;
 	//	boost::intrusive_ptr<TreeItem>		_host_parent;
 
@@ -107,4 +108,4 @@ struct TreeIndex
 	index_tree _host_index;
 };
 
-#endif  // TREEINDEX_HXX
+#endif // TREEINDEX_HXX

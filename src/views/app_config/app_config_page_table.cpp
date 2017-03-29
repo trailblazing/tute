@@ -32,8 +32,9 @@ W_OBJECT_IMPL(AppConfigPageTable)
 #endif
 
 AppConfigPageTable::AppConfigPageTable(
-    QWidget *parent)  // rctrl_t *record_controller,
-    : ConfigPage(parent) {
+    QWidget* parent) // rctrl_t *record_controller,
+    : ConfigPage(parent)
+{
 	//	  , _record_controller(record_controller)
 	qDebug() << "Create record table config page";
 
@@ -60,24 +61,24 @@ AppConfigPageTable::AppConfigPageTable(
 	_show_vertical_header->setText(tr("Show row number"));
 	if (appconfig->record_table_show_vertical_headers())
 		_show_vertical_header->setCheckState(Qt::Checked);
-	QVBoxLayout *vboxVisibleHeaders = new QVBoxLayout;
+	QVBoxLayout* vboxVisibleHeaders = new QVBoxLayout;
 	vboxVisibleHeaders->addWidget(_show_horizontal_header);
 	vboxVisibleHeaders->addWidget(_show_vertical_header);
 
-	QGroupBox *groupBoxVisibleHeaders = new QGroupBox(tr("Headers and numbers visible"));
+	QGroupBox* groupBoxVisibleHeaders = new QGroupBox(tr("Headers and numbers visible"));
 	groupBoxVisibleHeaders->setLayout(vboxVisibleHeaders);
 
 	// Область настройки видимости столбцов
-	QVBoxLayout *vboxVisibleColumns = new QVBoxLayout;
+	QVBoxLayout* vboxVisibleColumns = new QVBoxLayout;
 
-	foreach (QCheckBox *currentCheckBox, _fields)
+	foreach (QCheckBox* currentCheckBox, _fields)
 		vboxVisibleColumns->addWidget(currentCheckBox);
 
-	QGroupBox *groupBoxVisibleColumns = new QGroupBox(tr("Columns visible"));
+	QGroupBox* groupBoxVisibleColumns = new QGroupBox(tr("Columns visible"));
 	groupBoxVisibleColumns->setLayout(vboxVisibleColumns);
 
 	// Собирается основной слой
-	QVBoxLayout *central_layout = new QVBoxLayout();
+	QVBoxLayout* central_layout = new QVBoxLayout();
 
 	central_layout->addWidget(groupBoxVisibleHeaders);
 	central_layout->addWidget(groupBoxVisibleColumns);
@@ -89,8 +90,9 @@ AppConfigPageTable::AppConfigPageTable(
 	setupSignals();
 }
 
-void AppConfigPageTable::setupSignals(void) {
-	QMapIterator<QString, QCheckBox *> i(_fields);
+void AppConfigPageTable::setupSignals(void)
+{
+	QMapIterator<QString, QCheckBox*> i(_fields);
 	while (i.hasNext()) {
 		i.next();
 		connect(i.value(), &QCheckBox::toggled, this, &AppConfigPageTable::on_field_toggle);
@@ -112,10 +114,11 @@ void AppConfigPageTable::setupSignals(void) {
 		auto rs = _vtab_record->widget(i);
 		if (rs->objectName() == record_screen_multi_instance_name) {
 			// auto	rs		= dynamic_cast<rs_t *>(w);
-			auto bro_ = dynamic_cast<rs_t *>(rs)->browser();
+			auto bro_ = dynamic_cast<rs_t*>(rs)->browser();
 			if (bro_) {
-				auto _record_controller = bro_->tabmanager()->record_screen()->record_controller();
-				connect(this, &AppConfigPageTable::record_table_config_change, _record_controller, &rctrl_t::on_recordtable_configchange);
+				auto _rctrl = bro_->tab_widget()->record_screen()->record_ctrl();
+				if (_rctrl)
+					connect(this, &AppConfigPageTable::record_table_config_change, _rctrl, &rctrl_t::on_recordtable_configchange);
 			}
 			count_browser++;
 		}
@@ -123,12 +126,13 @@ void AppConfigPageTable::setupSignals(void) {
 }
 
 // Слот, срабатывающий каждый раз когда изменяется чекбокс любого поля
-void AppConfigPageTable::on_field_toggle(bool flag) {
+void AppConfigPageTable::on_field_toggle(bool flag)
+{
 	Q_UNUSED(flag);
 
 	int count = 0;
 
-	QMapIterator<QString, QCheckBox *> i(_fields);
+	QMapIterator<QString, QCheckBox*> i(_fields);
 	while (i.hasNext()) {
 		i.next();
 		if (i.value()->isChecked())
@@ -147,7 +151,8 @@ void AppConfigPageTable::on_field_toggle(bool flag) {
 // Метод должен возвращать уровень сложности сделанных изменений
 // 0 - изменения не требуют перезапуска программы
 // 1 - изменения требуют перезапуска программы
-int AppConfigPageTable::apply_changes(void) {
+int AppConfigPageTable::apply_changes(void)
+{
 	qDebug() << "Apply changes record table";
 
 	// Запоминается ширина полей
@@ -165,13 +170,13 @@ int AppConfigPageTable::apply_changes(void) {
 	// Запоминание в конфигурацию отображения нумерации строк
 	if (appconfig->record_table_show_vertical_headers() != _show_vertical_header->isChecked())
 		appconfig->record_table_show_vertical_headers(_show_vertical_header->isChecked());
-	QStringList add_fields_list;     // Список полей, которые добавились в результате
-	                                 // настройки
-	QStringList remove_fields_list;  // Список полей, которые должны удалиться в
-	                                 // результате настройки
+	QStringList add_fields_list;    // Список полей, которые добавились в результате
+					// настройки
+	QStringList remove_fields_list; // Список полей, которые должны удалиться в
+					// результате настройки
 
 	// Определение, какие поля нужно добавить, какие удалить
-	QMapIterator<QString, QCheckBox *> i(_fields);
+	QMapIterator<QString, QCheckBox*> i(_fields);
 	while (i.hasNext()) {
 		i.next();
 		// Если поле добавилось
@@ -246,7 +251,7 @@ int AppConfigPageTable::apply_changes(void) {
 	// Если полей столько же сколько и было
 	if (new_show_fields.size() == show_fields.size()) {
 		qDebug() << "Count of field not changed. Set previous fields width"
-		         << fields_width;
+			 << fields_width;
 
 		// Установка запомненных ширин полей в конфигурацию
 		// Так как это значение в конфигурации было искажено в момент

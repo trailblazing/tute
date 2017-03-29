@@ -164,7 +164,7 @@ namespace web {
 		QStringListModel* _stringlistmodel;
 		QStackedWidget* _lineedits;
 		QLineEdit* _findtext;
-		// TabManager           *_tabmanager;
+		// TabManager           *_tab_widget;
 		// web::ChaseWidget *_chasewidget;
 	};
 }

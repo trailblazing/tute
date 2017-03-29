@@ -97,9 +97,11 @@ const char* tree_screen_viewer_name = "TreeScreenViewer";
 W_OBJECT_IMPL(ts_t)
 #endif
 
-ts_t::ts_t(QString object_name, web::Docker* editor_docker_, // , std::shared_ptr<AppConfig> appconfig_ , QMenu *filemenu, QMenu *toolsmenu
+ts_t::ts_t(QString object_name, web::Docker<Blogger> *editor_docker_, // , std::shared_ptr<AppConfig> appconfig_ , QMenu *filemenu, QMenu *toolsmenu
     wn_t* main_window)
-    : QWidget(main_window), _editor_docker(editor_docker_), _main_window(main_window)
+    : QWidget(main_window)
+    , _editor_docker(editor_docker_)
+    , _main_window(main_window)
     // , know_root_holder(appconfig, this)
     // , ui(new Ui::MainWindow)
     // , _menubar(new QMenuBar(this))
@@ -655,7 +657,7 @@ void ts_t::setup_actions(void)
 
 	// QAction             *_addnew_to_end = (new QAction(tr("Add note"), this));
 	// _addnew_to_end->setIcon(QIcon(":/resource/pic/note_add.svg"));
-	// connect(_addnew_to_end, &QAction::triggered, _tabmanager,
+	// connect(_addnew_to_end, &QAction::triggered, _tab_widget,
 	// &web::TabWidget::addnew_to_end);
 	// insert_action_as_button<QToolButton>(_toolsline, _addnew_to_end);
 
@@ -807,7 +809,7 @@ void ts_t::edit_field_context(QModelIndex index_current)
 	if (i == QDialog::Rejected)
 		return; // Была нажата отмена, ничего ненужно делать
 #ifdef USE_EDITOR_WRAP
-	rctrl_t* _record_controller = item->page()->record_controller();
+	rctrl_t* _record_controller = item->page()->record_ctrl();
 #endif // USE_EDITOR_WRAP
 	// Измененные данные записываются
 	edit_field(
@@ -1427,8 +1429,8 @@ bool ts_t::move_checkenable(void)
 ////        RecordController *_record_controller = //
 ///resultset_item->unique_page()
 ////
-///_result_item->child(0)->unique_page()->view()->record_controller();   //
-///globalparameters.record_screens()->record_controller();
+///_result_item->child(0)->unique_page()->view()->record_ctrl();   //
+///globalparameters.record_screens()->record_ctrl();
 ////        RecordModel *controller_source_model =
 ///_record_controller->source_model();
 
@@ -1925,7 +1927,7 @@ bool ts_t::move_checkenable(void)
 // std::function<void(boost::intrusive_ptr<TreeItem>)> close_tab_recursive =
 // [&](boost::intrusive_ptr<TreeItem> it) {
 // if(it->is_registered_to_browser())   // item_to_be_deleted->unique_page()
-// it->bounded_page()->record_controller()->page_remove(it->id()); //
+// it->bounded_page()->record_ctrl()->page_remove(it->id()); //
 // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
 
 // if(it->count_direct() > 0) {
@@ -2038,7 +2040,7 @@ bool ts_t::move_checkenable(void)
 ////        if(item_to_be_deleted->is_registered_to_browser())   //
 ///item_to_be_deleted->unique_page()
 ////
-///item_to_be_deleted->unique_page()->record_controller()->remove_child(item_to_be_deleted->id());
+///item_to_be_deleted->unique_page()->record_ctrl()->remove_child(item_to_be_deleted->id());
 ///// (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
 
 // close_tab_recursive(_item_deleted);

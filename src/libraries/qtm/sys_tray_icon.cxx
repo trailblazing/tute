@@ -91,7 +91,7 @@
 
 #include "qtm_version.h.in"
 
-SysTrayIcon::SysTrayIcon(HidableTab* vtab_record, web::Docker* editor_docker, wn_t* main_window, web::Profile* profile, QString style_source, bool noWindow, Qt::WindowFlags flags, QObject* parent)
+SysTrayIcon::SysTrayIcon(HidableTab* vtab_record, web::Docker<Blogger> *editor_docker, wn_t* main_window, web::Profile* profile, QString style_source, bool noWindow, Qt::WindowFlags flags, QObject* parent)
     : STI_SUPERCLASS(parent)
     //	  , _tree_screen(tree_screen)
     //	  , _browser_dock(browser_dock)
@@ -138,7 +138,7 @@ SysTrayIcon::SysTrayIcon(HidableTab* vtab_record, web::Docker* editor_docker, wn
 	isUnityThere = interface->isServiceRegistered("com.canonical.Unity").value();
 #endif
 
-	_app = sapp_t::instance(); // qobject_cast<sapp_t *>(qApp);
+	_app = sapp_t::instance(); // qobject_cast<sapp_t *>(sapp_t::instance());
 
 #ifndef Q_OS_MAC
 	switch (doubleClickFunction) {
@@ -222,10 +222,10 @@ SysTrayIcon::SysTrayIcon(HidableTab* vtab_record, web::Docker* editor_docker, wn
 		recentFileActions[i] = new QAction(this);
 		connect(recentFileActions[i], SIGNAL(triggered()), this, SLOT(openRecentFile()));
 	}
-	recentFiles = _app->recentFiles();
+	_recent_files = _app->recentFiles();
 	updateRecentFileMenu();
 	openRecent->setMenu(recentFilesMenu);
-	connect(_app, SIGNAL(recent_files_updated(QList<sapp_t::RecentFile>)), this, SLOT(set_recent_files(QList<sapp_t::RecentFile>)));
+	connect(_app, SIGNAL(recent_files_updated(QList<std::shared_ptr<app::RecentFile>>)), this, SLOT(set_recent_files(QList<std::shared_ptr<app::RecentFile>>)));
 
 #ifndef Q_OS_MAC
 	connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
@@ -294,41 +294,41 @@ void SysTrayIcon::updateRecentFileMenu()
 	QString text, t;
 	int j;
 	// qDebug() << "Recent files:" << recentFiles.count();
-	QMutableListIterator<sapp_t::RecentFile> i(recentFiles);
+	QMutableListIterator<std::shared_ptr<app::RecentFile>> i(_recent_files);
 	while (i.hasNext())
-		if (!QFile::exists(i.next().filename))
+		if (!QFile::exists(i.next()->filename))
 			i.remove();
 	recentFilesMenu->clear();
 	for (j = 0; j < 10; ++j) {
-		if (j < recentFiles.count()) {
-			t = recentFiles.value(j).title.section(' ', 0, 5);
-			if (t != recentFiles.value(j).title)
+		if (j < _recent_files.count()) {
+			t = _recent_files.value(j)->title.section(' ', 0, 5);
+			if (t != _recent_files.value(j)->title)
 				t.append(tr(" ..."));
 #ifdef Q_OS_MAC
 			text = recentFiles.value(j).title.isEmpty() ? recentFiles.value(j).filename.section("/", -1, -1) : t.replace('&', "&&");
 #else
 			if (j == 9)
 				text = tr("1&0 %1").arg(
-				    recentFiles.value(j).title.isEmpty() ? recentFiles.value(j).filename.section("/", -1, -1) : t.replace('&', "&&"));
+				    _recent_files.value(j)->title.isEmpty() ? _recent_files.value(j)->filename.section("/", -1, -1) : t.replace('&', "&&"));
 			else
 				text = tr("&%1 %2").arg(j + 1).arg(
-				    recentFiles.value(j).title.isEmpty() ? recentFiles.value(j).filename.section("/", -1, -1) : t.replace('&', "&&"));
+				    _recent_files.value(j)->title.isEmpty() ? _recent_files.value(j)->filename.section("/", -1, -1) : t.replace('&', "&&"));
 #endif
 			recentFileActions[j]->setText(text);
-			recentFileActions[j]->setData(recentFiles.value(j).filename);
+			recentFileActions[j]->setData(_recent_files.value(j)->filename);
 			recentFilesMenu->addAction(recentFileActions[j]);
 			recentFilesMenu->removeAction(noRecentFilesAction);
 		} else {
 			// recentFileActions[j]->setVisible( false );
-			if (!recentFiles.count())
+			if (!_recent_files.count())
 				recentFilesMenu->addAction(noRecentFilesAction);
 		}
 	}
 }
 
-void SysTrayIcon::set_recent_files(const QList<sapp_t::RecentFile>& rfs)
+void SysTrayIcon::set_recent_files(const QList<std::shared_ptr<app::RecentFile>>& rfs)
 {
-	recentFiles = rfs;
+	_recent_files = rfs;
 	updateRecentFileMenu();
 }
 
@@ -347,6 +347,11 @@ void SysTrayIcon::setDoubleClickFunction(int func)
 		break;
 	}
 #endif
+}
+
+bool SysTrayIcon::dontStart()
+{
+	return _dontStart;
 }
 
 QStringList SysTrayIcon::templateTitles()
@@ -794,7 +799,7 @@ void SysTrayIcon::doQuit()
 	int edwins = 0;
 	int a;
 
-	QWidgetList tlw = qApp->topLevelWidgets();
+	QWidgetList tlw = sapp_t::instance()->topLevelWidgets();
 	for (a = 0; a < tlw.size(); a++)
 		if ((QString(tlw[a]->metaObject()->className()) == "EditingWindow") &&
 		    tlw[a]->isVisible())
@@ -802,14 +807,14 @@ void SysTrayIcon::doQuit()
 	if (!edwins)
 		QCoreApplication::quit();
 	else {
-		qApp->setQuitOnLastWindowClosed(true);
-		qApp->closeAllWindows();
+		sapp_t::instance()->setQuitOnLastWindowClosed(true);
+		sapp_t::instance()->closeAllWindows();
 	}
 }
 
 void SysTrayIcon::saveAll()
 {
-	//	sapp_t *instance = qobject_cast<sapp_t *>(qApp);
+	//	sapp_t *instance = qobject_cast<sapp_t *>(sapp_t::instance());
 	sapp_t::instance()->saveAll();
 }
 

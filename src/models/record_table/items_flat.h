@@ -17,7 +17,7 @@
 #include "libraries/fixed_parameters.h"
 
 class i_t;
-class Record;
+class r_t;
 class EditorWrap;
 struct Linker;
 struct id_value;
@@ -32,15 +32,15 @@ extern const int add_new_record_before;
 extern const int add_new_record_after;
 
 class vector_t {
-	public:
+    public:
 	// RecordTable(boost::intrusive_ptr<TreeItem> _tree_item); // a kind of copy
 	// constructor
-	vector_t(const QDomElement &_dom_element = QDomElement(), const bool is_crypt = false);
+	vector_t(const QDomElement& _dom_element = QDomElement(), const bool is_crypt = false);
 //	ItemsFlat(const bool is_crypt = false);
 
 #ifdef _with_record_table
-	ItemsFlat(const ItemsFlat &obj);
-	ItemsFlat &operator=(const ItemsFlat &obj);
+	ItemsFlat(const ItemsFlat& obj);
+	ItemsFlat& operator=(const ItemsFlat& obj);
 #endif
 
 	virtual ~vector_t();
@@ -49,7 +49,7 @@ class vector_t {
 	QString text(int pos) const;
 
 	// Установка текста и картинок указанной записи
-	void set_text_and_pictures(int pos, const QString &text, const QMap<QString, QByteArray> &picturesFiles = (QMap<QString, QByteArray>()));
+	void set_text_and_pictures(int pos, const QString& text, const QMap<QString, QByteArray>& picturesFiles = (QMap<QString, QByteArray>()));
 
 	//// Получение значения указанного поля для указанного элемента
 	// QString field(int pos, QString name) const;
@@ -63,19 +63,19 @@ class vector_t {
 
 	boost::intrusive_ptr<Linker> linker_direct(int pos) const;
 
-	QList<boost::intrusive_ptr<i_t>> children_direct(const QString &name) const;
+	QList<boost::intrusive_ptr<i_t>> children_direct(const QString& name) const;
 	QList<boost::intrusive_ptr<i_t>>
-	children_direct(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_substitute_condition) const;
+	children_direct(const std::function<bool(boost::intrusive_ptr<const Linker>)>& _substitute_condition) const;
 
 	boost::intrusive_ptr<i_t> child_direct(int pos) const;
 	// boost::intrusive_ptr<TreeItem> item_direct(int pos) const;
-	boost::intrusive_ptr<i_t> child_direct(const id_value &id) const;
-	boost::intrusive_ptr<i_t> child_direct(const QUrl &url) const;
+	boost::intrusive_ptr<i_t> child_direct(const id_value& id) const;
+	boost::intrusive_ptr<i_t> child_direct(const QUrl& url) const;
 	// boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
 	// boost::intrusive_ptr<TreeItem> item_direct(boost::intrusive_ptr<TreeItem>
 	// item) const;
 	boost::intrusive_ptr<i_t>
-	child_direct(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_substitute_condition) const;
+	child_direct(const std::function<bool(boost::intrusive_ptr<const Linker>)>& _substitute_condition) const;
 	// int find_list(boost::intrusive_ptr<TreeItem> item)const;
 	// boost::intrusive_ptr<TreeItem> item_direct(const QString &id)const;
 
@@ -90,7 +90,7 @@ class vector_t {
 
 	//// Function to populate a table of DOM-document // Функция заполнения
 	///таблицы из DOM-документа
-	void dom_to_itemsflat(const QDomElement &dom_model);
+	void dom_to_itemsflat(const QDomElement& dom_model);
 
 	// Функция создания DOM-документа из данных таблицы конечных записей
 	// QDomElement export_to_dom(QDomDocument *doc) const;
@@ -103,7 +103,7 @@ class vector_t {
 	// boost::intrusive_ptr<TreeItem> tree_item(void);
 
 	template <typename input_type>
-	void fields(int pos, const input_type &input);
+	void fields(int pos, const input_type& input);
 	//	{//, QMap<QString, QString> edit_fields
 	//		qDebug() << "In RecordTable method edit_record_fields()";
 
@@ -133,12 +133,12 @@ class vector_t {
 	//		// changePersistentIndex(QModelIndex(), QModelIndex());
 	//	}
 	boost::intrusive_ptr<i_t> contains_direct(
-	    const std::function<bool(boost::intrusive_ptr<const Linker>)> &&_equal)
+	    const std::function<bool(boost::intrusive_ptr<const Linker>)>&& _equal)
 	    const;
 	boost::intrusive_ptr<i_t>
-	contains_direct(boost::intrusive_ptr<const i_t> &&_item) const;
+	contains_direct(boost::intrusive_ptr<const i_t>&& _item) const;
 	boost::intrusive_ptr<i_t>
-	contains_direct(boost::intrusive_ptr<const Linker> &&_item_linker) const;
+	contains_direct(boost::intrusive_ptr<const Linker>&& _item_linker) const;
 
 	// bool remove(int i);
 	// bool remove(QString id);
@@ -149,7 +149,7 @@ class vector_t {
 	// int sibling_order(QString id) const;
 	// int sibling_order(boost::intrusive_ptr<TreeItem> it)const;
 	int sibling_order(
-	    const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal)
+	    const std::function<bool(boost::intrusive_ptr<const Linker>)>& _equal)
 	    const;
 
 	void clear(void);
@@ -161,8 +161,8 @@ class vector_t {
 	void to_encrypt(void);
 	void to_decrypt(void);
 
-	static void editor_load_callback(QObject *editor, QString &loadText);
-	static void editor_save_callback(QObject *editor, QString saveText);
+	static void editor_load_callback(QObject* editor, QString& loadText);
+	static void editor_save_callback(QObject* editor, QString saveText);
 
 	int work_pos(void) const;
 	void work_pos(int pos);
@@ -170,33 +170,34 @@ class vector_t {
 	void check_and_create_textfile(int pos, QString fullFileName);
 	// QList< boost::intrusive_ptr<TreeItem> > &items() {return _child_items;}
 
-	bool crypt() {
+	bool crypt()
+	{
 		return _is_crypt;
 	}
 
-	void crypt(const bool _is_crypt);  // {this->_is_crypt = _is_crypt;}
+	void crypt(const bool _is_crypt); // {this->_is_crypt = _is_crypt;}
 
 	// int direct_count()const {return _child_items.size();}
 	// void parent();
 	boost::intrusive_ptr<i_t> delete_permanent(
-	    const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal);
+	    const std::function<bool(boost::intrusive_ptr<const Linker>)>& _equal);
 	void remove_duplicated();
 	bool is_empty() const;
 	QList<boost::intrusive_ptr<i_t>> delete_permanent_recursive(int position, int count);
 	void
-	traverse(const std::function<void(boost::intrusive_ptr<Linker>)> &operation);
+	traverse(const std::function<void(boost::intrusive_ptr<Linker>)>& operation);
 	QList<boost::intrusive_ptr<Linker>> child_linkers();
 	void release(
-	    const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal);
+	    const std::function<bool(boost::intrusive_ptr<const Linker>)>& _equal);
 
-	protected:
+    protected:
 	// Initialize the data table based on the transmitted item DOM- // Первичное
 	// заполнение таблицы конечных записей
 	// void init(QDomElement domModel);
 	std::function<QDomElement(std::shared_ptr<QDomDocument> doc)>
 	    dom_from_itemsflat_impl;
 
-	private:
+    private:
 	// Link to the branch that owns the table   // Ссылка на ветку, которой
 	// принадлежит данная таблица
 	// boost::intrusive_ptr<TreeItem>      _tree_item;
@@ -224,9 +225,9 @@ class vector_t {
 	friend class EditorWrap;
 	friend class i_t;
 	friend struct Linker;
-	friend boost::intrusive_ptr<i_t> &
-	operator<<(boost::intrusive_ptr<i_t> &host,
-	           boost::intrusive_ptr<i_t> _item);  // {return *it_left << it_right;}
+	friend boost::intrusive_ptr<i_t>&
+	operator<<(boost::intrusive_ptr<i_t>& host,
+	    boost::intrusive_ptr<i_t> _item); // {return *it_left << it_right;}
 };
 
 #endif /* __RECORDTABLEDATA_H__ */

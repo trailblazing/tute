@@ -80,10 +80,7 @@ wn_t::wn_t(
     web::Profile* profile, QString style_source // std::shared_ptr<gl_para> gl_paras	// , std::shared_ptr<AppConfig> appconfig_	// , std::shared_ptr<DataBaseConfig> databaseconfig_,
     )
     : QMainWindow()
-    // , _gl_paras([&]() -> std::shared_ptr<gl_para>
-    // {gl_paras->main_window(this); return gl_paras;} ())
-    // , _appconfig(appconfig_)
-    // , _databaseconfig(databaseconfig_)
+    // , _gl_paras([&]() -> std::shared_ptr<gl_para> {gl_paras->main_window(this); return gl_paras;} ()) , _appconfig(appconfig_), _databaseconfig(databaseconfig_)
     , _central_widget(new QWidget(this))
     , _profile(profile)
     , _style_source([&]() -> QString {
@@ -103,9 +100,7 @@ wn_t::wn_t(
 	    gl_paras->find_splitter(vfs);
 	    return vfs;
     }())
-    // , _vtab_tree([&](QString style_source_){auto vt = new
-    // HidableTabWidget(style_source_, this);gl_paras->vtab_tree(vt);return
-    // vt;} (_style))
+    // , _vtab_tree([&](QString style_source_){auto vt = new HidableTabWidget(style_source_, this);gl_paras->vtab_tree(vt);return vt;} (_style))
     , _h_record_splitter([&]() -> QSplitter* {
 	    auto hrs = new QSplitter(Qt::Horizontal);
 	    hrs->setSizes(appconfig->h_record_splitter_sizelist());
@@ -159,9 +154,9 @@ wn_t::wn_t(
 	    fm->setContentsMargins(0, 0, 0, 0);
 	    return fm;
     }()) //_main_menu_map[gl_para::_help_menu_name] = fm;
-    , _browser_docker([&]() -> web::Docker* {
+    , _browser_docker([&]() -> web::Docker<web::Browser>* {
 	    _browser_docker = nullptr;
-	    auto bd = new web::Docker(browser_docker_singleton_name, this, Qt::Widget);
+	    auto bd = new web::Docker<web::Browser>(browser_docker_singleton_name, this, Qt::Widget);
 	    gl_paras->browser_docker(bd);
 	    return bd;
     }()) // Qt::MaximizeUsingFullscreenGeometryHint
@@ -172,9 +167,9 @@ wn_t::wn_t(
 	    gl_paras->vtab_record(vr);
 	    return vr;
     }())
-    , _editor_docker([&]() -> web::Docker* {
+    , _editor_docker([&]() -> web::Docker<Blogger>* {
 	    _editor_docker = nullptr;
-	    auto ed = new web::Docker(editor_docker_singleton_name, this, Qt::Widget);
+	    auto ed = new web::Docker<Blogger>(editor_docker_singleton_name, this, Qt::Widget);
 	    gl_paras->editor_docker(ed);
 	    return ed;
     }())
@@ -792,191 +787,263 @@ void wn_t::setup_signals(void)
 	// }
 	// });
 
-	_vtab_record->tabBar()->setUsesScrollButtons(
-	    true); // _vtab_tree->tabBar()->setUsesScrollButtons(true);
+	_vtab_record->tabBar()->setUsesScrollButtons(true);            // _vtab_tree->tabBar()->setUsesScrollButtons(true);
+	connect(_vtab_record->tabBar(), &::QTabBar::tabCloseRequested, // this, &wn_t::on_tabCloseRequested);
+	    [&](int index) {
+		    auto count = _vtab_record->count();
+		    assert(index < count);
+		    if (index != -1) {
+			    auto w = _vtab_record->widget(index);
+			    if (w) {
+				    if (w->objectName() == record_screen_multi_instance_name) {
+					    auto rs = dynamic_cast<rs_t*>(w);
+					    //				if (rs == this) {
+					    auto _blogger = rs->blogger();
+					    if (_blogger) {
+#ifdef USE_SIGNAL_CLOSE
+						    _blogger->save();
+						    rs->close_sender_id(typeid(HidableTab).name());
+						    //									rs->close_requested_from_others(nullptr); //rs->close(); //
+						    //                                                                        rs->deleteLater();
+						    //                                                                        auto rctrl_ = rs->record_ctrl();
+						    //                                                                        if (rctrl_) rctrl_->close_requested_from_others(nullptr);
+						    auto _browser = rs->browser();
+						    //						    if (_browser) _browser->close();
+						    if (_browser) {
+							    _browser->destroy_trigger_from_others()(_blogger); //browser_->close(); // emit browser_->close_request(browser_);
+													       //									browser_->deleteLater();                        //
+													       // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+													       //                                                                                _browser->deleteLater();
+						    }
+//						    _blogger->destroy_trigger_from_others()(nullptr); //_blogger->close(); //
+//						    delete &*_blogger;                              //	_blogger->deleteLater(); //blogger_->~Blogger();
+
+#else
+						    rs->close_sender_id(typeid(HidableTab).name());
+						    if (_browser) {
+							    _browser->close(); //_browser->close_requested_from_others(nullptr); // emit browser_->close_request(browser_);
+									       //									browser_->deleteLater();                        //
+									       // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+									       //										_browser->deleteLater();
+						    }
+
+//									_blogger->close(); // emit _blogger->close_request(blogger_);
+//									_blogger->deleteLater();//delete _blogger; //delete will fall in sapp_t::exec failing to run
+#endif //USE_SIGNAL_CLOSE
+					    }
+					    //				}
+				    } else {
+					    w->close();
+					    //			                w->deleteLater();
+				    }
+				    //				_vtab_record->removeTab(index);// move
+				    //into HidableTab
+			    }
+			    //					w = nullptr;
+		    }
+	    });
+	connect(_vtab_record, &::HidableTab::currentChanged, [](int index) {
+		auto _vtab_record = gl_paras->vtab_record();
+		if (gl_paras->vtab_record()->updatesEnabled()) { // if(_vtab_record->updatesEnabled()){
+			if (index >= 0 && index < _vtab_record->count()) {
+				QWidget* w = nullptr;
+				w = _vtab_record->widget(index);
+				if (w) {
+					if (w->objectName() == record_screen_multi_instance_name) {
+						auto current_rs = dynamic_cast<rs_t*>(w);
+						if (current_rs) {
+							auto blogger_ = current_rs->blogger();
+							if (blogger_) {
+								auto editor_docker_ = gl_paras->editor_docker();
+								if (editor_docker_) {
+									if (blogger_ != editor_docker_->widget()) {
+										blogger_->show();
+										blogger_->activateWindow();
+										if (!blogger_->isTopLevel()) blogger_->raise();
+										if (editor_docker_->widget() != blogger_) editor_docker_->prepend(blogger_);
+										//									_editor_docker->setWidget(blogger_);
+										//									blogger_->setParent(_editor_docker);
+										blogger_->adjustSize();
+									}
+								}
+							}
+							auto current_bro = current_rs->browser();
+							if (current_bro) {
+								if (current_bro != gl_paras->browser_docker()->widget()) {
+									// if(_record_screens.find(rs) !=
+									// _record_screens.end())_record_screens.erase(rs);
+									current_bro->show();
+									//							if(!browser->isActiveWindow())
+									current_bro->activateWindow();
+									if (!current_bro->isTopLevel()) current_bro->raise();
+									current_bro->adjustSize();
+									auto _tab_widget = current_bro->tab_widget();
+									if (_tab_widget->count() > 0) {
+										auto v = current_bro->currentTab();
+										if (v) {
+											//			                                                if(!v->isActiveWindow())
+											//									v->activateWindow();
+											auto p = v->page();
+											if (p) {
+												emit p->become_current(p->binder());
+												auto it = p->host();
+												if (it) {
+													auto tree_screen_ = gl_paras->tree_screen();
+													if (tree_screen_) {
+														if (tree_screen_->view()->current_item()->id() != it->id()) {
+															//
+															tree_screen_->view()->select_as_current(TreeIndex::require_treeindex([&] { return tree_screen_->view()->source_model(); }, it));
+														}
+													}
+													//													auto to_home = gl_paras->find_screen()->historyhome();
+													//													to_home->disconnect();
+													//													QObject::connect(
+													//													    to_home, &QAction::triggered, v,
+													//													    [&](bool checked = true) -> void {
+													//														    Q_UNUSED(checked)
+													//														    if (p->binder()) {
+													//															    auto home = it->field<home_key>();
+													//															    QUrl homeurl = QUrl(detail::to_qstring(home));
+													//															    if (homeurl.isValid() &&
+													//															        homeurl != p->url()) {
+													//																    it->field<url_key>(url_value(detail::to_qstring(home)));  // "url",
+													//																    p->load(it, true);
+													//															    }
+													//														    }
+													//														});
+												}
+											}
+										}
+									}
+								}
+							}
+							// rs->adjustSize();
+							for (int i = 0; i < _vtab_record->count(); i++) {
+								auto w = _vtab_record->widget(i);
+								if (w) {
+									if (w->objectName() == record_screen_multi_instance_name) {
+										auto rs = dynamic_cast<rs_t*>(w);
+										if (rs && rs != current_rs) {
+											auto blogger_ = rs->blogger();
+											if (blogger_) {
+												blogger_->hide();
+												if (blogger_->isTopLevel()) blogger_->lower();
+											}
+											auto browser_ = rs->browser();
+											if (browser_) {
+												browser_->hide();
+												if (browser_->isTopLevel()) browser_->lower();
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				w = nullptr;
+			}
+		}
+	});
 }
 
 //
 //
-/*
+//
 
-   // old version
-   ______________________________________________________________________________________________________________
- |
- |
- |    __________________________________________
-   ____________________________________________________	|
- |   |						|    |
- |	|
- |   |	 ___________________   _____________    |    |
-   ________________________________________________  |	|
- |   |	|		    | |		    |	|    | |
- | |	|
- |   |	|		    | |		    |	|    | |
-   _______________________________________	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |    |
-   _entrance		    |	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |
- |_______________________________________|	| |	|
- |   |	|		    | |		    |	|    | |
- | |	|
- |   |	|		    | |		    |	|    | |
-   _v_right_splitter		| |	|
- |   |	|		    | |		    |	|    | |
-   _______________________________________	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|_vtab_tree	    | |_vtab_record |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |    |
-   _editor_screen		    |	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |    |
- |	| |	|
- |   |	|		    | |		    |	|    | |
- |_______________________________________|	| |	|
- |   |	|		    | |		    |	|    | |
- | |	|
- |   |	|		    | |		    |	|    | |
- | |	|
- |   |	|		    | |		    |	|    |
- |________________________________________________| |	|
- |   |	|		    | |		    |	|    | |	|
- |   |	|		    | |		    |	|    |
-   _v_find_splitter                  |	|
- |   |	|		    | |		    |	|    |
-   ________________________________________________  |	|
- |   |	|		    | |		    |	|    | |
- | |	|
- |   |	|		    | |		    |	|    | |
-   _find_screen			| |	|
- |   |	|___________________| |_____________|	|    |
- |________________________________________________| |	|
- |   |			                        |    |
- |	|
- |   |		_h_tree_splitter		|    |
- |	|
- |   |__________________________________________|
- |____________________________________________________|	|
- |
- |
- |					    _h_record_splitter
- |
- |______________________________________________________________________________________________________________|
+//   // old version
+//  ____________________________________________________________________________________________________________________
+// |															|
+// |    ________________________________________________      ____________________________________________________	|
+// |   |						|    |							  |	|
+// |   |	 ___________________   _____________    |    |  ________________________________________________  |	|
+// |   |	|		    | |		    |	|    | |						| |	|
+// |   |	|		    | |		    |	|    | |     _______________________________________	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |		      _entrance		     |	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |________________________________________|	| |	|
+// |   |	|		    | |		    |	|    | |						| |	|
+// |   |	|		    | |		    |	|    | |	       _v_right_splitter		| |	|
+// |   |	|		    | |		    |	|    | |     ________________________________________	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|_vtab_tree	    | |_vtab_record |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |		   _editor_screen            |	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |					     |	| |	|
+// |   |	|		    | |		    |	|    | |    |________________________________________|	| |	|
+// |   |	|		    | |		    |	|    | |						| |	|
+// |   |	|		    | |		    |	|    | |						| |	|
+// |   |	|		    | |		    |	|    | |________________________________________________| |	|
+// |   |	|		    | |		    |	|    |							  |	|
+// |   |	|		    | |		    |	|    |			   _v_find_splitter               |	|
+// |   |	|		    | |		    |	|    |  ________________________________________________  |	|
+// |   |	|		    | |		    |	|    | |						| |	|
+// |   |	|		    | |		    |	|    | |		   _find_screen			| |	|
+// |   |	|___________________| |_____________|	|    | |________________________________________________| |	|
+// |   |			                        |    |							  |	|
+// |   |		_h_tree_splitter		|    |							  |	|
+// |   |________________________________________________|    |____________________________________________________|	|
+// |															|
+// |					    _h_record_splitter								|
+// |____________________________________________________________________________________________________________________|
 
-   // current version diagram
-   ___________________________________________________________________________________________________________________________________
- |
- |
- |    __________________________
-   __________________________________________________________________________________________
- |
- |   |				|    |
- |   |
- |   |				|    |	  ______________________
-   ____________________________________________________	|   |
- |   |				|    |	 |			|    |
- |	|   |
- |   |				|    |	 |		        |    |
-   ________________________________________________  |	|   |
- |   |				|    |	 |		        |    | |
- | |	|   |
- |   |				|    |	 |		        |    | |
-   _______________________________________	| |	|   |
- |   |				|    |	 |		        |    | |
- |					    |	| |	|   |
- |   |				|    |	 |		        |    | |
- |					    |	| |	|   |
- |   |				|    |	 |		        |    | |
- |					    |	| |	|   |
- |   |				|    |   |		        |    | |    |
- |	| |	|   |
- |   |				|    |   |		        |    | |    |
-   _browser_dock		    |	| |	|   |
- |   |				|    |   |		        |    | |    |
- |	| |	|   |
- |   |				|    |   |		        |    | |    |
- |	| |	|   |
- |   |				|    |   |		        |    | |
- |_______________________________________|	| |	|   |
- |   |				|    |   |		        |    | |
- | |	|   |
- |   |				|    |   |		        |    | |
-   _v_right_splitter		| |	|   |
- |   |				|    |   |		        |    | |
-   _______________________________________	| |	|   |
- |   |				|    |   |		        |    | |    |
- |	| |	|   |
- |   |	    _vtab_tree	        |    |   |	_vtab_record	|
- | |    |					    |	| |	|   |
- |   |				|    |   |		        |    | |    |
- |	| |	|   |
- |   |				|    |   |		        |    | |    |
- |	| |	|   |
- |   |				|    |   |		        |    | |    |
-   _editor_dock		    |	| |	|   |
- |   |				|    |   |		        |    | |    |
- |	| |	|   |
- |   |				|    |   |		        |    | |    |
- |	| |	|   |
- |   |				|    |   |		        |    | |
- |_______________________________________|	| |	|   |
- |   |				|    |   |		        |    | |
- | |	|   |
- |   |				|    |   |		        |    | |
- | |	|   |
- |   |				|    |   |		        |    |
- |________________________________________________| |	|   |
- |   |				|    |   |		        |    |
- |	|   |
- |   |				|    |   |		        |    |
-   _v_find_splitter                  |	|   |
- |   |				|    |   |		        |    |
-   ________________________________________________  |	|   |
- |   |				|    |   |		        |    | |
- | |	|   |
- |   |				|    |   |		        |    | |
-   _find_screen			| |	|   |
- |   |				|    |   |		        |    |
- |________________________________________________| |	|   |
- |   |			        |    |   |			|    |
- |	|   |
- |   |		                |    |   |                      |    |
- |	|   |
- |   |				|    |	 |______________________|
- |____________________________________________________|	|   |
- |   |				|    |
- |   |
- |   |				|    |
-   _h_record_splitter							|   |
- |   |__________________________|
- |__________________________________________________________________________________________|
- |
- |
- |
- |			    _h_tree_splitter
- |
- |__________________________________________________________________________________________________________________________________|
+//   // current version diagram
+//  ________________________________________________________________________________________________________________________________________
+// |																	    |
+// |    ________________________________      __________________________________________________________________________________________    |
+// |   |				|    |												|   |
+// |   |				|    |	  ______________________      ____________________________________________________	|   |
+// |   |				|    |	 |			|    |							  |	|   |
+// |   |				|    |	 |		        |    |  ________________________________________________  |	|   |
+// |   |				|    |	 |		        |    | |						| |	|   |
+// |   |				|    |	 |		        |    | |     _______________________________________	| |	|   |
+// |   |				|    |	 |		        |    | |    |					    |	| |	|   |
+// |   |				|    |	 |		        |    | |    |					    |	| |	|   |
+// |   |				|    |	 |		        |    | |    |					    |	| |	|   |
+// |   |				|    |   |		        |    | |    |					    |	| |	|   |
+// |   |				|    |   |		        |    | |    |	   _browser_dock		    |	| |	|   |
+// |   |				|    |   |		        |    | |    |					    |	| |	|   |
+// |   |				|    |   |		        |    | |    |					    |	| |	|   |
+// |   |				|    |   |		        |    | |    |_______________________________________|	| |	|   |
+// |   |				|    |   |		        |    | |						| |	|   |
+// |   |				|    |   |		        |    | |	       _v_right_splitter		| |	|   |
+// |   |				|    |   |		        |    | |     ________________________________________	| |	|   |
+// |   |				|    |   |		        |    | |    |					     |	| |	|   |
+// |   |	    _vtab_tree	        |    |   |	_vtab_record	|    | |    |					     |	| |	|   |
+// |   |				|    |   |		        |    | |    |					     |	| |	|   |
+// |   |				|    |   |		        |    | |    |					     |	| |	|   |
+// |   |				|    |   |		        |    | |    |		   _editor_dock		     |	| |	|   |
+// |   |				|    |   |		        |    | |    |					     |	| |	|   |
+// |   |				|    |   |		        |    | |    |					     |	| |	|   |
+// |   |				|    |   |		        |    | |    |________________________________________|	| |	|   |
+// |   |				|    |   |		        |    | |						| |	|   |
+// |   |				|    |   |		        |    | |						| |	|   |
+// |   |				|    |   |		        |    | |________________________________________________| |	|   |
+// |   |				|    |   |		        |    |							  |	|   |
+// |   |				|    |   |		        |    |			   _v_find_splitter               |	|   |
+// |   |				|    |   |		        |    |  ________________________________________________  |	|   |
+// |   |				|    |   |		        |    | |						| |	|   |
+// |   |				|    |   |		        |    | |	       _find_screen			| |	|   |
+// |   |				|    |   |		        |    | |________________________________________________| |	|   |
+// |   |			        |    |   |			|    |							  |	|   |
+// |   |		                |    |   |                      |    |							  |	|   |
+// |   |				|    |	 |______________________|    |____________________________________________________|	|   |
+// |   |				|    |												|   |
+// |   |				|    |		       _h_record_splitter							|   |
+// |   |________________________________|    |__________________________________________________________________________________________|   |																    |
+// |																	    |
+// |			    _h_tree_splitter												    |
+// |________________________________________________________________________________________________________________________________________|
 
 
- */
+//
 //
 //
 // follow comments above to learn the "assembly function"
@@ -1199,13 +1266,15 @@ void wn_t::save_all_state(void)
 		auto wd = _vtab_record->widget(i);
 		auto rs = dynamic_cast<rs_t*>(wd);
 		if (rs) {
-			auto ew = rs->blogger();
-			ew->save_text_context();
-			ew->save_editor_cursor_position();
-			ew->save_editor_scrollbar_position();
+			auto blogger_ = rs->blogger();
+			if (blogger_ && !blogger_->close_request_sent() && !blogger_->destroy_request_sent()) {
+				blogger_->save_text_context();
+				blogger_->save_editor_cursor_position();
+				blogger_->save_editor_scrollbar_position();
 
-			auto brs = rs->browser();
-			if (brs) brs->save();
+				auto bro = rs->browser();
+				if (bro && !bro->close_request_sent() && !bro->destroy_request_sent()) bro->save();
+			}
 		}
 	}
 	// Сохраняются данные сеанса работы
@@ -1916,7 +1985,7 @@ void wn_t::tools_preferences(void)
 {
 	// Создается окно настроек, после выхода из этой функции окно удалится
 	AppConfigDialog appconfigdialog(
-	    "pageMain"); // gl_paras->main_window()->browser(QString(gl_para::_what_ever_topic))->tabmanager()->record_controller(),
+	    "pageMain"); // gl_paras->main_window()->browser(QString(gl_para::_what_ever_topic))->tabmanager()->record_ctrl(),
 
 	appconfigdialog.show();
 }
@@ -1984,9 +2053,8 @@ void wn_t::on_expand_edit_area(bool flag)
 		// }
 
 		// emit _vtabwidget->hideAction.toggle();
-		emit _vtab_record->_hide_action->setChecked(
-		    false); // emit _vtab_tree->_hide_action->setChecked(false);
-			    // globalparameters.vtab()->resize(vtab_size); // show();
+		emit _vtab_record->_hide_action->setChecked(false); // emit _vtab_tree->_hide_action->setChecked(false);
+								    // globalparameters.vtab()->resize(vtab_size); // show();
 	}
 }
 
@@ -2167,6 +2235,7 @@ bool wn_t::eventFilter(QObject* o, QEvent* e)
 	if (e->type() == QEvent::WindowDeactivate) {
 		qDebug() << "Main window focus deactivate, save all state.";
 		save_all_state();
+		return true;
 	}
 	return false; // Продолжать оработку событий дальше
 }
@@ -2296,7 +2365,8 @@ void wn_t::on_focus_changed(QWidget* widgetFrom, QWidget* widgetTo)
 	return; // Временно ничего не делает
 }
 
-std::set<rs_t*> wn_t::record_screens() const
+
+std::set<web::Browser*> wn_t::browsers() const
 {
 	// int browser_size_ = 0;
 	// for(int i = 0; i < count(); i ++)
@@ -2304,7 +2374,7 @@ std::set<rs_t*> wn_t::record_screens() const
 	// record_screen_multi_instance_name)browser_size_ ++;
 
 	// return browser_size_;
-	std::set<rs_t*> result;
+	std::set<web::Browser*> result;
 	for (int i = 0; i < _vtab_record->count();
 	     i++) { // for(auto i = _record_screens.begin(); i !=
 		// _record_screens.end(); i ++){
@@ -2312,8 +2382,11 @@ std::set<rs_t*> wn_t::record_screens() const
 		if (w->objectName() == record_screen_multi_instance_name) {
 			auto rs = dynamic_cast<rs_t*>(w);
 			// auto	browser_	= dynamic_cast<rs_t *>(w)->browser();
-			if (rs)
-				if (result.find(rs) == result.end()) result.insert(rs); // if(*i){	// && *i != widget()=>for entrance
+			if (rs) {
+				auto bro = rs->browser();
+				if (bro)
+					if (result.find(bro) == result.end()) result.insert(bro); // if(*i){	// && *i != widget()=>for entrance
+			}
 		}
 	}
 	return result; // _record_screens;
@@ -2337,7 +2410,7 @@ web::WebView* wn_t::find(const std::function<bool(boost::intrusive_ptr<const ::B
 			// auto	rs		= dynamic_cast<rs_t *>(w);
 			auto browser_ = dynamic_cast<rs_t*>(w)->browser();
 			if (browser_) {
-				v = browser_->tabWidget()->find(_equal);
+				v = browser_->tab_widget()->find(_equal);
 				if (v != nullptr) break;
 			}
 		}
@@ -2371,13 +2444,14 @@ web::WebView* wn_t::find(const std::function<bool(boost::intrusive_ptr<const ::B
 
 // not sure to succeeded if force is false
 template <>
-web::Browser* wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bool force)
+web::Browser*
+wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bool force)
 {
 	(void)force;
 	boost::intrusive_ptr<i_t> item = it;
 	auto view = find(
 	    [&](boost::intrusive_ptr<const Binder> b) { return b->host() == item; });
-	web::Browser* bro = nullptr;
+	web::Browser* bro(nullptr);
 	QStringList item_tags_text_list;
 	if (!view) {
 		item_tags_text_list = QStringList(item->field<tags_key>());
@@ -2401,7 +2475,8 @@ web::Browser* wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_pt
 
 // not sure to succeeded if force is false
 template <>
-web::Browser* wn_t::browser<QUrl>(const QUrl& url_, bool force)
+web::Browser*
+wn_t::browser<QUrl>(const QUrl& url_, bool force)
 {
 	(void)force;
 
@@ -2410,7 +2485,8 @@ web::Browser* wn_t::browser<QUrl>(const QUrl& url_, bool force)
 
 // not sure to succeeded if force is false
 template <>
-web::Browser* wn_t::browser<url_value>(const url_value& real_url_, bool force)
+web::Browser*
+wn_t::browser<url_value>(const url_value& real_url_, bool force)
 {
 	(void)force;
 	auto real_url = real_url_;
@@ -2421,20 +2497,21 @@ web::Browser* wn_t::browser<url_value>(const url_value& real_url_, bool force)
 	    real_url, std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it) -> bool {
 		    return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
 	    });
-	web::Browser* v = nullptr;
+	web::Browser* v(nullptr);
 	if (it) v = browser(it);
 	return v;
 }
 
 // not sure to succeeded if force is false
 template <>
-web::Browser* wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
+web::Browser*
+wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
 {
 	(void)force;
 	auto state_data = web::Browser::state(state_);
 	auto topic = std::get<3>(state_data);
 
-	web::Browser* bs = nullptr;
+	web::Browser* bs(nullptr);
 	//	bs = browser<QString>(topic, false);
 	//	if (!bs)
 	if (topic != gl_para::_default_topic)
@@ -2445,14 +2522,15 @@ web::Browser* wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
 
 // not sure to succeeded if force is false
 template <>
-web::Browser* wn_t::browser<QString>(const QString& topic_, bool force)
+web::Browser*
+wn_t::browser<QString>(const QString& topic_, bool force)
 {
 	// clean();
 	QString topic = topic_;
 	if ("" == topic_) topic = gl_para::_default_topic;
 
 	// std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
-	web::Browser* browser_ = nullptr;
+	web::Browser* browser_(nullptr);
 	assert(!((topic == gl_para::_current_browser) && (force)));
 	if (topic == gl_para::_current_browser) {
 		auto rs = _vtab_record->currentWidget();
@@ -2500,9 +2578,11 @@ web::Browser* wn_t::browser<QString>(const QString& topic_, bool force)
 			}
 		}
 	}
-	auto state = DiskHelper::get_topic_from_directory(gl_paras->root_path() + "/" + gl_para::_blog_root_dir, topic);
-	if (state != QByteArray())
-		browser_ = browser<QByteArray>(state);
+	if (!browser_) {
+		auto state = DiskHelper::get_topic_from_directory(gl_paras->root_path() + "/" + gl_para::_blog_root_dir, topic);
+		if (state != QByteArray())
+			browser_ = browser<QByteArray>(state);
+	}
 	if (!browser_ && force) {
 		auto checked_topic = topic;
 		//		if(topic == gl_para::_what_ever_topic) checked_topic =
@@ -2542,3 +2622,55 @@ void wn_t::synchronize_title(const QString& title_)
 	} else
 		this->setWindowTitle(program_title);
 }
+
+
+//void wn_t::on_tabCloseRequested(int index)
+//{
+//	auto count = _vtab_record->count();
+//	assert(index < count);
+//	if (index != -1) {
+//		auto w = _vtab_record->widget(index);
+//		if (w) {
+//			if (w->objectName() == record_screen_multi_instance_name) {
+//				auto rs = dynamic_cast<rs_t*>(w);
+//				//				if (rs == this) {
+//				auto _blogger = rs->blogger();
+//				if (_blogger) {
+//#ifdef USE_SIGNAL_CLOSE
+//					rs->close_sender_id(typeid(HidableTab).name());
+//					//									rs->close_requested_from_others(nullptr); //rs->close(); //
+//					//                                                                        rs->deleteLater();
+//					//                                                                        auto rctrl_ = rs->record_ctrl();
+//					//                                                                        if (rctrl_) rctrl_->close_requested_from_others(nullptr);
+//					_blogger->close_requested_from_others(nullptr); //_blogger->close(); //
+//					delete &*_blogger;                              //	_blogger->deleteLater(); //blogger_->~Blogger();
+//////                                                                        if (_browser) {
+//////                                                                                _browser->close_requested_from_others(_blogger); //browser_->close(); // emit browser_->close_request(browser_);
+//////                                                                                                   //									browser_->deleteLater();                        //
+//////                                                                                                   // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+//////                                                                                                   //                                                                                _browser->deleteLater();
+//////                                                                        }
+//#else
+//					rs->close_sender_id(typeid(HidableTab).name());
+//					if (_browser) {
+//						_browser->close(); //_browser->close_requested_from_others(nullptr); // emit browser_->close_request(browser_);
+//								   //									browser_->deleteLater();                        //
+//								   // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+//								   //										_browser->deleteLater();
+//					}
+
+////									_blogger->close(); // emit _blogger->close_request(blogger_);
+////									_blogger->deleteLater();//delete _blogger; //delete will fall in sapp_t::exec failing to run
+//#endif //USE_SIGNAL_CLOSE
+//				}
+//				//				}
+//			} else {
+//				w->close();
+//				//			                w->deleteLater();
+//			}
+//			//				_vtab_record->removeTab(index);// move
+//			//into HidableTab
+//		}
+//		//					w = nullptr;
+//	}
+//}

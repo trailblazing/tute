@@ -27,8 +27,8 @@
 
 // #include "useSTI.h"
 // #ifdef USE_SYSTRAYICON
-
-#include "libraries/qt_single_application5/qtsingleapplication.h"
+#include "libraries/global_parameters.h"
+//#include "libraries/qt_single_application5/qtsingleapplication.h"
 #include <QByteArray>
 #include <QClipboard>
 #include <QDomElement>
@@ -54,34 +54,35 @@ class HidableTab;
 // class ExposedSappRecentFile;
 
 #ifdef Q_OS_MAC
-#if QT_VERSION >= 0x050000  // This function is in QMenu in Qt 5.2
-void qt_mac_set_dock_menu(QMenu *);
+#if QT_VERSION >= 0x050000 // This function is in QMenu in Qt 5.2
+void qt_mac_set_dock_menu(QMenu*);
 #endif
 #endif
 
 class wn_t;
 namespace web {
-class Profile;
-class Docker;
+	class Profile;
+	template <typename>
+	class Docker;
 }
 class Blogger;
-
+namespace app {
+	struct RecentFile;
+}
 class SysTrayIcon : public STI_SUPERCLASS {
 	Q_OBJECT
 
-	public:
-	SysTrayIcon(HidableTab *vtab_record, web::Docker *editor_docker, wn_t *main_window, web::Profile *profile, QString style_source, bool noWindow = false, Qt::WindowFlags flags = Qt::Widget, QObject *parent = 0);
+    public:
+	SysTrayIcon(HidableTab* vtab_record, web::Docker<Blogger>* editor_docker, wn_t* main_window, web::Profile* profile, QString style_source, bool noWindow = false, Qt::WindowFlags flags = Qt::Widget, QObject* parent = 0);
 	~SysTrayIcon();
 	void setDoubleClickFunction(int);
-	bool dontStart() {
-		return _dontStart;
-	}
+	bool dontStart();
 	QStringList templates();
 	QStringList templateTitles();
-	void quickpostFromDBus(QString &, QString &);
+	void quickpostFromDBus(QString&, QString&);
 
-	public slots:
-	void configureQuickpostTemplates(QWidget *parent = 0);
+    public slots:
+	void configureQuickpostTemplates(QWidget* parent = 0);
 	void setCopyTitle(bool);
 	void newDoc();
 	void openRecentFile();
@@ -92,45 +93,45 @@ class SysTrayIcon : public STI_SUPERCLASS {
 	bool handleArguments();
 	void doQuit();
 	void saveAll();
-	void set_recent_files(const QList<sapp_t::RecentFile> &);
+	void set_recent_files(const QList<std::shared_ptr<app::RecentFile>>&);
 
-	private slots:
+    private slots:
 	void iconActivated(QSystemTrayIcon::ActivationReason);
 	void quickpostFromTemplate(int, QString, QString t = QString());
 	void setNewWindowAtStartup(bool);
-	void handleDone(QNetworkReply *);
+	void handleDone(QNetworkReply*);
 	void abortQP();
-	void openRecentFileFromDialog(QListWidgetItem *);
-	void actOnChooseQuickpostTemplate(QListWidgetItem *);
+	void openRecentFileFromDialog(QListWidgetItem*);
+	void actOnChooseQuickpostTemplate(QListWidgetItem*);
 
-	signals:
+    signals:
 	void quickpostTemplateTitlesUpdated(QStringList);
 	void quickpostTemplatesUpdated(QStringList);
 
-	private:
-	sapp_t *_app;
+    private:
+	sapp_t* _app;
 	// enum _cbtextIsURL { No, Yes, Untested };
 	// enum _cbtextIsURL cbtextIsURL;
 	bool _copyTitle;
 	int activeTemplate;
-	QAction *newWindowAtStartup;
-	QAction *abortAction;
-	QAction *configureTemplates;
+	QAction* newWindowAtStartup;
+	QAction* abortAction;
+	QAction* configureTemplates;
 #ifndef SUPERMENU
 	// QAction *quitAction;
-	QAction *_action_tray_quit;
+	QAction* _action_tray_quit;
 #endif
-	QList<QuickpostTemplate *> quickpostTemplateActions;
+	QList<QuickpostTemplate*> quickpostTemplateActions;
 
-	QAction *_action_tray_restore;
-	QAction *_action_tray_maximize;
-	QAction *_action_tray_minimize;
+	QAction* _action_tray_restore;
+	QAction* _action_tray_maximize;
+	QAction* _action_tray_minimize;
 
-	QMenu *menu;
-	QMenu *templateMenu;
+	QMenu* menu;
+	QMenu* templateMenu;
 	bool _newWindowAtStartup;
-	QNetworkAccessManager *netmgr;
-	QNetworkReply *currentReply;
+	QNetworkAccessManager* netmgr;
+	QNetworkReply* currentReply;
 	QByteArray responseData;
 	QString cbtext;
 	// bool cbtextIsURL;
@@ -142,24 +143,24 @@ class SysTrayIcon : public STI_SUPERCLASS {
 	QList<int> defaultPublishStatusList;
 	QList<bool> copyTitleStatusList;
 	QList<QStringList> assocHostLists;
-	QList<sapp_t::RecentFile> recentFiles;
-	QAction *recentFileActions[10];
-	QAction *openRecent;
-	QAction *noRecentFilesAction;
-	QMenu *recentFilesMenu;
+	QList<std::shared_ptr<app::RecentFile>> _recent_files;
+	QAction* recentFileActions[10];
+	QAction* openRecent;
+	QAction* noRecentFilesAction;
+	QMenu* recentFilesMenu;
 	QByteArray userAgentString;
 
 	//	ts_t *_tree_screen;
-	web::Docker *_browser_dock;
-	HidableTab *_vtab_record;
+	//	web::Docker<web::Browser>* _browser_docker;
+	HidableTab* _vtab_record;
 
-	wn_t *_main_window;
-	web::Profile *_profile;
+	wn_t* _main_window;
+	web::Profile* _profile;
 	Qt::WindowFlags _flags;
 	QString _style_source;
 
 	//	FindScreen *_find_screen;
-	web::Docker *_editor_docker;
+	web::Docker<Blogger>* _editor_docker;
 
 // QSplitter *_splitter;
 // std::shared_ptr<QSettings>  _splitter_config;
@@ -172,7 +173,7 @@ class SysTrayIcon : public STI_SUPERCLASS {
 
 	void setupQuickpostTemplates();
 	void doQP(QString);
-	QDomElement templateElement(QDomDocument &, QString &, QString &, int &, bool &, QStringList &);
+	QDomElement templateElement(QDomDocument&, QString&, QString&, int&, bool&, QStringList&);
 	void updateRecentFileMenu();
 	void setup_main_window_icon_actions();
 };

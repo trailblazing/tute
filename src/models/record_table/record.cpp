@@ -61,9 +61,9 @@ namespace detail {
 //	tempalte<typename InputRange>
 struct element_fullfill {
 	QDomElement& elem;
-	Record* const _this;
+	r_t* const _this;
 
-	element_fullfill(QDomElement& elem_, Record* const this_)
+	element_fullfill(QDomElement& elem_, r_t* const this_)
 	    : elem(elem_)
 	    , _this(this_)
 	{
@@ -248,19 +248,17 @@ struct record_to_dom {
 	}
 };
 
-Record::Record(full_fields_map field_data_static_map_)
-    : _lite_flag(true) // boost::intrusive_ref_counter<Record,
-		       // boost::thread_safe_counter>()  //
-		       // std::enable_shared_from_this<Record>()
-    //	  , _field_data(field_data_)
-    , _fields_data_map(field_data_static_map_)
+r_t::r_t(full_fields_map field_data_static_map_)
+    : //boost::intrusive_ref_counter<r_t, boost::thread_safe_counter>() // std::enable_shared_from_this<Record>()
+      //,
+    _lite_flag(true)
+    , _fields_data_map(field_data_static_map_) //	  , _field_data(field_data_)
     , _text("")
 #ifdef USE_STAR_RATING
     , _star_rating(new StarRating(1, 5))
 #endif
-    , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record*>(this)))) // {
-    // liteFlag = true;    // By default, the object light // По-умолчанию
-    // объект легкий
+    , _attach_table_data(std::make_shared<AttachTableData>(this)) // {//boost::intrusive_ptr<r_t>(const_cast<r_t*>(this))
+    // liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
     , dom_from_record_impl(
           [&](std::shared_ptr<QDomDocument> doc) -> QDomElement {
 		  QDomElement elem = doc->createElement("record");
@@ -473,7 +471,7 @@ Record::Record(boost::intrusive_ptr<Record> obj)
 // return is_holder_;
 // }
 
-Record::~Record()
+r_t::~r_t()
 {
 	// if(_page != nullptr) {
 	////
@@ -533,7 +531,7 @@ namespace detail {
 	};
 }
 // На вход этой функции подается элемент <record>
-void Record::dom_to_record(const QDomElement& _dom_element)
+void r_t::dom_to_record(const QDomElement& _dom_element)
 {
 	// QDomElement _dom_element;
 
@@ -557,8 +555,8 @@ void Record::dom_to_record(const QDomElement& _dom_element)
 
 	boost::fusion::for_each(_fields_data_map, detail::dom_to_record_impl(&_fields_data_map, field_data));
 	// Инициализируется таблица прикрепляемых файлов
-	_attach_table_data->clear(); // Подумать, возможно эта команда не нужна
-	_attach_table_data->record(boost::intrusive_ptr<Record>(this));
+	_attach_table_data->clear();      // Подумать, возможно эта команда не нужна
+	_attach_table_data->record(this); //boost::intrusive_ptr<r_t>(this)
 	if (_lite_flag != _attach_table_data->is_lite()) {
 		if (_lite_flag && !_attach_table_data->is_lite())
 			_attach_table_data->switch_to_lite();
@@ -572,7 +570,7 @@ void Record::dom_to_record(const QDomElement& _dom_element)
 		to_fat();
 }
 
-QDomElement Record::dom_from_record() const
+QDomElement r_t::dom_from_record() const
 {
 	// dom_from_record = [&](std::shared_ptr<QDomDocument> doc) ->QDomElement
 	// const {
@@ -652,7 +650,7 @@ QDomElement Record::dom_from_record() const
 // return elem;
 // }
 
-bool Record::is_crypt() const
+bool r_t::is_crypt() const
 {
 	return field<crypt_key>() == crypt_value(true); // "1";
 }
@@ -679,7 +677,7 @@ namespace detail {
 	};
 }
 
-bool Record::is_empty() const
+bool r_t::is_empty() const
 {
 	// Заполненная запись не может содержать пустые свойства
 	// if(_field_data.count() == 0)
@@ -693,12 +691,12 @@ bool Record::is_empty() const
 	    ((is_lite()) ? (text_from_lite_direct() == "") : (text_from_fat() == ""));
 }
 
-bool Record::is_lite() const
+bool r_t::is_lite() const
 {
 	return _lite_flag;
 }
 
-void Record::to_lite()
+void r_t::to_lite()
 {
 	// Переключение возможно только из полновесного состояния
 	if (_lite_flag == true)
@@ -717,7 +715,7 @@ void Record::to_lite()
 // This method is used only when the following actions:
 // - Adding new entry
 // - Space entries to the clipboard
-void Record::to_fat()
+void r_t::to_fat()
 {
 	// Переключение возможно только из легкого состояния
 	if (_lite_flag != true || _text.length() > 0 || _picture_files.count() > 0)
@@ -729,7 +727,7 @@ void Record::to_fat()
 	_lite_flag = false;
 }
 
-QString Record::id_and_name() const
+QString r_t::id_and_name() const
 {
 	QString id, name;
 	//	if (_field_data.contains(boost::mpl::c_str<id_key>::value))
@@ -958,7 +956,7 @@ struct full_fill_natural_list {
 // Получение значений всех натуральных (невычислимых) полей
 // Поля, которые могут быть у записи, но не заданы, не передаются
 // Поля, которые зашифрованы, расшифровываются
-QMap<QString, QString> Record::natural_field_list() const
+QMap<QString, QString> r_t::natural_field_list() const
 {
 	// Список имен инфополей
 	//	QStringList fieldNames = fixedparameters._record_natural_field;
@@ -1000,14 +998,14 @@ QMap<QString, QString> Record::natural_field_list() const
 	return result_field_list;
 }
 
-std::shared_ptr<AttachTableData> Record::attach_table() const
+std::shared_ptr<AttachTableData> r_t::attach_table() const
 {
 	if (this->is_lite() != _attach_table_data->is_lite())
 		critical_error("attach_table()const: Unsyncro lite state for record: " + id_and_name());
 	return _attach_table_data;
 }
 
-std::shared_ptr<AttachTableData> Record::attach_table()
+std::shared_ptr<AttachTableData> r_t::attach_table()
 {
 	if (this->is_lite() != _attach_table_data->is_lite())
 		critical_error("attach_table(): Unsyncro lite state for record: " + id_and_name());
@@ -1034,7 +1032,7 @@ std::shared_ptr<AttachTableData> Record::attach_table()
    }
  */
 
-void Record::attach_table(std::shared_ptr<AttachTableData> _attach_table_data)
+void r_t::attach_table(std::shared_ptr<AttachTableData> _attach_table_data)
 {
 	if (this->is_lite() != _attach_table_data->is_lite())
 		critical_error("attach_table(): Unsyncro lite state for record: " + id_and_name());
@@ -1064,7 +1062,7 @@ void Record::attach_table(std::shared_ptr<AttachTableData> _attach_table_data)
 
 // Получение текста записи из памяти
 // Если запись зашифрована, возвращаемый текст будет расшифрован
-QString Record::text_from_fat() const
+QString r_t::text_from_fat() const
 {
 	QString result = "";
 	// У легкого объекта невозможно запросить текст из памяти, если так происходит
@@ -1088,7 +1086,7 @@ QString Record::text_from_fat() const
 }
 
 // Получение значения текста напрямую из файла, без заполнения свойства text
-QString Record::text_from_lite_direct() const
+QString r_t::text_from_lite_direct() const
 {
 	// У тяжелого объекта невозможно получить текст записи из файла (у тяжелого
 	// объекта текст записи хранится в памяти)
@@ -1102,7 +1100,7 @@ QString Record::text_from_lite_direct() const
 	// Выясняется полное имя файла с текстом записи
 	QString fileName = full_text_file_name();
 
-	const_cast<Record*>(this)->check_and_create_text_file();
+	const_cast<r_t*>(this)->check_and_create_text_file();
 
 	QFile f(fileName);
 	// Открывается файл
@@ -1126,7 +1124,7 @@ QString Record::text_from_lite_direct() const
 // Установка текста записи как свойства объекта
 // Принимает незашифрованные данные, сохраняет их в памяти, при записи шифрует
 // если запись зашифрована
-void Record::text_to_fat(QString _text_source)
+void r_t::text_to_fat(QString _text_source)
 {
 	// Легкому объекту невозможно установить текст, если так происходит - это
 	// ошибка вызывающей логики
@@ -1145,7 +1143,7 @@ void Record::text_to_fat(QString _text_source)
 // Сохранение текста записи на диск без установки текста записи как свойства
 // Принимает незашифрованные данные, сохраняет в файл, при записи шифрует если
 // запись зашифрована
-void Record::text_to_direct(QString _text_source)
+void r_t::text_to_direct(QString _text_source)
 {
 	QString file_name = full_text_file_name();
 	// Если шифровать ненужно
@@ -1172,7 +1170,7 @@ void Record::text_to_direct(QString _text_source)
 }
 
 // Запись текста записи, хранимого в памяти, на диск
-void Record::create_file_and_save_text()
+void r_t::create_file_and_save_text()
 {
 	QString fileName = full_text_file_name();
 	assert(fileName != "");
@@ -1190,7 +1188,7 @@ void Record::create_file_and_save_text()
 	}
 }
 
-QMap<QString, QByteArray> Record::picture_files() const
+QMap<QString, QByteArray> r_t::picture_files() const
 {
 	// У легкого объекта невозможно запросить картинки, если так происходит - это
 	// ошибка вызывающей логики
@@ -1200,7 +1198,7 @@ QMap<QString, QByteArray> Record::picture_files() const
 }
 
 // todo: Переделать на копирование по ссылке
-void Record::picture_files(QMap<QString, QByteArray> picture_files)
+void r_t::picture_files(QMap<QString, QByteArray> picture_files)
 {
 	// Легкому объекту невозможно установить картики, если так происходит - это
 	// ошибка вызывающей логики
@@ -1253,7 +1251,7 @@ namespace detail {
 }
 
 // Privacy feature encrypts only field// Приватная функция, шифрует только поля
-void Record::to_encrypt_fields(void)
+void r_t::to_encrypt_fields(void)
 {
 	if (boost::fusion::at_key<crypt_key>(_fields_data_map) == crypt_value(true))
 		return;
@@ -1283,7 +1281,7 @@ void Record::to_encrypt_fields(void)
 }
 
 // Приватная функция, расшифровывает только поля
-void Record::to_decrypt_fields(void)
+void r_t::to_decrypt_fields(void)
 {
 	// Нельзя расшифровать незашифрованную запись
 	if (boost::fusion::at_key<crypt_key>(_fields_data_map) == crypt_value(false))
@@ -1304,7 +1302,7 @@ void Record::to_decrypt_fields(void)
 }
 
 // Шифрование записи с легкими данными
-void Record::to_encrypt_and_save_lite(void)
+void r_t::to_encrypt_and_save_lite(void)
 {
 	// Метод обрабатывает только легкий объект
 	if (_lite_flag == false)
@@ -1330,7 +1328,7 @@ void Record::to_encrypt_and_save_lite(void)
 }
 
 // Шифрование записи с полновесными данными
-void Record::to_encrypt_and_save_fat(void)
+void r_t::to_encrypt_and_save_fat(void)
 {
 	// Метод обрабатывает только тяжелый объект
 	if (_lite_flag == true)
@@ -1352,7 +1350,7 @@ void Record::to_encrypt_and_save_fat(void)
 }
 
 // асшифровка записи с легкими данными
-void Record::to_decrypt_and_save_lite(void)
+void r_t::to_decrypt_and_save_lite(void)
 {
 	// Метод обрабатывает только легкий объект
 	if (_lite_flag == false)
@@ -1383,7 +1381,7 @@ void Record::to_decrypt_and_save_lite(void)
 	push_lite_attributes();
 }
 
-void Record::to_decrypt_and_save_fat(void)
+void r_t::to_decrypt_and_save_fat(void)
 {
 	// Метод обрабатывает только тяжелый объект
 	if (_lite_flag == true)
@@ -1412,7 +1410,7 @@ void Record::to_decrypt_and_save_fat(void)
 // Запись "тяжелых" атрибутов (текста, картинок и приаттаченных файлов) на диск
 // Запись происходит в явном виде, то, что хранится в Fat-атрибутах, без
 // шифрации-дешифрации
-void Record::push_lite_attributes()
+void r_t::push_lite_attributes()
 {
 	// Легкий объект невозможно сбросить на диск, потому что он не содержит
 	// данных, сбрасываемых в файлы
@@ -1442,7 +1440,7 @@ void Record::push_lite_attributes()
 // Запись "тяжелых" атрибутов (текста, картинок и приаттаченных файлов) на диск
 // Запись происходит в явном виде, то, что хранится в Fat-атрибутах, без
 // шифрации-дешифрации
-void Record::push_fat_attributes()
+void r_t::push_fat_attributes()
 {
 	// Легкий объект невозможно сбросить на диск, потому что он не содержит
 	// данных, сбрасываемых в файлы
@@ -1470,25 +1468,25 @@ void Record::push_fat_attributes()
 }
 
 // Полное имя директории записи
-QString Record::full_dir() const
+QString r_t::full_dir() const
 {
 	if (boost::fusion::at_key<dir_key>(_fields_data_map) == dir_value(""))
-		boost::fusion::at_key<dir_key>(const_cast<Record*>(this)->_fields_data_map) = boost::fusion::at_key<id_key>(const_cast<Record*>(this)->_fields_data_map); // critical_error("Record::full_dir() : Not
-																					  // present dir field");
+		boost::fusion::at_key<dir_key>(const_cast<r_t*>(this)->_fields_data_map) = boost::fusion::at_key<id_key>(const_cast<r_t*>(this)->_fields_data_map); // critical_error("Record::full_dir() : Not
+																				    // present dir field");
 	return gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/base/" + boost::fusion::at_key<dir_key>(this->_fields_data_map);
 }
 
 // Короткое имя директории записи
-QString Record::short_dir() const
+QString r_t::short_dir() const
 {
 	if (boost::fusion::at_key<dir_key>(_fields_data_map) == dir_value(""))
-		boost::fusion::at_key<dir_key>(const_cast<Record*>(this)->_fields_data_map) = boost::fusion::at_key<id_key>(const_cast<Record*>(this)->_fields_data_map); // critical_error("Record::short_dir() : Not
-																					  // present dir field");
+		boost::fusion::at_key<dir_key>(const_cast<r_t*>(this)->_fields_data_map) = boost::fusion::at_key<id_key>(const_cast<r_t*>(this)->_fields_data_map); // critical_error("Record::short_dir() : Not
+																				    // present dir field");
 	return boost::fusion::at_key<dir_key>(this->_fields_data_map);
 }
 
 // Полное имя файла с текстом записи
-QString Record::full_text_file_name() const
+QString r_t::full_text_file_name() const
 {
 
 	if (boost::fusion::at_key<file_key>(this->_fields_data_map) == file_value("")) {
@@ -1499,7 +1497,7 @@ QString Record::full_text_file_name() const
 }
 
 // Full name of any file in the directory entry// Полное имя произвольного файла в каталоге записи
-QString Record::full_file_name(QString file_name) const
+QString r_t::full_file_name(QString file_name) const
 {
 	return full_dir() + "/" + file_name;
 }
@@ -1508,7 +1506,7 @@ QString Record::full_file_name(QString file_name) const
 // записи)
 // проверяет их правильность и заполняет в переданных параметрах полные имена
 // директории и файла
-void Record::check_and_fill_file_dir(QString& idir_name, QString& i_file_name)
+void r_t::check_and_fill_file_dir(QString& idir_name, QString& i_file_name)
 {
 	// Полные имена директории и файла
 	idir_name = full_dir();
@@ -1538,7 +1536,7 @@ void Record::check_and_fill_file_dir(QString& idir_name, QString& i_file_name)
 	}
 }
 
-bool Record::dir_exists()
+bool r_t::dir_exists()
 {
 	bool dir_exists = false;
 	QString fileName = full_text_file_name();
@@ -1552,7 +1550,7 @@ bool Record::dir_exists()
 	return dir_exists;
 }
 
-bool Record::file_exists()
+bool r_t::file_exists()
 {
 	bool file_exists = false;
 	QString fileName = full_text_file_name();
@@ -1566,7 +1564,7 @@ bool Record::file_exists()
 }
 
 // В функцию должно передаваться полное имя файла
-void Record::check_and_create_text_file()
+void r_t::check_and_create_text_file()
 {
 	QString file_name = full_text_file_name();
 	if (file_name == "") {
@@ -1642,7 +1640,7 @@ void Record::check_and_create_text_file()
 ////        return _page->view();
 // }
 
-id_value Record::id() const
+id_value r_t::id() const
 {
 	id_value result;
 	if (boost::fusion::at_key<id_key>(_fields_data_map) != id_value(""))
@@ -1653,25 +1651,25 @@ id_value Record::id() const
 
 		// exit(1);
 		auto dir = detail::to_qstring(boost::fusion::at_key<dir_key>(_fields_data_map));
-		boost::fusion::at_key<id_key>(const_cast<Record*>(this)->_fields_data_map) = detail::from_qstring<id_key>(dir.length() > 0 ? dir : get_unical_id());
+		boost::fusion::at_key<id_key>(const_cast<r_t*>(this)->_fields_data_map) = detail::from_qstring<id_key>(dir.length() > 0 ? dir : get_unical_id());
 
 		result = boost::fusion::at_key<id_key>(_fields_data_map); // return id_value(_field_data["id"]);
 	}
 	return result;
 }
 
-name_value Record::name() const
+name_value r_t::name() const
 {
 	return boost::fusion::at_key<name_key>(_fields_data_map);
 }
 
-rating_value Record::rating() const
+rating_value r_t::rating() const
 {
 	//	auto rating_ = _field_data[boost::mpl::c_str<rating_key>::value];
 	return boost::fusion::at_key<rating_key>(_fields_data_map); //rating_.toULongLong();
 }
 
-size_t Record::add_rating()
+size_t r_t::add_rating()
 {
 	//	auto rating_ = _field_data[boost::mpl::c_str<rating_key>::value];
 	//	auto number = rating_.toULongLong();
@@ -1682,7 +1680,7 @@ size_t Record::add_rating()
 }
 
 
-void Record::clear_content(void)
+void r_t::clear_content(void)
 {
 	//	_misc_fields.clear();
 	boost::fusion::for_each(_fields_data_map, clear_full_fields_map(&_fields_data_map));
@@ -1702,7 +1700,7 @@ struct field_count_impl {
 	}
 };
 
-size_t Record::fields_likely_count() const
+size_t r_t::fields_likely_count() const
 {
 	size_t count = 0;
 	boost::fusion::for_each(_fields_data_map, field_count_impl(&count));
@@ -1758,7 +1756,7 @@ struct dump_decode_impl {
 	}
 };
 // Get all the established fields "fieldname" -> "to"// Получение всех установленных полей "имя_поля"->"значение"
-QMap<QString, QString> Record::dump_decode() const
+QMap<QString, QString> r_t::dump_decode() const
 {
 	//	qDebug() << "TreeItem::fields_all() : Fields data " << _field_data;
 
@@ -1793,7 +1791,7 @@ struct dump_direct_impl {
 // Напрямую, без преобразований, без расшифровки
 // Get all the established fields "fieldname" -> "to"
 // Directly without transformation, without decoding
-QMap<QString, QString> Record::dump_direct() const
+QMap<QString, QString> r_t::dump_direct() const
 {
 	QMap<QString, QString> result;
 	//	return _field_data;

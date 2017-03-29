@@ -20,15 +20,16 @@ extern std::shared_ptr<gl_para> gl_paras;
 W_OBJECT_IMPL(AttachTableScreen)
 #endif
 
-AttachTableScreen::AttachTableScreen(Blogger *blogger_, QWidget *parent)
+AttachTableScreen::AttachTableScreen(Blogger *blogger_, QWidget* parent)
     : QWidget(parent)
-    , toolsLine([&]() -> QToolBar * {
+    , toolsLine([&]() -> QToolBar* {
 	    toolsLine = new QToolBar(this);
 	    setupActions();
 	    return toolsLine;
-	}())
+    }())
     , attachTableController(new AttachTableController(blogger_, this))
-    , attachTableView(attachTableController->view()) {
+    , attachTableView(attachTableController->view())
+{
 	// По факту этот класс - синглтон. Синглтон сам задает себе имя
 	this->setObjectName("attachTableScreen");
 
@@ -47,84 +48,86 @@ AttachTableScreen::AttachTableScreen(Blogger *blogger_, QWidget *parent)
 	assembly();
 }
 
-AttachTableScreen::~AttachTableScreen() {
+AttachTableScreen::~AttachTableScreen()
+{
 }
 
 // Настройка возможных действий
-void AttachTableScreen::setupActions(void) {
+void AttachTableScreen::setupActions(void)
+{
 	// Добавление файла
 	actionAddAttach =
 	    add_action<QToolBar, QAction, AttachTableScreen, AttachTableController>(
-	        toolsLine, this, tr("Attach file"), tr("Attach file"),
-	        tr("Attach file"), QIcon(":/resource/pic/attach_add.svg"), [&](bool) {
-		        attachTableController->on_add_attach();
-		    });  // new QAction(tr("Attach file"), this);
+		toolsLine, this, tr("Attach file"), tr("Attach file"),
+		tr("Attach file"), QIcon(":/resource/pic/attach_add.svg"), [&](bool) {
+			attachTableController->on_add_attach();
+		}); // new QAction(tr("Attach file"), this);
 	// actionAddAttach->setStatusTip(tr("Attach file"));
 	// actionAddAttach->setIcon(QIcon(":/resource/pic/attach_add.svg"));
 
 	// Добавление линка
 	actionAddLink =
 	    add_action<QToolBar, QAction, AttachTableScreen, AttachTableController>(
-	        toolsLine, this, tr("Add link"), tr("Add link without file copying"),
-	        tr("Add link without file copying"),
-	        QIcon(":/resource/pic/attach_add_link.svg"), [&](bool) {
-		        attachTableController->on_add_link();
-		    });  // new QAction(tr("Attach file"), this);// new QAction(tr("Add
-	             // link"), this);
+		toolsLine, this, tr("Add link"), tr("Add link without file copying"),
+		tr("Add link without file copying"),
+		QIcon(":/resource/pic/attach_add_link.svg"), [&](bool) {
+			attachTableController->on_add_link();
+		}); // new QAction(tr("Attach file"), this);// new QAction(tr("Add
+		    // link"), this);
 	// actionAddLink->setStatusTip(tr("Add link without file copying"));
 	// actionAddLink->setIcon(QIcon(":/resource/pic/attach_add_link.svg"));
 
 	// едактирование информации о файле (имени файла)
 	actionEditFileName =
 	    add_action<QToolBar, QAction, AttachTableScreen, AttachTableController>(
-	        toolsLine, this, tr("Edit file name"), tr("Edit file name"),
-	        tr("Edit file name"), QIcon(":/resource/pic/attach_edit.svg"),
-	        [&](bool) {
-		        attachTableController->on_edit_file_name();
-		    });  // new QAction(tr("Edit file name"), this);
+		toolsLine, this, tr("Edit file name"), tr("Edit file name"),
+		tr("Edit file name"), QIcon(":/resource/pic/attach_edit.svg"),
+		[&](bool) {
+			attachTableController->on_edit_file_name();
+		}); // new QAction(tr("Edit file name"), this);
 	// actionEditFileName->setStatusTip(tr("Edit file name"));
 	// actionEditFileName->setIcon(QIcon(":/resource/pic/attach_edit.svg"));
 
 	// Удаление файла
 	actionDeleteAttach =
 	    add_action<QToolBar, QAction, AttachTableScreen, AttachTableController>(
-	        toolsLine, this, tr("Delete file"), tr("Delete file"),
-	        tr("Delete file"), QIcon(":/resource/pic/attach_delete.svg"),
-	        [&](bool) {
-		        attachTableController->on_delete_attach();
-		    });  // new QAction(tr("Delete file"), this);
+		toolsLine, this, tr("Delete file"), tr("Delete file"),
+		tr("Delete file"), QIcon(":/resource/pic/attach_delete.svg"),
+		[&](bool) {
+			attachTableController->on_delete_attach();
+		}); // new QAction(tr("Delete file"), this);
 	// actionDeleteAttach->setStatusTip(tr("Delete file"));
 	// actionDeleteAttach->setIcon(QIcon(":/resource/pic/attach_delete.svg"));
 
 	// Просмотр файла
 	actionOpenAttach =
 	    add_action<QToolBar, QAction, AttachTableScreen, AttachTableController>(
-	        toolsLine, this, tr("Preview file"), tr("Preview file"),
-	        tr("Preview file"), QIcon(":/resource/pic/attach_preview.svg"),
-	        [&](bool) {
-		        attachTableController->on_open_attach();
-		    });  // new QAction(tr("Preview file"), this);
+		toolsLine, this, tr("Preview file"), tr("Preview file"),
+		tr("Preview file"), QIcon(":/resource/pic/attach_preview.svg"),
+		[&](bool) {
+			attachTableController->on_open_attach();
+		}); // new QAction(tr("Preview file"), this);
 	// actionOpenAttach->setStatusTip(tr("Preview file"));
 	// actionOpenAttach->setIcon(QIcon(":/resource/pic/attach_preview.svg"));
 
 	// Сохранить как... файл
 	actionSaveAsAttach =
 	    add_action<QToolBar, QAction, AttachTableScreen, AttachTableController>(
-	        toolsLine, this, tr("Save as..."), tr("Save as..."), tr("Save as..."),
-	        QIcon(":/resource/pic/attach_save_as.svg"), [&](bool) {
-		        attachTableController->on_save_as_attach();
-		    });  // new QAction(tr("Save as..."), this);
+		toolsLine, this, tr("Save as..."), tr("Save as..."), tr("Save as..."),
+		QIcon(":/resource/pic/attach_save_as.svg"), [&](bool) {
+			attachTableController->on_save_as_attach();
+		}); // new QAction(tr("Save as..."), this);
 	// actionSaveAsAttach->setStatusTip(tr("Save as..."));
 	// actionSaveAsAttach->setIcon(QIcon(":/resource/pic/attach_save_as.svg"));
 
 	// Информация об аттаче
 	actionShowAttachInfo =
 	    add_action<QToolBar, QAction, AttachTableScreen, AttachTableController>(
-	        toolsLine, this, tr("Attach info"), tr("Attach info"),
-	        tr("Attach info"), QIcon(":/resource/pic/attach_info.svg"),
-	        [&](bool) {
-		        attachTableController->on_show_attach_info();
-		    });  // new QAction(tr("Attach info"), this);
+		toolsLine, this, tr("Attach info"), tr("Attach info"),
+		tr("Attach info"), QIcon(":/resource/pic/attach_info.svg"),
+		[&](bool) {
+			attachTableController->on_show_attach_info();
+		}); // new QAction(tr("Attach info"), this);
 	// actionShowAttachInfo->setStatusTip(tr("Attach info"));
 	// actionShowAttachInfo->setIcon(QIcon(":/resource/pic/attach_info.svg"));
 
@@ -133,16 +136,17 @@ void AttachTableScreen::setupActions(void) {
 	// Переключение на редактор
 	actionSwitchToEditor =
 	    add_action<QToolBar, QAction, AttachTableScreen, AttachTableController>(
-	        toolsLine, this, tr("Return to editor"), tr("Return to editor"),
-	        tr("Return to editor"),
-	        QIcon(":/resource/pic/attach_switch_to_editor.svg"), [&](bool) {
-		        attachTableController->on_switch_to_editor();
-		    });  // new QAction(tr("Return to editor"), this);
-	             // actionSwitchToEditor->setStatusTip(tr("Return to editor"));
-	             // actionSwitchToEditor->setIcon(QIcon(":/resource/pic/attach_switch_to_editor.svg"));
+		toolsLine, this, tr("Return to editor"), tr("Return to editor"),
+		tr("Return to editor"),
+		QIcon(":/resource/pic/attach_switch_to_editor.svg"), [&](bool) {
+			attachTableController->on_switch_to_editor();
+		}); // new QAction(tr("Return to editor"), this);
+		    // actionSwitchToEditor->setStatusTip(tr("Return to editor"));
+		    // actionSwitchToEditor->setIcon(QIcon(":/resource/pic/attach_switch_to_editor.svg"));
 }
 
-void AttachTableScreen::setupUI(void) {
+void AttachTableScreen::setupUI(void)
+{
 	// Создание тулбара
 	// toolsLine = new QToolBar(this);
 
@@ -160,7 +164,8 @@ void AttachTableScreen::setupUI(void) {
 	// add_action<QToolButton>(toolsLine, actionSwitchToEditor);
 }
 
-void AttachTableScreen::setupSignals(void) {
+void AttachTableScreen::setupSignals(void)
+{
 	// Связывание действий
 	// connect(actionAddAttach, &QAction::triggered, attachTableController,
 	// &AttachTableController::on_add_attach);
@@ -182,8 +187,9 @@ void AttachTableScreen::setupSignals(void) {
 	// &AttachTableController::on_switch_to_editor);
 }
 
-void AttachTableScreen::assembly(void) {
-	screenLayout = new QVBoxLayout();  // todo: Добавить this?
+void AttachTableScreen::assembly(void)
+{
+	screenLayout = new QVBoxLayout(); // todo: Добавить this?
 
 	screenLayout->addWidget(toolsLine);
 	screenLayout->addWidget(attachTableController->view());
@@ -191,7 +197,7 @@ void AttachTableScreen::assembly(void) {
 	setLayout(screenLayout);
 
 	// Границы убираются, так как данный объект будет использоваться как виджет
-	QLayout *lt;
+	QLayout* lt;
 	lt = layout();
 	lt->setContentsMargins(0, 0, 0, 0);
 }
@@ -200,6 +206,7 @@ void AttachTableScreen::assembly(void) {
 // Список на экране должен быть пустой
 // Вызывается в моменты, когда ни одна запись не выбрана или содержимое записи
 // недоступно
-void AttachTableScreen::clear() {
+void AttachTableScreen::clear()
+{
 	attachTableController->attach_table_data(nullptr);
 }

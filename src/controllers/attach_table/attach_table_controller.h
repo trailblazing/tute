@@ -3,6 +3,7 @@
 
 #include <QModelIndexList>
 
+#include "libraries/global_parameters.h"
 #include "models/attach_table/attach.h"
 #include "models/attach_table/attach_table_data.h"
 #include "models/attach_table/attach_table_model.h"
@@ -28,17 +29,17 @@ class AttachTableController : public QObject {
 	Q_OBJECT
 #endif
 
-	public:
-	AttachTableController(Blogger *blogger_, AttachTableScreen *parent = 0);
+    public:
+	AttachTableController(Blogger *blogger_, AttachTableScreen* parent = 0);
 	virtual ~AttachTableController();
 
-	AttachTableView *view(void);
+	AttachTableView* view(void);
 	void attach_table_data(std::shared_ptr<AttachTableData> attach_table_data);
-	AttachTableData *attach_table_data();
+	AttachTableData* attach_table_data();
 
 	QList<QString> selected_id(void);
 
-	public slots:
+    public slots:
 
 	void on_add_attach(void);
 	void on_add_link(void);
@@ -50,14 +51,14 @@ class AttachTableController : public QObject {
 
 	void on_switch_to_editor(void);
 
-	protected:
+    protected:
 	void add_smart(QString attach_type);
 	QStringList select_files_for_adding(QString attach_type);
 	void save_attach_to_user_place(QString from_full_file_name, QString to_full_file_name, QString attach_type, bool is_attach_crypt);
 
-	AttachTableView *_view;
-	AttachTableModel *_model;
-	Blogger *_blogger;
+	AttachTableView* _view;
+	AttachTableModel* _model;
+	blogger_ref _blogger;
 };
 
-#endif  // __ATTACHTABLECONTROLLER_H__
+#endif // __ATTACHTABLECONTROLLER_H__

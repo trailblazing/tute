@@ -33,7 +33,7 @@
 #include "libraries/fixed_parameters.h"
 #include "libraries/flat_control.h"
 #include "libraries/global_parameters.h"
-#include "libraries/qt_single_application5/qtsingleapplication.h"
+
 #include "models/app_config/app_config.h"
 #include "prefs_dialog.h"
 #include "qij_search_widget.h"
@@ -43,6 +43,7 @@
 #include "ui_password-form.h"
 #include "utility/add_action.h"
 #include "utility/expose.h"
+#include "utility/lease.h"
 // #include "ui_ListDialog.h"
 //#ifdef USE_SYSTRAYICON
 //#include "sys_tray_icon.h"
@@ -90,7 +91,9 @@ class rs_t;
 class SysTrayIcon;
 class HidableTab;
 
-// class sapp_t::RecentFile;
+namespace app {
+	struct RecentFile;
+}
 // class ExposedSappRecentFile;
 
 using namespace Ui;
@@ -114,11 +117,18 @@ extern std::shared_ptr<AppConfig> appconfig;
 extern const char* global_root_id;
 
 namespace web {
+	template <typename>
 	class Docker;
 	class Browser;
 }
 
-class Blogger : public QMainWindow { // QWidget
+class Blogger : public QMainWindow
+#ifdef USE_SIGNAL_CLOSE
+		,
+		public boost::intrusive_ref_counter<Blogger, boost::thread_safe_counter>,
+		public sd::renter //<Blogger>
+#endif                            //USE_SIGNAL_CLOSE
+{                                 // QWidget
 	Q_OBJECT
 	typedef QMainWindow super;
 
@@ -128,7 +138,9 @@ class Blogger : public QMainWindow { // QWidget
              QWidget *parent = 0 );*/
 	Blogger(QString new_post_topic = gl_para::_default_topic, // global_root_id// get_unical_id()
 	    QString new_post_content = gl_para::_default_post,    // (std::string("Welcome to \"") + gl_para::_default_topic + "\" topic").c_str() // = QString()
-	    QStringList hide_editor_tools_ = appconfig->hide_editor_tools(), const QByteArray& state_ = QByteArray(), Qt::WindowFlags flags = Qt::Widget);
+	    QStringList hide_editor_tools_ = appconfig->hide_editor_tools(),
+	    const QByteArray& state_ = QByteArray(),
+	    Qt::WindowFlags flags = Qt::Widget);
 	~Blogger();
 	template <typename T>
 	struct initialize_prior_to {
@@ -161,7 +173,7 @@ class Blogger : public QMainWindow { // QWidget
 	QStackedWidget* main_stack();
 
 	//	rs_t *record_screen();
-	web::Docker* editor_docker();
+	web::Docker<Blogger>* editor_docker();
 	//	static QString purify_topic(const QString &topic);
     private:
 	void doUiSetup();
@@ -284,7 +296,7 @@ class Blogger : public QMainWindow { // QWidget
 	QAction* addKeywordTag_forList;
 	QAction* addKeywordTag_forAvailTags;
 	QAction* _refreshKeywordTags;
-	QList<sapp_t::RecentFile> recentFiles;
+	QList<std::shared_ptr<app::RecentFile>> recentFiles;
 	QString checkBoxName(QString);
 #ifdef USE_SYSTRAYICON
 	SysTrayIcon* sti;
@@ -436,8 +448,8 @@ class Blogger : public QMainWindow { // QWidget
 	void file_print_pdf();
 	void on_topic_changed(const QString& tp);
 
-//	void on_record_screen_close_requested();
-	void on_browser_close_requested();
+	//	void on_record_screen_close_requested();
+	//	void on_browser_close_requested();
 
     protected:
 	QTextBrowser* _preview_window;
@@ -498,11 +510,13 @@ class Blogger : public QMainWindow { // QWidget
 	QString _splitter_groupname;
 	QString _splitter_sizelist;
 
-	web::Browser* _browser = nullptr;
-//	rs_t* _record_screen = nullptr;
-	web::Docker* _editor_docker;
+	browser_ref _browser;
+
+	//	sd::intrusive_ptr<rs_t> _record_screen;
+	web::Docker<Blogger>* _editor_docker;
 	SuperMenu* _super_menu;
 	// web::Browser *_browser = nullptr;
+	//	bool _closed = false;
 	// virtual void resizeEvent( QResizeEvent *e );
 	virtual void closeEvent(QCloseEvent*);
 	virtual void showEvent(QShowEvent*);
@@ -516,13 +530,17 @@ class Blogger : public QMainWindow { // QWidget
 	void httpBusinessFinished();
 	void categoryRefreshFinished();
 	void blogRefreshFinished();
-	void close_request(QWidget*);
+	//	void self_close_request(QWidget*);
 	void topic_changed(const QString& original_topic_, const QString& tp, bool append_mode = false);
-	friend class web::Docker;
+	friend class web::Docker<Blogger>;
 	friend class EditorWrap;
 	friend class Editor;
 	friend class SideTabWidget;
 
+    protected:
+#ifndef USE_SIGNAL_CLOSE
+	boost::signals2::signal<void(Blogger*)> _prepended;
+#endif // NO USE_SIGNAL_CLOSE
     public:
 #ifdef USE_EDITOR_WRAP
 	void name(const QString& nm);

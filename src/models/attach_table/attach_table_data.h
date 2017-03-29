@@ -11,34 +11,34 @@
 #include "models/attach_table/attach.h"
 #include "models/record_table/record.h"
 
-class Record;
+class r_t;
 class AttachTableModel;
 
 class AttachTableData {
 	friend class Attach;
 
-	public:
-	AttachTableData(boost::intrusive_ptr<Record> _record = nullptr);
-	AttachTableData(const AttachTableData &obj);
-	AttachTableData &operator=(const AttachTableData &obj);
+    public:
+	AttachTableData(r_t* record_ = nullptr);
+	AttachTableData(const AttachTableData& obj);
+	AttachTableData& operator=(const AttachTableData& obj);
 	// AttachTableData();
 	virtual ~AttachTableData();
 
 	void dom_to_data(QDomElement iDomElement);
 	QDomElement dom_from_data(std::shared_ptr<QDomDocument> doc) const;
 
-	void record(boost::intrusive_ptr<Record> record);
-	void related_attach_table_model(AttachTableModel *model);
-	void related_attach_table_model_only(AttachTableModel *model);
+	void record(r_t* record); //boost::intrusive_ptr<r_t>
+	void related_attach_table_model(AttachTableModel* model);
+	void related_attach_table_model_only(AttachTableModel* model);
 
 	void clear();
 	int size() const;
 
-	Attach attach(QString id);  // Получение объекта аттача
+	Attach attach(QString id); // Получение объекта аттача
 	void
-	add_attach(Attach attach);                // Добавление аттача в таблицу приаттаченных файлов
-	void attach(QString id, Attach iAttach);  // Изменение данных аттача
-	void delete_attach(QString id);           // Удаление аттача по идентификатору
+	add_attach(Attach attach);               // Добавление аттача в таблицу приаттаченных файлов
+	void attach(QString id, Attach iAttach); // Изменение данных аттача
+	void delete_attach(QString id);          // Удаление аттача по идентификатору
 
 	int row_by_id(QString id);
 	QString id_by_row(int row);
@@ -75,23 +75,23 @@ class AttachTableData {
 	void update_attach_table_back_link();
 	std::shared_ptr<AttachTableData> merge(std::shared_ptr<AttachTableData> cut);
 
-	protected:
+    protected:
 	bool _lite_flag;
 
 	// Перечень файлов и их свойств
 	QList<Attach> _attach_table;
 
 	// Какой записи принадлежит таблица файлов
-	boost::intrusive_ptr<Record> _record;
+	r_t* _record;
 
-	AttachTableModel *_related_attach_table_model;
+	AttachTableModel* _related_attach_table_model;
 };
 
 // егистрация в QVariant типа AttachTableData
 Q_DECLARE_METATYPE(AttachTableData);
 
 // егистрация в QVariant типа *AttachTableData
-typedef AttachTableData *AttachTableDataPointer;
+typedef AttachTableData* AttachTableDataPointer;
 Q_DECLARE_METATYPE(AttachTableDataPointer);
 
-#endif  // ATTACHTABLEDATA_H
+#endif // ATTACHTABLEDATA_H

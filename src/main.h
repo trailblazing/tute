@@ -1,5 +1,5 @@
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#ifndef MAIN_HEADER
+#define MAIN_HEADER
 
 #include <QApplication>
 #include <QClipboard>
@@ -13,15 +13,15 @@
 #include <memory>
 
 #include <QAbstractItemView>
+#include <QDir>
 #include <QDomNode>
 #include <QPushButton>
 #include <QSizePolicy>
 #include <QTextEdit>
+#include <QTextStream>
 #include <QThread>
 #include <QToolBar>
 #include <QVBoxLayout>
-#include <QDir>
-#include <QTextStream>
 #include <QtDebug>
 // #include "utility/delegate.h"
 // #include "models/record_table/Record.h"
@@ -294,7 +294,7 @@ extern bool url_equal(const url_value& u0, const url_value& u1);
 ///web::WebView *, Record *const>> generator
 // , TableController *record_controller =
 // globalparameters.table_screen()->table_controller());
-// extern boost::intrusive_ptr<Record> check_record(const QUrl &_url);
+// extern boost::intrusive_ptr<r_t> check_record(const QUrl &_url);
 
 // namespace web {
 // class Browser;
@@ -325,4 +325,4 @@ extern std::string truncate(std::string str, size_t width, bool show_ellipsis = 
 #define USE_QTM
 #endif
 
-#endif // __MAIN_H__
+#endif // MAIN_HEADER

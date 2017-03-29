@@ -19,9 +19,11 @@
  *
  *****************************************************************************/
 
-#include "libraries/qt_single_application5/qtsingleapplication.h"
+//#include "libraries/qt_single_application5/qtsingleapplication.h"
+#include "libraries/qtm/blogger.h"
 #include "libraries/qtm/qij_search_widget.h"
 #include "libraries/wyedit/editor_context_menu.h"
+#include "utility/lease.h"
 #include <QList>
 #include <QMenu>
 #include <QMenuBar>
@@ -37,35 +39,49 @@ class rs_t;
 class Blogger;
 
 namespace web {
-class Docker;
+	template <typename>
+	class Docker;
 }
-class SuperMenu : public QMenu  // EditorContextMenu	// QMenuBar
+
+
+namespace app {
+	struct RecentFile;
+}
+
+class SuperMenu : public QMenu // EditorContextMenu	// QMenuBar
 {
 	Q_OBJECT
 	typedef QMenu super;
 
-	public:
-	SuperMenu(Blogger *bloger_, QWidget *parent = 0, SysTrayIcon *sti = 0);
+    public:
+	SuperMenu(Blogger* bloger_, QWidget* parent = 0, SysTrayIcon* sti = 0);
 	void setEditActionsEnabled(bool);
-	QAction *getCutAction() {
+	QAction* getCutAction()
+	{
 		return cutAction;
 	}
-	QAction *getCopyAction() {
+	QAction* getCopyAction()
+	{
 		return copyAction;
 	}
-	QAction *getPasteAction() {
+	QAction* getPasteAction()
+	{
 		return pasteAction;
 	}
-	QAction *getUndoAction() {
+	QAction* getUndoAction()
+	{
 		return undoAction;
 	}
-	QAction *getRedoAction() {
+	QAction* getRedoAction()
+	{
 		return redoAction;
 	}
-	QAction *getConsoleAction() {
+	QAction* getConsoleAction()
+	{
 		return showConsoleAction;
 	}
-	QAction *getPreviewAction() {
+	QAction* getPreviewAction()
+	{
 		return previewAction;
 	}
 	void setConsoleEnabled(bool);
@@ -103,7 +119,7 @@ class SuperMenu : public QMenu  // EditorContextMenu	// QMenuBar
 	    *viewBasicsAction, *viewCatsAction, *viewExcerptAction, *viewWPTagsAction,
 	    *viewTechTagsAction, *viewPingsAction;
 #ifndef Q_WS_MAC
-	QAction *viewToolbarAction;
+	QAction* viewToolbarAction;
 #endif
 
 	// Category menu actions
@@ -121,34 +137,34 @@ class SuperMenu : public QMenu  // EditorContextMenu	// QMenuBar
 	QAction *aboutAction, *whatsThisAction;
 
 	void set_edit_image_properties(bool is_image_select);
-	public slots:
-	void set_recent_files(const QList<sapp_t::RecentFile> &);
+    public slots:
+	void set_recent_files(const QList<std::shared_ptr<app::RecentFile>>&);
 	void openRecentFile();
-	void blogger_changed(Blogger *bloger_);
+	void blogger_changed(Blogger* bloger_);
 	void setConsoleActionTitle(bool);
 	void setPreviewActionTitle(bool);
 	void setHighlightingChecked(bool);
 
-	private:
-	EditorContextMenu *_editor_context_menu;
-	QList<QAction *> _blogger_actions;
+    private:
+	EditorContextMenu* _editor_context_menu;
+	QList<QAction*> _blogger_actions;
 	// QList<QMenu *> editingMenus;
-	QAction *noRecentFilesAction;
-	SysTrayIcon *_sti;
-	QList<sapp_t::RecentFile> recentFiles;
-	QAction *recentFileActions[10];
+	QAction* noRecentFilesAction;
+	SysTrayIcon* _sti;
+	QList<std::shared_ptr<app::RecentFile>> recentFiles;
+	QAction* recentFileActions[10];
 	//	sapp_t *_app;
-	Blogger *_bloger = nullptr;
+	blogger_ref _blogger;
 
-	ts_t *_tree_screen;
-	web::Docker *_browser_docker;
-	wn_t *_main_window;
-	web::Profile *_profile;
+	ts_t* _tree_screen;
+	//	web::Docker<web::Browser>* _browser_docker;
+	wn_t* _main_window;
+	web::Profile* _profile;
 	Qt::WindowFlags _flags;
 	QString _style_source;
 
-	FindScreen *_find_screen;
-	web::Docker *_editor_docker;
+	FindScreen* _find_screen;
+	web::Docker<Blogger>* _editor_docker;
 	//	Bloger_blogerer;
 	//	HidableTab *_vtab_record;
 
@@ -159,7 +175,7 @@ class SuperMenu : public QMenu  // EditorContextMenu	// QMenuBar
 
 	void updateRecentFileMenu();
 
-	private slots:
+    private slots:
 	void newEntry();
 	void choose(QString fname = QString());
 	void quit();
@@ -169,6 +185,6 @@ class SuperMenu : public QMenu  // EditorContextMenu	// QMenuBar
 	// void doPreview( bool );
 	void handleConsole(bool);
 
-	protected:
-	virtual void showEvent(QShowEvent *);
+    protected:
+	virtual void showEvent(QShowEvent*);
 };

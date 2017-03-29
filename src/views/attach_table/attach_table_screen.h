@@ -1,6 +1,7 @@
 #ifndef ATTACHTABLESCREEN_H
 #define ATTACHTABLESCREEN_H
 
+#include "libraries/global_parameters.h"
 #include <QAction>
 #include <QToolBar>
 #include <QVBoxLayout>
@@ -25,41 +26,41 @@ class AttachTableScreen : public QWidget {
 	Q_OBJECT
 #endif
 
-	public:
-	AttachTableScreen(Blogger *blogger_, QWidget *parent = 0);
+    public:
+	AttachTableScreen(Blogger* blogger_, QWidget* parent = 0);
 	virtual ~AttachTableScreen();
 
 	void clear(void);
 
-	QAction *actionAddAttach;
-	QAction *actionAddLink;
-	QAction *actionEditFileName;
-	QAction *actionDeleteAttach;
-	QAction *actionOpenAttach;
-	QAction *actionSaveAsAttach;
-	QAction *actionShowAttachInfo;
+	QAction* actionAddAttach;
+	QAction* actionAddLink;
+	QAction* actionEditFileName;
+	QAction* actionDeleteAttach;
+	QAction* actionOpenAttach;
+	QAction* actionSaveAsAttach;
+	QAction* actionShowAttachInfo;
 
-	signals:
+    signals:
 
-	public slots:
+    public slots:
 
-	protected:
+    protected:
 	void setupActions(void);
 	void setupUI(void);
 	void setupSignals(void);
 	void assembly(void);
 
 	// Экранные элементы
-	QToolBar *toolsLine;
+	QToolBar* toolsLine;
 	// Указатель на контроллер таблицы приаттаченных файлов
-	AttachTableController *attachTableController;
+	AttachTableController* attachTableController;
 
 	// Указатель на таблицу приаттаченных файлов (представление)
-	AttachTableView *attachTableView;
+	AttachTableView* attachTableView;
 
-	QVBoxLayout *screenLayout;
+	QVBoxLayout* screenLayout;
 
-	QAction *actionSwitchToEditor;
+	QAction* actionSwitchToEditor;
 };
 
-#endif  // ATTACHTABLESCREEN_H
+#endif // ATTACHTABLESCREEN_H

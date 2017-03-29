@@ -11,7 +11,6 @@
 #include <QScrollArea>
 
 //#include "models/tree/tree_item.dec"
-
 #include "controllers/record_table/record_controller.h"
 #include "libraries/clipboard_branch.h"
 #include "libraries/clipboard_records.h"
@@ -31,6 +30,7 @@
 #include "models/tree/tree_know_model.h"
 #include "tree_screen.h"
 #include "tree_view.h"
+#include "utility/lease.h"
 #include "views/browser/browser.h"
 #include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
@@ -351,7 +351,7 @@ void tv_t::setModel(QAbstractItemModel* model)
 // bool modified = false;
 // for(auto &browser : _entrance->browsers()){
 // auto tabmanager = browser->tabmanager();
-// // record_controller()->source_model();  // ->record_table();
+// // record_ctrl()->source_model();  // ->record_table();
 // for(int i = 0; i < tabmanager->count(); i ++){
 // auto page_item = tabmanager->webView(i)->page()->host();	// should never
 // occur in current implement, 2016-07-10
@@ -451,7 +451,7 @@ tkm_t* tv_t::source_model()
 ////            for(int w = 0; w < _entrance->browsers().size(); w++) {
 ////                auto tabmanager =
 ///_entrance->browsers().at(w)->record_screen()->tabmanager();  //
-///record_controller()->source_model();  // ->record_table();
+///record_ctrl()->source_model();  // ->record_table();
 
 ////                for(int i = 0; i < tabmanager->count(); i++) {
 ////                    auto item =
@@ -735,61 +735,60 @@ void tv_t::dropEvent(QDropEvent* event)
 			assert(item_on_tree);
 			if (item_on_tree)
 				tree_item_drag = item_on_tree;
-			rctrl_t* _record_controller =
-			    tree_item_drag->page()
-				->record_controller(); // find_object<RecordController>("table_screen_controller");
-						       // // Указатель на контроллер таблицы
-						       // конечных записей
-
-			web::TabWidget* _tabmanager =
-			    tree_item_drag->page()->view()->tabmanager();
-			if (check_crypt(tree_item_drag)) {
-				// Удаление записи из исходной ветки, удаление должно быть вначале,
-				// чтобы сохранился ID записи
-				// В этот момент вид таблицы конечных записей показывает таблицу, из
-				// которой совершается Drag
-				// TreeItem
-				// *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
-				if (tree_item_drag->binder())
-					_tabmanager->closeTab(_tabmanager->indexOf(tree_item_drag->page()->view())); // _record_controller->remove_child(record->field("id"));
-				// Если таблица конечных записей после удаления перемещенной записи
-				// стала пустой
-				if (_record_controller->row_count() == 0) {
+			auto _record_controller = tree_item_drag->page()->record_ctrl(); // find_object<RecordController>("table_screen_controller");
+											 // // Указатель на контроллер таблицы
+											 // конечных записей
+			if (_record_controller) {
+				tabwidget_ref _tab_widget =
+				    tree_item_drag->page()->view()->tabmanager();
+				if (check_crypt(tree_item_drag)) {
+					// Удаление записи из исходной ветки, удаление должно быть вначале,
+					// чтобы сохранился ID записи
+					// В этот момент вид таблицы конечных записей показывает таблицу, из
+					// которой совершается Drag
+					// TreeItem
+					// *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
+					if (tree_item_drag->binder())
+						_tab_widget->closeTab(_tab_widget->indexOf(tree_item_drag->page()->view())); // _record_controller->remove_child(record->field("id"));
+					// Если таблица конечных записей после удаления перемещенной записи
+					// стала пустой
+					if (_record_controller->row_count() == 0) {
 // find_object<MetaEditor>(meta_editor_singleton_name)
 #ifdef USE_FILE_PER_TREEITEM
-					_record_controller->editing_window()->clear_all(); // Нужно очистить
-											   // поле
-											   // редактирования
-											   // чтобы не видно
-											   // было текста
-											   // последней
-											   // удаленной записи
+						_record_controller->blogger()->clear_all(); // Нужно очистить
+											    // поле
+											    // редактирования
+											    // чтобы не видно
+											    // было текста
+											    // последней
+											    // удаленной записи
 #else
-					_record_controller->editing_window()->close();
+						_record_controller->blogger()->close();
 #endif // USE_FILE_PER_TREEITEM
+					}
+					// find_object<RecordScreen>(table_screen_singleton_name)
+					_record_controller->record_screen()->tools_update();
+
+					// boost::intrusive_ptr<TreeIndex> tree_index = [&]
+					// {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new
+					// TreeIndex([&] (){return _know_root;}, tree_item_drop, 0); }
+					// catch(std::exception &e) {throw e; } return tree_index; } ();
+					// Добавление записи в базу
+					TreeLevel::instance(TreeIndex::require_treeindex([&]() { return _know_root; }, tree_item_drop),
+					    tree_item_drag)
+					    ->move(); // _know_root// tree_item_drop->child_insert(0, record,
+						      // ADD_NEW_RECORD_TO_END);
+
+					auto index_from = _know_root->index(tree_item_drag);
+					// Обновление исходной ветки чтобы было видно что записей убавилось
+					_know_root->update_index(index_from);
+
+					update(static_cast<QModelIndex>(index_from).parent());
+
+					// Сохранение дерева веток
+					// find_object<TreeScreen>(tree_screen_singleton_name)
+					worked++;
 				}
-				// find_object<RecordScreen>(table_screen_singleton_name)
-				_record_controller->record_screen()->tools_update();
-
-				// boost::intrusive_ptr<TreeIndex> tree_index = [&]
-				// {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new
-				// TreeIndex([&] (){return _know_root;}, tree_item_drop, 0); }
-				// catch(std::exception &e) {throw e; } return tree_index; } ();
-				// Добавление записи в базу
-				TreeLevel::instance(TreeIndex::require_treeindex([&]() { return _know_root; }, tree_item_drop),
-				    tree_item_drag)
-				    ->move(); // _know_root// tree_item_drop->child_insert(0, record,
-					      // ADD_NEW_RECORD_TO_END);
-
-				auto index_from = _know_root->index(tree_item_drag);
-				// Обновление исходной ветки чтобы было видно что записей убавилось
-				_know_root->update_index(index_from);
-
-				update(static_cast<QModelIndex>(index_from).parent());
-
-				// Сохранение дерева веток
-				// find_object<TreeScreen>(tree_screen_singleton_name)
-				worked++;
 			}
 		}
 		if (worked > 0) {
@@ -1035,7 +1034,7 @@ boost::intrusive_ptr<i_t> tv_t::current_item()
 			// it = browser->tabmanager()->currentWebView()->page()->binder()->item();
 			// } else {
 			// RecordModel::ModelIndex record_index([&] {return
-			// browser->record_screen()->record_controller()->source_model();},
+			// browser->record_screen()->record_ctrl()->source_model();},
 			// nullptr, it);
 			// it = browser->item_bind(record_index);
 			// }
@@ -1269,7 +1268,7 @@ QModelIndex tv_t::current_index(void) const
 	///browser->tabmanager()->currentWebView()->page()->binder()->item();
 	//////            } else {
 	//////                RecordModel::ModelIndex record_index([&] {return
-	///browser->record_screen()->record_controller()->source_model();}, nullptr,
+	///browser->record_screen()->record_ctrl()->source_model();}, nullptr,
 	///it);
 	//////                it = browser->item_bind(record_index);
 	//////            }
@@ -1450,8 +1449,8 @@ QModelIndex tv_t::current_index(void) const
 ///_tree_screen->tree_view()->source_model()->index(_item);
 // }
 // _item->binder() ? [&] {auto c =
-// _item->binder()->page()->record_controller();auto v =
-// _item->binder()->page()->record_controller()->view();c->update_record_view(_item);return
+// _item->binder()->page()->record_ctrl();auto v =
+// _item->binder()->page()->record_ctrl()->view();c->update_record_view(_item);return
 // c->cursor_to_index(_item);} () : void (0);
 ////    QModelIndex _index_current;
 ////    try {
@@ -1547,15 +1546,15 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index,
 	// ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(),
 	// _item->field<home_type>().toStdString());});
 	// if(v){
-	// auto	ctrl			= v->tabmanager()->record_controller();
+	// auto	ctrl			= v->tabmanager()->record_ctrl();
 	// auto	alternative_item	= v->page()->host();
 	// if(ctrl)
 	RecordIndex::synchronize(_item); // alternative_item
 	// }
 	//
 	// _item->binder() ? _item->binder()->page() ?
-	// _item->binder()->page()->record_controller() ? [&] {
-	// auto record_controller = _item->binder()->page()->record_controller();
+	// _item->binder()->page()->record_ctrl() ? [&] {
+	// auto record_controller = _item->binder()->page()->record_ctrl();
 	//// if(_record_controller->view()->selection_first<IdType>() !=
 	///_item->field("id")) {
 	////
@@ -1646,7 +1645,7 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index,
 			auto p = v->page();
 			if (p) {
 				if (p->tabmanager()->current_item() != _item) p->tabmanager()->select_as_current(v);
-				auto ctrl = p->record_controller();
+				auto ctrl = p->record_ctrl();
 				if (ctrl->view()->current_item() != _item)
 					ctrl->select_as_current(ctrl->index<pos_proxy>(ctrl->source_model()->index(_item)));
 				//
@@ -1794,7 +1793,7 @@ web::WebView* tv_t::index_invoke(
 							//// find_object<RecordController>("table_screen_controller")
 
 							////
-							///result_item->unique_page()->view()->record_controller()->source_model()->clear();
+							///result_item->unique_page()->view()->record_ctrl()->source_model()->clear();
 
 							// setup_model(boost::intrusive_ptr<TreeItem>(new
 							// TreeItem(nullptr, QMap<QString, QString>())));   //
@@ -1805,9 +1804,9 @@ web::WebView* tv_t::index_invoke(
 							////                    init_source_model(
 							////                        nullptr
 							////                        ,
-							///result_item->unique_page()->view()->record_controller()
+							///result_item->unique_page()->view()->record_ctrl()
 							////                        ,
-							///result_item->unique_page()->view()->record_controller()->record_screen()
+							///result_item->unique_page()->view()->record_ctrl()->record_screen()
 							////                        , globalparameters.mainwindow()
 							////                        , globalparameters.meta_editor()
 							////                        // , globalparameters.record_screens()
@@ -1905,12 +1904,15 @@ web::WebView* tv_t::index_invoke(
 				if (activated_view)
 					record_previous_item = activated_view->page()->host();
 				// record_previous_item =
-				// browser->record_screen()->record_controller()->source_model()->item(pos_source(browser->record_screen()->record_controller()->view()->previous_index().row()));
+				// browser->record_screen()->record_ctrl()->source_model()->item(pos_source(browser->record_screen()->record_ctrl()->view()->previous_index().row()));
 				if (record_previous_item != result_item) {
 					boost::intrusive_ptr<RecordIndex> record_index =
 					    RecordIndex::instance(
 						[&] {
-							return browser_->tabmanager()->record_screen()->record_controller()->source_model();
+							RecordModel* rm = nullptr;
+							auto rctrl = browser_->tab_widget()->record_screen()->record_ctrl();
+							if (rctrl) rm = rctrl->source_model();
+							return rm;
 						},
 						result_item); // record_previous_item,
 
@@ -1938,7 +1940,7 @@ web::WebView* tv_t::index_invoke(
 					v = activated_view;
 			}
 		} else {
-			// auto c = _binder->page()->record_controller();
+			// auto c = _binder->page()->record_ctrl();
 			v = result_item->page() ? result_item->page()->view() : nullptr;
 			if (v) {
 				auto tabmanager = v->tabmanager();
@@ -3858,13 +3860,12 @@ tv_t::delete_permanent(const std::function<tkm_t*()>& _current_model, QList<boos
 							}
 							return left_sibling_;
 						};
-						if (gl_paras->main_window()->record_screens().size() > 0) {
+						if (gl_paras->main_window()->browsers().size() > 0) {
 							//							web::Browser
 							//*current_browser = gl_paras->main_window()->activated_browser();
 							auto w = gl_paras->vtab_record()->currentWidget();
 							auto rs = static_cast<rs_t*>(w);
-							auto tabmanager =
-							    rs->browser()->tabmanager(); // current_browser->tabmanager();
+							auto tabmanager = rs->browser()->tab_widget(); // current_browser->tabmanager();
 							QList<boost::intrusive_ptr<i_t>> good_list;
 							for (int i = 0; i < tabmanager->count(); i++) {
 								auto v = tabmanager->webView(i);
@@ -4231,6 +4232,8 @@ tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge)
 				       // &_current_model,
 				       // boost::intrusive_ptr<TreeItem> target
 	boost::intrusive_ptr<i_t> _to_be_operated = _tree_merge->to_be_operated();
+	web::WebView* web_view = nullptr;
+	web_view = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return b->host()->id() == _to_be_operated->id() && b->host() == _to_be_operated; });
 	boost::intrusive_ptr<i_t> result = tree_index->host();
 	if (_to_be_operated) {
 		auto _current_model = tree_index->current_model();
@@ -4250,51 +4253,41 @@ tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge)
 		if (result) {
 			if (result != _to_be_operated) { // && target_on_tree
 				bool session_id_changed = false;
-				bool _ro_be_operated_is_current_of_rocord_view = false;
+				bool _to_be_operated_is_current_of_rocord_view = false;
 				if (_to_be_operated->id() ==
 				    static_cast<tkm_t*>(_current_model())->session_id())
 					session_id_changed = true;
+
 				rctrl_t* r_ctrl = nullptr;
 				if (_to_be_operated->binder()) {
-					auto b = _to_be_operated->binder();
-					auto p = b->page();
-					if (p) {
-						auto v = p->view();
-						auto r_ctrl = p->record_controller();
-						if (v && r_ctrl) {
-							auto rv = r_ctrl->view();
-							if (rv)
-								if (rv->current_item() == _to_be_operated)
-									_ro_be_operated_is_current_of_rocord_view = true;
+					//					auto b = _to_be_operated->binder();
+					if (web_view) {
+
+						auto p = web_view->page(); // b->page();
+						if (p) {
+							//                                                        auto web_view = p->view();
+							r_ctrl = p->record_ctrl();
+							if (web_view && r_ctrl) {
+								auto rv = r_ctrl->view();
+								if (rv)
+									if (rv->current_item() == _to_be_operated)
+										_to_be_operated_is_current_of_rocord_view = true;
+							}
 						}
 					}
 				}
 				gl_paras->main_window()->setDisabled(true);
 				result =
 				    static_cast<tkm_t*>(_current_model())
-					->merge(TreeLevel::instance(tree_index,
-						    _to_be_operated) // target_on_tree  // keep// remove
-								     // // std::bind(_know_model_board,
-								     // this)
-					    ,
-					    std::bind(&tv_t::delete_permanent, this, std::placeholders::_1, std::placeholders::_2, &tkm_t::delete_permanent, "cut",
-						    false) // , std::bind(&tv_t::delete_permanent,
-							   // this, std::placeholders::_1,
-							   // std::placeholders::_2,
-							   // &tkm_t::delete_permanent_recursive,
-							   // "cut", false)
-					    );
-				assert(_current_model()->item([=](boost::intrusive_ptr<const i_t> t) {
-					return t->id() == result->id();
-				}));
+					->merge(TreeLevel::instance(tree_index, _to_be_operated),                                                                            // target_on_tree  // keep// remove std::bind(_know_model_board, this)
+					    std::bind(&tv_t::delete_permanent, this, std::placeholders::_1, std::placeholders::_2, &tkm_t::delete_permanent, "cut", false)); // , std::bind(&tv_t::delete_permanent, this, std::placeholders::_1, std::placeholders::_2, &tkm_t::delete_permanent_recursive, "cut", false)
+
+				assert(_current_model()->item([=](boost::intrusive_ptr<const i_t> t) { return t->id() == result->id(); }));
 				if (session_id_changed)
-					static_cast<tkm_t*>(_current_model())
-					    ->session_id(
-						TreeIndex::require_treeindex(_current_model, result));
-				if (_ro_be_operated_is_current_of_rocord_view)
+					static_cast<tkm_t*>(_current_model())->session_id(TreeIndex::require_treeindex(_current_model, result));
+				if (_to_be_operated_is_current_of_rocord_view)
 					if (r_ctrl)
-						r_ctrl->select_as_current(
-						    r_ctrl->index<pos_proxy>(_to_be_operated));
+						r_ctrl->select_as_current(r_ctrl->index<pos_proxy>(_to_be_operated));
 				know_model_save();
 
 				// find_object<MainWindow>("mainwindow")
@@ -4480,7 +4473,7 @@ void tv_t::cursor_focus(const index_tree& _index)
 						// записей
 						// find_object<RecordController>("table_screen_controller")
 
-						// result_item->unique_page()->view()->record_controller()->source_model()->clear();
+						// result_item->unique_page()->view()->record_ctrl()->source_model()->clear();
 
 						// boost::intrusive_ptr<TreeIndex> tree_absolute_index = [&]
 						// {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new
@@ -4500,9 +4493,9 @@ void tv_t::cursor_focus(const index_tree& _index)
 
 						// init_source_model(
 						// nullptr
-						// , result_item->unique_page()->view()->record_controller()
+						// , result_item->unique_page()->view()->record_ctrl()
 						// ,
-						// result_item->unique_page()->view()->record_controller()->record_screen()
+						// result_item->unique_page()->view()->record_ctrl()->record_screen()
 						// , globalparameters.mainwindow()
 						// , globalparameters.meta_editor()
 						//// , globalparameters.record_screens()
@@ -4624,8 +4617,7 @@ tv_t::cursor_focus(
 	assert(absolute_root_);
 	//
 	std::pair<boost::intrusive_ptr<i_t>, boost::intrusive_ptr<i_t>> result{
-		current_root_, current_item_
-	};
+	    current_root_, current_item_};
 	//
 	auto cursor_follow_up_impl = [&](void) -> std::pair<
 	    boost::intrusive_ptr<i_t>,
@@ -4657,7 +4649,7 @@ tv_t::cursor_focus(
 
 						    // find_object<RecordController>("table_screen_controller")
 
-						    // current_root->unique_page()->view()->record_controller()->source_model()->clear();
+						    // current_root->unique_page()->view()->record_ctrl()->source_model()->clear();
 
 						    // _know_branch
 						    // current_treemodel
@@ -4667,13 +4659,13 @@ tv_t::cursor_focus(
 
 						    // init_source_model(
 						    // nullptr
-						    // , current_root->unique_page()->view()->record_controller()
+						    // , current_root->unique_page()->view()->record_ctrl()
 						    // ,
-						    // current_root->unique_page()->view()->record_controller()->record_screen()
+						    // current_root->unique_page()->view()->record_ctrl()->record_screen()
 						    // , globalparameters.mainwindow()
 						    // , globalparameters.meta_editor()
 						    //// ,
-						    ///result_item->unique_page()->view()->record_controller()->record_screen()
+						    ///result_item->unique_page()->view()->record_ctrl()->record_screen()
 						    // );
 
 						    // reset_tabledata(nullptr);
@@ -4843,7 +4835,7 @@ tv_t::cursor_focus(
 		_tree_screen->enable_up_action();
 		assert(current_root_);
 
-		return { current_root_, current_item() }; // current_item();	// root_updated;
+		return {current_root_, current_item()}; // current_item();	// root_updated;
 	};
 	if (!to_be_contained)
 		result = cursor_follow_up_impl();

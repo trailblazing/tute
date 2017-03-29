@@ -14,6 +14,8 @@
 #include <QVBoxLayout>
 #include <QWidget>
 // #include "models/tree/TreeItem.h"
+#include "libraries/global_parameters.h"
+#include "utility/lease.h"
 
 #if QT_VERSION == 0x050600
 #include <QObject>
@@ -39,6 +41,7 @@ struct index_source;
 struct id_value;
 
 namespace web {
+	template <typename>
 	class Docker;
 	class Browser;
 	class ToolbarSearch;
@@ -58,7 +61,13 @@ namespace web {
 #ifndef USE_BUTTON_CLOSE
 #endif
 
-class rs_t : public QWidget {
+class rs_t : public QWidget
+#ifdef USE_SIGNAL_CLOSE
+	     ,
+	     public boost::intrusive_ref_counter<rs_t, boost::thread_safe_counter>,
+	     public sd::renter //<rs_t>
+#endif                         //USE_SIGNAL_CLOSE
+{
 #if QT_VERSION == 0x050600
 	W_OBJECT(rs_t)
 #else
@@ -66,7 +75,7 @@ class rs_t : public QWidget {
 #endif
 
     public:
-	rs_t(Blogger* blogger_, web::TabWidget* tabmanager_);
+	rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager_);
 
 	virtual ~rs_t();
 
@@ -78,25 +87,29 @@ class rs_t : public QWidget {
 	void tree_path(QString path);
 	QString tree_path(void);
 
-	rctrl_t* record_controller();
+	rctrl_t* record_ctrl() const;
 
 	// bool                inited() {return _inited;}
 	// web::TabWidget	*tabmanager();
 	web::Browser* browser();
 	ts_t* tree_screen();
-	// QAction			*record_hide();	// move to
+	// QAction *record_hide();	// move to
 	// main_window::_vtab_record->tabBar()->tabBarClicked
-	// void			restore_menubar();
+	// void restore_menubar();
 
 	//	HidableTab *vtab_record();
 	Blogger* blogger();
+	std::string close_sender_id() const;
+
+	void close_sender_id(const std::string& close_sender_id_);
+
     public slots:
 
 	// Обновление панели инструментов
 	void tools_update(); // W_SLOT(tools_update)
 
-	void on_blogger_close_requested();
-	void on_browser_close_requested();
+	//	void on_blogger_close_requested();
+	//	void on_browser_close_requested();
 
 
 	void on_topic_changed(const QString& original_topic_, const QString& new_topic_, bool append_mode = false);
@@ -104,7 +117,7 @@ class rs_t : public QWidget {
     protected:
 	void resizeEvent(QResizeEvent* e);
     private slots:
-
+	//	bool close();
 	void on_syncro_click(void); // W_SLOT(on_syncro_click, W_Access::Private)
 	void on_walkhistory_previous_click(void);
 	void on_walkhistory_next_click(void);
@@ -114,8 +127,8 @@ class rs_t : public QWidget {
 	// bool                _inited = false;
 	//	HidableTab *_vtab_record;
 	ts_t* _tree_screen;
-	web::Docker* _editor_docker;
-	Blogger* _blogger;
+	web::Docker<Blogger>* _editor_docker;
+	blogger_ref _blogger;
 
 	// These staffs used on the toolbar and in the context menu entries    //
 	// Действия, используемые как на тулбаре, так и в контекстном меню списка
@@ -159,18 +172,21 @@ class rs_t : public QWidget {
 
 	QLabel* _treepathlabel; // FlatToolButton		*_treepath_button;
 	QString _treepath;
-
+	browser_ref _browser;
 	// EditingWindow *_editing_window = nullptr;
-//	web::Browser* _browser;
-//	web::TabWidget* _tabmanager;
-	rctrl_t* _rctrl; // web::TabWidget	*_tabmanager;
+	//	web::Browser* _browser;
+	//	web::TabWidget* _tab_widget;
+	tabwidget_ref _tab_widget;
+	rctrl_ref _rctrl; //
+
 	VerticalScrollArea* _vertical_scrollarea;
 
 	QHBoxLayout* _records_toolslayout;
 	// web::ToolbarSearch  *_recordtree_search;
 	// QHBoxLayout             *_recordtree_searchlayout;
 	QVBoxLayout* _records_screenlayout;
-
+	std::string _close_sender_id;
+	//	bool _closed = false;
 	void setup_ui(void);
 	void setup_signals(void);
 	void setup_actions(void);
@@ -183,7 +199,7 @@ class rs_t : public QWidget {
 	friend class wn_t;
 	// friend class ts_t;
     signals:
-	void close_request(QWidget*);
+	//	void close_request(QWidget*);
 };
 
 #endif /* RECORDTABLESCREEN_H_ */

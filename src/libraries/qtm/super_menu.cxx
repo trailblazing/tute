@@ -55,17 +55,17 @@
 #include "views/record/editor_wrap.h"
 
 // #include "macFunctions.h"
-#define CON_TRIG(a, b) connect(a, SIGNAL(triggered(bool)), _bloger, b)
+#define CON_TRIG(a, b) connect(a, SIGNAL(triggered(bool)), _blogger, b)
 
 SuperMenu::SuperMenu(Blogger* bloger_, QWidget* parent, SysTrayIcon* sti)
     : super(parent)
     , _sti(sti)
     //	  , _find_screen(_find_screen)
-    , _bloger(bloger_)
+    , _blogger(bloger_)
     , _editor_docker(gl_paras->editor_docker())
 {
 	//	  , _vtab_record(vtab_record)
-	auto _app = sapp_t::instance(); // qobject_cast<sapp_t *>(qApp);
+	auto _app = sapp_t::instance(); // qobject_cast<sapp_t *>(sapp_t::instance());
 	// _editing_win	= 0;
 
 	// setBackgroundRole(QPalette::Foreground);
@@ -94,7 +94,7 @@ SuperMenu::SuperMenu(Blogger* bloger_, QWidget* parent, SysTrayIcon* sti)
 	recentFiles = _app->recentFiles();
 	updateRecentFileMenu();
 	openRecent->setMenu(recentFilesMenu);
-	connect(_app, SIGNAL(recent_files_updated(QList<sapp_t::RecentFile>)), this, SLOT(set_recent_files(QList<sapp_t::RecentFile>)));
+	connect(_app, SIGNAL(recent_files_updated(QList<app::RecentFile>)), this, SLOT(set_recent_files(QList<app::RecentFile>)));
 
 	// File menu actions
 	saveAction = fileMenu->addAction(tr("&Save"));
@@ -340,8 +340,8 @@ void SuperMenu::newEntry()
 	Blogger* c = new Blogger();
 	c->setSTI(_sti);
 	c->setWindowTitle(QObject::tr((program_title_string + " - new entry [*]").c_str()));
-	if (_bloger)
-		Blogger::positionWidget(c, _bloger);
+	if (_blogger)
+		Blogger::positionWidget(c, _blogger);
 	// setNoStatusBar( c );
 	c->show();
 	QApplication::alert(c);
@@ -349,7 +349,7 @@ void SuperMenu::newEntry()
 
 void SuperMenu::choose(QString fname)
 {
-	sapp_t* qtm = qobject_cast<sapp_t*>(qApp);
+	sapp_t* qtm = qobject_cast<sapp_t*>(sapp_t::instance());
 	QSettings settings;
 	QString local_storage_file_ext, localStorageDirectory;
 	QString fn; // filename
@@ -388,28 +388,28 @@ void SuperMenu::updateRecentFileMenu()
 {
 	QString text, t;
 	int j;
-	QMutableListIterator<sapp_t::RecentFile> i(recentFiles);
+	QMutableListIterator<std::shared_ptr<app::RecentFile>> i(recentFiles);
 	while (i.hasNext())
-		if (!QFile::exists(i.next().filename))
+		if (!QFile::exists(i.next()->filename))
 			i.remove();
 	recentFilesMenu->clear();
 	for (j = 0; j < 10; ++j) {
 		if (j < recentFiles.count()) {
-			t = recentFiles.value(j).title.section(' ', 0, 5);
-			if (t != recentFiles.value(j).title)
+			t = recentFiles.value(j)->title.section(' ', 0, 5);
+			if (t != recentFiles.value(j)->title)
 				t.append(tr(" ..."));
 #ifdef Q_OS_MAC
 			text = recentFiles.value(j).title.isEmpty() ? recentFiles.value(j).filename.section("/", -1, -1) : t.replace('&', "&&");
 #else
 			if (j == 9)
 				text = tr("1&0 %1").arg(
-				    recentFiles.value(j).title.isEmpty() ? recentFiles.value(j).filename.section("/", -1, -1) : t.replace('&', "&&"));
+				    recentFiles.value(j)->title.isEmpty() ? recentFiles.value(j)->filename.section("/", -1, -1) : t.replace('&', "&&"));
 			else
 				text = tr("&%1 %2").arg(j + 1).arg(
-				    recentFiles.value(j).title.isEmpty() ? recentFiles.value(j).filename.section("/", -1, -1) : t.replace('&', "&&"));
+				    recentFiles.value(j)->title.isEmpty() ? recentFiles.value(j)->filename.section("/", -1, -1) : t.replace('&', "&&"));
 #endif
 			recentFileActions[j]->setText(text);
-			recentFileActions[j]->setData(recentFiles.value(j).filename);
+			recentFileActions[j]->setData(recentFiles.value(j)->filename);
 			recentFilesMenu->addAction(recentFileActions[j]);
 			recentFilesMenu->removeAction(noRecentFilesAction);
 		} else {
@@ -454,7 +454,7 @@ void SuperMenu::handleNewWindowAtStartup()
 #endif
 }
 
-void SuperMenu::set_recent_files(const QList<sapp_t::RecentFile>& rfs)
+void SuperMenu::set_recent_files(const QList<std::shared_ptr<app::RecentFile>>& rfs)
 {
 	recentFiles = rfs;
 	updateRecentFileMenu();
@@ -472,7 +472,7 @@ void SuperMenu::quit()
 	int edwins = 0;
 	int a;
 
-	QWidgetList tlw = qApp->topLevelWidgets();
+	QWidgetList tlw = sapp_t::instance()->topLevelWidgets();
 	for (a = 0; a < tlw.size(); a++) {
 		if ((QString(tlw[a]->metaObject()->className()) == "EditingWindow") &&
 		    tlw[a]->isVisible())
@@ -481,8 +481,8 @@ void SuperMenu::quit()
 	if (!edwins)
 		QCoreApplication::quit();
 	else {
-		qApp->setQuitOnLastWindowClosed(true);
-		qApp->closeAllWindows();
+		sapp_t::instance()->setQuitOnLastWindowClosed(true);
+		sapp_t::instance()->closeAllWindows();
 	}
 }
 
@@ -528,7 +528,7 @@ void SuperMenu::getPreferences()
 	QString local_storage_file_ext, localStorageDirectory;
 
 	QString mdPathString =
-	    QString("%1/../Resources").arg(qApp->applicationDirPath());
+	    QString("%1/../Resources").arg(sapp_t::instance()->applicationDirPath());
 	QDir mdPath(mdPathString);
 	QString defaultMarkdownPath =
 	    QString("%1/Markdown.pl").arg(mdPath.canonicalPath());
@@ -886,7 +886,11 @@ void SuperMenu::blogger_changed(Blogger* bloger_)
 		connect(clearConsoleAction, SIGNAL(triggered()), bloger_, SLOT(clearConsole()));
 		connect(closeAction, &QAction::triggered, [&](bool checked) {
 			(void)checked;
-			_bloger->browser()->close();
+			auto br = _blogger->browser();
+			if (br) {
+				//				br->self_close_request();
+				br->close();
+			}
 		});
 		// SLOT(close()), temporary polic, current I only have one currentWindow
 
@@ -993,8 +997,8 @@ void SuperMenu::blogger_changed(Blogger* bloger_)
 
 void SuperMenu::handleConsole(bool isChecked)
 {
-	if (_bloger)
-		_bloger->handleConsole(isChecked);
+	if (_blogger)
+		_blogger->handleConsole(isChecked);
 }
 
 void SuperMenu::setConsoleActionTitle(bool consoleShown)
@@ -1020,7 +1024,7 @@ void SuperMenu::handleLastWindowClosed()
 {
 	Q_FOREACH (QAction* a, _blogger_actions)
 		a->setEnabled(false);
-	_bloger = nullptr;
+	if (_blogger) _blogger->close_trigger_from_others()(nullptr);
 }
 
 // Показывать или нет пункт редактирования свойств изображения

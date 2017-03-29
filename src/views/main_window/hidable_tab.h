@@ -19,10 +19,11 @@
 
 //extern const char *custom_hidable_tab_style;
 namespace web {
-class WebView;
-class Browser;
-class Profile;
-class Docker;
+	class WebView;
+	class Browser;
+	class Profile;
+	template <typename>
+	class Docker;
 }
 struct Binder;
 class ts_t;
@@ -41,34 +42,34 @@ class HidableTab : public QTabWidget {
 	Q_OBJECT
 #endif
 
-	public:
-	explicit HidableTab(QWidget *main_window, QSplitter *splitter, std::shared_ptr<QSettings> splitter_config, QString splitter_group_name, QString splitter_sizelist_name, QString collapsed_status_name, QWidget *parent);
+    public:
+	explicit HidableTab(QWidget* main_window, QSplitter* splitter, std::shared_ptr<QSettings> splitter_config, QString splitter_group_name, QString splitter_sizelist_name, QString collapsed_status_name, QWidget* parent);
 	~HidableTab();
-	QAction *_hide_action;
+	QAction* _hide_action;
 
 	// HidableTabWidget *delegate_tab();
 	std::tuple<int, QList<int>> on_splitter_moved(int record_pos, int index);
-	protected slots:
-	bool eventFilter(QObject *obj, QEvent *event);
+    protected slots:
+	bool eventFilter(QObject* obj, QEvent* event);
 	void on_tabbar_clicked(int index);
-	public slots:
+    public slots:
 	void collapse_when_true(bool checked);
 	// void onTabBarClicked(int index);
-	void on_child_self_close_requested(QWidget *child_);
+	void on_child_self_close_requested(QWidget* child_);
 
-	protected:
+    protected:
 	// HidableTabWidget *_delegate_tab;
 	// QStackedLayout					*_layout;
-	QVBoxLayout *_layout;
+	QVBoxLayout* _layout;
 	//	ts_t *_tree_screen;
 	//	FindScreen *_find_screen;
 	//	web::Docker *_browser_docker;
-	QWidget *_main_window;
+	QWidget* _main_window;
 	//	web::Profile *_profile;
 	//	QString _style_source;
 	// std::set<web::Browser *>			_browsers;
 	// std::set<rs_t *>				_record_screens;
-	QSplitter *_splitter;
+	QSplitter* _splitter;
 	std::shared_ptr<QSettings> _splitter_config;
 	QString _splitter_group_name;
 	QString _splitter_sizelist_name;
@@ -76,4 +77,4 @@ class HidableTab : public QTabWidget {
 	friend class SideWidget;
 };
 
-#endif  // HIDABLETABWIDGET_H
+#endif // HIDABLETABWIDGET_H

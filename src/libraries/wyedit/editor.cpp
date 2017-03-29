@@ -68,9 +68,9 @@
 // #include "libraries/qtm/addctag.xpm"
 // #include "libraries/qtm/remtag.xpm"
 
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "libraries/window_switcher.h"
 #include "views/browser/docker.h"
-
 extern std::shared_ptr<AppConfig> appconfig;
 extern const char* action_find_in_base;
 const std::string editor_prefix = "editor_tb_";
@@ -88,7 +88,7 @@ Editor::Editor(QStackedWidget* main_stack, Blogger* blogger_, std::shared_ptr<QS
     , _tools_line_0(new QToolBar())
     , _tools_line_1(new QToolBar())
     , _text_area(new EditorTextArea(this))
-    , _blog(blogger_)
+    , _blogger(blogger_)
 {
 	// _init_data_enable_assembly		= true;
 	// _init_data_config_file_name		= "";
@@ -253,8 +253,7 @@ void Editor::init(int mode, QStringList hide_editor_tools, bool enable_assembly,
 	setup_editor_area();
 
 	setup_signals();
-	if (enable_assembly)
-		assembly();
+	if (enable_assembly) assembly();
 	_current_font_family = "";
 	_current_font_size = 0;
 	_current_font_color = "#000000";
@@ -375,7 +374,7 @@ void Editor::setup_signals(void)
 	// &Editor::on_show_text_clicked);
 	// connect(_to_attach, &FlatToolButton::clicked, this,
 	// &Editor::on_to_attach_clicked);
-	connect(_text_area, &EditorTextArea::textChanged, [&] { _blog->_entry_ever_saved = false; });
+	connect(_text_area, &EditorTextArea::textChanged, [&] { _blogger->_entry_ever_saved = false; });
 	connect(_text_area, &EditorTextArea::cursorPositionChanged, this, &Editor::on_cursor_position_changed);
 	connect(_text_area, &EditorTextArea::selectionChanged, this, &Editor::on_selection_changed);
 
@@ -457,10 +456,7 @@ void Editor::setup_buttons(void)
 
 	// Кнопка Italic
 	_italic = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "italic").c_str()),
-	    tr("Italic (Ctrl+I)"), tr("Italic (Ctrl+I)"),
-	    QIcon(":/resource/pic/edit_italic.svg"),
-	    [&](bool) { on_italic_clicked(); }, QKeySequence(QKeySequence::Italic));
+	    _tools_line_0, this, tr((editor_prefix + "italic").c_str()), tr("Italic (Ctrl+I)"), tr("Italic (Ctrl+I)"), QIcon(":/resource/pic/edit_italic.svg"), [&](bool) { on_italic_clicked(); }, QKeySequence(QKeySequence::Italic));
 
 	// Кнопка Underline
 	_underline =
@@ -487,18 +483,11 @@ void Editor::setup_buttons(void)
 
 	// Кнопка Monospace
 	_monospace = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "monospace").c_str()),
-	    tr("Monospace (Ctrl+T)"), tr("Monospace (Ctrl+T)"),
-	    QIcon(":/resource/pic/edit_monospace.svg"),
-	    [&](bool) { on_monospace_clicked(); }, QKeySequence(tr("Ctrl+T")));
+	    _tools_line_0, this, tr((editor_prefix + "monospace").c_str()), tr("Monospace (Ctrl+T)"), tr("Monospace (Ctrl+T)"), QIcon(":/resource/pic/edit_monospace.svg"), [&](bool) { on_monospace_clicked(); }, QKeySequence(tr("Ctrl+T")));
 
 	// Кнопка Code
 	_code = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "code").c_str()),
-	    tr("Code (Ctrl+M). Select a whole paragraphs to format text as code."),
-	    tr("Code (Ctrl+M). Select a whole paragraphs to format text as code."),
-	    QIcon(":/resource/pic/edit_code.svg"), [&](bool) { on_code_clicked(); },
-	    QKeySequence(tr("Ctrl+M")));
+	    _tools_line_0, this, tr((editor_prefix + "code").c_str()), tr("Code (Ctrl+M). Select a whole paragraphs to format text as code."), tr("Code (Ctrl+M). Select a whole paragraphs to format text as code."), QIcon(":/resource/pic/edit_code.svg"), [&](bool) { on_code_clicked(); }, QKeySequence(tr("Ctrl+M")));
 	// action_Blockquote
 	// = add_action(_tools_line_0, this, tr(std::string(editor_prefix +
 	// "Blockquote").c_str())
@@ -532,58 +521,41 @@ void Editor::setup_buttons(void)
 
 	// Кнопка выравнивания по левому краю
 	_align_left = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "alignleft").c_str()),
-	    tr("Align left (Ctrl+L)"), tr("Align left (Ctrl+L)"),
-	    QIcon(":/resource/pic/edit_alignleft.svg"),
-	    [&](bool) { on_alignleft_clicked(); }, QKeySequence(tr("Ctrl+L")));
+	    _tools_line_0, this, tr((editor_prefix + "alignleft").c_str()), tr("Align left (Ctrl+L)"), tr("Align left (Ctrl+L)"), QIcon(":/resource/pic/edit_alignleft.svg"), [&](bool) { on_alignleft_clicked(); }, QKeySequence(tr("Ctrl+L")));
 
 	// Кнопка выравнивания по центру
 	_align_center = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "aligncenter").c_str()),
-	    tr("Align center (Ctrl+E)"), tr("Align center (Ctrl+E)"),
-	    QIcon(":/resource/pic/edit_aligncenter.svg"),
-	    [&](bool) { on_aligncenter_clicked(); }, QKeySequence(tr("Ctrl+E")));
+	    _tools_line_0, this, tr((editor_prefix + "aligncenter").c_str()), tr("Align center (Ctrl+E)"), tr("Align center (Ctrl+E)"), QIcon(":/resource/pic/edit_aligncenter.svg"), [&](bool) { on_aligncenter_clicked(); }, QKeySequence(tr("Ctrl+E")));
 
 	// Кнопка выравнивания по правому краю
 	_align_right = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "alignright").c_str()),
-	    tr("Align right (Ctrl+R)"), tr("Align right (Ctrl+R)"),
-	    QIcon(":/resource/pic/edit_alignright.svg"),
-	    [&](bool) { on_alignright_clicked(); }, QKeySequence(tr("Ctrl+R")));
+	    _tools_line_0, this, tr((editor_prefix + "alignright").c_str()), tr("Align right (Ctrl+R)"), tr("Align right (Ctrl+R)"), QIcon(":/resource/pic/edit_alignright.svg"), [&](bool) { on_alignright_clicked(); }, QKeySequence(tr("Ctrl+R")));
 
 	// Кнопка выравнивания по ширине
 	_align_width = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "alignwidth").c_str()),
-	    tr("Align width (Ctrl+J)"), tr("Align width (Ctrl+J)"),
-	    QIcon(":/resource/pic/edit_alignwidth.svg"),
-	    [&](bool) { on_alignwidth_clicked(); }, QKeySequence(tr("Ctrl+J")));
+	    _tools_line_0, this, tr((editor_prefix + "alignwidth").c_str()), tr("Align width (Ctrl+J)"), tr("Align width (Ctrl+J)"), QIcon(":/resource/pic/edit_alignwidth.svg"), [&](bool) { on_alignwidth_clicked(); }, QKeySequence(tr("Ctrl+J")));
 
 	// move from EditingWindow
 
 	_action_open = add_action(
-	    _tools_line_0, this, tr(std::string(editor_prefix + "Open ...").c_str()),
-	    tr("Open ..."), tr("Load a saved entry from the disk"),
-	    QIcon(":/resource/pic/fileopen.svg"), [&](bool) { _blog->choose(); });
+	    _tools_line_0, this, tr(std::string(editor_prefix + "Open ...").c_str()), tr("Open ..."), tr("Load a saved entry from the disk"), QIcon(":/resource/pic/fileopen.svg"), [&](bool) { _blogger->choose(); });
 	_action_save =
-	    add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Save").c_str()), tr("Save"), tr("Save this entry to disk for editing or publication later"), QIcon(":/resource/pic/save.svg"), [&](bool) { _blog->save_text_context(); });
+	    add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Save").c_str()), tr("Save"), tr("Save this entry to disk for editing or publication later"), QIcon(":/resource/pic/save.svg"), [&](bool) { _blogger->save_text_context(); });
 
 	_action_link = add_action(
-	    _tools_line_0, this, tr(std::string(editor_prefix + "Link").c_str()),
-	    tr("Link"),
-	    tr("Inserts a link to another page, the location to be specified now"),
-	    QIcon(":/resource/pic/link.svg") // QPixmap(linkIcon_xpm)
+	    _tools_line_0, this, tr(std::string(editor_prefix + "Link").c_str()), tr("Link"), tr("Inserts a link to another page, the location to be specified now"), QIcon(":/resource/pic/link.svg") // QPixmap(linkIcon_xpm)
 	    ,
-	    _blog, &Blogger::insertLink);
+	    [&](bool isAutoLink) { _blogger->insertLink(isAutoLink); }
+	    //	    _blogger, &Blogger::insertLink
+	    );
 	_action_image = add_action(
-	    _tools_line_0, this, tr(std::string(editor_prefix + "Image").c_str()),
-	    tr("Image"),
-	    tr(std::string(std::string("Insert an image into the text, the location, "
-				       "alignment and alternate \n") +
-		   "text to be specified now")
-		    .c_str()),
+	    _tools_line_0, this, tr(std::string(editor_prefix + "Image").c_str()), tr("Image"), tr(std::string(std::string("Insert an image into the text, the location, "
+															   "alignment and alternate \n") +
+												       "text to be specified now")
+													.c_str()),
 	    QIcon(":/resource/pic/flip.svg") // QPixmap(imgIcon_xpm)
 	    ,
-	    [&](bool) { _blog->insertImage(); });
+	    [&](bool) { _blogger->insertImage(); });
 	_action_more =
 	    add_action(_tools_line_0, this, tr(std::string(editor_prefix + "More").c_str()), tr("More"), tr((std::string("Set this as the end of the main entry (which "
 															 "appears on the index) \n") +
@@ -591,22 +563,18 @@ void Editor::setup_buttons(void)
 														 .c_str()),
 		QIcon(":/resource/pic/more.svg") // QPixmap(more_xpm)
 		,
-		[&](bool) { _blog->insertMore(); });
+		[&](bool) { _blogger->insertMore(); });
 	_action_preview =
-	    add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Entry in preview").c_str()), tr("Entry in preview"), tr("Preview the entry in this window"),
-		QIcon(":/resource/pic/preview.svg") // QPixmap(previewIcon_xpm)
+	    add_action(_tools_line_0, this, tr(std::string(editor_prefix + "Entry in preview").c_str()), tr("Entry in preview"), tr("Preview the entry in this window"), QIcon(":/resource/pic/preview.svg") // QPixmap(previewIcon_xpm)
 		,
-		[&](bool checked) { _blog->doPreview(checked); });
+		[&](bool checked) { _blogger->doPreview(checked); });
 	_action_preview->setCheckable(true);
 	_action_preview->setChecked(false);
 	_action_blog_this = add_action(
-	    _tools_line_0, this,
-	    tr(std::string(editor_prefix + "Blog this!").c_str()), tr("Blog this!"),
-	    tr("Post this entry to the blog"),
-	    QIcon(
-		":/resource/pic/pull.svg") // pentalpha.svg//QPixmap(blogThisIcon_xpm)
+	    _tools_line_0, this, tr(std::string(editor_prefix + "Blog this!").c_str()), tr("Blog this!"), tr("Post this entry to the blog"), QIcon(
+																		 ":/resource/pic/pull.svg") // pentalpha.svg//QPixmap(blogThisIcon_xpm)
 	    ,
-	    [&](bool) { _blog->blogThis(); });
+	    [&](bool) { _blogger->blogThis(); });
 
 	_tools_line_0->addSeparator();
 	_tools_line_0->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
@@ -615,33 +583,20 @@ void Editor::setup_buttons(void)
 	//
 
 	_expand_tools_lines = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "expand_tools_lines").c_str()),
-	    tr("Expand tools"), tr("Expand tools"),
-	    QIcon(":/resource/pic/edit_expand_tools_lines.svg"),
-	    [&](bool) { on_expand_tools_lines_clicked(); });
+	    _tools_line_0, this, tr((editor_prefix + "expand_tools_lines").c_str()), tr("Expand tools"), tr("Expand tools"), QIcon(":/resource/pic/edit_expand_tools_lines.svg"), [&](bool) { on_expand_tools_lines_clicked(); });
 
 	// Кнопка переключения на аттачи
 	// _icon_attach_not_exists	=  QIcon(":/resource/pic/attach.svg");
 	// _icon_attach_exists		=
 	// QIcon(":/resource/pic/attach_exists.svg");
 	_to_attach = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "attach").c_str()),
-	    tr("Show attach files"), tr("Show attach files"), _icon_attach_not_exists,
-	    [&](bool) { _blog->to_attach_layout(); });
+	    _tools_line_0, this, tr((editor_prefix + "attach").c_str()), tr("Show attach files"), tr("Show attach files"), _icon_attach_not_exists, [&](bool) { _blogger->to_attach_layout(); });
 
 	_insert_image_from_file = add_action(
-	    _tools_line_0, this,
-	    tr((editor_prefix + "insert_image_from_file").c_str()),
-	    tr("Insert image from file / edit image properties of selected image"),
-	    tr("Insert image from file / edit image properties of selected image"),
-	    QIcon(":/resource/pic/edit_insert_image_from_file.svg"),
-	    [&](bool) { on_insert_image_from_file_clicked(); });
+	    _tools_line_0, this, tr((editor_prefix + "insert_image_from_file").c_str()), tr("Insert image from file / edit image properties of selected image"), tr("Insert image from file / edit image properties of selected image"), QIcon(":/resource/pic/edit_insert_image_from_file.svg"), [&](bool) { on_insert_image_from_file_clicked(); });
 
 	_expand_edit_area = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "expand_edit_area").c_str()),
-	    tr("Expand edit area"), tr("Expand edit area"),
-	    QIcon(":/resource/pic/edit_expand_text_area.svg"),
-	    [&](bool) { on_expand_edit_area_clicked(); });
+	    _tools_line_0, this, tr((editor_prefix + "expand_edit_area").c_str()), tr("Expand edit area"), tr("Expand edit area"), QIcon(":/resource/pic/edit_expand_text_area.svg"), [&](bool) { on_expand_edit_area_clicked(); });
 
 	_save =
 	    add_action(_tools_line_0, this, tr((editor_prefix + "save").c_str()), tr("Save (Ctrl+S)"), tr("Save (Ctrl+S)"), QIcon(":/resource/pic/edit_save.svg"), [&](bool) { on_save_clicked(); }, QKeySequence(tr("Ctrl+S")));
@@ -655,10 +610,7 @@ void Editor::setup_buttons(void)
 	_find_in_base = add_action(_tools_line_0, this, tr((editor_prefix + "find_in_base").c_str()), tr("Find in base"), tr("Find in base"), QIcon(":/resource/pic/find_in_base.svg"), [&](bool) { on_find_in_base_clicked(); });
 	// Кнопка вызова виджета поиска текста
 	_find_text = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "findtext").c_str()),
-	    tr("Find text (Ctrl+F)"), tr("Find text (Ctrl+F)"),
-	    QIcon(":/resource/pic/edit_findtext.svg"),
-	    [&](bool) { on_findtext_clicked(); }, QKeySequence(tr("Ctrl+F")));
+	    _tools_line_0, this, tr((editor_prefix + "findtext").c_str()), tr("Find text (Ctrl+F)"), tr("Find text (Ctrl+F)"), QIcon(":/resource/pic/edit_findtext.svg"), [&](bool) { on_findtext_clicked(); }, QKeySequence(tr("Ctrl+F")));
 
 	// Кнопка вызова виджета конфигурирования редактора
 	_settings =
@@ -670,32 +622,22 @@ void Editor::setup_buttons(void)
 
 	// Кнопка включения отображения символов фарматирования
 	_show_formatting = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "showformatting").c_str()),
-	    tr("Show special chars"), tr("Show special chars"),
-	    QIcon(":/resource/pic/edit_showformatting.svg"),
-	    [&](bool) { on_showformatting_clicked(); });
+	    _tools_line_0, this, tr((editor_prefix + "showformatting").c_str()), tr("Show special chars"), tr("Show special chars"), QIcon(":/resource/pic/edit_showformatting.svg"), [&](bool) { on_showformatting_clicked(); });
 
 	// Кнопка "показать текст" для просмотра текста в отдельном окне
 	_show_text = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "show_text").c_str()),
-	    tr("Show text in detached window"), tr("Show text in detached window"),
-	    QIcon(":/resource/pic/edit_show_text.svg"),
-	    [&](bool) { on_show_text_clicked(); });
+	    _tools_line_0, this, tr((editor_prefix + "show_text").c_str()), tr("Show text in detached window"), tr("Show text in detached window"), QIcon(":/resource/pic/edit_show_text.svg"), [&](bool) { on_show_text_clicked(); });
 
 	//
 	// Выбор шрифта
 	_font_select = add_action(
-	    _tools_line_1, this, tr((editor_prefix + "fontselect").c_str()),
-	    tr("Select font type"), tr("Select font type"),
-	    QIcon(":/resource/pic/edit_font_many.svg"), (FlatFontComboBox*)(nullptr),
-	    this, &Editor::on_fontselect_changed);
+	    _tools_line_1, this, tr((editor_prefix + "fontselect").c_str()), tr("Select font type"), tr("Select font type"), QIcon(":/resource/pic/edit_font_many.svg"), (FlatFontComboBox*)(nullptr), this, &Editor::on_fontselect_changed);
 
 	// Выбор размера шрифта
 	_font_size =
 	    add_action(_tools_line_1, this, tr((editor_prefix + "fontsize").c_str()), tr("Select font size"), tr("Select font size"), QIcon(), (FlatComboBox*)(nullptr), this, &Editor::on_fontsize_changed);
 	// _font_size = new FlatComboBox(this);
-	for (int i = MINIMUM_ALLOWED_FONT_SIZE; i <= MAXIMUM_ALLOWED_FONT_SIZE; i++)
-		_font_size->addItem(QString("%1").arg(i), i);
+	for (int i = MINIMUM_ALLOWED_FONT_SIZE; i <= MAXIMUM_ALLOWED_FONT_SIZE; i++) _font_size->addItem(QString("%1").arg(i), i);
 	_font_size->setCurrentIndex(_font_size->findData(10));
 	_font_size->setMinimumContentsLength(3);
 	_font_size->setEditable(true);
@@ -720,32 +662,20 @@ void Editor::setup_buttons(void)
 	_create_table = add_action(_tools_line_1, this, tr((editor_prefix + "createtable").c_str()), tr("Create a new table"), tr("Create a new table"), QIcon(":/resource/pic/edit_createtable.svg"), [&](bool) { on_createtable_clicked(); });
 
 	_table_remove_row = add_action(
-	    _tools_line_1, this, tr((editor_prefix + "table_remove_row").c_str()),
-	    tr("Remove row(s)"), tr("Remove row(s)"),
-	    QIcon(":/resource/pic/edit_table_remove_row.svg"),
-	    [&](bool) { on_table_remove_row_clicked(); });
+	    _tools_line_1, this, tr((editor_prefix + "table_remove_row").c_str()), tr("Remove row(s)"), tr("Remove row(s)"), QIcon(":/resource/pic/edit_table_remove_row.svg"), [&](bool) { on_table_remove_row_clicked(); });
 
 	_table_remove_col = add_action(
-	    _tools_line_1, this, tr((editor_prefix + "table_remove_col").c_str()),
-	    tr("Remove column(s)"), tr("Remove column(s)"),
-	    QIcon(":/resource/pic/edit_table_remove_col.svg"),
-	    [&](bool) { on_table_remove_col_clicked(); });
+	    _tools_line_1, this, tr((editor_prefix + "table_remove_col").c_str()), tr("Remove column(s)"), tr("Remove column(s)"), QIcon(":/resource/pic/edit_table_remove_col.svg"), [&](bool) { on_table_remove_col_clicked(); });
 
 	_table_add_row = add_action(_tools_line_1, this, tr((editor_prefix + "table_add_row").c_str()), tr("Add row(s)"), tr("Add row(s)"), QIcon(":/resource/pic/edit_table_add_row.svg"), [&](bool) { on_table_add_row_clicked(); });
 
 	_table_add_col = add_action(_tools_line_1, this, tr((editor_prefix + "table_add_col").c_str()), tr("Add column(s)"), tr("Add column(s)"), QIcon(":/resource/pic/edit_table_add_col.svg"), [&](bool) { on_table_add_col_clicked(); });
 
 	_table_merge_cells = add_action(
-	    _tools_line_1, this, tr((editor_prefix + "table_merge_cells").c_str()),
-	    tr("Merge cells"), tr("Merge cells"),
-	    QIcon(":/resource/pic/edit_table_merge_cells.svg"),
-	    [&](bool) { on_table_merge_cells_clicked(); });
+	    _tools_line_1, this, tr((editor_prefix + "table_merge_cells").c_str()), tr("Merge cells"), tr("Merge cells"), QIcon(":/resource/pic/edit_table_merge_cells.svg"), [&](bool) { on_table_merge_cells_clicked(); });
 
 	_table_split_cell = add_action(
-	    _tools_line_1, this, tr((editor_prefix + "table_split_cell").c_str()),
-	    tr("Split cell"), tr("Split cell"),
-	    QIcon(":/resource/pic/edit_table_split_cell.svg"),
-	    [&](bool) { on_table_split_cell_clicked(); });
+	    _tools_line_1, this, tr((editor_prefix + "table_split_cell").c_str()), tr("Split cell"), tr("Split cell"), QIcon(":/resource/pic/edit_table_split_cell.svg"), [&](bool) { on_table_split_cell_clicked(); });
 
 	// Виджет настройки отступов
 	_indent_slider = new IndentSlider(this->width(), 16, this);
@@ -810,8 +740,7 @@ void Editor::hide_all_tools_elements(void)
 	// QList<QWidget *> tb_tools_list=qFindChildren(qobject_cast<QObject
 	// *>(this),name_mask);
 	QList<QWidget*> tbToolsList = this->findChildren<QWidget*>(nameMask);
-	for (int i = 0; i < tbToolsList.size(); ++i)
-		tbToolsList.at(i)->setVisible(false);
+	for (int i = 0; i < tbToolsList.size(); ++i) tbToolsList.at(i)->setVisible(false);
 }
 
 // Создание объекта области редактирования
@@ -852,12 +781,10 @@ void Editor::add_action_by_name(QString toolName, QToolBar* line)
 				line->addWidget(tool); // Инструмент добавляется на панель инструментов
 
 				FlatToolButton* tb = qobject_cast<FlatToolButton*>(tool);
-				if (tb != 0)
-					tb->setAutoRaise(true); // false
+				if (tb != 0) tb->setAutoRaise(true); // false
 			} else {
 				FlatToolButton* tb = qobject_cast<FlatToolButton*>(tool);
-				if (tb != 0)
-					tb->setEnabled(false);
+				if (tb != 0) tb->setEnabled(false);
 			}
 		} else
 			critical_error("WyEdit: Can not find editor tool with name '" + toolName + "'. Please check editor *.ini file");
@@ -978,15 +905,15 @@ void Editor::textarea_editable(bool editable)
 	if (editable == true) {
 		// Если редактирование разрешено
 		_text_area->setTextInteractionFlags(Qt::TextEditorInteraction);
-		_text_area->setPalette(qApp->palette());
+		_text_area->setPalette(sapp_t::instance()->palette());
 	} else {
 		// Если редактирование запрещено
 		_text_area->setTextInteractionFlags(Qt::TextBrowserInteraction);
 
-		QPalette pal = qApp->palette();
+		QPalette pal = sapp_t::instance()->palette();
 		QColor inactiveColor;
 
-		inactiveColor = qApp->palette().color(QPalette::Disabled, QPalette::Window);
+		inactiveColor = sapp_t::instance()->palette().color(QPalette::Disabled, QPalette::Window);
 		pal.setColor(QPalette::Normal, QPalette::Base, inactiveColor);
 		_text_area->setPalette(pal);
 
@@ -1077,8 +1004,7 @@ void Editor::file_name(QString _file_name)
 			critical_error(
 			    "Editor::file_name(QString _file_name) : Can\'t open text file " +
 			    _file_name + " for read / write.");
-		if (fileInfo.absoluteDir().exists() && f.exists())
-			_work_file_name = _file_name;
+		if (fileInfo.absoluteDir().exists() && f.exists()) _work_file_name = _file_name;
 	} else
 		_work_file_name = "";
 }
@@ -1153,8 +1079,7 @@ void Editor::editor_save_callback(QObject* editor, const QString& save_text)
 	bool work_with_crypt = false;
 	if (curr_editor->misc_field<crypt_key>() == crypt_value(true)) {
 		// Если не установлено ключа шифрации
-		if (gl_paras->crypt_key().length() == 0)
-			return;
+		if (gl_paras->crypt_key().length() == 0) return;
 		work_with_crypt = true;
 	}
 	QString file_name =
@@ -1163,8 +1088,7 @@ void Editor::editor_save_callback(QObject* editor, const QString& save_text)
 	if (work_with_crypt == false) {
 		// Текст сохраняется в файл
 		QFile wfile(file_name);
-		if (!wfile.open(QIODevice::WriteOnly | QIODevice::Text))
-			critical_error("Editor::editor_save_callback() : Can\'t open text file " + file_name + " for write.");
+		if (!wfile.open(QIODevice::WriteOnly | QIODevice::Text)) critical_error("Editor::editor_save_callback() : Can\'t open text file " + file_name + " for write.");
 		QTextStream out(&wfile);
 		out.setCodec("UTF-8");
 		out << save_text;
@@ -1301,8 +1225,7 @@ void Editor::save_textarea(void)
 			 << work_directory();
 		if (QFileInfo(full_path).exists()) {
 			qDebug() << "File exists. Remove it.";
-			if (0 < filesize(full_path.toStdString().c_str()))
-				DiskHelper::backup(full_path);
+			if (0 < filesize(full_path.toStdString().c_str())) DiskHelper::backup(full_path);
 		} else
 			qDebug() << "Cant remove file. File not exists.";
 		// Если происходит прямая работа с файлом текста
@@ -1540,11 +1463,9 @@ bool Editor::is_block_select(void)
 	int flagStopBlockEdge = 0;
 	QTextCursor cursor = _text_area->textCursor();
 	cursor.setPosition(start);
-	if (cursor.atBlockStart() == true || cursor.atBlockEnd() == true)
-		flagStartBlockEdge = 1;
+	if (cursor.atBlockStart() == true || cursor.atBlockEnd() == true) flagStartBlockEdge = 1;
 	cursor.setPosition(stop);
-	if (cursor.atBlockStart() == true || cursor.atBlockEnd() == true)
-		flagStopBlockEdge = 1;
+	if (cursor.atBlockStart() == true || cursor.atBlockEnd() == true) flagStopBlockEdge = 1;
 	if (flagStartBlockEdge == 1 && flagStopBlockEdge == 1)
 		return true;
 	else
@@ -1555,8 +1476,7 @@ bool Editor::is_block_select(void)
 // перевода на новую строку)
 bool Editor::is_cursor_on_empty_line(void)
 {
-	if (!_text_area->textCursor().atBlockStart())
-		return false;
+	if (!_text_area->textCursor().atBlockStart()) return false;
 	// Создаётся дополнительный курсор
 	QTextCursor cursor = _text_area->textCursor();
 
@@ -1574,8 +1494,7 @@ bool Editor::is_cursor_on_empty_line(void)
 bool Editor::is_cursor_on_space_line(void)
 {
 	// Если есть выделение, функция работать не должна
-	if (_text_area->textCursor().hasSelection())
-		return false;
+	if (_text_area->textCursor().hasSelection()) return false;
 	// Создаётся дополнительный курсор
 	QTextCursor cursor = _text_area->textCursor();
 
@@ -1596,8 +1515,7 @@ void Editor::on_code_clicked(void)
 	// qtm implementation:
 	// _text_area->insertPlainText(QString("<blockquote>%1</blockquote>").arg(_text_area->textCursor().selectedText()));
 	// Если выделения нет
-	if (!_text_area->textCursor().hasSelection())
-		return;
+	if (!_text_area->textCursor().hasSelection()) return;
 	bool enableIndent;
 	// Проверяется, выбран ли четко блок (блоки) текста
 	// Блок - это текст между <p>...</p>
@@ -1695,11 +1613,9 @@ void Editor::on_clear_clicked(void)
 	// Или курсор стоит на пустой строке с одним символом перевода строки
 	// Или курсор стоит на строке, в которой нет текста
 	if (!(_text_area->textCursor().hasSelection() || flag_cursor_on_empty_line ||
-		flag_cursor_on_space_line))
-		return;
+		flag_cursor_on_space_line)) return;
 	_text_area->textCursor().beginEditBlock();
-	if (flag_cursor_on_space_line)
-		(_text_area->textCursor()).select(QTextCursor::LineUnderCursor);
+	if (flag_cursor_on_space_line) (_text_area->textCursor()).select(QTextCursor::LineUnderCursor);
 	// Создается стандартный шрифт
 	QFont font;
 	font.fromString(_editor_config->get_default_font()); // Стандартное начертание
@@ -1744,44 +1660,43 @@ void Editor::on_clear_clicked(void)
 	}
 	// Если была работа со строкой, в которой нет символов,
 	// курсор переносится на начало строки, чтобы не путать пользователя
-	if (flag_cursor_on_space_line)
-		_text_area->moveCursor(QTextCursor::StartOfLine);
+	if (flag_cursor_on_space_line) _text_area->moveCursor(QTextCursor::StartOfLine);
 	// Очистка закомментирована, так как она заменена очисткой формата символов
 	// setCurrentCharFormat()
 	// А так же эта очистка некорректно работает из-за особенностей вставки в Qt
 	// (первая строка получает отличный от остальных строк формат).
 	// Думать дальше
 	/*
-             // Удаление какого-либо форматирования стилем
-             QString htmlCode=textArea->textCursor().selection().toHtml();
-             qDebug() << "Before remove style: " << htmlCode;
+	     // Удаление какого-либо форматирования стилем
+	     QString htmlCode=textArea->textCursor().selection().toHtml();
+	     qDebug() << "Before remove style: " << htmlCode;
 
-             // В регулярных выражениях Qt кванторы по-умолчанию жадные (greedy)
-             // Поэтому напрямую регвыру указывается что кванторы должны быть
-     ленивые
-             QRegExp replace_expression("style=\".*\"");
-             replace_expression.setMinimal(true);
+	     // В регулярных выражениях Qt кванторы по-умолчанию жадные (greedy)
+	     // Поэтому напрямую регвыру указывается что кванторы должны быть
+	   ленивые
+	     QRegExp replace_expression("style=\".*\"");
+	     replace_expression.setMinimal(true);
 
-             htmlCode.replace(replace_expression, "");
-             qDebug() << "After remove style: " << htmlCode;
+	     htmlCode.replace(replace_expression, "");
+	     qDebug() << "After remove style: " << htmlCode;
 
-             QString currStyleSheet=textArea->document()->defaultStyleSheet();
-             textArea->document()->setDefaultStyleSheet(" ");
+	     QString currStyleSheet=textArea->document()->defaultStyleSheet();
+	     textArea->document()->setDefaultStyleSheet(" ");
 
-             textArea->textCursor().removeSelectedText();
-             textArea->textCursor().insertHtml(htmlCode);
+	     textArea->textCursor().removeSelectedText();
+	     textArea->textCursor().insertHtml(htmlCode);
 
-             textArea->document()->setDefaultStyleSheet(currStyleSheet);
+	     textArea->document()->setDefaultStyleSheet(currStyleSheet);
 
-             textArea->textCursor().setPosition(startCursorPos);
-             textArea->textCursor().setPosition(stopCursorPos,
-     QTextCursor::KeepAnchor);
-             // textArea->setTextCursor( textArea->textCursor() );
+	     textArea->textCursor().setPosition(startCursorPos);
+	     textArea->textCursor().setPosition(stopCursorPos,
+	   QTextCursor::KeepAnchor);
+	     // textArea->setTextCursor( textArea->textCursor() );
 
-             qDebug() << "Cursor position: " <<
-     textArea->textCursor().position() <<
-             "Cursor anchor: " << textArea->textCursor().anchor();
-       */
+	     qDebug() << "Cursor position: " <<
+	   textArea->textCursor().position() <<
+	     "Cursor anchor: " << textArea->textCursor().anchor();
+	 */
 
 	_text_area->textCursor().endEditBlock();
 
@@ -1795,11 +1710,9 @@ void Editor::on_clear_clicked(void)
 void Editor::format_to_list(QTextListFormat::Style setFormat)
 {
 	// Если выделения нет
-	if (!_text_area->textCursor().hasSelection())
-		return;
+	if (!_text_area->textCursor().hasSelection()) return;
 	// Форматирование в список возможно только если выделен блок
-	if (!is_block_select())
-		return;
+	if (!is_block_select()) return;
 	// Если строки выбраны
 	if (_text_area->textCursor().hasSelection()) {
 		if (_text_area->textCursor().currentList() == 0 ||
@@ -1863,11 +1776,11 @@ void Editor::on_indentplus_clicked(void)
 	// Или курсор стоит в начале строки
 	// Закомментировано. Теперь отступ можно добавлять в любой момент
 	/*
-             int start=textarea->textCursor().selectionStart();
-             QTextCursor cursor=textarea->textCursor();
-             cursor.setPosition(start);
-             if( !(is_block_select() || cursor.atBlockStart()) ) return;
-       */
+	     int start=textarea->textCursor().selectionStart();
+	     QTextCursor cursor=textarea->textCursor();
+	     cursor.setPosition(start);
+	     if( !(is_block_select() || cursor.atBlockStart()) ) return;
+	 */
 
 	int currentIndent;
 
@@ -1945,8 +1858,7 @@ void Editor::align_text(Qt::AlignmentFlag mode)
 // Слот, срабатывающий при изменении шрифта в списке шрифтов
 void Editor::on_fontselect_changed(const QFont& font)
 {
-	if (_flag_set_font_parameters_enabled == false)
-		return;
+	if (_flag_set_font_parameters_enabled == false) return;
 	_text_area->setFontFamily(font.family());
 
 	_current_font_family = font.family();
@@ -1971,13 +1883,10 @@ void Editor::set_fontselect_on_display(QString font_name)
 // Слот, срабатывающий когда изменен размер шрифта через список размеров
 void Editor::on_fontsize_changed(int i)
 {
-	if (_flag_set_font_parameters_enabled == false)
-		return;
+	if (_flag_set_font_parameters_enabled == false) return;
 	int n = (_font_size->itemData(i)).toInt();
-	if (n < MINIMUM_ALLOWED_FONT_SIZE)
-		return;
-	if (n > MAXIMUM_ALLOWED_FONT_SIZE)
-		return;
+	if (n < MINIMUM_ALLOWED_FONT_SIZE) return;
+	if (n > MAXIMUM_ALLOWED_FONT_SIZE) return;
 	_text_area->setFontPointSize(n);
 
 	_current_font_size = n;
@@ -2030,8 +1939,7 @@ void Editor::on_fontcolor_clicked()
 void Editor::on_selection_changed(void)
 {
 	// Если выделения нет
-	if (!_text_area->textCursor().hasSelection())
-		return;
+	if (!_text_area->textCursor().hasSelection()) return;
 	// qDebug() << "Selection text " <<
 	// textarea->textCursor().selection().toHtml();
 
@@ -2057,8 +1965,7 @@ void Editor::on_selection_changed(void)
 	QString startFontFamily = cursor.charFormat().fontFamily(); // Шрифт
 	qreal startSize = cursor.charFormat().fontPointSize();      // азмер шрифта
 	bool startBold = false;
-	if (cursor.charFormat().fontWeight() == QFont::Bold)
-		startBold = true; // Тощина
+	if (cursor.charFormat().fontWeight() == QFont::Bold) startBold = true; // Тощина
 
 	bool startItalic = cursor.charFormat().fontItalic();       // Наклон
 	bool startUnderline = cursor.charFormat().fontUnderline(); // Подчеркивание
@@ -2074,11 +1981,9 @@ void Editor::on_selection_changed(void)
 	// разные начертания символов, разное выравнивание в выделенном тексте
 	while (cursor.position() <= stop) {
 		if (differentFontFlag == 0 &&
-		    startFontFamily != cursor.charFormat().fontFamily())
-			differentFontFlag = 1;
+		    startFontFamily != cursor.charFormat().fontFamily()) differentFontFlag = 1;
 		if (differentSizeFlag == 0 &&
-		    startSize != cursor.charFormat().fontPointSize())
-			differentSizeFlag = 1;
+		    startSize != cursor.charFormat().fontPointSize()) differentSizeFlag = 1;
 		if (differentBoldFlag == 0) {
 			int b = cursor.charFormat().fontWeight();
 			if (startBold == false && b == QFont::Bold)
@@ -2087,18 +1992,14 @@ void Editor::on_selection_changed(void)
 				differentBoldFlag = 1;
 		}
 		if (differentItalicFlag == 0 &&
-		    startItalic != cursor.charFormat().fontItalic())
-			differentItalicFlag = 1;
+		    startItalic != cursor.charFormat().fontItalic()) differentItalicFlag = 1;
 		if (differentUnderlineFlag == 0 &&
-		    startUnderline != cursor.charFormat().fontUnderline())
-			differentUnderlineFlag = 1;
+		    startUnderline != cursor.charFormat().fontUnderline()) differentUnderlineFlag = 1;
 		if (differentAlignFlag == 0 &&
-		    startAlign != cursor.blockFormat().alignment())
-			differentAlignFlag = 1;
+		    startAlign != cursor.blockFormat().alignment()) differentAlignFlag = 1;
 		// Курсор передвигается на одну позицию вперед
 		// Если дальше двигаться некуда (конец документа) цикл досрочно завершается
-		if (cursor.movePosition(QTextCursor::NextCharacter) == false)
-			break;
+		if (cursor.movePosition(QTextCursor::NextCharacter) == false) break;
 	}
 	// Список выбора шрифта начинает указывать на нужный шрифт
 	if (differentFontFlag == 0)
@@ -2139,11 +2040,9 @@ void Editor::on_selection_changed(void)
 void Editor::update_tool_line_to_actual_format(void)
 {
 	// Список должен показывать текущий шрифт позиции, где находится курсор
-	if (_current_font_family != _text_area->fontFamily())
-		set_fontselect_on_display(_text_area->fontFamily());
+	if (_current_font_family != _text_area->fontFamily()) set_fontselect_on_display(_text_area->fontFamily());
 	// азмер
-	if (_current_font_size != (int)_text_area->fontPointSize())
-		set_fontsize_on_display((int)_text_area->fontPointSize());
+	if (_current_font_size != (int)_text_area->fontPointSize()) set_fontsize_on_display((int)_text_area->fontPointSize());
 	// Кнопки форматирования начертания
 	update_outline_button_higlight();
 
@@ -2177,8 +2076,7 @@ void Editor::on_cursor_position_changed(void)
 {
 	// Если одновременно идет режим выделения
 	// то обслуживание текущего шрифта и размера идет в on_selection_changed()
-	if (_text_area->textCursor().hasSelection())
-		return;
+	if (_text_area->textCursor().hasSelection()) return;
 	update_tool_line_to_actual_format();
 
 	update_indentslider_to_actual_format();
@@ -2203,15 +2101,13 @@ bool Editor::is_key_for_tool_line_update(QKeyEvent* event)
 // Cлот отлавливает нажатия клавиш
 void Editor::keyPressEvent(QKeyEvent* event)
 {
-	if (is_key_for_tool_line_update(event))
-		update_tool_line_to_actual_format();
+	if (is_key_for_tool_line_update(event)) update_tool_line_to_actual_format();
 }
 
 // Cлот отлавливает отжатия клавиш
 void Editor::keyReleaseEvent(QKeyEvent* event)
 {
-	if (is_key_for_tool_line_update(event))
-		update_tool_line_to_actual_format();
+	if (is_key_for_tool_line_update(event)) update_tool_line_to_actual_format();
 }
 
 void Editor::on_undo(void)
@@ -2239,10 +2135,8 @@ void Editor::copy(void)
 	// Если выбрана только картинка или курсор стоит на позиции картинки
 	if (is_image_select() || is_cursor_on_image()) {
 		QTextImageFormat imageFormat;
-		if (is_image_select())
-			imageFormat = image_format_on_select();
-		if (is_cursor_on_image())
-			imageFormat = image_format_on_cursor();
+		if (is_image_select()) imageFormat = image_format_on_select();
+		if (is_cursor_on_image()) imageFormat = image_format_on_cursor();
 		// Из формата выясняется имя картинки
 		QString imageName = imageFormat.name();
 
@@ -2288,8 +2182,7 @@ void Editor::update_align_button_higlight(bool activate)
 	_align_center->setPalette(palInactive);
 	_align_right->setPalette(palInactive);
 	_align_width->setPalette(palInactive);
-	if (activate == false)
-		return;
+	if (activate == false) return;
 	if (_text_area->alignment() == Qt::AlignLeft)
 		_align_left->setPalette(palActive);
 	else if (_text_area->alignment() == Qt::AlignHCenter)
@@ -2310,12 +2203,9 @@ void Editor::update_outline_button_higlight(void)
 	_bold->setPalette(palInactive);
 	_italic->setPalette(palInactive);
 	_underline->setPalette(palInactive);
-	if (_text_area->fontWeight() == QFont::Bold)
-		_bold->setPalette(palActive);
-	if (_text_area->fontItalic() == true)
-		_italic->setPalette(palActive);
-	if (_text_area->fontUnderline() == true)
-		_underline->setPalette(palActive);
+	if (_text_area->fontWeight() == QFont::Bold) _bold->setPalette(palActive);
+	if (_text_area->fontItalic() == true) _italic->setPalette(palActive);
+	if (_text_area->fontUnderline() == true) _underline->setPalette(palActive);
 }
 
 void Editor::set_outline_button_higlight(int button, bool active)
@@ -2353,12 +2243,10 @@ void Editor::on_showhtml_clicked(void)
 
 	dialog.set_text(_text_area->toHtml());
 	dialog.set_window_title(tr("Edit HTML source"));
-	if (dialog.exec() != QDialog::Accepted)
-		return;
+	if (dialog.exec() != QDialog::Accepted) return;
 	_text_area->setHtml(dialog.get_text());
 	// Если в диалоговом окне был иземен HTML код
-	if (dialog.isModified())
-		_text_area->document()->setModified(true);
+	if (dialog.isModified()) _text_area->document()->setModified(true);
 }
 
 void Editor::on_findtext_clicked(void)
@@ -2388,7 +2276,7 @@ void Editor::on_custom_contextmenu_requested(const QPoint& _position)
 	// menu.exec(event->globalPos());
 	// Если выбрана картинка
 	// Или нет выделения, но курсор находится на позиции картинки
-	auto _context_menu = _blog->super_menu();
+	auto _context_menu = _blogger->super_menu();
 	if (is_image_select() || is_cursor_on_image())
 		_context_menu->set_edit_image_properties(true);
 	else
@@ -2488,8 +2376,7 @@ void Editor::on_createtable_clicked(void)
 {
 	// Создается и запускается диалог создания новой таблицы
 	EditorAddTableForm dialog;
-	if (dialog.exec() != QDialog::Accepted)
-		return;
+	if (dialog.exec() != QDialog::Accepted) return;
 	// Выясняются введенные в диалоге данные
 	int tableColumns = dialog.get_columns();
 	int tableRows = dialog.get_rows();
@@ -2525,7 +2412,7 @@ void Editor::on_createtable_clicked(void)
 	// tab.clear();
 
 	//// QColor table_color;
-	//// table_color=qApp->palette().color(QPalette::Normal,
+	//// table_color=sapp_t::instance()->palette().color(QPalette::Normal,
 	// QPalette::Base);
 	//// qDebug() << "Table background color " << table_color.name();
 	//// tab.append(QString("<table border=\"1\" align=\"center\"
@@ -2605,8 +2492,7 @@ void Editor::on_table_add_row_clicked(void)
 
 		bool ok = false;
 		int addNum = QInputDialog::getInt(this, tr("Append rows to table"), tr("Append rows:"), 1, 1, 100, 1, &ok);
-		if (ok && addNum > 0)
-			table->insertRows(cellRowCursor + 1, addNum);
+		if (ok && addNum > 0) table->insertRows(cellRowCursor + 1, addNum);
 	}
 }
 
@@ -2621,8 +2507,7 @@ void Editor::on_table_add_col_clicked(void)
 
 		bool ok = false;
 		int addNum = QInputDialog::getInt(this, tr("Append columns to table"), tr("Append columns:"), 1, 1, 100, 1, &ok);
-		if (ok && addNum > 0)
-			table->insertColumns(cellColCursor + 1, addNum);
+		if (ok && addNum > 0) table->insertColumns(cellColCursor + 1, addNum);
 	}
 }
 
@@ -2631,8 +2516,7 @@ void Editor::on_table_merge_cells_clicked(void)
 {
 	QTextCursor cursor(_text_area->textCursor());
 	QTextTable* table = cursor.currentTable();
-	if (table)
-		table->mergeCells(cursor);
+	if (table) table->mergeCells(cursor);
 }
 
 void Editor::on_table_split_cell_clicked(void)
@@ -2683,10 +2567,8 @@ void Editor::on_table_split_cell_clicked(void)
 		    current_table.get_cell_colspan(cellColCursor, cellRowCursor);
 		int vCurrMerge =
 		    current_table.get_cell_rowspan(cellColCursor, cellRowCursor);
-		if (hCurrMerge == 0)
-			hCurrMerge = 1;
-		if (vCurrMerge == 0)
-			vCurrMerge = 1;
+		if (hCurrMerge == 0) hCurrMerge = 1;
+		if (vCurrMerge == 0) vCurrMerge = 1;
 		if (hCurrMerge == 1)
 			hSplitTo = 0; // Можно разбивать на любое число
 		else
@@ -2819,8 +2701,7 @@ bool Editor::is_cursor_on_image(void)
 	if (_text_area->textCursor().hasSelection() == false) {
 		QTextImageFormat imageFormat =
 		    _text_area->textCursor().charFormat().toImageFormat();
-		if (imageFormat.isValid())
-			return true;
+		if (imageFormat.isValid()) return true;
 	}
 	return false;
 }
@@ -2832,8 +2713,7 @@ QTextImageFormat Editor::image_format_on_cursor(void)
 	if (_text_area->textCursor().hasSelection() == false) {
 		QTextImageFormat imageFormat =
 		    _text_area->textCursor().charFormat().toImageFormat();
-		if (imageFormat.isValid())
-			return imageFormat;
+		if (imageFormat.isValid()) return imageFormat;
 	}
 	return QTextImageFormat();
 }
@@ -2862,8 +2742,7 @@ void Editor::on_insert_image_from_file_clicked(void)
 		// Выясняется список выбранных файлов
 		QStringList files = image_select_dialog.selectedFiles();
 		// Если ни один файл не выбран
-		if (files.size() == 0)
-			return;
+		if (files.size() == 0) return;
 		// Перебираются файлы выбранных картинок
 		for (int i = 0; i < files.size(); ++i) {
 			// Текущее имя файла
@@ -2894,11 +2773,9 @@ void Editor::edit_image_properties(void)
 	// Данные обрабатываемой картинки
 	QTextImageFormat imageFormat;
 	// Если выбрано изображение
-	if (is_image_select())
-		imageFormat = image_format_on_select();
+	if (is_image_select()) imageFormat = image_format_on_select();
 	// Если изображение не выбрано, но курсор находится в позиции изображения
-	if (is_cursor_on_image())
-		imageFormat = image_format_on_cursor();
+	if (is_cursor_on_image()) imageFormat = image_format_on_cursor();
 	// Выясняется имя картинки в ресурсах документа
 	QString imageName = imageFormat.name();
 
@@ -2934,8 +2811,7 @@ void Editor::edit_image_properties(void)
 	}
 	dialog.update_percent();
 	// Запуск диалога на выполнение
-	if (dialog.exec() != QDialog::Accepted)
-		return;
+	if (dialog.exec() != QDialog::Accepted) return;
 	imageFormat.setWidth(dialog.get_width());
 	imageFormat.setHeight(dialog.get_height());
 	// Если в новом формате картинки нет никаких ошибок
@@ -2952,8 +2828,7 @@ void Editor::edit_image_properties(void)
 			for (auto it = currentBlock.begin(); !(it.atEnd()); ++it) {
 				fragment = it.fragment();
 				// Если фрагмент содержит изображение
-				if (fragment.isValid() && fragment.charFormat().isImageFormat())
-					break; // Переменная fragment содержит только картинку
+				if (fragment.isValid() && fragment.charFormat().isImageFormat()) break; // Переменная fragment содержит только картинку
 			}
 			QTextCursor helper = _text_area->textCursor();
 
@@ -3009,15 +2884,12 @@ void Editor::switch_expand_tools_lines(int flag)
 			setFlag = true; // Иначе распахнуть
 	} else {
 		// Иначе метод вызывался с каким-то параметром
-		if (flag == 1)
-			setFlag = true;
-		if (flag == -1)
-			setFlag = false;
+		if (flag == 1) setFlag = true;
+		if (flag == -1) setFlag = false;
 	}
 	// Панели распахиваются/смыкаются (кроме первой линии инструментов)
 	_tools_line_1->setVisible(setFlag);
-	if (_view_mode == WYEDIT_DESKTOP_MODE)
-		_indent_slider->setVisible(setFlag);
+	if (_view_mode == WYEDIT_DESKTOP_MODE) _indent_slider->setVisible(setFlag);
 	// Запоминается новое состояние
 	_editor_config->set_expand_tools_lines(setFlag);
 
@@ -3049,8 +2921,7 @@ void Editor::on_show_text_clicked(void)
 
 	// Устанавливается флаг удаления диалога после закрытия его окна
 	showText->setAttribute(Qt::WA_DeleteOnClose);
-	if (misc_field<name_key>() != name_value(""))
-		showText->setWindowTitle(misc_field<name_key>());
+	if (misc_field<name_key>() != name_value("")) showText->setWindowTitle(misc_field<name_key>());
 	// For the clone method, the parent is specified, which will be destroyed when the window is closed, and will destroy this temporary document
 	QTextDocument* cloneDocument = _text_area->document()->clone(showText); // Для метода clone указан parent, который уничтожится при закрытии окна, и за собой уничтожит этот временный документ
 	showText->setDocument(cloneDocument);
@@ -3058,26 +2929,22 @@ void Editor::on_show_text_clicked(void)
 	showText->show();
 }
 
-const std::function<void(QObject* editor, QString saveString)>
-Editor::save_callback() const
+const std::function<void(QObject* editor, QString saveString)> Editor::save_callback() const
 {
 	return save_callback_func;
 }
 
-void Editor::save_callback(
-    const std::function<void(QObject* editor, QString saveString)>& func)
+void Editor::save_callback(const std::function<void(QObject* editor, QString saveString)>& func)
 {
 	save_callback_func = func;
 }
 
-std::function<void(QObject* editor, QString& String)>
-Editor::load_callback() const
+std::function<void(QObject* editor, QString& String)> Editor::load_callback() const
 {
 	return load_callback_func;
 }
 
-void Editor::load_callback(
-    const std::function<void(QObject* editor, QString& String)>& func)
+void Editor::load_callback(const std::function<void(QObject* editor, QString& String)>& func)
 {
 	load_callback_func = func;
 }

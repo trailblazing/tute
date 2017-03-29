@@ -4,10 +4,10 @@
 #include "libraries/global_parameters.h"
 #include "models/record_table/record.h"
 #include <QString>
-class Record;
+class r_t;
 
 template <typename field_key_type>
-const typename boost::remove_reference<typename boost::fusion::result_of::at_key<crypt_fields_map, typename boost::mpl::at<crypt_fields_keys, field_key_type>::type>::type>::type Record::read_crypt_field() const
+const typename boost::remove_reference<typename boost::fusion::result_of::at_key<crypt_fields_map, typename boost::mpl::at<crypt_fields_keys, field_key_type>::type>::type>::type r_t::read_crypt_field() const
 {
 	typedef typename boost::remove_reference<typename boost::fusion::result_of::at_key<crypt_fields_map, typename boost::mpl::at<crypt_fields_keys, field_key_type>::type>::type>::type return_type;
 	//    QString name = boost::mpl::c_str<typename
@@ -42,17 +42,17 @@ const typename boost::remove_reference<typename boost::fusion::result_of::at_key
 }
 
 template <typename field_key_type>
-void Record::write_crypt_field(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<crypt_fields_map const, typename boost::mpl::at<crypt_fields_keys, field_key_type>::type>::type>::type& value)
+void r_t::write_crypt_field(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<crypt_fields_map const, typename boost::mpl::at<crypt_fields_keys, field_key_type>::type>::type>::type& value)
 {
 	//    const QString& _name;
-	// template <typename field_type>void Record::field_write<field_type,
+	// template <typename field_type>void r_t::field_write<field_type,
 	// crypt_field_type>::operator()(const QString &value){// template<typename
-	// field_type> void Record::field(const QString &value){
+	// field_type> void r_t::field(const QString &value){
 	QString key_name = boost::mpl::c_str<typename boost::mpl::at<crypt_fields_keys, field_key_type>::type>::value;
 	//// Если имя поля недопустимо (установить значение можно только для
 	///натурального поля)
 	// if(fixedparameters.is_record_field_natural(_name) ==
-	// false)critical_error("In Record::field() unavailable field name " + _name +
+	// false)critical_error("In r_t::field() unavailable field name " + _name +
 	// " try set to " + value);
 	bool is_crypt = false;
 
@@ -66,7 +66,7 @@ void Record::write_crypt_field(const typename boost::remove_reference<typename b
 					boost::fusion::at_key<field_key_type>(_fields_data_map) = detail::from_qstring<field_key_type>(CryptService::encryptString(gl_paras->crypt_key(), value_qstring));
 
 				} else
-					critical_error("In Record::field() can not set data to crypt field " + key_name + ". Password not setted");
+					critical_error("In r_t::field() can not set data to crypt field " + key_name + ". Password not setted");
 			}
 		} else {
 			boost::fusion::at_key<field_key_type>(_fields_data_map) = value;
@@ -85,7 +85,7 @@ void Record::write_crypt_field(const typename boost::remove_reference<typename b
 	//		if (gl_paras->crypt_key().length() > 0)
 	//		    is_crypt = true;
 	//		else
-	//		    critical_error("In Record::field() can not set data to crypt
+	//		    critical_error("In r_t::field() can not set data to crypt
 	//field " + _name + ". Password not setted");
 	//	    }
 	//	}
@@ -99,18 +99,18 @@ void Record::write_crypt_field(const typename boost::remove_reference<typename b
 
 	//    _field_data.insert(_name, _value); // _field_data[_name] = value; //
 
-	//    // qDebug() << "Record::set_field : pos" << pos << "name" << name <<
+	//    // qDebug() << "r_t::set_field : pos" << pos << "name" << name <<
 	//    "value" << value;
 }
 
 
 template <typename field_key_type>
 typename boost::remove_reference<typename boost::fusion::result_of::at_key<natural_fields_map, field_key_type>::type>::type
-Record::natural_field_source() const
+r_t::natural_field_source() const
 { // QString name
 // Если имя поля недопустимо
 #ifdef TEST
-	BOOST_MPL_ASSERT_RELATION((boost::mpl::contains<natural_field_set, concrete>::type::value), ==, true); // critical_error("Record::natural_field_source() : get unavailable field " + name);
+	BOOST_MPL_ASSERT_RELATION((boost::mpl::contains<natural_field_set, concrete>::type::value), ==, true); // critical_error("r_t::natural_field_source() : get unavailable field " + name);
 	BOOST_MPL_ASSERT((boost::mpl::has_key<natural_field_set, concrete>));
 #endif // TEST
 	BOOST_MPL_ASSERT((boost::mpl::contains<natural_fields_keys, field_key_type>));
@@ -124,13 +124,13 @@ Record::natural_field_source() const
 }
 
 template <typename field_key_type>
-void Record::natural_field_source(
+void r_t::natural_field_source(
     const typename boost::remove_reference<typename boost::fusion::result_of::at_key<natural_fields_map const, field_key_type>::type>::type& value)
 { // QString name,, concrete cc
 //		(void) cc;
 // Если имя поля недопустимо
 #ifdef TEST
-	BOOST_MPL_ASSERT_RELATION((boost::mpl::contains<natural_field_set, concrete>::type::value), ==, true); //if(fixedparameters.is_record_field_natural(name) == false) critical_error("In Record::natural_field_source() unavailable field name " + name + " try set to " + value);
+	BOOST_MPL_ASSERT_RELATION((boost::mpl::contains<natural_field_set, concrete>::type::value), ==, true); //if(fixedparameters.is_record_field_natural(name) == false) critical_error("In r_t::natural_field_source() unavailable field name " + name + " try set to " + value);
 	BOOST_MPL_ASSERT((boost::mpl::has_key<natural_field_set, concrete>));
 #endif // TEST
 	BOOST_MPL_ASSERT((boost::mpl::contains<natural_fields_keys, field_key_type>));
@@ -140,9 +140,9 @@ void Record::natural_field_source(
 }
 
 template <typename field_type>
-struct Record::field_read<field_type, append_to_crypts_keys> {
-	const Record* _this;
-	field_read(const Record* _this)
+struct r_t::field_read<field_type, append_to_crypts_keys> {
+	const r_t* _this;
+	field_read(const r_t* _this)
 	    : _this(_this)
 	{
 	}
@@ -155,9 +155,9 @@ struct Record::field_read<field_type, append_to_crypts_keys> {
 };
 
 template <typename field_type>
-struct Record::field_read<field_type, crypt_fields_keys> {
-	const Record* _this;
-	field_read(const Record* _this)
+struct r_t::field_read<field_type, crypt_fields_keys> {
+	const r_t* _this;
+	field_read(const r_t* _this)
 	    : _this(_this)
 	{
 	}
@@ -170,9 +170,9 @@ struct Record::field_read<field_type, crypt_fields_keys> {
 };
 
 template <typename field_type>
-struct Record::field_read<field_type, calculable_fields_keys> {
-	const Record* _this;
-	field_read(const Record* _this)
+struct r_t::field_read<field_type, calculable_fields_keys> {
+	const r_t* _this;
+	field_read(const r_t* _this)
 	    : _this(_this)
 	{
 	}
@@ -185,9 +185,9 @@ struct Record::field_read<field_type, calculable_fields_keys> {
 };
 
 template <typename field_type>
-struct Record::field_write<field_type, append_to_crypts_keys> {
-	Record* const _this;
-	field_write(Record* const _this)
+struct r_t::field_write<field_type, append_to_crypts_keys> {
+	r_t* const _this;
+	field_write(r_t* const _this)
 	    : _this(_this)
 	{
 	}
@@ -199,9 +199,9 @@ struct Record::field_write<field_type, append_to_crypts_keys> {
 };
 
 template <typename field_type>
-struct Record::field_write<field_type, crypt_fields_keys> {
-	Record* const _this;
-	field_write(Record* const _this)
+struct r_t::field_write<field_type, crypt_fields_keys> {
+	r_t* const _this;
+	field_write(r_t* const _this)
 	    : _this(_this)
 	{
 	}
@@ -213,9 +213,9 @@ struct Record::field_write<field_type, crypt_fields_keys> {
 };
 
 template <typename field_type>
-struct Record::field_write<field_type, calculable_fields_keys> {
-	Record* const _this;
-	field_write(Record* const _this)
+struct r_t::field_write<field_type, calculable_fields_keys> {
+	r_t* const _this;
+	field_write(r_t* const _this)
 	    : _this(_this)
 	{
 	}
@@ -227,56 +227,56 @@ struct Record::field_write<field_type, calculable_fields_keys> {
 };
 
 template <typename field_key_type> // boost::fusion::extension::at_key_impl::apply::type
-typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, field_key_type>::type>::type Record::field() const
+typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, field_key_type>::type>::type r_t::field() const
 {
-	return Record::field_read<field_key_type, typename switch_type<field_key_type>::type>(this)(); // detail::to_string()
+	return r_t::field_read<field_key_type, typename switch_type<field_key_type>::type>(this)(); // detail::to_string()
 }
 
 template <typename field_key_type>
-void Record::field(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map const, field_key_type>::type>::type& value)
+void r_t::field(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map const, field_key_type>::type>::type& value)
 {
-	return Record::field_write<field_key_type, typename switch_type<field_key_type>::type>(this)(value);
+	return r_t::field_write<field_key_type, typename switch_type<field_key_type>::type>(this)(value);
 }
 
 
-extern template struct Record::field_read<name_key, crypt_fields_keys>;
-extern template struct Record::field_write<name_key, crypt_fields_keys>;
-extern template struct Record::field_read<author_key, crypt_fields_keys>;
-extern template struct Record::field_write<author_key, crypt_fields_keys>;
-extern template struct Record::field_read<home_key, crypt_fields_keys>;
-extern template struct Record::field_write<home_key, crypt_fields_keys>;
-extern template struct Record::field_read<url_key, crypt_fields_keys>;
-extern template struct Record::field_write<url_key, crypt_fields_keys>;
-extern template struct Record::field_read<tags_key, crypt_fields_keys>;
-extern template struct Record::field_write<tags_key, crypt_fields_keys>;
+extern template struct r_t::field_read<name_key, crypt_fields_keys>;
+extern template struct r_t::field_write<name_key, crypt_fields_keys>;
+extern template struct r_t::field_read<author_key, crypt_fields_keys>;
+extern template struct r_t::field_write<author_key, crypt_fields_keys>;
+extern template struct r_t::field_read<home_key, crypt_fields_keys>;
+extern template struct r_t::field_write<home_key, crypt_fields_keys>;
+extern template struct r_t::field_read<url_key, crypt_fields_keys>;
+extern template struct r_t::field_write<url_key, crypt_fields_keys>;
+extern template struct r_t::field_read<tags_key, crypt_fields_keys>;
+extern template struct r_t::field_write<tags_key, crypt_fields_keys>;
 
-extern template struct Record::field_read<id_key, append_to_crypts_keys>;
-extern template struct Record::field_write<id_key, append_to_crypts_keys>;
-extern template struct Record::field_read<pin_key, append_to_crypts_keys>;
-extern template struct Record::field_write<pin_key, append_to_crypts_keys>;
-extern template struct Record::field_read<rating_key, append_to_crypts_keys>;
-extern template struct Record::field_write<rating_key, append_to_crypts_keys>;
-extern template struct Record::field_read<ctime_key, append_to_crypts_keys>;
-extern template struct Record::field_write<ctime_key, append_to_crypts_keys>;
-extern template struct Record::field_read<dir_key, append_to_crypts_keys>;
-extern template struct Record::field_write<dir_key, append_to_crypts_keys>;
-extern template struct Record::field_read<file_key, append_to_crypts_keys>;
-extern template struct Record::field_write<file_key, append_to_crypts_keys>;
-extern template struct Record::field_read<crypt_key, append_to_crypts_keys>;
-extern template struct Record::field_write<crypt_key, append_to_crypts_keys>;
+extern template struct r_t::field_read<id_key, append_to_crypts_keys>;
+extern template struct r_t::field_write<id_key, append_to_crypts_keys>;
+extern template struct r_t::field_read<pin_key, append_to_crypts_keys>;
+extern template struct r_t::field_write<pin_key, append_to_crypts_keys>;
+extern template struct r_t::field_read<rating_key, append_to_crypts_keys>;
+extern template struct r_t::field_write<rating_key, append_to_crypts_keys>;
+extern template struct r_t::field_read<ctime_key, append_to_crypts_keys>;
+extern template struct r_t::field_write<ctime_key, append_to_crypts_keys>;
+extern template struct r_t::field_read<dir_key, append_to_crypts_keys>;
+extern template struct r_t::field_write<dir_key, append_to_crypts_keys>;
+extern template struct r_t::field_read<file_key, append_to_crypts_keys>;
+extern template struct r_t::field_write<file_key, append_to_crypts_keys>;
+extern template struct r_t::field_read<crypt_key, append_to_crypts_keys>;
+extern template struct r_t::field_write<crypt_key, append_to_crypts_keys>;
 
-extern template struct Record::field_read<has_attach_key, calculable_fields_keys>;
-extern template struct Record::field_write<has_attach_key, calculable_fields_keys>;
-extern template struct Record::field_read<attach_size_key, calculable_fields_keys>;
-extern template struct Record::field_write<attach_size_key, calculable_fields_keys>;
-extern template struct Record::field_read<dynamic_name_key, calculable_fields_keys>;
-extern template struct Record::field_write<dynamic_name_key, calculable_fields_keys>;
+extern template struct r_t::field_read<has_attach_key, calculable_fields_keys>;
+extern template struct r_t::field_write<has_attach_key, calculable_fields_keys>;
+extern template struct r_t::field_read<attach_size_key, calculable_fields_keys>;
+extern template struct r_t::field_write<attach_size_key, calculable_fields_keys>;
+extern template struct r_t::field_read<dynamic_name_key, calculable_fields_keys>;
+extern template struct r_t::field_write<dynamic_name_key, calculable_fields_keys>;
 
 
 #ifndef NATURAL_FIELD_GET_DDEFINITION
 
 #define NATURAL_FIELD_GET_DDEFINITION(key_type) \
-	template typename boost::remove_reference<typename boost::fusion::result_of::at_key<natural_fields_map, key_type>::type>::type Record::natural_field_source<key_type>() const;
+	template typename boost::remove_reference<typename boost::fusion::result_of::at_key<natural_fields_map, key_type>::type>::type r_t::natural_field_source<key_type>() const;
 
 #endif // NATURAL_FIELD_GET_DDEFINITION
 
@@ -293,26 +293,26 @@ NATURAL_FIELD_GET_DDEFINITION(dir_key)
 NATURAL_FIELD_GET_DDEFINITION(file_key)
 NATURAL_FIELD_GET_DDEFINITION(crypt_key)
 
-// template QString Record::natural_field_source<id_key>() const;
-// template QString Record::natural_field_source<pin_key>() const;
-// template QString Record::natural_field_source<rating_key>() const;
-// template QString Record::natural_field_source<name_key>() const;
-// template QString Record::natural_field_source<author_key>() const;
-// template QString Record::natural_field_source<home_key>() const;
-// template QString Record::natural_field_source<url_key>() const;
-// template QString Record::natural_field_source<tags_key>() const;
-// template QString Record::natural_field_source<ctime_key>() const;
-// template QString Record::natural_field_source<dir_key>() const;
-// template QString Record::natural_field_source<file_key>() const;
-// template QString Record::natural_field_source<crypt_key>() const;
-//// template QString Record::natural_field_source<has_attach_key>() const;
-//// template QString Record::natural_field_source<attach_size_key>() const;
-//// template QString Record::natural_field_source<dynamic_name_key>() const;
+// template QString r_t::natural_field_source<id_key>() const;
+// template QString r_t::natural_field_source<pin_key>() const;
+// template QString r_t::natural_field_source<rating_key>() const;
+// template QString r_t::natural_field_source<name_key>() const;
+// template QString r_t::natural_field_source<author_key>() const;
+// template QString r_t::natural_field_source<home_key>() const;
+// template QString r_t::natural_field_source<url_key>() const;
+// template QString r_t::natural_field_source<tags_key>() const;
+// template QString r_t::natural_field_source<ctime_key>() const;
+// template QString r_t::natural_field_source<dir_key>() const;
+// template QString r_t::natural_field_source<file_key>() const;
+// template QString r_t::natural_field_source<crypt_key>() const;
+//// template QString r_t::natural_field_source<has_attach_key>() const;
+//// template QString r_t::natural_field_source<attach_size_key>() const;
+//// template QString r_t::natural_field_source<dynamic_name_key>() const;
 
 #ifndef NATURAL_FIELD_SET_DEFINITION
 
 #define NATURAL_FIELD_SET_DEFINITION(key_type) \
-	template void Record::natural_field_source<key_type>(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<natural_fields_map const, key_type>::type>::type& value);
+	template void r_t::natural_field_source<key_type>(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<natural_fields_map const, key_type>::type>::type& value);
 
 #endif // NATURAL_FIELD_SET_DEFINITION
 
@@ -329,30 +329,30 @@ NATURAL_FIELD_SET_DEFINITION(dir_key)
 NATURAL_FIELD_SET_DEFINITION(file_key)
 NATURAL_FIELD_SET_DEFINITION(crypt_key)
 
-// template void Record::natural_field_source<id_key>(const QString& value);
-// template void Record::natural_field_source<pin_key>(const QString& value);
-// template void Record::natural_field_source<rating_key>(const QString&
+// template void r_t::natural_field_source<id_key>(const QString& value);
+// template void r_t::natural_field_source<pin_key>(const QString& value);
+// template void r_t::natural_field_source<rating_key>(const QString&
 // value);
-// template void Record::natural_field_source<name_key>(const QString& value);
-// template void Record::natural_field_source<author_key>(const QString&
+// template void r_t::natural_field_source<name_key>(const QString& value);
+// template void r_t::natural_field_source<author_key>(const QString&
 // value);
-// template void Record::natural_field_source<home_key>(const QString& value);
-// template void Record::natural_field_source<url_key>(const QString& value);
-// template void Record::natural_field_source<tags_key>(const QString& value);
-// template void Record::natural_field_source<ctime_key>(const QString& value);
-// template void Record::natural_field_source<dir_key>(const QString& value);
-// template void Record::natural_field_source<file_key>(const QString& value);
-// template void Record::natural_field_source<crypt_key>(const QString& value);
-//// template void Record::natural_field_source<has_attach_key>(const QString
+// template void r_t::natural_field_source<home_key>(const QString& value);
+// template void r_t::natural_field_source<url_key>(const QString& value);
+// template void r_t::natural_field_source<tags_key>(const QString& value);
+// template void r_t::natural_field_source<ctime_key>(const QString& value);
+// template void r_t::natural_field_source<dir_key>(const QString& value);
+// template void r_t::natural_field_source<file_key>(const QString& value);
+// template void r_t::natural_field_source<crypt_key>(const QString& value);
+//// template void r_t::natural_field_source<has_attach_key>(const QString
 ///&value);
-//// template void Record::natural_field_source<attach_size_key>(const QString
+//// template void r_t::natural_field_source<attach_size_key>(const QString
 ///&value);
-//// template void Record::natural_field_source<dynamic_name_key>(const QString
+//// template void r_t::natural_field_source<dynamic_name_key>(const QString
 ///&value);
 
 #ifndef RECORD_GET_DEFINITION
 #define RECORD_GET_DEFINITION(key_type) \
-	template typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, key_type>::type>::type Record::field<key_type>() const;
+	template typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, key_type>::type>::type r_t::field<key_type>() const;
 #endif // RECORD_GET_DEFINITION
 
 RECORD_GET_DEFINITION(id_key)
@@ -370,25 +370,25 @@ RECORD_GET_DEFINITION(crypt_key)
 RECORD_GET_DEFINITION(has_attach_key)
 RECORD_GET_DEFINITION(attach_size_key)
 
-// template QString Record::field<id_key>() const;
-// template QString Record::field<pin_key>() const;
-// template QString Record::field<rating_key>() const;
-// template QString Record::field<name_key>() const;
-// template QString Record::field<author_key>() const;
-// template QString Record::field<home_key>() const;
-// template QString Record::field<url_key>() const;
-// template QString Record::field<tags_key>() const;
-// template QString Record::field<ctime_key>() const;
-// template QString Record::field<dir_key>() const;
-// template QString Record::field<file_key>() const;
-// template QString Record::field<crypt_key>() const;
-// template QString Record::field<has_attach_key>() const;
-// template QString Record::field<attach_size_key>() const;
-//// template QString Record::field<dynamic_name_key>() const;
+// template QString r_t::field<id_key>() const;
+// template QString r_t::field<pin_key>() const;
+// template QString r_t::field<rating_key>() const;
+// template QString r_t::field<name_key>() const;
+// template QString r_t::field<author_key>() const;
+// template QString r_t::field<home_key>() const;
+// template QString r_t::field<url_key>() const;
+// template QString r_t::field<tags_key>() const;
+// template QString r_t::field<ctime_key>() const;
+// template QString r_t::field<dir_key>() const;
+// template QString r_t::field<file_key>() const;
+// template QString r_t::field<crypt_key>() const;
+// template QString r_t::field<has_attach_key>() const;
+// template QString r_t::field<attach_size_key>() const;
+//// template QString r_t::field<dynamic_name_key>() const;
 
 #ifndef RECORD_SET_DEFINITION
 #define RECORD_SET_DEFINITION(key_type) \
-	template void Record::field<key_type>(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map const, key_type>::type>::type& value);
+	template void r_t::field<key_type>(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map const, key_type>::type>::type& value);
 #endif // RECORD_SET_DEFINITION
 
 RECORD_SET_DEFINITION(id_key)
@@ -406,54 +406,54 @@ RECORD_SET_DEFINITION(crypt_key)
 RECORD_SET_DEFINITION(has_attach_key)
 RECORD_SET_DEFINITION(attach_size_key)
 
-// template void Record::field<id_key>(const QString& value);
-// template void Record::field<pin_key>(const QString& value);
-// template void Record::field<rating_key>(const QString& value);
-// template void Record::field<name_key>(const QString& value);
-// template void Record::field<author_key>(const QString& value);
-// template void Record::field<home_key>(const QString& value);
-// template void Record::field<url_key>(const QString& value);
-// template void Record::field<tags_key>(const QString& value);
-// template void Record::field<ctime_key>(const QString& value);
-// template void Record::field<dir_key>(const QString& value);
-// template void Record::field<file_key>(const QString& value);
-// template void Record::field<crypt_key>(const QString& value);
-// template void Record::field<has_attach_key>(const QString& value);
-// template void Record::field<attach_size_key>(const QString& value);
-//// template void Record::field<dynamic_name_key>(const QString &value);
+// template void r_t::field<id_key>(const QString& value);
+// template void r_t::field<pin_key>(const QString& value);
+// template void r_t::field<rating_key>(const QString& value);
+// template void r_t::field<name_key>(const QString& value);
+// template void r_t::field<author_key>(const QString& value);
+// template void r_t::field<home_key>(const QString& value);
+// template void r_t::field<url_key>(const QString& value);
+// template void r_t::field<tags_key>(const QString& value);
+// template void r_t::field<ctime_key>(const QString& value);
+// template void r_t::field<dir_key>(const QString& value);
+// template void r_t::field<file_key>(const QString& value);
+// template void r_t::field<crypt_key>(const QString& value);
+// template void r_t::field<has_attach_key>(const QString& value);
+// template void r_t::field<attach_size_key>(const QString& value);
+//// template void r_t::field<dynamic_name_key>(const QString &value);
 
 
-template struct Record::field_read<name_key, crypt_fields_keys>;
-template struct Record::field_write<name_key, crypt_fields_keys>;
-template struct Record::field_read<author_key, crypt_fields_keys>;
-template struct Record::field_write<author_key, crypt_fields_keys>;
-template struct Record::field_read<home_key, crypt_fields_keys>;
-template struct Record::field_write<home_key, crypt_fields_keys>;
-template struct Record::field_read<url_key, crypt_fields_keys>;
-template struct Record::field_write<url_key, crypt_fields_keys>;
-template struct Record::field_read<tags_key, crypt_fields_keys>;
-template struct Record::field_write<tags_key, crypt_fields_keys>;
+template struct r_t::field_read<name_key, crypt_fields_keys>;
+template struct r_t::field_write<name_key, crypt_fields_keys>;
+template struct r_t::field_read<author_key, crypt_fields_keys>;
+template struct r_t::field_write<author_key, crypt_fields_keys>;
+template struct r_t::field_read<home_key, crypt_fields_keys>;
+template struct r_t::field_write<home_key, crypt_fields_keys>;
+template struct r_t::field_read<url_key, crypt_fields_keys>;
+template struct r_t::field_write<url_key, crypt_fields_keys>;
+template struct r_t::field_read<tags_key, crypt_fields_keys>;
+template struct r_t::field_write<tags_key, crypt_fields_keys>;
 
-template struct Record::field_read<id_key, append_to_crypts_keys>;
-template struct Record::field_write<id_key, append_to_crypts_keys>;
-template struct Record::field_read<pin_key, append_to_crypts_keys>;
-template struct Record::field_write<pin_key, append_to_crypts_keys>;
-template struct Record::field_read<rating_key, append_to_crypts_keys>;
-template struct Record::field_write<rating_key, append_to_crypts_keys>;
-template struct Record::field_read<ctime_key, append_to_crypts_keys>;
-template struct Record::field_write<ctime_key, append_to_crypts_keys>;
-template struct Record::field_read<dir_key, append_to_crypts_keys>;
-template struct Record::field_write<dir_key, append_to_crypts_keys>;
-template struct Record::field_read<file_key, append_to_crypts_keys>;
-template struct Record::field_write<file_key, append_to_crypts_keys>;
-template struct Record::field_read<crypt_key, append_to_crypts_keys>;
-template struct Record::field_write<crypt_key, append_to_crypts_keys>;
+template struct r_t::field_read<id_key, append_to_crypts_keys>;
+template struct r_t::field_write<id_key, append_to_crypts_keys>;
+template struct r_t::field_read<pin_key, append_to_crypts_keys>;
+template struct r_t::field_write<pin_key, append_to_crypts_keys>;
+template struct r_t::field_read<rating_key, append_to_crypts_keys>;
+template struct r_t::field_write<rating_key, append_to_crypts_keys>;
+template struct r_t::field_read<ctime_key, append_to_crypts_keys>;
+template struct r_t::field_write<ctime_key, append_to_crypts_keys>;
+template struct r_t::field_read<dir_key, append_to_crypts_keys>;
+template struct r_t::field_write<dir_key, append_to_crypts_keys>;
+template struct r_t::field_read<file_key, append_to_crypts_keys>;
+template struct r_t::field_write<file_key, append_to_crypts_keys>;
+template struct r_t::field_read<crypt_key, append_to_crypts_keys>;
+template struct r_t::field_write<crypt_key, append_to_crypts_keys>;
 
-template struct Record::field_read<has_attach_key, calculable_fields_keys>;
-template struct Record::field_write<has_attach_key, calculable_fields_keys>;
-template struct Record::field_read<attach_size_key, calculable_fields_keys>;
-template struct Record::field_write<attach_size_key, calculable_fields_keys>;
-template struct Record::field_read<dynamic_name_key, calculable_fields_keys>;
-template struct Record::field_write<dynamic_name_key, calculable_fields_keys>;
+template struct r_t::field_read<has_attach_key, calculable_fields_keys>;
+template struct r_t::field_write<has_attach_key, calculable_fields_keys>;
+template struct r_t::field_read<attach_size_key, calculable_fields_keys>;
+template struct r_t::field_write<attach_size_key, calculable_fields_keys>;
+template struct r_t::field_read<dynamic_name_key, calculable_fields_keys>;
+template struct r_t::field_write<dynamic_name_key, calculable_fields_keys>;
 
 #endif // RECORD_DEF

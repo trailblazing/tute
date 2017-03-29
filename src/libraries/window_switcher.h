@@ -9,7 +9,8 @@
 #endif
 
 namespace web {
-class Docker;
+	template <typename>
+	class Docker;
 }
 class EditorDock;
 class Blogger;
@@ -21,8 +22,8 @@ class WindowSwitcher : public QObject {
 	Q_OBJECT
 #endif
 
-	public:
-	explicit WindowSwitcher(QString object_name, QObject *parent = 0);
+    public:
+	explicit WindowSwitcher(QString object_name, QObject* parent = 0);
 
 	void enable(void);
 	void disable(void);
@@ -32,7 +33,7 @@ class WindowSwitcher : public QObject {
 	bool status(void);
 
 	static void record_to_recordtable(
-	    void);  // Используется как callback из редактора MetaEditor
+	    void); // Используется как callback из редактора MetaEditor
 	void record_to_find_in_base(void);
 
 	void recordtable_ro_record_editor(void);
@@ -43,14 +44,14 @@ class WindowSwitcher : public QObject {
 
 	void restore_focus_widget();
 
-	signals:
+    signals:
 
-	public slots:
+    public slots:
 
 	void find_in_base_click(void);
 
-	private:
+    private:
 	bool enableSwitcher;
 };
 
-#endif  // WINDOWSWITCHER_H
+#endif // WINDOWSWITCHER_H

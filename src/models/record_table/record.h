@@ -105,8 +105,8 @@ struct clear_full_fields_map {
 	}
 };
 
-class Record
-    : public boost::intrusive_ref_counter<Record, boost::thread_safe_counter>
+class r_t
+//    : public boost::intrusive_ref_counter<r_t, boost::thread_safe_counter>
 // std::enable_shared_from_this<Record>
 {
 	// К закрытым функциям может иметь доступ объекты приаттаченного файла
@@ -115,14 +115,14 @@ class Record
 
     public:
 	//	Record();
-	Record(full_fields_map field_data_static_map_ = full_fields_map());
+	r_t(full_fields_map field_data_static_map_ = full_fields_map());
 
 #ifdef _with_record_table
 	Record(boost::intrusive_ptr<Record> obj);
 	Record& operator=(const Record& obj);
 #endif
 
-	virtual ~Record();
+	virtual ~r_t();
 
 	// web::WebPage *unique_page();   // const; // {return _page;}
 
@@ -406,7 +406,7 @@ class Record
 #ifndef EXTERN_NATURAL_FIELD_GET_DECLARATION
 
 #define EXTERN_NATURAL_FIELD_GET_DECLARATION(key_type) \
-	extern template typename boost::remove_reference<typename boost::fusion::result_of::at_key<natural_fields_map, key_type>::type>::type Record::natural_field_source<key_type>() const;
+	extern template typename boost::remove_reference<typename boost::fusion::result_of::at_key<natural_fields_map, key_type>::type>::type r_t::natural_field_source<key_type>() const;
 
 #endif // EXTERN_NATURAL_FIELD_GET_DECLARATION
 
@@ -442,7 +442,7 @@ EXTERN_NATURAL_FIELD_GET_DECLARATION(crypt_key)
 #ifndef EXTERN_NATURAL_FIELD_SET_DECLARATION
 
 #define EXTERN_NATURAL_FIELD_SET_DECLARATION(key_type) \
-	extern template void Record::natural_field_source<key_type>(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<natural_fields_map const, key_type>::type>::type& value);
+	extern template void r_t::natural_field_source<key_type>(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<natural_fields_map const, key_type>::type>::type& value);
 
 #endif // EXTERN_NATURAL_FIELD_SET_DECLARATION
 
@@ -477,7 +477,7 @@ EXTERN_NATURAL_FIELD_SET_DECLARATION(crypt_key)
 
 #ifndef EXTERN_RECORD_GET_DECLARATION
 #define EXTERN_RECORD_GET_DECLARATION(key_type) \
-	extern template typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, key_type>::type>::type Record::field<key_type>() const;
+	extern template typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, key_type>::type>::type r_t::field<key_type>() const;
 #endif // EXTERN_RECORD_GET_DECLARATION
 
 EXTERN_RECORD_GET_DECLARATION(id_key)
@@ -513,7 +513,7 @@ EXTERN_RECORD_GET_DECLARATION(attach_size_key)
 
 #ifndef EXTERN_RECORD_SET_DECLARATION
 #define EXTERN_RECORD_SET_DECLARATION(key_type) \
-	extern template void Record::field<key_type>(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map const, key_type>::type>::type& value);
+	extern template void r_t::field<key_type>(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map const, key_type>::type>::type& value);
 #endif // EXTERN_RECORD_SET_DECLARATION
 
 EXTERN_RECORD_SET_DECLARATION(id_key)

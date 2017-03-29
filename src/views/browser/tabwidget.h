@@ -47,6 +47,7 @@
 #include <tuple>
 
 //#include "utility/delegate.h"
+#include "utility/lease.h"
 #include "utility/util.hxx"
 #include <utility>
 
@@ -406,7 +407,14 @@ namespace web {
  */
 
 	// browsertabmanager
-	class TabWidget : public QTabWidget {
+	class TabWidget : public QTabWidget
+#ifdef USE_SIGNAL_CLOSE
+			  ,
+			  public boost::intrusive_ref_counter<TabWidget, boost::thread_safe_counter>,
+			  public sd::renter //<TabWidget>
+#endif                                      //USE_SIGNAL_CLOSE
+
+	{
 #if QT_VERSION == 0x050600
 		W_OBJECT(TabWidget)
 #else
@@ -540,17 +548,17 @@ namespace web {
 		// struct coupler : public std::enable_shared_from_this<coupler> { //
 		// boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>  //
 
-		// TabWidget                       *_tabmanager;
+		// TabWidget                       *_tab_widget;
 		// boost::intrusive_ptr<TreeItem>  _item_link;
 		// WebPage                         *_page_link;
 		// bool                            _make_current;
 
-		// coupler(TabWidget                           *_tabmanager
+		// coupler(TabWidget                           *_tab_widget
 		// , boost::intrusive_ptr<TreeItem>    item_link_
 		// , bool                              make_current_ = true
 		// );
 
-		////                : _tabmanager(_tabmanager), _bounded_item(_bounded_item),
+		////                : _tab_widget(_tab_widget), _bounded_item(_bounded_item),
 		///_bounded_page(nullptr), _make_current(_make_current)
 		////            {
 		//// _bounded_item->record_binder(std::make_shared<CouplerDelegation>(
@@ -693,9 +701,9 @@ namespace web {
 	    private:
 		static const qint32 TabWidgetMagic = 0xaa;
 		ts_t* _tree_screen;
-		Blogger* _blogger;
-		web::Docker* _browser_docker;
-		Browser* _browser;
+		blogger_ref _blogger;
+		web::Docker<web::Browser>* _browser_docker;
+		browser_ref _browser;
 
 		wn_t* _main_window;
 		//		rctrl_t* _rctrl; // RecordScreen        *_record_screen;
@@ -724,12 +732,12 @@ namespace web {
 
 		std::pair<QUrl, bool> _current_download_acceptance;
 		int _previous_index = -1;
-		rs_t* _record_screen;
+		rs_ref _record_screen;
+		//		bool _closed = false;
 
 	    protected:
 		// active_record _active_record;
-		// sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
-		////        sd::method<sd::meta_info<void *const>> _active_r;
+		// sd::_interface<sd::meta_info<void >, WebView *, Record *const> _active;
 		// boost::intrusive_ptr<TreeItem> _shadow_branch_root;
 		// TableModel              *_shadow_source_model;
 		// std::shared_ptr<TableData>  _table_data;
@@ -764,7 +772,7 @@ namespace web {
 
 	// struct ActiveRecordBinder {
 	// PopupWindow         *_the;
-	// TabWidget           *_tabmanager;
+	// TabWidget           *_tab_widget;
 	// QWebEngineProfile   *_profile;
 	// TableController     *_record_controller;
 	// TableController     *_page_controller;
@@ -779,7 +787,7 @@ namespace web {
 	// , TableController *_page_controller
 	// ) :
 	// _the(the)
-	// , _tabmanager(tabmanager)
+	// , _tab_widget(tabmanager)
 	// , _profile(profile)
 	// , _record_controller(_record_controller)
 	// , _page_controller(_page_controller)
@@ -792,7 +800,7 @@ namespace web {
 
 	////            if(!record->unique_page())
 	// return  _view =
-	// new WebView(record, _profile, _tabmanager, _the, _record_controller
+	// new WebView(record, _profile, _tab_widget, _the, _record_controller
 	// , _page_controller
 	// );
 	////                _the->newTab(record, true, _the->_record_controller

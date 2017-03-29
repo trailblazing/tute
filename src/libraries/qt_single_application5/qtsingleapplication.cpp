@@ -144,8 +144,8 @@
 // end from main.cpp
 
 /*!
-    \class QtSingleApplication qtsingleapplication.h
-    \brief The QtSingleApplication class provides an API to detect and
+    \class sapp_t qtsingleapplication.h
+    \brief The sapp_t class provides an API to detect and
     communicate with running instances of an application.
 
     This class allows you to create applications where only one
@@ -160,7 +160,7 @@
     application. You can also provide an explicit identifier string
     that will be compared instead.
 
-    The application should create the QtSingleApplication object early
+    The application should create the sapp_t object early
     in the startup phase, and call isRunning() to find out if another
     instance of this application is already running. If isRunning()
     returns false, it means that no other instance is running, and
@@ -173,7 +173,7 @@
     application receives messages from another instance of the same
     application. When a message is received it might be helpful to the
     user to raise the application so that it becomes visible. To
-    facilitate this, QtSingleApplication provides the
+    facilitate this, sapp_t provides the
     setActivationWindow() function and the activateWindow() slot.
 
     If isRunning() returns true, another instance is already
@@ -188,8 +188,8 @@
     indication that the running instance is frozen.
 
     Here's an example that shows how to convert an existing
-    application to use QtSingleApplication. It is very simple and does
-    not make use of all QtSingleApplication's functionality (see the
+    application to use sapp_t. It is very simple and does
+    not make use of all sapp_t's functionality (see the
     examples for that).
 
     \code
@@ -206,7 +206,7 @@
     // Single instance
     int main(int argc, char **argv)
     {
-        QtSingleApplication app(argc, argv);
+	sapp_t app(argc, argv);
 
         if (app.isRunning())
             return !app.sendMessage(someDataString);
@@ -218,7 +218,7 @@
     }
     \endcode
 
-    Once this QtSingleApplication instance is destroyed (normally when
+    Once this sapp_t instance is destroyed (normally when
     the process exits or crashes), when the user next attempts to run the
     application this instance will not, of course, be encountered. The
     next instance to call isRunning() or sendMessage() will assume the
@@ -422,7 +422,7 @@ void sapp_t::sys_init(char** argv)
 	// Перехват отладочных сообщений
 	set_debug_message_handler();
 
-// QtSingleApplication application(argc, argv);
+// sapp_t application(argc, argv);
 
 //// Do not run another copy    // Не запущен ли другой экземпляр
 // if(application.isRunning() || !application.isTheOnlyBrowser()) {
@@ -463,7 +463,7 @@ void sapp_t::sys_init(char** argv)
 	//// Инициализация переменных, отвечающих за хранилище данных
 	// databaseconfig->init();
 
-	// QtSingleApplication application(argc, argv, globalparameters, appconfig,
+	// sapp_t application(argc, argv, globalparameters, appconfig,
 	// databaseconfig);
 
 	//// Do not run another copy    // Не запущен ли другой экземпляр
@@ -691,7 +691,7 @@ void sapp_t::browsers_shared_info_init()
 	settings.endGroup();
 
 #if defined(Q_OS_OSX)
-	connect(this, &QtSingleApplication::lastWindowClosed, this, &QtSingleApplication::lastWindowClosed);
+	connect(this, &sapp_t::lastWindowClosed, this, &sapp_t::lastWindowClosed);
 #endif
 
 	QTimer::singleShot(0, this, &sapp_t::postLaunch);
@@ -718,7 +718,7 @@ void sapp_t::blog_init()
 		setApplicationVersion(app_version); // QTM_VERSION
 		_isSandbox = false;
 	}
-	_blogger = nullptr;
+	//	_blogger = nullptr;
 
 	connect(this, SIGNAL(aboutToQuit()), this, SLOT(saveRecentFiles()));
 	connect(this, SIGNAL(lastWindowClosed()), this, SLOT(handleLastWindowClosed()));
@@ -874,7 +874,7 @@ void sapp_t::main_window()
 }
 
 /*!
-    Creates a QtSingleApplication object. The application identifier
+    Creates a sapp_t object. The application identifier
     will be QCoreApplication::applicationFilePath(). \a argc, \a
     argv, and \a GUIenabled are passed on to the QAppliation constructor.
 
@@ -913,7 +913,7 @@ sapp_t::sapp_t(int& argc, char** argv,
 }
 
 /*!
-    Creates a QtSingleApplication object with the application
+    Creates a sapp_t object with the application
     identifier \a appId. \a argc and \a argv are passed on to the
     QAppliation constructor.
  */
@@ -944,14 +944,14 @@ sapp_t::sapp_t(const QString& appId, int& argc, char** argv
 }
 
 /*!
-    Creates a QtSingleApplication object. The application identifier
+    Creates a sapp_t object. The application identifier
     will be QCoreApplication::applicationFilePath(). \a argc, \a
     argv, and \a type are passed on to the QAppliation constructor.
  */
 
 // Comment by Xi
 /*
-   QtSingleApplication::QtSingleApplication(int &argc, char **argv, Type type)
+   sapp_t::sapp_t(int &argc, char **argv, Type type)
     : QApplication(argc, argv, type)
    {
     sysInit();
@@ -965,7 +965,7 @@ sapp_t::sapp_t(const QString& appId, int& argc, char** argv
    will be QCoreApplication::applicationFilePath(). \a dpy, \a visual,
    and \a cmap are passed on to the QApplication constructor.
  */
-QtSingleApplication::QtSingleApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE cmap)
+sapp_t::sapp_t(Display* dpy, Qt::HANDLE visual, Qt::HANDLE cmap)
     : QApplication(dpy, visual, cmap)
 {
 	sysInit();
@@ -978,7 +978,7 @@ QtSingleApplication::QtSingleApplication(Display* dpy, Qt::HANDLE visual, Qt::HA
    argv, \a visual, and \a cmap are passed on to the QApplication
    constructor.
  */
-QtSingleApplication::QtSingleApplication(Display* dpy, int& argc, char** argv, Qt::HANDLE visual, Qt::HANDLE cmap)
+sapp_t::sapp_t(Display* dpy, int& argc, char** argv, Qt::HANDLE visual, Qt::HANDLE cmap)
     : QApplication(dpy, argc, argv, visual, cmap)
 {
 	sysInit();
@@ -991,7 +991,7 @@ QtSingleApplication::QtSingleApplication(Display* dpy, int& argc, char** argv, Q
    argv, \a visual, and \a cmap are passed on to the QApplication
    constructor.
  */
-QtSingleApplication::QtSingleApplication(Display* dpy, const QString& appId, int argc, char** argv, Qt::HANDLE visual, Qt::HANDLE cmap)
+sapp_t::sapp_t(Display* dpy, const QString& appId, int argc, char** argv, Qt::HANDLE visual, Qt::HANDLE cmap)
     : QApplication(dpy, argc, argv, visual, cmap)
 {
 	sysInit(appId);
@@ -1017,7 +1017,7 @@ bool sapp_t::isRunning()
 
 /*!
     Tries to send the text \a message to the currently running
-    instance. The QtSingleApplication object in the running instance
+    instance. The sapp_t object in the running instance
     will emit the messageReceived() signal when it receives the
     message.
 
@@ -1104,7 +1104,7 @@ void sapp_t::activateWindow()
 }
 
 /*!
-    \fn void QtSingleApplication::messageReceived(const QString& message)
+    \fn void sapp_t::messageReceived(const QString& message)
 
     This signal is emitted when the current instance receives a \a
     message from another instance of this application.
@@ -1113,7 +1113,7 @@ void sapp_t::activateWindow()
  */
 
 /*!
-    \fn void QtSingleApplication::initialize(bool dummy = true)
+    \fn void sapp_t::initialize(bool dummy = true)
 
     \obsolete
  */
@@ -1181,27 +1181,29 @@ void sapp_t::newLocalSocketConnection()
 			    [&](boost::intrusive_ptr<const i_t> it) -> bool {
 				    return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
 			    }); // instance([&] {return tree_view->source_model();},
-				// tree_view->current_item())->
+			// tree_view->current_item())->
 
 			// boost::intrusive_ptr<RecordIndex> record_index(nullptr);
 
 			// try {
 			boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance(
 			    [&] {
-				    return browser->tabmanager()->record_screen()->record_controller()->source_model();
+				    RecordModel* rm = nullptr;
+				    auto rctrl = browser->tab_widget()->record_screen()->record_ctrl();
+				    if (rctrl)
+					    rm = rctrl->source_model();
+				    return rm;
 			    },
 			    it); // ,
-				 // browser->record_screen()->record_controller()->source_model()->sibling(it)
+				 // browser->record_screen()->record_ctrl()->source_model()->sibling(it)
 			// } catch(std::exception &) {}
 			// if(record_index){
-			browser->bind(record_index)
-			    ->activate(std::bind(&wn_t::find, gl_paras->main_window(),
-				std::placeholders::_1)); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0),
-							 // it);
-							 // }
-							 // else{
-							 // tree_view->index_invoke(tree_view->source_model()->index(it));
-							 // }
+			browser->bind(record_index)->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1)); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0),
+																       // it);
+																       // }
+																       // else{
+																       // tree_view->index_invoke(tree_view->source_model()->index(it));
+																       // }
 		} else {
 			// boost::intrusive_ptr<TreeIndex> tree_index;
 			// try {tree_index = new TreeIndex([&] {return tree_view->source_model();
@@ -1257,7 +1259,7 @@ sapp_t::~sapp_t()
 }
 
 // #if defined(Q_OS_OSX)
-// void QtSingleApplication::lastWindowClosed()
+// void sapp_t::lastWindowClosed()
 // {
 // clean();
 // BrowserWindow *mw = globalParameters.getBrowserView()->getBrowserWindow();
@@ -1267,14 +1269,14 @@ sapp_t::~sapp_t()
 // }
 // #endif
 
-// QtSingleApplication *QtSingleApplication::instance()
+// sapp_t *sapp_t::instance()
 // {
-// return (static_cast<QtSingleApplication *>(QCoreApplication::instance()));
+// return (static_cast<sapp_t *>(QCoreApplication::instance()));
 // }
 
 #if defined(Q_OS_OSX)
 #include <QtWidgets/QMessageBox>
-void QtSingleApplication::quitBrowser()
+void sapp_t::quitBrowser()
 {
 	clean();
 	int tabCount = 0;
@@ -1318,8 +1320,7 @@ void sapp_t::postLaunch()
 
 	loadSettings();
 	// newMainWindow() needs to be called in main() for this to happen
-	if (gl_paras->main_window()->record_screens().size() >
-	    0) { // _mainWindows.count()
+	if (gl_paras->main_window()->browsers().size() > 0) { // _mainWindows.count()
 		QStringList args = QCoreApplication::arguments();
 		// web::Browser *browser =
 		// _globalparameters.entrance()->activated_browser();
@@ -1444,7 +1445,7 @@ void sapp_t::loadSettings()
 	settings.endGroup();
 }
 
-// QList<BrowserWindow *> QtSingleApplication::mainWindows()
+// QList<BrowserWindow *> sapp_t::mainWindows()
 // {
 // clean();
 // QList<BrowserWindow *> list;
@@ -1455,7 +1456,7 @@ void sapp_t::loadSettings()
 // return list;
 // }
 
-// void QtSingleApplication::clean()
+// void sapp_t::clean()
 // {
 //// cleanup any deleted main windows first
 // for(int i = _mainWindows.count() - 1; i >= 0; --i)
@@ -1476,20 +1477,21 @@ void sapp_t::saveSession()
 		QDataStream stream(&buffer);
 		buffer.open(QIODevice::ReadWrite);
 
-		auto _browsers = [&] {
-			set<web::Browser*> bs;
-			for (auto rs : gl_paras->main_window()->record_screens())
-				bs.insert(rs->browser());
-			return bs;
-		}();
+		auto _browsers = gl_paras->main_window()->browsers();
+		//                    [&] {
+		//                            set<sd::intrusive_ptr<web::Browser>> bs;
+		//                            for (auto rs : gl_paras->main_window()->record_screens())
+		//                                    bs.insert(rs->browser());
+		//                            return bs;
+		//                    }();
 		uint count_topics = static_cast<uint>(_browsers.size());
 
 		stream << count_topics; // static_cast<uint>(_browsers.size());
 		for (auto& browser : _browsers) {
 			//			browser->save();//recursive calling
-			auto blogger = browser->blogger();
-			if (blogger) {
-				auto browser_topic = blogger->topic();
+			auto blogger_ = browser->blogger();
+			if (blogger_) {
+				auto browser_topic = blogger_->topic();
 				if (browser_topic != gl_para::_default_topic && browser_topic != "")
 					stream << browser_topic; //get_state();
 			}
@@ -1502,6 +1504,11 @@ void sapp_t::saveSession()
 bool sapp_t::canRestoreSession() const
 {
 	return !_last_session.isEmpty();
+}
+
+bool sapp_t::privateBrowsing() const
+{
+	return _private_browsing;
 }
 
 void sapp_t::restoreLastSession()
@@ -1532,7 +1539,7 @@ void sapp_t::restoreLastSession()
 	}
 }
 
-// bool QtSingleApplication::isTheOnlyBrowser() const
+// bool sapp_t::isTheOnlyBrowser() const
 // {
 // return (_localserver != 0);
 // }
@@ -1546,7 +1553,7 @@ void sapp_t::installTranslator(const QString& name)
 }
 
 #if defined(Q_OS_OSX)
-bool QtSingleApplication::event(QEvent* event)
+bool sapp_t::event(QEvent* event)
 {
 	switch (event->type()) {
 	case QEvent::ApplicationActivate: {
@@ -1573,12 +1580,12 @@ bool QtSingleApplication::event(QEvent* event)
 
 #endif
 
-// void QtSingleApplication::openUrl(const QUrl &url)
+// void sapp_t::openUrl(const QUrl &url)
 // {
 // mainWindow()->loadPage(url.toString());
 // }
 
-// BrowserWindow *QtSingleApplication::newMainWindow()
+// BrowserWindow *sapp_t::newMainWindow()
 // {
 ////BrowserView *browser_view = globalParameters.getBrowserView();
 ////BrowserWindow *browser = nullptr;
@@ -1597,7 +1604,7 @@ bool QtSingleApplication::event(QEvent* event)
 // return browser;
 // }
 
-// BrowserWindow *QtSingleApplication::mainWindow()
+// BrowserWindow *sapp_t::mainWindow()
 // {
 // clean();
 
@@ -1620,7 +1627,7 @@ bool QtSingleApplication::event(QEvent* event)
 // return _mainWindows[0];
 // }
 
-// void QtSingleApplication::newLocalSocketConnection()
+// void sapp_t::newLocalSocketConnection()
 // {
 // QLocalSocket *socket = _localserver->nextPendingConnection();
 
@@ -1735,25 +1742,26 @@ void sapp_t::setPrivateBrowsing(bool privateBrowsing)
 	if (_private_browsing == privateBrowsing)
 		return;
 	_private_browsing = privateBrowsing;
-	auto browsers = [&] {
-		set<web::Browser*> bs;
-		for (auto rs : gl_paras->main_window()->record_screens())
-			bs.insert(rs->browser());
-		return bs;
-	}();
+	auto browsers_ = gl_paras->main_window()->browsers();
+	//        [&] {
+	//                set<sd::intrusive_ptr<web::Browser>> bs;
+	//                for (auto rs : gl_paras->main_window()->record_screens())
+	//                        bs.insert(rs->browser());
+	//                return bs;
+	//        }();
 	if (privateBrowsing) {
 		if (!_private_profile)
 			_private_profile = new web::Profile(profile_storage_name,
 			    this); // new QWebEngineProfile(this);
-		for (auto& browser : browsers)
-			browser->tabWidget()->setProfile(_private_profile);
+		for (auto& browser : browsers_)
+			browser->tab_widget()->setProfile(_private_profile);
 	} else {
-		for (auto& browser : browsers) {
-			browser->tabWidget()->setProfile(
+		for (auto& browser : browsers_) {
+			browser->tab_widget()->setProfile(
 			    _profile // QWebEngineProfile::defaultProfile()
 			    );
 			browser->lastsearch() = QString::null;
-			browser->tabWidget()->clear();
+			browser->tab_widget()->clear();
 		}
 	}
 	emit privateBrowsingChanged(privateBrowsing);
@@ -1863,22 +1871,20 @@ void sapp_t::setupRecentFiles()
 	QSettings settings(orgString, applicationName());
 	// qDebug() << "Settings path:" << settings.fileName();
 	int i;
-	RecentFile currentRF;
+	auto currentRF = std::make_shared<app::RecentFile>();
 	QString crf;
 
 	settings.beginGroup("recentFiles");
 	for (i = 0; i < 20; i++) {
 		crf = settings.value(QString("recentFile%1").arg(i), "").toString();
 		// qDebug() << "Recent file:" << crf;
-		/*    if( crf.isEmpty() )
-                                                          qDebug() << QString(
-       "recentFile%1" ).arg( i ) << "is empty"; */
-		currentRF.filename =
+		//		    if( crf.isEmpty() )qDebug() << QString("recentFile%1" ).arg( i ) << "is empty";
+		currentRF->filename =
 		    crf.section("filename:", 1, 1).section(" ##title:", 0, 0);
-		currentRF.title = crf.section(" ##title:", 1, 1);
-		if (currentRF.filename.isEmpty())
+		currentRF->title = crf.section(" ##title:", 1, 1);
+		if (currentRF->filename.isEmpty())
 			break;
-		_recentFiles.append(currentRF);
+		_recent_files.append(currentRF);
 		// qDebug() << "Added one recent file";
 	}
 }
@@ -1887,11 +1893,11 @@ QStringList sapp_t::titles()
 {
 	int i;
 	QStringList returnValue;
-	for (i = 0; i < _recentFiles.count(); ++i) {
-		if (_recentFiles.value(i).title.isEmpty())
+	for (i = 0; i < _recent_files.count(); ++i) {
+		if (_recent_files.value(i)->title.isEmpty())
 			returnValue << QString();
 		else
-			returnValue << _recentFiles.value(i).title;
+			returnValue << _recent_files.value(i)->title;
 	}
 	return returnValue;
 }
@@ -1900,13 +1906,18 @@ QStringList sapp_t::filenames()
 {
 	int i;
 	QStringList returnValue;
-	for (i = 0; i < _recentFiles.count(); ++i) {
-		if (_recentFiles.value(i).filename.isEmpty())
+	for (i = 0; i < _recent_files.count(); ++i) {
+		if (_recent_files.value(i)->filename.isEmpty())
 			returnValue << QString();
 		else
-			returnValue << _recentFiles.value(i).filename;
+			returnValue << _recent_files.value(i)->filename;
 	}
 	return returnValue;
+}
+
+Blogger* sapp_t::blogger()
+{
+	return _blogger;
 }
 
 void sapp_t::deleteSandbox()
@@ -1944,58 +1955,64 @@ void sapp_t::deleteSandbox()
 		sandboxDir.remove(cqtFile);
 }
 
-QList<sapp_t::RecentFile> sapp_t::recentFiles()
+bool sapp_t::isSandbox()
 {
-	return _recentFiles;
+	return _isSandbox;
 }
 
-sapp_t::RecentFile sapp_t::getRecentFile(int index)
+QList<std::shared_ptr<app::RecentFile>> sapp_t::recentFiles()
 {
-	RecentFile return_value;
-	if (index >= _recentFiles.count()) {
-		return_value.title = QString();
-		return_value.filename = QString();
+	return _recent_files;
+}
+
+std::shared_ptr<app::RecentFile> sapp_t::getRecentFile(int index)
+{
+	std::shared_ptr<app::RecentFile> return_value = std::make_shared<app::RecentFile>();
+	if (index >= _recent_files.count()) {
+		//		return_value.title = QString();
+		//		return_value.filename = QString();
+
 	} else
-		return_value = _recentFiles.at(index);
+		return_value = _recent_files.at(index);
 	return return_value;
 }
 
 void sapp_t::set_recent_files(const QStringList& titles, const QStringList& filenames)
 {
 	int i;
-	QList<RecentFile> rfs;
-	RecentFile thisFile;
+	QList<std::shared_ptr<app::RecentFile>> rfs;
+	auto thisFile = std::make_shared<app::RecentFile>();
 	for (i = 0; i < titles.count() && i < 20; ++i) {
 		if (titles.at(i).isEmpty())
-			thisFile.title = QString();
+			thisFile->title = QString();
 		else
-			thisFile.title = titles.at(i);
+			thisFile->title = titles.at(i);
 		if (filenames.at(i).isEmpty())
-			thisFile.filename = QString();
+			thisFile->filename = QString();
 		else
-			thisFile.filename = filenames.at(i);
+			thisFile->filename = filenames.at(i);
 		rfs << thisFile;
 	}
-	_recentFiles = rfs;
+	_recent_files = rfs;
 	emit recent_files_updated(titles, filenames);
 }
 
 void sapp_t::add_recent_file(const QString& title, const QString& filename)
 {
-	RecentFile thisFile;
+	std::shared_ptr<app::RecentFile> thisFile = std::make_shared<app::RecentFile>();
 	int i;
 
-	thisFile.title = title;
-	thisFile.filename = filename;
+	thisFile->title = title;
+	thisFile->filename = filename;
 	for (i = 0; i < 20; ++i) {
-		if (i == _recentFiles.count())
+		if (i == _recent_files.count())
 			break;
-		if (_recentFiles.value(i).filename == filename)
-			_recentFiles.removeAt(i);
+		if (_recent_files.value(i)->filename == filename)
+			_recent_files.removeAt(i);
 	}
-	_recentFiles.prepend(thisFile);
+	_recent_files.prepend(thisFile);
 
-	emit recent_files_updated(_recentFiles);
+	emit recent_files_updated(_recent_files);
 }
 
 void sapp_t::saveAll()
@@ -2012,7 +2029,7 @@ void sapp_t::saveAll()
 void sapp_t::blogger(Blogger* blogger_)
 {
 #ifdef Q_OS_MAC
-//	emit editing_win_changed(blogger_);
+//	emit blogger_changed(blogger_);
 #endif
 	_blogger = blogger_;
 	// emit editing_win_changed(ew);//recursively
@@ -2024,8 +2041,8 @@ void sapp_t::saveRecentFiles()
 	QSettings settings;
 
 	settings.beginGroup("recentFiles");
-	for (i = 0; i < 20; ++i) {
-		settings.setValue(QString("recentFile%1").arg(i), QString("filename:%1 ##title:%2").arg(_recentFiles.value(i).filename).arg(_recentFiles.value(i).title));
+	for (i = 0; i < _recent_files.size(); ++i) {
+		settings.setValue(QString("recentFile%1").arg(i), QString("filename:%1 ##title:%2").arg(_recent_files.value(i)->filename).arg(_recent_files.value(i)->title));
 	}
 }
 
@@ -2049,7 +2066,7 @@ void sapp_t::handleWindowChange(QWidget* oldW, QWidget* newW)
 
 void sapp_t::handleLastWindowClosed()
 {
-	_blogger = nullptr;
+	if (_blogger) _blogger->close_trigger_from_others()(nullptr); //if (_blogger) _blogger->close_requested_from_others(nullptr); //	_blogger = nullptr;
 }
 
 #endif

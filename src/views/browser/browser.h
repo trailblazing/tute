@@ -63,6 +63,7 @@
 #include "libraries/global_parameters.h"
 #include "models/app_config/app_config.h"
 #include "models/tree/tree_model.h"
+#include "utility/lease.h"
 #include "views/tree/tree_screen.h"
 
 #if QT_VERSION == 0x050600
@@ -97,6 +98,7 @@ namespace web {
 	class TabWidget;
 	class ToolbarSearch;
 	class WebView;
+	template <typename>
 	class Docker;
 	class HistoryMenu;
 	class BookmarksMenu;
@@ -127,7 +129,12 @@ namespace web {
             Handles the tab widget and all the actions
  */
 	class Browser : public QMainWindow
-	// , public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>
+#ifdef USE_SIGNAL_CLOSE
+			,
+			public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>,
+			public sd::renter //<Browser>
+#endif                                    //USE_SIGNAL_CLOSE
+
 	{
 #if QT_VERSION == 0x050600
 		W_OBJECT(Browser)
@@ -192,10 +199,10 @@ namespace web {
 		// typedef Binder::item_helper bounded_item_helper;
 		// typedef Binder::page_helper bounded_page_helper;
 
-		TabWidget* tabWidget();
-		TabWidget* tabWidget() const;
-		TabWidget* tabmanager();
-		TabWidget* tabmanager() const;
+		web::TabWidget* tab_widget();
+		web::TabWidget* tab_widget() const;
+		//		sd::intrusive_ptr<TabWidget> tabWidget();
+		//		sd::intrusive_ptr<TabWidget> tabWidget() const;
 
 		WebView* currentTab() const;
 		// move into save()
@@ -217,35 +224,40 @@ namespace web {
 		// QStatusBar *status_bar();
 		// QStatusBar *status_bar() const;
 		boost::intrusive_ptr<i_t> bind(boost::intrusive_ptr<RecordIndex> record_index, bool make_current = true);
-		// boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem>
-		// item);
-		rs_t* record_screen();
+// boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem>
+// item);
+#ifdef USE_SIGNAL_CLOSE
+		sd::intrusive_ptr<rs_t>
+#else
+		rs_t*
+#endif //USE_SIGNAL_CLOSE
+		record_screen();
 		//		web::Docker *browser_docker();
 		void init_configuration(std::unique_ptr<QSettings>&& conf);
 		void configuration_full_name(const QString& conf_name);
-		static std::tuple<qint32, qint32, QString, QString, QSize, bool, bool, bool,
-		    bool, std::tuple<qint32, qint32, QStringList, QString>>
-		state(const QByteArray& state_);
+		static std::tuple<qint32, qint32, QString, QString, QSize, bool, bool, bool, bool, std::tuple<qint32, qint32, QStringList, QString>> state(const QByteArray& state_);
 		Blogger* blogger();
+		//		void test();
 	    public slots:
 		// void loadPage(const QString &url) = delete;
 		void slotHome();
 		void updateToolbarActionText(
 		    bool visible); // void updateToolbarActionText(bool visible);
 
-		void on_blogger_close_requested();
-		void on_record_screen_close_requested();
+		//		void on_blogger_close_requested();
+		//		void on_record_screen_close_requested();
 		void save();
 
 		bool restore_state(const QString& new_topic_);
 		void on_topic_changed(const QString& original_topic_, const QString& topic_, bool append_mode = false);
 		void init_main_menu();
-//		void reset_find_screen_navigater();
+		//		void reset_find_screen_navigater();
 
 	    protected:
 		void closeEvent(QCloseEvent* event);
 		void resizeEvent(QResizeEvent*);
 		void focusOutEvent(QFocusEvent* event);
+		void showEvent(QShowEvent* event);
 	    private slots:
 
 
@@ -371,16 +383,19 @@ namespace web {
 		bool _webattributeenabled;
 		QWidget* _centralwidget;
 		QVBoxLayout* _layout;
-		Blogger* _blogger;
+		blogger_ref _blogger;
 
-		TabWidget* _tabmanager;
-		//		rs_t* _record_screen;
+		//		sd::intrusive_ptr<rs_t> _record_screen;
+		tabwidget_ref _tab_widget;
 
-		web::Docker* _browser_docker;
+
+		web::Docker<web::Browser>* _browser_docker;
 		QString _configuration_full_name = "";
 		std::unique_ptr<QSettings> _configuration;
+		//		bool _closed = false;
 		friend class sapp_t; // QtSingleApplication;
-		friend class web::Docker;
+
+		friend class web::Docker<web::Browser>;
 		friend class WebView;
 		friend class ::Blogger;
 		void init_history_menu();
@@ -394,9 +409,14 @@ namespace web {
 		void init_window_menu();
 		void setup_navigate();
 	    signals:
-		void close_request(QWidget*);
+		//		void close_request(QWidget*);
 	    protected slots:
 		bool restore_state(const QByteArray& state);
+
+	    protected:
+#ifndef USE_SIGNAL_CLOSE
+		boost::signals2::signal<void(Browser*)> _prepended;
+#endif // NO USE_SIGNAL_CLOSE
 	};
 
 	template <>

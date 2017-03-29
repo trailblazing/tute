@@ -10,7 +10,7 @@
 
 extern bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
 
-Binder::Binder(item_interface_set _item_linker_set, page_interface_set _page_linker_set, item_interface _item_linker, page_interface _page_linker, bind_interface _bind_helper, activate_interface _activate_helper, binder_type_interface _binder_type)
+Binder::Binder(item_set _item_linker_set, page_set _page_linker_set, item_get _item_linker, page_get _page_linker, bind_set _bind_helper, activate_interface _activate_helper, binder_type_interface _binder_type)
     : _item_linker_set(_item_linker_set)
     , _page_linker_set(_page_linker_set)
     , _host_linker(_item_linker)
@@ -446,10 +446,10 @@ web::WebPage *Binder::page() const {
 	//browser->tabmanager()->currentWebView()->page()->binder()->host();
 
 	//		////	record_previous_item =
-	//browser->record_screen()->record_controller()->source_model()->item(pos_source(browser->record_screen()->record_controller()->view()->previous_index().row()));
+	//browser->record_screen()->record_ctrl()->source_model()->item(pos_source(browser->record_screen()->record_ctrl()->view()->previous_index().row()));
 	//		boost::intrusive_ptr<RecordIndex> record_index =
 	//RecordIndex::instance([&] {return
-	//browser->tabmanager()->record_controller()->source_model();}, _host); // ,
+	//browser->tabmanager()->record_ctrl()->source_model();}, _host); // ,
 	//record_previous_item
 
 	//		auto browser_bind_activate

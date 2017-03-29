@@ -34,6 +34,7 @@
 #include "libraries/flat_control.h"
 #include "libraries/flat_control.h"
 #include "libraries/global_parameters.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "libraries/qtm/blogger.h"
 #include "models/app_config/app_config.h"
 #include "models/record_table/items_flat.h"
@@ -769,14 +770,10 @@ boost::intrusive_ptr<i_t> FindScreen::find_start(void)
 		// boost::intrusive_ptr<TreeItem> _parent_item
 		// resultset_item;
 		// web::Entrance *_entrance = globalparameters.entrance();
-		for (auto& browser : [] {
-			     set<web::Browser*> bs;
-			     for (auto rs : gl_paras->main_window()->record_screens()) bs.insert(rs->browser());
-			     return bs;
-		     }()) {
-			auto _tabmanager = browser->tabmanager();
-			for (int i = 0; i < _tabmanager->count(); i++) {
-				_start_item << _tabmanager->webView(i)->page()->host();
+		for (auto& browser : gl_paras->main_window()->browsers()) {
+			auto _tab_widget = browser->tab_widget();
+			for (int i = 0; i < _tab_widget->count(); i++) {
+				_start_item << _tab_widget->webView(i)->page()->host();
 				// _start_item->child_rent(item);
 			}
 		}
@@ -1163,7 +1160,7 @@ boost::intrusive_ptr<i_t>& FindScreen::find_recursive(boost::intrusive_ptr<i_t>&
 							// =
 							// globalparameters.main_window()->vtab_record()->activated_browser();
 							// auto					record_controller
-							// = browser->record_screen()->record_controller();
+							// = browser->record_screen()->record_ctrl();
 							// auto					tab_brother
 							// = record_controller->view()->current_item();
 							// boost::intrusive_ptr<RecordIndex>	record_index

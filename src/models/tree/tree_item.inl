@@ -9,12 +9,12 @@ class i_t;
 
 template <typename field_key_type>
 typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map, field_key_type>::type>::type i_t::field() const {
-	return Record::field<field_key_type>();
+	return r_t::field<field_key_type>();
 }
 
 template <typename field_key_type>
 void i_t::field(const typename boost::remove_reference<typename boost::fusion::result_of::at_key<full_fields_map const, field_key_type>::type>::type &value) {
-	Record::field<field_key_type>(value);
+	r_t::field<field_key_type>(value);
 }
 
 #ifndef DEFINITION_GET_FIELD

@@ -120,8 +120,8 @@ add_action(bar_type* bar, parent_type* parent, QString title, QString toolTip,
 		    bar, return_value); // bar->addAction(return_value);
 		connect_action<return_type, receiver_type> c(
 		    return_value, receiver, slot); // if(receiver) connect(return_value,
-		// SIGNAL(triggered(bool)), receiver,
-		// slot);
+						   // SIGNAL(triggered(bool)), receiver,
+						   // slot);
 	}
 	return return_value;
 }
@@ -161,8 +161,8 @@ FlatComboBox* add_action(
 		    bar, return_value); // bar->addAction(return_value);
 		connect_action<return_type, receiver_type> c(
 		    return_value, receiver, slot); // if(receiver) connect(return_value,
-		// SIGNAL(triggered(bool)), receiver,
-		// slot);
+						   // SIGNAL(triggered(bool)), receiver,
+						   // slot);
 	}
 	return return_value;
 }
@@ -242,8 +242,8 @@ FlatFontComboBox* add_action(
 		    bar, return_value); // bar->addAction(return_value);
 		connect_action<return_type, receiver_type> c(
 		    return_value, receiver, slot); // if(receiver) connect(return_value,
-		// SIGNAL(triggered(bool)), receiver,
-		// slot);
+						   // SIGNAL(triggered(bool)), receiver,
+						   // slot);
 	}
 	return return_value;
 }

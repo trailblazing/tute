@@ -73,19 +73,19 @@ class FindScreen : public QWidget
 
 	FlatToolButton* findstartbutton();
 
-//	QAction* historyback() { return _historyback; }
-//	QAction* historyforward() { return _historyforward; }
-//	QAction* historyhome() { return _historyhome; }
-//	QAction* stopreload() { return _stopreload; }
-//	QAction* stop() { return _stop; }
-//	QAction* reload() { return _reload; }
+	//	QAction* historyback() { return _historyback; }
+	//	QAction* historyforward() { return _historyforward; }
+	//	QAction* historyhome() { return _historyhome; }
+	//	QAction* stopreload() { return _stopreload; }
+	//	QAction* stop() { return _stop; }
+	//	QAction* reload() { return _reload; }
 
-//	void historyback(QAction* hb);
-//	void historyforward(QAction* hf);
-//	void historyhome(QAction* hh);
-//	void stopreload(QAction* sl);
-//	void stop(QAction* st);
-//	void reload(QAction* rl);
+	//	void historyback(QAction* hb);
+	//	void historyforward(QAction* hf);
+	//	void historyhome(QAction* hh);
+	//	void stopreload(QAction* sl);
+	//	void stop(QAction* st);
+	//	void reload(QAction* rl);
 
 	web::ChaseWidget* chasewidget();
 
@@ -93,9 +93,9 @@ class FindScreen : public QWidget
 	// void remove_child(const int row);
 	void adjust_size();
 
-	// std::shared_ptr<sd::_interface<sd::meta_info<void *>, RecordController *>>
+	// std::shared_ptr<sd::_interface<sd::meta_info<void >, RecordController *>>
 	// reocrd_controller;  // for entrance
-	// std::shared_ptr<sd::_interface<sd::meta_info<void *>, web::TabWidget *>>
+	// std::shared_ptr<sd::_interface<sd::meta_info<void >, web::TabWidget *>>
 	// tabmanager;         // for entrance
 
     public slots:
@@ -105,8 +105,9 @@ class FindScreen : public QWidget
 	boost::intrusive_ptr<i_t> find_clicked(void);
 	void find_text(QString text);
 
-	void replace_navigater(QToolBar *nv);
-protected:
+	void replace_navigater(QToolBar* nv);
+
+    protected:
 	virtual void resizeEvent(QResizeEvent* e);
     private slots:
 

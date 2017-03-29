@@ -18,7 +18,7 @@
 // #include "libraries/GlobalParameters.h"
 
 // class coupler;
-class Record;
+class r_t;
 class vector_t;
 class i_t;
 class tkm_t;
@@ -49,12 +49,12 @@ namespace web {
 	class Browser;
 }
 
-// TreeItem = {item |record + items }
+// i_t = {item |record + items }
 // Record = {record | { id, name, url, dir,file, home, pin ...} }
-// ItemsFlat = { item[i] | i = 0,1,2,3 ... }
+// vector_t = { item[i] | i = 0,1,2,3 ... }
 class i_t // : public std::enable_shared_from_this<TreeItem>
-    :     // boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>
-      public Record,
+    : public boost::intrusive_ref_counter<i_t, boost::thread_safe_counter>,
+      public r_t,
       public vector_t {
     public:
 	// typedef typename Binder::bind_interface        bind_interface;

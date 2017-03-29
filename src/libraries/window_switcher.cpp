@@ -87,18 +87,17 @@ void WindowSwitcher::tree_to_record_screen(void)
 			// auto	view		=
 			// globalparameters.entrance()->find([&](boost::intrusive_ptr<const
 			// Binder> b){return b == item->binder();});
-			rs_t* _record_screen =
-			    item->page()->tabmanager()->browser()->record_screen();
-			; // item->page()->view()->record_controller()->tabmanager()->browser()->record_screen();
-			QWidget* object = static_cast<QWidget*>(
-			    _record_screen); // globalparameters.record_screens()[0]
-			// temporary setting
-			object->show();
-			appconfig->focus_widget(object->objectName());
+			auto _record_screen = item->page()->tabmanager()->browser()->record_screen();
+			if (_record_screen) {
+				// item->page()->view()->record_ctrl()->tabmanager()->browser()->record_screen();
+				QWidget* object = static_cast<QWidget*>(&*_record_screen); // globalparameters.record_screens()[0]
+				// temporary setting
+				object->show();
+				appconfig->focus_widget(object->objectName());
 
-			gl_paras->vtab_record()->setCurrentWidget(
-			    _record_screen); // globalparameters.record_screens()[0]
-			// temporary setting
+				gl_paras->vtab_record()->setCurrentWidget(&*_record_screen); // globalparameters.record_screens()[0]
+											     // temporary setting
+			}
 		}
 	}
 }
@@ -130,20 +129,18 @@ void WindowSwitcher::record_to_recordtable(void)
 	if (_index.isValid()) {
 		auto item = gl_paras->tree_screen()->view()->source_model()->child(_index);
 		if (item != gl_paras->tree_screen()->view()->source_model()->root_item()) {
-			rs_t* _record_screen =
-			    item->page()->tabmanager()->browser()->record_screen();
-			QWidget* object =
-			    static_cast<QWidget*>(
-				_record_screen); // temporary setting
-						 // // globalparameters.record_screens()[0]
+			auto _record_screen = item->page()->tabmanager()->browser()->record_screen();
+			if (_record_screen) {
+				QWidget* object = static_cast<QWidget*>(&*_record_screen); // temporary setting
+											   // // globalparameters.record_screens()[0]
 
-			object->show();
+				object->show();
 
-			gl_paras->vtab_record()->setCurrentWidget(
-			    _record_screen); // temporary setting		//
-					     // globalparameters.record_screens()[0]
+				gl_paras->vtab_record()->setCurrentWidget(&*_record_screen); // temporary setting		//
+											     // globalparameters.record_screens()[0]
 
-			appconfig->focus_widget(object->objectName());
+				appconfig->focus_widget(object->objectName());
+			}
 		}
 	}
 }
@@ -252,24 +249,22 @@ void WindowSwitcher::restore_focus_widget()
 			    gl_paras->tree_screen()->view()->source_model()->child(_index);
 			if (item !=
 			    gl_paras->tree_screen()->view()->source_model()->root_item()) {
-				rs_t* _record_screen =
-				    item->page()->tabmanager()->browser()->record_screen();
+				auto _record_screen = item->page()->tabmanager()->browser()->record_screen();
+				if (_record_screen) {
+					QWidget* object = static_cast<QWidget*>(&*_record_screen); // globalparameters.record_screens()[0]
+					// temporary setting
+					object->show();
 
-				QWidget* object = static_cast<QWidget*>(
-				    _record_screen); // globalparameters.record_screens()[0]
-				// temporary setting
-				object->show();
+					gl_paras->vtab_record()->setCurrentWidget(&*_record_screen); // globalparameters.record_screens()[0]
+					// temporary setting
 
-				gl_paras->vtab_record()->setCurrentWidget(
-				    _record_screen); // globalparameters.record_screens()[0]
-				// temporary setting
+					appconfig->focus_widget(object->objectName());
 
-				appconfig->focus_widget(object->objectName());
+					// for(auto &i : globalparameters.record_screens())i->show();
 
-				// for(auto &i : globalparameters.record_screens())i->show();
-
-				// for(auto &i : globalparameters.record_screens())i->setFocus(); //
-				// temporary setting
+					// for(auto &i : globalparameters.record_screens())i->setFocus(); //
+					// temporary setting
+				}
 			}
 		}
 		return;

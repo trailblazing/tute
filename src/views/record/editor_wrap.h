@@ -35,7 +35,7 @@ class QGridLayout;
 class QScrollArea;
 class QSplitter;
 class AttachTableScreen;
-class Record;
+class r_t;
 class i_t;
 class FindScreen;
 class RecordModel;
@@ -88,8 +88,7 @@ class EditorWrap : public Editor {
 #endif
 
 	    public
-	    : EditorWrap(
-	          FindScreen *find_screen, Blogger *editing_win,
+	    : EditorWrap(FindScreen *find_screen, Blogger *editing_win,
 	          std::shared_ptr<QSettings> topic_editor_config_,
 	          QStringList hide_editor_tools_ = appconfig->hide_editor_tools(),
 	          QStackedWidget *main_stack_ = nullptr, QString object_name = "");
@@ -278,7 +277,7 @@ class EditorWrap : public Editor {
 	// QWidget *_hidetitlebar;
 	FindScreen *_find_screen;
 	QStackedWidget *_main_stack;
-	Blogger *_blog;
+	Blogger *_blogger;
 };
 
 #endif /* _METAEDITOR_H_ */

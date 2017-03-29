@@ -119,7 +119,7 @@ namespace web {
 												  // this).detach();});	//
 
 		connect(this, &SearchLineEdit::textChanged, _findtext, [&](const QString& text) { _findtext->setText(text); });
-		// connect(this, &ToolbarSearch::returnPressed, _tabmanager,
+		// connect(this, &ToolbarSearch::returnPressed, _tab_widget,
 		// &TabManager::lineEditReturnPressed);
 		connect(this, &ToolbarSearch::return_pressed, _findtext, &QLineEdit::returnPressed);
 
@@ -165,7 +165,7 @@ namespace web {
 			auto current_item = tree_view->current_item();
 			boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::require_treeindex([&] { return tree_view->source_model(); }, current_item);
 			//		auto topic = Blogger::purify_topic(_findtext->text());
-			auto browser = gl_paras->main_window()->browser(search_text);
+			auto browser_ = gl_paras->main_window()->browser(search_text);
 			if (0 >= result_item->count_direct()) {
 				QUrl url = QUrl(search_text);
 				url_value real_url = url_value(search_text);
@@ -208,7 +208,7 @@ namespace web {
 						    [&](boost::intrusive_ptr<const i_t> it_) -> bool {
 							    return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
 						    },
-						    browser);
+						    browser_);
 						if (ti)
 							ti->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
 						assert(_lineedits);
@@ -263,7 +263,7 @@ namespace web {
 						    [&](boost::intrusive_ptr<const i_t> it_) -> bool {
 							    return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url_) || url_equal(it_->field<url_key>(), real_url_);
 						    },
-						    browser);
+						    browser_);
 						if (ti)
 							ti->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
 					}
@@ -313,58 +313,65 @@ namespace web {
 				// auto browser =
 				// gl_paras->main_window()->new_editing_window(_findtext->text())->record_screen()->browser();//
 				// activated_browser();
-				auto ctrl = browser->tabmanager()->record_screen()->record_controller();
-				auto last = ctrl->source_model()->item(pos_source(ctrl->source_model()->count() - 1));
-				// auto	current_item_	= ctrl->view()->current_item();	//
-				// source_model()->item(pos_source(0));
-				////	    auto	child_linkers		=
-				///result_item->child_linkers();
-				// auto _total_progress_counter = 0;
-				for (auto it : child_items) { // for(auto il :
-					// result_item->child_linkers()){//	// move
-					// to search result
-					// auto it = il->host();
-					if (!ctrl->source_model()->item(
-						[&](const id_value id) { return id == it->id(); })) {
-						boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return ctrl->source_model(); }, it, last); // current_item_
-						last = it;                                                                                                              // current_item_ = it;	//
-						// if(record_index){
-						// if(  (candidate->parent() != _session_root_item->parent())		//
-						// _current_item->parent())
-						// && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const
-						// Linker> il){return il == candidate->linker();})
-						// ){
-						// auto result = browser->item_bind(record_index);
-						// result->activate(std::bind(&web::Entrance::find,
-						// globalparameters.entrance(), std::placeholders::_1));
-						// _result_list << result->linker();
-						// //
-						// }else{
-						// auto previous_item =
-						// _source_model()->item(tree_view->previous_index());
-						// auto result =
-						browser->bind(record_index);
+				bool changes_happened = false;
+				auto rctrl_ = browser_->tab_widget()->record_screen()->record_ctrl();
+				if (rctrl_) {
+					auto last = rctrl_->source_model()->item(pos_source(rctrl_->source_model()->count() - 1));
+					// auto	current_item_	= ctrl->view()->current_item();	//
+					// source_model()->item(pos_source(0));
+					////	    auto	child_linkers		=
+					///result_item->child_linkers();
+					// auto _total_progress_counter = 0;
+
+					for (auto it : child_items) { // for(auto il :
+						// result_item->child_linkers()){//	// move
+						// to search result
+						// auto it = il->host();
+						if (!rctrl_->source_model()->item(
+							[&](const id_value id) { return id == it->id(); })) {
+							boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return rctrl_->source_model(); }, it, last); // current_item_
+							last = it;                                                                                                                // current_item_ = it;	//
+							// if(record_index){
+							// if(  (candidate->parent() != _session_root_item->parent())		//
+							// _current_item->parent())
+							// && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const
+							// Linker> il){return il == candidate->linker();})
+							// ){
+							// auto result = browser->item_bind(record_index);
+							// result->activate(std::bind(&web::Entrance::find,
+							// globalparameters.entrance(), std::placeholders::_1));
+							// _result_list << result->linker();
+							// //
+							// }else{
+							// auto previous_item =
+							// _source_model()->item(tree_view->previous_index());
+							// auto result =
+							browser_->bind(record_index);
 #ifdef USE_LOAD_ON_FOUND
-						result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
+							result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
 #else
 
 #endif
-						////		std::thread(&TreeItem::activate, result,
-						///std::bind(&HidableTabWidget::find,
-						///globalparameters.main_window()->vtab_record(),
-						///std::placeholders::_1)).join();
-						// globalparameters.status_bar()->showMessage("added node(s) : " +
-						// QString::number(++ _total_progress_counter), 1000);	// across
-						// thread message
+							////		std::thread(&TreeItem::activate, result,
+							///std::bind(&HidableTabWidget::find,
+							///globalparameters.main_window()->vtab_record(),
+							///std::placeholders::_1)).join();
+							// globalparameters.status_bar()->showMessage("added node(s) : " +
+							// QString::number(++ _total_progress_counter), 1000);	// across
+							// thread message
+							changes_happened = true;
+						}
+					}
+					if (changes_happened) {
+						auto _view = rctrl_->view();
+						_view->reset();
+						rctrl_->proxy_model()->setSourceModel(rctrl_->source_model());
+						_view->setModel(rctrl_->proxy_model());
 					}
 				}
-				auto _view = ctrl->view();
-				_view->reset();
-				ctrl->proxy_model()->setSourceModel(ctrl->source_model());
-				_view->setModel(ctrl->proxy_model());
 				// if(! tab_brother)
 				//
-				child_items[0]->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1)); // result_item->child_linkers()[0]->host()
+				if (changes_happened) child_items[0]->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1)); // result_item->child_linkers()[0]->host()
 
 				// std::function<void()> startWorkInAThread = [&] {
 				// WorkerThread *workerThread = new WorkerThread(this, child_items);
@@ -433,26 +440,28 @@ namespace web {
 		auto element = _child_items.last(); // acrosss thread
 		// auto _vtab_record = globalparameters.main_window()->vtab_record();
 		auto browser = element->page()->browser(); // gl_paras->main_window()->activated_browser(gl_para::_what_ever_topic);
-		auto record_controller = browser->tabmanager()->record_screen()->record_controller();
-		// auto					tab_brother		=
-		// record_controller->view()->current_item();	// acrosss thread
-		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return record_controller->source_model(); }, element); // tab_brother
-		// if(record_index){
-		// if(  (candidate->parent() != _session_root_item->parent())		//
-		// _current_item->parent())
-		// && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker>
-		// il){return il == candidate->linker();})
-		// ){
-		// auto result = browser->item_bind(record_index);
-		// result->activate(std::bind(&web::Entrance::find,
-		// globalparameters.entrance(), std::placeholders::_1));
-		// _result_list << result->linker();
-		// //
-		// }else{
-		// auto previous_item = _source_model()->item(tree_view->previous_index());
-		auto result = browser->bind(record_index);
-		result->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
-		_child_items.pop_back();
-		emit result_ready();
+		auto rctrl = browser->tab_widget()->record_screen()->record_ctrl();
+		if (rctrl) {
+			// auto					tab_brother		=
+			// record_controller->view()->current_item();	// acrosss thread
+			boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return rctrl->source_model(); }, element); // tab_brother
+			// if(record_index){
+			// if(  (candidate->parent() != _session_root_item->parent())		//
+			// _current_item->parent())
+			// && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker>
+			// il){return il == candidate->linker();})
+			// ){
+			// auto result = browser->item_bind(record_index);
+			// result->activate(std::bind(&web::Entrance::find,
+			// globalparameters.entrance(), std::placeholders::_1));
+			// _result_list << result->linker();
+			// //
+			// }else{
+			// auto previous_item = _source_model()->item(tree_view->previous_index());
+			auto result = browser->bind(record_index);
+			result->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
+			_child_items.pop_back();
+			emit result_ready();
+		}
 	}
 }
