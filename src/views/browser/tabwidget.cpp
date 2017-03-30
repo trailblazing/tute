@@ -1012,7 +1012,7 @@ namespace web {
 			//				    ); // std::bind(&rs_t::close_requested_from_others, _record_screen, static_cast<sd::renter* const>(this))
 		}
 
-		_blogger->destroy_trigger_from_others()(nullptr);
+//		_blogger->destroy_trigger_from_others()(nullptr);
 //		while (this->count() > 0) this->closeTab(this->count() - 1);
 
 
@@ -2080,7 +2080,7 @@ namespace web {
 						//_record_controller->remove_child(to_be_closed_view->page()->current_item()->id());
 						//				}
 						// delete to_be_closed_view;
-						{ //?
+						{       //?
 							//				_view_to_close->deleteLater();
 						}
 						// move to WebView::on_close_requested
