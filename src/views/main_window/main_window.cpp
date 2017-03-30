@@ -803,20 +803,20 @@ void wn_t::setup_signals(void)
 #ifdef USE_SIGNAL_CLOSE
 						    _blogger->save();
 						    rs->close_sender_id(typeid(HidableTab).name());
-						    //									rs->close_requested_from_others(nullptr); //rs->close(); //
-						    //                                                                        rs->deleteLater();
-						    //                                                                        auto rctrl_ = rs->record_ctrl();
-						    //                                                                        if (rctrl_) rctrl_->close_requested_from_others(nullptr);
+						    //						    rs->destroy_trigger_from_others()(_blogger); //rs->close(); //
+						    //						    //                                                                        rs->deleteLater();
+						    //						    //                                                                        auto rctrl_ = rs->record_ctrl();
+						    //						    //                                                                        if (rctrl_) rctrl_->close_requested_from_others(nullptr);
 						    auto _browser = rs->browser();
-						    //						    if (_browser) _browser->close();
+						    //						    //						    if (_browser) _browser->close();
 						    if (_browser) {
 							    _browser->destroy_trigger_from_others()(_blogger); //browser_->close(); // emit browser_->close_request(browser_);
 													       //									browser_->deleteLater();                        //
 													       // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
 													       //                                                                                _browser->deleteLater();
 						    }
-//						    _blogger->destroy_trigger_from_others()(nullptr); //_blogger->close(); //
-//						    delete &*_blogger;                              //	_blogger->deleteLater(); //blogger_->~Blogger();
+////						    _blogger->destroy_trigger_from_others()(nullptr); //_blogger->close(); //
+////						    delete _blogger;                              //	_blogger->deleteLater(); //blogger_->~Blogger();
 
 #else
 						    rs->close_sender_id(typeid(HidableTab).name());
@@ -2515,7 +2515,7 @@ wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
 	//	bs = browser<QString>(topic, false);
 	//	if (!bs)
 	if (topic != gl_para::_default_topic)
-		bs = (new Blogger(topic, gl_para::_default_post, appconfig->hide_editor_tools(), state_))->browser();
+		bs = (sd::make_intrusive<Blogger>(topic, gl_para::_default_post, appconfig->hide_editor_tools(), state_))->browser();
 
 	return bs;
 }
@@ -2587,7 +2587,7 @@ wn_t::browser<QString>(const QString& topic_, bool force)
 		auto checked_topic = topic;
 		//		if(topic == gl_para::_what_ever_topic) checked_topic =
 		//gl_para::_default_topic;
-		browser_ = (new Blogger(checked_topic))->browser();
+		browser_ = (sd::make_intrusive<Blogger>(checked_topic))->browser();
 	}
 	assert(browser_ || !force);
 
@@ -2643,7 +2643,7 @@ void wn_t::synchronize_title(const QString& title_)
 //					//                                                                        auto rctrl_ = rs->record_ctrl();
 //					//                                                                        if (rctrl_) rctrl_->close_requested_from_others(nullptr);
 //					_blogger->close_requested_from_others(nullptr); //_blogger->close(); //
-//					delete &*_blogger;                              //	_blogger->deleteLater(); //blogger_->~Blogger();
+//					delete _blogger;                              //	_blogger->deleteLater(); //blogger_->~Blogger();
 //////                                                                        if (_browser) {
 //////                                                                                _browser->close_requested_from_others(_blogger); //browser_->close(); // emit browser_->close_request(browser_);
 //////                                                                                                   //									browser_->deleteLater();                        //

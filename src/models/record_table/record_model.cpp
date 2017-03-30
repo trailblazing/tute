@@ -658,13 +658,13 @@ web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_ite
 			auto tab = _rctrl->tab_widget();
 			if (tab)
 				view = tab->newTab(record_index); // , _item->field("name")
-								  // else{
-								  // view = _record_controller->tabmanager()->webView((int)source_insert_pos);
-								  // view->page()->binder()->host()->activate(std::bind(&web::Entrance::find,
-								  // globalparameters.entrance(), std::placeholders::_1));
-								  //// addTab()-> wrong design, demage the function TabWidget::newTab and the
-								  ///function QTabWidget::addTab
-								  // }
+			// else{
+			// view = _record_controller->tabmanager()->webView((int)source_insert_pos);
+			// view->page()->binder()->host()->activate(std::bind(&web::Entrance::find,
+			// globalparameters.entrance(), std::placeholders::_1));
+			//// addTab()-> wrong design, demage the function TabWidget::newTab and the
+			///function QTabWidget::addTab
+			// }
 		}
 		assert(view);
 		returned_position = position(id_value(_item->field<id_key>())); // pos_source(_record_controller->tabmanager()->indexOf(view));
@@ -946,7 +946,7 @@ boost::intrusive_ptr<i_t> RecordModel::item(const pos_source _index) const
 
 rctrl_t* RecordModel::record_ctrl() const
 {
-	return &*_rctrl;
+	return _rctrl;
 }
 
 // bool RecordModel::remove_child(int index)

@@ -197,46 +197,6 @@ namespace web {
 
 	// const char *DockedWindow::_defaulthome = "about:blank";
 
-	Browser::~Browser()
-	{
-//		this->_destroyed_request_triggered = true;
-#ifndef USE_SIGNAL_CLOSE
-		_prepended(this);
-#endif
-		{
-			_autosaver->saveIfNeccessary();
-			//			save(); // move to blogger
-			//				//		for(int i = 0; i < _tab_widget->count(); i++)
-			//				//_tab_widget->webView(i)->close();
-			//				//			_autosaver->changeOccurred();
-			//				//			_autosaver->saveIfNeccessary();
-		}
-
-		// mmove to tabmanager
-		//		{
-		//			//			HidableTab *_vtab_record = _main_window->vtab_record();
-		//			//			auto index = _vtab_record->indexOf(_record_screen);
-		//			//			if(index != -1)	emit _vtab_record->tabCloseRequested(index);
-		//			////_vtab_record->removeTab(index);
-		//			auto _record_screen = _tab_widget->record_screen();
-		//			if (_record_screen) {
-		//				_close_request.connect(std::bind(&rs_t::on_browser_close_requested, _record_screen));
-		//				_record_screen = nullptr;
-		//			}
-		//			//			if (_blogger) connect(this, &Browser::close_request, _blogger, &Blogger::on_browser_close_requested);
-
-		//			//			self_close_request(); //emit close_request(this);
-		//		}
-		//		//		_rctrl->close_request();
-		//		close_requested(this);
-		//		delete &*_tab_widget;
-		if (_blogger) {
-			//			close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &Blogger::on_close_requested, &*_blogger, static_cast<sd::renter* const>(this))); // close_requested.connect(_blogger->close_requested);                         //(std::bind(&Blogger::self_close_request, _blogger));
-			//					destroy_transfer(
-			_blogger->destroy_trigger_from_others()(this);
-			//					    );
-		}
-	}
 
 	void Browser::setup_navigate(void)
 	{
@@ -335,7 +295,7 @@ namespace web {
 		// BookmarksModel *bookmarksModel =
 		// QtSingleApplication::bookmarksManager()->bookmarksModel();
 		// _bookmarkstoolbar = new BookmarksToolBar(bookmarksModel, this);
-		connect(_bookmarkstoolbar, &BookmarksToolBar::openUrl, &*_tab_widget, &TabWidget::loadUrlInCurrentTab);
+		connect(_bookmarkstoolbar, &BookmarksToolBar::openUrl, _tab_widget, &TabWidget::loadUrlInCurrentTab);
 		connect(_bookmarkstoolbar->toggleViewAction(), &QAction::toggled, this, &Browser::update_bookmarks_toolbar_action_text);
 
 		// QVBoxLayout *_layout = new QVBoxLayout;
@@ -348,11 +308,11 @@ namespace web {
 		addToolBarBreak();
 		addToolBar(_bookmarkstoolbar);
 #endif
-		_layout->addWidget(&*_tab_widget);
+		_layout->addWidget(_tab_widget);
 		_centralwidget->setLayout(_layout);
 		setCentralWidget(_centralwidget);
 
-		connect(&*_tab_widget, &TabWidget::loadPage // , this, &Browser::loadPage
+		connect(_tab_widget, &TabWidget::loadPage // , this, &Browser::loadPage
 		    ,
 		    [&](const QString& file) {
 			    tv_t* tree_view = _tree_screen->view();
@@ -360,7 +320,7 @@ namespace web {
 			    TreeIndex::activate(
 				[&] { return tree_view->source_model(); }, it, url_value(file), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(detail::to_qstring(it_->field<home_key>()), file) || url_equal(detail::to_qstring(it_->field<url_key>()), file); });
 		    });
-		connect(&*_tab_widget, &TabWidget::setCurrentTitle, _main_window, &wn_t::synchronize_title); // this, &Browser::slotUpdateWindowTitle
+		connect(_tab_widget, &TabWidget::setCurrentTitle, _main_window, &wn_t::synchronize_title); // this, &Browser::slotUpdateWindowTitle
 		//			, [&](const QString &title_){
 		////				auto it = _tab_widget->current_item();
 		//				_main_window->synchronize_title(title_);//it ?
@@ -368,26 +328,26 @@ namespace web {
 		//			}
 		//			);
 		//		_tab_widget->connect(&TabWidget::showStatusBarMessage, gl_paras->status_bar(), &QStatusBar::showMessage);
-		connect(&*_tab_widget, &TabWidget::showStatusBarMessage, gl_paras->status_bar(), &QStatusBar::showMessage);
-		connect(&*_tab_widget, &TabWidget::linkHovered, gl_paras->status_bar(), [&](const QString& link) {
+		connect(_tab_widget, &TabWidget::showStatusBarMessage, gl_paras->status_bar(), &QStatusBar::showMessage);
+		connect(_tab_widget, &TabWidget::linkHovered, gl_paras->status_bar(), [&](const QString& link) {
 			// &QStatusBar::showMessage
 			gl_paras->status_bar()->showMessage(link);
 		});
-		connect(&*_tab_widget, &TabWidget::loadProgress, this, &Browser::slotLoadProgress);
-		connect(&*_tab_widget, &TabWidget::tabsChanged, _autosaver, &AutoSaver::changeOccurred);
-		connect(&*_tab_widget, &TabWidget::geometryChangeRequested, this, &Browser::geometry_change_requested);
+		connect(_tab_widget, &TabWidget::loadProgress, this, &Browser::slotLoadProgress);
+		connect(_tab_widget, &TabWidget::tabsChanged, _autosaver, &AutoSaver::changeOccurred);
+		connect(_tab_widget, &TabWidget::geometryChangeRequested, this, &Browser::geometry_change_requested);
 #if defined(QWEBENGINEPAGE_PRINTREQUESTED)
 		connect(_tab_widget, &TabWidget::printRequested, this, &Browser::printRequested);
 #endif
-		connect(&*_tab_widget, &TabWidget::menuBarVisibilityChangeRequested, menuBar(), &QMenuBar::setVisible);
-		connect(&*_tab_widget, &TabWidget::statusBarVisibilityChangeRequested, gl_paras->status_bar(), &QStatusBar::setVisible);
+		connect(_tab_widget, &TabWidget::menuBarVisibilityChangeRequested, menuBar(), &QMenuBar::setVisible);
+		connect(_tab_widget, &TabWidget::statusBarVisibilityChangeRequested, gl_paras->status_bar(), &QStatusBar::setVisible);
 		// connect(_tab_widget, SIGNAL(toolBarVisibilityChangeRequested(bool)),
 		// navigater, SLOT(setVisible(bool)));
-		connect(&*_tab_widget, &TabWidget::toolBarVisibilityChangeRequested, _bookmarkstoolbar, &BookmarksToolBar::setVisible);
+		connect(_tab_widget, &TabWidget::toolBarVisibilityChangeRequested, _bookmarkstoolbar, &BookmarksToolBar::setVisible);
 #if defined(Q_OS_OSX)
 		connect(_tab_widget, &TabWidget::lastTabClosed, this, &Browser::close);
 #else
-		connect(&*_tab_widget, &TabWidget::lastTabClosed, this, [&]() -> void {
+		connect(_tab_widget, &TabWidget::lastTabClosed, this, [&]() -> void {
 			// _tab_widget->newTab(request_record(QUrl(DockedWindow::_defaulthome)));
 
 			//				// HidableTabWidget *_vtab_tree =
@@ -421,7 +381,18 @@ namespace web {
 			//				        // }
 			//				}
 			//			self_close_request();
-			this->close();
+			//
+			//			int count_ = _tab_widget->count();
+			//			assert(0 == count_);
+
+			destroy_trigger_from_others()(_blogger); //this->close();
+
+			//			auto _record_screen = _tab_widget->record_screen();
+			//			if (_record_screen) {
+			//				int index = _vtab_record->indexOf(_record_screen);
+			//				if (index != -1)
+			//					emit _vtab_record->tabBar()->tabCloseRequested(index);
+			//			}
 		});
 #endif
 
@@ -461,6 +432,12 @@ namespace web {
 		//		slotUpdateWindowTitle();
 		_main_window->synchronize_title(_blogger ? _blogger->topic() : "");
 #ifdef USE_SIGNAL_CLOSE
+		//		// let Browser::~Browser() do it
+		//		if (_tab_widget) {
+		//			//			close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::on_close_requested, _tab_widget, static_cast<sd::renter* const>(this)));
+		//			destroy_transfer(_tab_widget->destroy_trigger_from_others()); //std::bind(&web::TabWidget::close_requested_from_others, _tab_widget, static_cast<sd::renter* const>(this))
+		//		}
+
 		destroy_transfer([&](renter* const r) {
 			(void)r;
 			if (r != this) { //&& !this->_destroyed_request_sent
@@ -470,7 +447,7 @@ namespace web {
 				this->close();
 				//				//				delete this;
 				//				if (_blogger) {
-				//					//			close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &Blogger::on_close_requested, &*_blogger, static_cast<sd::renter* const>(this))); // close_requested.connect(_blogger->close_requested);                         //(std::bind(&Blogger::self_close_request, _blogger));
+				//					//			close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &Blogger::on_close_requested, _blogger, static_cast<sd::renter* const>(this))); // close_requested.connect(_blogger->close_requested);                         //(std::bind(&Blogger::self_close_request, _blogger));
 				//					//					destroy_transfer(
 				//					_blogger->destroy_trigger_from_others()(this);
 				//					//					    );
@@ -478,16 +455,55 @@ namespace web {
 			}
 		}); //  std::make_shared<sd::method<sd::meta_info<void>>>("", &web::Browser::close, &_closed, this)                                                       //close_requested.connect(std::bind(&Browser::close, this));
 
-//		// let Browser::~Browser() do it
-//		if (_tab_widget) {
 
-//			//			close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::on_close_requested, &*_tab_widget, static_cast<sd::renter* const>(this)));
-//			close_connect([&](renter* const r) {
-//				(void)r;
-//				if (_tab_widget && r != _tab_widget && !_tab_widget->close_request_sent() && !_tab_widget->is_destroyed()) _tab_widget->close_requested_from_others(r);
-//			}); //std::bind(&web::TabWidget::close_requested_from_others, &*_tab_widget, static_cast<sd::renter* const>(this))
-//		}
 #endif //USE_SIGNAL_CLOSE
+	}
+
+	Browser::~Browser()
+	{
+//		int count_ = _tab_widget->count();
+//		assert(0 == count_);
+//		this->_destroyed_request_triggered = true;
+#ifndef USE_SIGNAL_CLOSE
+		_prepended(this);
+#endif
+		{
+			_autosaver->saveIfNeccessary();
+			//			save(); // move to blogger
+			//				//		for(int i = 0; i < _tab_widget->count(); i++)
+			//				//_tab_widget->webView(i)->close();
+			//				//			_autosaver->changeOccurred();
+			//				//			_autosaver->saveIfNeccessary();
+		}
+
+		// mmove to tabmanager
+		//		{
+		//			//			HidableTab *_vtab_record = _main_window->vtab_record();
+		//			//			auto index = _vtab_record->indexOf(_record_screen);
+		//			//			if(index != -1)	emit _vtab_record->tabCloseRequested(index);
+		//			////_vtab_record->removeTab(index);
+		//			auto _record_screen = _tab_widget->record_screen();
+		//			if (_record_screen) {
+		//				_close_request.connect(std::bind(&rs_t::on_browser_close_requested, _record_screen));
+		//				_record_screen = nullptr;
+		//			}
+		//			//			if (_blogger) connect(this, &Browser::close_request, _blogger, &Blogger::on_browser_close_requested);
+
+		//			//			self_close_request(); //emit close_request(this);
+		//		}
+		//		//		_rctrl->close_request();
+		//		close_requested(this);
+		//		delete _tab_widget;
+
+		//#ifdef USE_SIGNAL_CLOSE
+		//		if (_blogger) {
+		//			//			close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &Blogger::on_close_requested, _blogger, static_cast<sd::renter* const>(this))); // close_requested.connect(_blogger->close_requested);                         //(std::bind(&Blogger::self_close_request, _blogger));
+		//			//					destroy_transfer(
+		//			if (!_blogger->close_request_sent())
+		//				_blogger->destroy_trigger_from_others()(this);
+		//			//					    );
+		//		}
+		//#endif // USE_SIGNAL_CLOSE
 	}
 
 	void Browser::run_script(const QString& style_source)
@@ -724,7 +740,7 @@ namespace web {
 			new web::TabWidget(_blogger, this, _main_window, gl_paras->profile());
 #endif //USE_SIGNAL_CLOSE
 
-		    //			  close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::on_close_requested, &*t, static_cast<sd::renter* const>(this))); //close_requested.connect(t->self_close_request);//(std::bind(&web::TabWidget::self_close_request,t));
+		    //			  close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::on_close_requested, t, static_cast<sd::renter* const>(this))); //close_requested.connect(t->self_close_request);//(std::bind(&web::TabWidget::self_close_request,t));
 		    //std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::close, &_closed, this)
 		    return t;
 	    }())
@@ -832,7 +848,7 @@ namespace web {
 	void Browser::activateWindow()
 	{
 		if (_browser_docker->widget() != this) _browser_docker->prepend(this);
-		if (gl_paras->editor_docker()->widget() != _blogger) gl_paras->editor_docker()->prepend(&*_blogger);
+		if (gl_paras->editor_docker()->widget() != _blogger) gl_paras->editor_docker()->prepend(_blogger);
 		//		this->setParent(_browser_docker);
 		//		_browser_docker->setWidget(this);
 
@@ -842,13 +858,15 @@ namespace web {
 
 		//		auto _vtab_record = _record_screen->vtab_record();
 		auto _record_screen = _tab_widget->record_screen();
-		int index = _vtab_record->indexOf(&*_record_screen);
-		if (index != -1) {
-			if (_vtab_record->currentIndex() != index) {
-				auto previous_browser = _vtab_record->currentWidget();
-				if (previous_browser) previous_browser->lower();
-				_vtab_record->setCurrentIndex(index);
-				// synchronize tree view and record view
+		if (_record_screen) {
+			int index = _vtab_record->indexOf(_record_screen);
+			if (index != -1) {
+				if (_vtab_record->currentIndex() != index) {
+					auto previous_browser = _vtab_record->currentWidget();
+					if (previous_browser) previous_browser->lower();
+					_vtab_record->setCurrentIndex(index);
+					// synchronize tree view and record view
+				}
 			}
 		}
 		if (!_tab_widget->find([&](boost::intrusive_ptr<const ::Binder> b) {
@@ -991,7 +1009,7 @@ namespace web {
 
 	web::TabWidget* Browser::tab_widget() const
 	{
-		return &*_tab_widget;
+		return _tab_widget;
 	}
 
 	//	sd::intrusive_ptr<web::TabWidget> Browser::tabWidget()
@@ -1340,7 +1358,7 @@ namespace web {
 		// );
 		//		_history_menu->clear();
 
-		connect(_history_menu, &HistoryMenu::openUrl, &*_tab_widget, &TabWidget::loadUrlInCurrentTab);
+		connect(_history_menu, &HistoryMenu::openUrl, _tab_widget, &TabWidget::loadUrlInCurrentTab);
 		connect(static_cast<ModelMenu*>(_history_menu), &ModelMenu::hovered_signal, this, &Browser::slotUpdateStatusbar);
 		_history_menu->setTitle(tr("Hi&story"));
 
@@ -1441,7 +1459,7 @@ namespace web {
 		// );
 		//		_bookmarks_menu->clear();
 
-		connect(_bookmarks_menu, &BookmarksMenu::openUrl, &*_tab_widget, &TabWidget::loadUrlInCurrentTab);
+		connect(_bookmarks_menu, &BookmarksMenu::openUrl, _tab_widget, &TabWidget::loadUrlInCurrentTab);
 		connect(static_cast<ModelMenu*>(_bookmarks_menu), &ModelMenu::hovered_signal, this, &Browser::slotUpdateStatusbar);
 		_bookmarks_menu->setTitle(tr("&Bookmarks"));
 		//		_main_window->menuBar()->addMenu(bookmarksMenu);
@@ -1606,7 +1624,7 @@ namespace web {
 	void Browser::slotShowBookmarksDialog()
 	{
 		BookmarksDialog* dialog = new BookmarksDialog(this);
-		connect(dialog, &BookmarksDialog::openUrl, &*_tab_widget, &TabWidget::loadUrlInCurrentTab);
+		connect(dialog, &BookmarksDialog::openUrl, _tab_widget, &TabWidget::loadUrlInCurrentTab);
 		dialog->show();
 	}
 
@@ -1846,14 +1864,18 @@ namespace web {
 		(void)event;
 		//
 	}
+
 	void Browser::showEvent(QShowEvent* event)
 	{
 		_destroyed_request_sent = false;
 		QMainWindow::showEvent(event);
 	}
+
 	void Browser::closeEvent(QCloseEvent* event)
 	{
+
 		if (_tab_widget) {
+			//			int count_ = _tab_widget->count();
 			if (_tab_widget->count() > 1) {
 				int ret = QMessageBox::warning(
 				    this, QString(), tr("Are you sure you want to close the window?  There are %1 tabs open").arg(_tab_widget->count()), QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
@@ -1862,7 +1884,13 @@ namespace web {
 					return;
 				}
 			}
-			for (int i = 0; i < _tab_widget->count(); i++) _tab_widget->webView(i)->close();
+			//			//			for (int i = 0; i < _tab_widget->count(); i++) {
+			//			//				count_ = _tab_widget->count(); //for debug
+			//			//				_tab_widget->closeTab(i);      //webView(i)->close();
+			//			//			}
+			//			while (_tab_widget->count() > 0) {
+			//				_tab_widget->closeTab(_tab_widget->count() - 1);
+			//			}
 		}
 		event->accept();
 		deleteLater();
@@ -2251,7 +2279,7 @@ namespace web {
 		auto _vtab_record = _main_window->vtab_record();
 		auto _record_screen = _tab_widget->record_screen();
 		if (_vtab_record->currentWidget() != _record_screen && make_current)
-			_vtab_record->setCurrentWidget(&*_record_screen);
+			_vtab_record->setCurrentWidget(_record_screen);
 		assert(view);
 		assert(result->binder()->integrity_external(result, view->page()));
 

@@ -465,13 +465,22 @@ void FindScreen::setup_signals(void)
 	connect(this, &FindScreen::text_changed_from_another, this, &FindScreen::enable_findbutton);
 
 	// При нажатии Enter в строке запроса
-	connect(_toolbarsearch, &web::ToolbarSearch::return_pressed, this, [this] { FindScreen::find_clicked(); });
+	connect(_toolbarsearch, &web::ToolbarSearch::return_pressed, // this,
+	    [this] {
+		    _toolbarsearch->search_now(); // FindScreen::find_clicked();
+	    });
 
 	// При нажатии кнопки Find
-	connect(_find_start_button, &QPushButton::clicked, this, [this] { FindScreen::find_clicked(); });
+	connect(_find_start_button, &QPushButton::clicked, //this,
+	    [this] {
+		    _toolbarsearch->search_now(); //FindScreen::find_clicked();
+	    });
 
 	// После установки текста извне, вырабатывается этот сигнал
-	connect(this, &FindScreen::find_clicked_after_another_text_changed, this, [this] { FindScreen::find_clicked(); });
+	connect(this, &FindScreen::find_clicked_after_another_text_changed, //this,
+	    [this] {
+		    _toolbarsearch->search_now(); //FindScreen::find_clicked();
+	    });
 
 	// При нажатии кнопки разворачивания/сворачивания инструментов поиска
 	connect(_tools_expand, &FlatToolButton::clicked, this, &FindScreen::tools_expand_clicked);
@@ -700,11 +709,9 @@ boost::intrusive_ptr<i_t> FindScreen::find_start(void)
 	boost::intrusive_ptr<i_t> final_result = i_t::dangle_instance(data); // QMap<QString, QString>()
 	// Выясняется стартовый элемент в дереве, с которого будет начат поиск
 	// Выясняется сколько всего конечных записей
-	boost::intrusive_ptr<i_t> _start_item(
-	    nullptr); // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString,
-		      // QString>(), nullptr));
-	boost::intrusive_ptr<i_t> _session_root_item(
-	    _tree_screen->view()->session_root_auto()); // new TreeItem(nullptr, data)
+	boost::intrusive_ptr<i_t> _start_item(nullptr);                                          // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString,
+												 // QString>(), nullptr));
+	boost::intrusive_ptr<i_t> _session_root_item(_tree_screen->view()->session_root_auto()); // new TreeItem(nullptr, data)
 	// _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();
 	// //
 
@@ -874,10 +881,8 @@ boost::intrusive_ptr<i_t> FindScreen::find_start(void)
 #endif
 
 	auto final_search = [&](
-	    boost::intrusive_ptr<i_t>& final_result // QList<boost::intrusive_ptr<Linker> >    &_result_list
-	    ,
-	    boost::intrusive_ptr<i_t>& _session_root_item // std::shared_ptr<RecordTable> &resultset_data
-	    ,
+	    boost::intrusive_ptr<i_t>& final_result,       // QList<boost::intrusive_ptr<Linker> >    &_result_list
+	    boost::intrusive_ptr<i_t>& _session_root_item, // std::shared_ptr<RecordTable> &resultset_data
 	    boost::intrusive_ptr<i_t>& _start_item) -> boost::intrusive_ptr<i_t>& {
 		qDebug() << "Start finding in " << _candidate_records << " records";
 
@@ -906,8 +911,8 @@ boost::intrusive_ptr<i_t> FindScreen::find_start(void)
 		// find_recursive(_result_list, _session_root_item, _start_item); //
 		// candidate_root->tabledata();
 		return final_result; //
-				     // find_recursive(final_result, _session_root_item, _start_item);				//
-				     // _result_list;
+		// find_recursive(final_result, _session_root_item, _start_item);				//
+		// _result_list;
 	};
 
 	// deprecated by KnowModel::model_move_as_child_impl in this->find_recursive

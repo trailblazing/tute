@@ -272,7 +272,7 @@ namespace web {
 	{
 		// Browser *_browser = _entrance->activiated_registered().first;
 
-		QDialog dialog(&*_browser);
+		QDialog dialog(_browser);
 		dialog.setWindowFlags(Qt::Sheet);
 
 		Ui::PasswordDialog passwordDialog;
@@ -281,7 +281,7 @@ namespace web {
 		passwordDialog.iconLabel->setText(QString());
 		passwordDialog.iconLabel->setPixmap(
 		    _browser->style()
-			->standardIcon(QStyle::SP_MessageBoxQuestion, 0, &*_browser)
+			->standardIcon(QStyle::SP_MessageBoxQuestion, 0, _browser)
 			.pixmap(32, 32));
 
 		QString introMessage =
@@ -307,7 +307,7 @@ namespace web {
 		Q_UNUSED(requestUrl);
 		// Browser *_browser = _entrance->activiated_registered().first;
 
-		QDialog dialog(&*_browser);
+		QDialog dialog(_browser);
 		dialog.setWindowFlags(Qt::Sheet);
 
 		Ui::ProxyDialog proxyDialog;
@@ -316,7 +316,7 @@ namespace web {
 		proxyDialog.iconLabel->setText(QString());
 		proxyDialog.iconLabel->setPixmap(
 		    _browser->style()
-			->standardIcon(QStyle::SP_MessageBoxQuestion, 0, &*_browser)
+			->standardIcon(QStyle::SP_MessageBoxQuestion, 0, _browser)
 			.pixmap(32, 32));
 
 		QString introMessage = tr("<qt>Connect to proxy \"%1\" using:</qt>");
@@ -877,8 +877,8 @@ namespace web {
 			auto _vtab_record = gl_paras->vtab_record();
 			auto _record_screen = _browser->record_screen();
 			if (_record_screen) {
-				if (_vtab_record->currentWidget() != &*_record_screen)
-					_vtab_record->setCurrentWidget(&*_record_screen);
+				if (_vtab_record->currentWidget() != _record_screen)
+					_vtab_record->setCurrentWidget(_record_screen);
 			}
 			auto it = _binder->host();
 			auto tree_view = _tree_screen->view();
@@ -1395,14 +1395,14 @@ namespace web {
 		//gl_paras->main_window()->activated_browser(); //
 		//QtSingleApplication::instance()->mainWindow();
 
-		QDialog dialog(&*_browser);
+		QDialog dialog(_browser);
 		dialog.setWindowFlags(Qt::Sheet);
 
 		Ui::PasswordDialog passwordDialog;
 		passwordDialog.setupUi(&dialog);
 
 		passwordDialog.iconLabel->setText(QString());
-		passwordDialog.iconLabel->setPixmap(_browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, &*_browser).pixmap(32, 32));
+		passwordDialog.iconLabel->setPixmap(_browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, _browser).pixmap(32, 32));
 
 		QString introMessage = tr("<qt>Enter username and password for \"%1\" at %2</qt>");
 		introMessage = introMessage.arg(auth->realm()).arg(requestUrl.toString().toHtmlEscaped());
@@ -1432,7 +1432,7 @@ namespace web {
 		//gl_paras->main_window()->activated_browser(); //
 		//QtSingleApplication::instance()->mainWindow();
 
-		QDialog dialog(&*_browser);
+		QDialog dialog(_browser);
 		dialog.setWindowFlags(Qt::Sheet);
 
 		Ui::ProxyDialog proxyDialog;
@@ -1441,7 +1441,7 @@ namespace web {
 		proxyDialog.iconLabel->setText(QString());
 		proxyDialog.iconLabel->setPixmap(
 		    _browser->style()
-			->standardIcon(QStyle::SP_MessageBoxQuestion, 0, &*_browser)
+			->standardIcon(QStyle::SP_MessageBoxQuestion, 0, _browser)
 			.pixmap(32, 32));
 
 		QString introMessage = tr("<qt>Connect to proxy \"%1\" using:</qt>");
@@ -1902,7 +1902,7 @@ namespace web {
 		setObjectName("web view");
 		setFocus();
 		// _record_controller->addnew_item_fat(requested_item);
-
+		setAttribute(Qt::WA_DeleteOnClose, true);
 		// set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));    //
 		// does not work for base class is not QAbstractItemView
 	}
@@ -2100,7 +2100,7 @@ namespace web {
 
 	web::TabWidget* WebView::tabmanager() const
 	{
-		return &*_tab_widget;
+		return _tab_widget;
 	}
 
 	rctrl_t* WebView::record_ctrl()
@@ -2290,7 +2290,7 @@ namespace web {
 	    :               // std::enable_shared_from_this<Coupler>()
 	      _host(item_),
 	      _page(page_)
-	{       // , _make_current(make_current)
+	{ // , _make_current(make_current)
 		// _bounded_page->binder(new
 		// TreeItem::coupler_delegation(shared_from_this()));
 		// _bounded_item->binder(_bounded_page->record_binder());

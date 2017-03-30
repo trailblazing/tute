@@ -877,7 +877,12 @@ W_OBJECT_IMPL(rv_t)
 #endif
 
 rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
-    : QTableView(&*record_screen_)
+#ifdef USE_SIGNAL_CLOSE
+    : super()
+    , sd::renter() //sd::renter<rctrl_t>()
+#else
+    : super(record_screen_)
+#endif // USE_SIGNAL_CLOSE
     , is_field_type_column([&](const QString& type_name, int index) -> bool {
 	    // QString _type_name = boost::mpl::c_str<field_type>::value;
 	    bool result = false;
@@ -967,6 +972,14 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 			connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &rv_t::on_section_resized);
 			if (_rctrl)
 				connect(this->horizontalHeader(), &QHeaderView::sortIndicatorChanged, _rctrl, &rctrl_t::on_sort_requested);
+
+			destroy_transfer([&](sd::renter* const r) {
+				(void)r;
+				if (r != this) { //&& !this->_destroyed_request_sent
+					this->_destroyed_request_sent = true;
+					this->close();
+				}
+			});
 		};
 
 
@@ -1033,7 +1046,7 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 	};
 
 	setObjectName(record_view_multi_instance_name); // screen_name + "_view"
-
+	setAttribute(Qt::WA_DeleteOnClose, true);
 	// Изначально сортировка запрещена (заголовки столбцов не будут иметь
 	// треугольнички)
 	this->setSortingEnabled(false);
@@ -1059,6 +1072,12 @@ rv_t::~rv_t()
 	_context_menu->deleteLater();
 	// delete
 	_layout->deleteLater();
+	if (_record_screen) { //never run
+		auto _blogger = _record_screen->blogger();
+		if (_blogger)
+			if (!_blogger->close_request_sent())
+				_blogger->destroy_trigger_from_others()(this);
+	}
 }
 
 // void RecordTableView::setController(RecordTableController *pController)

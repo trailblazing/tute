@@ -181,7 +181,7 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
 			//                                                                            //                                                                        auto rctrl_ = rs->record_ctrl();
 			//                                                                            //                                                                        if (rctrl_) rctrl_->close_requested_from_others(nullptr);
 			//                                                                            _blogger->close_requested_from_others(nullptr); //_blogger->close(); //
-			//                                                                            delete &*_blogger;                              //	_blogger->deleteLater(); //blogger_->~Blogger();
+			//                                                                            delete _blogger;                              //	_blogger->deleteLater(); //blogger_->~Blogger();
 			//////                                                                        if (_browser) {
 			//////                                                                                _browser->close_requested_from_others(_blogger); //browser_->close(); // emit browser_->close_request(browser_);
 			//////                                                                                                   //									browser_->deleteLater();                        //
@@ -466,11 +466,22 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
 //	if (_rctrl) {
 //		auto _browser = _rctrl->tabmanager()->browser();
 #ifdef USE_SIGNAL_CLOSE
-	if (_rctrl) {
-		//		close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &rctrl_t::on_close_requested, &*_rctrl, static_cast<sd::renter* const>(this)));
-		destroy_transfer(_rctrl->destroy_trigger_from_others()); //std::bind(&rctrl_t::close_requested_from_others, &*_rctrl, static_cast<sd::renter* const>(this))
-	}
 
+	// let Browser::~Browser() do it
+	if (_tab_widget) {
+		destroy_transfer(_tab_widget->destroy_trigger_from_others()); //std::bind(&web::TabWidget::close_requested_from_others, _tab_widget, static_cast<sd::renter* const>(this))
+	}
+#endif //USE_SIGNAL_CLOSE
+	if (_browser) {
+		//		self_close_request.connect(std::bind(&web::Browser::self_close_request, _browser)); //should via blogger
+		connect(this, &rs_t::isHidden, _browser, &web::Browser::hide);
+
+
+#ifdef USE_SIGNAL_CLOSE
+//		destroy_transfer(_browser->destroy_trigger_from_others());
+#endif //USE_SIGNAL_CLOSE
+	}
+#ifdef USE_SIGNAL_CLOSE
 	destroy_transfer([&](renter* const r) {
 		(void)r;
 		if (r != this) { //&& !this->_destroyed_request_sent
@@ -480,34 +491,11 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
 			//			delete this;
 		}
 	}); //std::make_shared<sd::method<sd::meta_info<void>>>("", &rs_t::close, &_closed, this) //close_requested.connect(std::bind(&rs_t::close, this));
-	    //	if (_blogger) close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &Blogger::close_requested, &*_blogger, static_cast<sd::renter* const>(this))); //close_requested.connect(_blogger->close_requested);                 //(std::bind(&Blogger::self_close_request, _blogger));
+	    //	if (_blogger) close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &Blogger::close_requested, _blogger, static_cast<sd::renter* const>(this))); //close_requested.connect(_blogger->close_requested);                 //(std::bind(&Blogger::self_close_request, _blogger));
 
-	// let Browser::~Browser() do it
-	if (_tab_widget) {
-
-		destroy_transfer(_tab_widget->destroy_trigger_from_others()
-		    //		[&](sd::renter* const r) {
-		    //			(void)r;
-		    //			if (_tab_widget)
-		    //				if (_tab_widget != r // && !_tab_widget->close_request_sent()
-		    //				    && !_tab_widget->destroy_request_sent()) _tab_widget->destroy_requested_from_others(r);
-		    //		}
-		    ); //std::bind(&web::TabWidget::close_requested_from_others, _tab_widget, static_cast<sd::renter* const>(this))
-	}
 
 #endif //USE_SIGNAL_CLOSE
 
-
-	if (_browser) {
-		//		self_close_request.connect(std::bind(&web::Browser::self_close_request, _browser)); //should via blogger
-		connect(this, &rs_t::isHidden, &*_browser, &web::Browser::hide);
-		//#ifdef USE_SIGNAL_CLOSE
-		//		close_connect([&](sd::renter* const r) {
-		//			(void)r;
-		//			if (_browser) _browser->close_requested_from_others(r);
-		//		}); //std::bind(&web::Browser::close_requested_from_others, _browser, static_cast<sd::renter* const>(this))
-		//#endif              //USE_SIGNAL_CLOSE
-	}
 
 	//	}
 }
@@ -518,11 +506,11 @@ rs_t::~rs_t()
 	if (-1 != gl_paras->vtab_record()->indexOf(this) && close_sender_id() != typeid(HidableTab).name()) {
 //	    close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &::HidableTab::on_child_self_close_requested, gl_paras->vtab_record(), static_cast<QWidget*>(this))); //close_requested.connect(std::bind(&::HidableTab::on_child_self_close_requested, gl_paras->vtab_record(), this));
 #ifdef USE_SIGNAL_CLOSE
-		destroy_transfer([&](renter* const r) {
-			(void)r;
-			gl_paras->vtab_record()->on_child_self_close_requested(this);
-		}); //std::bind(&::HidableTab::on_child_self_close_requested, gl_paras->vtab_record(), static_cast<QWidget*>(this))
-#endif              //USE_SIGNAL_CLOSE
+		//		destroy_transfer([&](renter* const r) {
+		//			(void)r;
+		gl_paras->vtab_record()->on_child_self_close_requested(this);
+//		}); //std::bind(&::HidableTab::on_child_self_close_requested, gl_paras->vtab_record(), static_cast<QWidget*>(this))
+#endif //USE_SIGNAL_CLOSE
 	}
 //	//	close_requested(this);
 //	//	if (_rctrl) {
@@ -544,9 +532,20 @@ rs_t::~rs_t()
 //	//	emit close_request(this);
 //	// delete _recordtree_search;
 #ifdef USE_SIGNAL_CLOSE
-//	_rctrl.reset(nullptr);
+	if (_rctrl) { //		close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &rctrl_t::on_close_requested, _rctrl, static_cast<sd::renter* const>(this)));
+		if (!_rctrl->close_request_sent())
+			//		destroy_transfer(
+			_rctrl->destroy_trigger_from_others()(this);
+		//				    ); //std::bind(&rctrl_t::close_requested_from_others, _rctrl, static_cast<sd::renter* const>(this))
+	}
+	if (_browser) {
+		if (!_browser->close_request_sent())
+			//	destroy_transfer(
+			_browser->destroy_trigger_from_others()(this);
+		//			 );
+	}
 #endif //USE_SIGNAL_CLOSE
-	//	delete &*_rctrl;
+	//	delete _rctrl;
 	_vertical_scrollarea->deleteLater();
 }
 
@@ -1566,18 +1565,18 @@ void rs_t::tools_update()
 			    // // (item_selection_model->selectedRows()).size() == 1
 			    && false == sorting_enabled // view->isSortingEnabled() == false
 			    && _view->is_selected_set_to_bottom() == false) _action_move_dn->setEnabled(true);
-			// Обновляется состояние области редактирования текста
-			if (has_selection // item_selection_model->hasSelection()
-			    && _rctrl->row_count() > 0) {
-				qDebug() << "In table select present";
-				// qDebug() << "In table row count is" << _record_controller->row_count();
-				// find_object<MetaEditor>(meta_editor_singleton_name)
-				_blogger->textarea_editable(true);
-			} else {
-				qDebug() << "In table select non present";
-				// find_object<MetaEditor>(meta_editor_singleton_name)
-				_blogger->textarea_editable(false);
-			}
+			//			// Обновляется состояние области редактирования текста
+			//			if (has_selection // item_selection_model->hasSelection()
+			//			    && _rctrl->row_count() > 0) {
+			//				qDebug() << "In table select present";
+			//				// qDebug() << "In table row count is" << _record_controller->row_count();
+			//				// find_object<MetaEditor>(meta_editor_singleton_name)
+			//				_blogger->textarea_editable(true);
+			//			} else {
+			//				qDebug() << "In table select non present";
+			//				// find_object<MetaEditor>(meta_editor_singleton_name)
+			//				_blogger->textarea_editable(false);
+			//			}
 		}
 	}
 }
@@ -1657,7 +1656,7 @@ QString rs_t::tree_path(void)
 
 rctrl_t* rs_t::record_ctrl() const
 {
-	return &*_rctrl;
+	return _rctrl;
 }
 
 // web::TabWidget *rs_t::tabmanager(){return _tab_widget;}
