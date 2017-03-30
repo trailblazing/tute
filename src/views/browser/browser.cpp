@@ -504,6 +504,7 @@ namespace web {
 		//			//					    );
 		//		}
 		//#endif // USE_SIGNAL_CLOSE
+		delete static_cast<Blogger*>(_blogger); //_blogger->destroy_trigger_from_others()(nullptr);
 	}
 
 	void Browser::run_script(const QString& style_source)
