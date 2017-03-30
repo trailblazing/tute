@@ -77,10 +77,10 @@ rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_fi
     , _tab_widget(tabmanager_)             // nullptr
     , _source_model(new RecordModel(this)) // so, you need boost::intursive_ptr
     , _proxy_model(new RecordProxyModel(this))
-    , _view([&]() -> rv_t* {
-	    _view = nullptr;
+    , _view([&] {
+	    _view = sd::intrusive_ptr<rv_t>(nullptr);
 	    assert(record_screen_);
-	    auto r = new rv_t(record_screen_, this);
+	    auto r = sd::make_intrusive<rv_t>(record_screen_, this);
 	    return r;
     }())
     , _record_screen(record_screen_)
@@ -116,8 +116,12 @@ rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_fi
 	_view->setModel(_proxy_model);
 	// init();
 	// _no_view = false;
-	connect(_view, &rv_t::tabMoved, &*_tab_widget, &web::TabWidget::moveTab);
+	connect(_view, &rv_t::tabMoved, _tab_widget, &web::TabWidget::moveTab);
 #ifdef USE_SIGNAL_CLOSE
+
+	//	close_connect(std::bind(&web::TabWidget::close_requested_from_others, _tab_widget, static_cast<sd::renter* const>(this)));
+
+
 	destroy_transfer([&](sd::renter* const r) {
 		(void)r;
 		if (r != this) { //&& !this->_destroyed_request_sent
@@ -125,15 +129,8 @@ rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_fi
 			//			delete this; //this->deleteLater();
 		}
 	});
-	//	close_connect(std::bind(&web::TabWidget::close_requested_from_others, _tab_widget, static_cast<sd::renter* const>(this)));
-	if (_record_screen) {
-		destroy_transfer(_record_screen->destroy_trigger_from_others()
-		    //		[&](renter* const r) {
-		    //			(void)r;
-		    //			if (_record_screen && _record_screen != r && !_record_screen->close_request_sent() && !_record_screen->destroy_request_sent()) _record_screen->destroy_requested_from_others(r);
-		    //		}
-		    );
-	}
+
+
 #endif //USE_SIGNAL_CLOSE
 }
 
@@ -147,6 +144,21 @@ rctrl_t::~rctrl_t()
 	_proxy_model->deleteLater();
 	// delete
 	_source_model->deleteLater();
+#ifdef USE_SIGNAL_CLOSE
+	if (_record_screen) {
+		if (!_record_screen->close_request_sent())
+			//                        destroy_transfer(
+			_record_screen->destroy_trigger_from_others()(this);
+		//				    );
+	}
+
+	if (_view) {
+		if (!_record_screen->close_request_sent())
+			//                        destroy_transfer(
+			_view->destroy_trigger_from_others()(this);
+		//					    );
+	}
+#endif //USE_SIGNAL_CLOSE
 }
 
 // void RecordController::init(void)
@@ -2103,9 +2115,9 @@ void rctrl_t::remove(QVector<id_value> delete_ids)
 // последней удаленной записи
 // find_object<MetaEditor>(meta_editor_singleton_name)
 #ifdef USE_FILE_PER_TREEITEM
-		_editing_window->clear_all();
+		if (_blogger) _blogger->clear_all();
 #else
-		_blogger->close();
+		if (_blogger) _blogger->close();
 #endif // USE_FILE_PER_TREEITEM
 	}
 	// qobject_cast<rs_t *>(parent())
@@ -2190,9 +2202,7 @@ void rctrl_t::on_sort_requested(int logicalIndex, Qt::SortOrder order)
 	_proxy_model->setFilterKeyColumn(logicalIndex);
 	_proxy_model->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-	auto current =
-	    _view
-		->current_item(); // selection_first<boost::intrusive_ptr<TreeItem>>();
+	auto current = _view->current_item(); // selection_first<boost::intrusive_ptr<TreeItem>>();
 
 	// _record_controller->proxy_model()->sort(logicalIndex, order);
 	auto header_title =

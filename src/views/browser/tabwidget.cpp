@@ -811,7 +811,7 @@ namespace web {
 	    , _fullscreennotification(nullptr)
 	    , _record_screen(
 #ifdef USE_SIGNAL_CLOSE
-		  sd::make_intrusive<rs_t>(blogger_, browser_, sd::intrusive_ptr<web::TabWidget>(this))
+		  sd::make_intrusive<rs_t>(blogger_, browser_, this)
 #else
 		  new rs_t(blogger_, browser_, this)
 #endif //USE_SIGNAL_CLOSE
@@ -947,31 +947,18 @@ namespace web {
 // Qt::Alignment tabAlignment =
 // Qt::Alignment(q->style()->styleHint(QStyle::SH_TabBar_Alignment, 0, q));
 #ifdef USE_SIGNAL_CLOSE
+
+
 		destroy_transfer([&](sd::renter* const r) {
 			(void)r;
 			if (r != this) { //&& !this->_destroyed_request_sent
-					 //				this->_destroyed_request_sent =
+				//				this->_destroyed_request_sent =
 				this->close();
 				//				delete this;// do it by browser
 			}
 		}); //std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::close, &_closed, this) //close_requested.connect(std::bind(&web::TabWidget::close, this));
-		if (_browser) {
-			//			_browser->close_connect([&](renter* const r) {if(r != this && !this->_closed) this->_closed = this->close(); });
-			destroy_transfer(_browser->destroy_trigger_from_others()
-			    //			[&](sd::renter* const r) {
-			    //				(void)r;
-			    //				if (_browser)
-			    //					if (_browser != r // && !_browser->close_request_sent()
-			    //					    && !_browser->destroy_request_sent()) _browser->destroy_requested_from_others(r);
-			    //			}
-			    ); //std::bind(&Browser::close_requested_from_others, _browser, static_cast<sd::renter* const>(this))
-		}
 
-		// let Browser::~Browser() do it
-		if (_record_screen) {
-			//			close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &rs_t::on_close_requested, &*_record_screen, static_cast<sd::renter* const>(this))); //close_requested.connect(_record_screen->close_requested);               //(std::bind(&rs_t::self_close_request, _record_screen));
-			destroy_transfer(_record_screen->destroy_trigger_from_others()); //std::bind(&rs_t::close_requested_from_others, &*_record_screen, static_cast<sd::renter* const>(this))
-		}
+
 #endif //USE_SIGNAL_CLOSE
 	}
 
@@ -1006,9 +993,30 @@ namespace web {
 			delete _fullscreenview;
 			_fullscreenview = nullptr;
 		}
-		// delete _record_controller;
-		//		close_requested(this);
-		//		delete &*_record_screen;
+// delete _record_controller;
+//		close_requested(this);
+//		delete _record_screen;
+#ifdef USE_SIGNAL_CLOSE
+		if (_browser) {
+			//			_browser->close_connect([&](renter* const r) {if(r != this && !this->_closed) this->_closed = this->close(); });
+			//			destroy_transfer(
+			_browser->destroy_trigger_from_others()(this);
+			//				    ); //std::bind(&Browser::close_requested_from_others, _browser, static_cast<sd::renter* const>(this))
+		}
+
+
+		// let Browser::~Browser() do it
+		if (_record_screen) { // close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &rs_t::on_close_requested, _record_screen, static_cast<sd::renter* const>(this))); //close_requested.connect(_record_screen->close_requested);               //(std::bind(&rs_t::self_close_request, _record_screen));
+				      //			destroy_transfer(
+			_record_screen->destroy_trigger_from_others()(this);
+			//				    ); // std::bind(&rs_t::close_requested_from_others, _record_screen, static_cast<sd::renter* const>(this))
+		}
+
+		_blogger->destroy_trigger_from_others()(nullptr);
+//		while (this->count() > 0) this->closeTab(this->count() - 1);
+
+
+#endif // USE_SIGNAL_CLOSE
 	}
 
 	void TabWidget::clear()
@@ -2003,160 +2011,166 @@ namespace web {
 		auto _rctrl = _record_screen->record_ctrl();
 		if (_rctrl) {
 			if (index_to_close >= 0 && index_to_close < count()) { // if(index < 0 || index >= count())
-				// return;
-				// bool hasFocus = false;
-				if (WebView* _view_to_close = webView(index_to_close)) {
-					assert(widget(index_to_close) == _view_to_close); // debug
+				if (count() > 1) {
+					// return;
+					// bool hasFocus = false;
+					if (WebView* _view_to_close = webView(index_to_close)) {
+						assert(widget(index_to_close) == _view_to_close); // debug
 #if defined(QWEBENGINEPAGE_ISMODIFIED)
-					if (tab->isModified()) {
-						QMessageBox closeConfirmation(view_);
-						closeConfirmation.setWindowFlags(Qt::Sheet);
-						closeConfirmation.setWindowTitle(
-						    tr("Do you really want to close this page?"));
-						closeConfirmation.setInformativeText(
-						    tr("You have modified this page and when closing it you would lose "
-						       "the modification.\n"
-						       "Do you really want to close this page?\n"));
-						closeConfirmation.setIcon(QMessageBox::Question);
-						closeConfirmation.addButton(QMessageBox::Yes);
-						closeConfirmation.addButton(QMessageBox::No);
-						closeConfirmation.setEscapeButton(QMessageBox::No);
-						if (closeConfirmation.exec() == QMessageBox::No) return;
-					}
+						if (tab->isModified()) {
+							QMessageBox closeConfirmation(view_);
+							closeConfirmation.setWindowFlags(Qt::Sheet);
+							closeConfirmation.setWindowTitle(
+							    tr("Do you really want to close this page?"));
+							closeConfirmation.setInformativeText(
+							    tr("You have modified this page and when closing it you would lose "
+							       "the modification.\n"
+							       "Do you really want to close this page?\n"));
+							closeConfirmation.setIcon(QMessageBox::Question);
+							closeConfirmation.addButton(QMessageBox::Yes);
+							closeConfirmation.addButton(QMessageBox::No);
+							closeConfirmation.setEscapeButton(QMessageBox::No);
+							if (closeConfirmation.exec() == QMessageBox::No) return;
+						}
 #endif
-					// hasFocus = _view_to_close->hasFocus();
-					if (_profile == gl_paras->profile()) { // QWebEngineProfile::defaultProfile()
-						_recentlyclosedtabsaction->setEnabled(true);
-						_recentlyclosedtabs.prepend(_view_to_close->page()->url());
-						if (_recentlyclosedtabs.size() >= TabWidget::_recentlyclosedtabssize) _recentlyclosedtabs.removeLast();
+						// hasFocus = _view_to_close->hasFocus();
+						if (_profile == gl_paras->profile()) { // QWebEngineProfile::defaultProfile()
+							_recentlyclosedtabsaction->setEnabled(true);
+							_recentlyclosedtabs.prepend(_view_to_close->page()->url());
+							if (_recentlyclosedtabs.size() >= TabWidget::_recentlyclosedtabssize) _recentlyclosedtabs.removeLast();
+						}
+						QWidget* lineEdit = _lineedits->widget(index_to_close);
+						if (lineEdit) {
+							_lineedits->removeWidget(lineEdit);
+
+							lineEdit->deleteLater(); // delete lineEdit;
+						}
+						auto it = _view_to_close->page()->host();
+						assert(it->page() == _view_to_close->page());
+
+						// auto _tree_screen = _tree_screen;
+						_tree_screen->view()->selectionModel()->select(
+						    _tree_screen->view()->source_model()->index(it), QItemSelectionModel::SelectionFlag::Deselect);
+						_rctrl->view()->selectionModel()->select(_rctrl->source_model()->index(it), QItemSelectionModel::SelectionFlag::Deselect);
+						// _tree_screen->tree_view()->select_and_current(it, [](KnowView * v,
+						// const QModelIndex & _i)->QModelIndex {
+						// v->selectionModel()->select(_i,
+						// QItemSelectionModel::SelectionFlag::Deselect);
+						// assert(_i != v->selectionModel()->selectedIndexes().last());
+						// return v->selectionModel()->selectedIndexes().last();
+						// });
+
+						// if(!_record_controller->source_model()->is_item_exists(to_be_closed_view->page()->current_item()->id()))
+						// {
+						// assert(_record_controller->source_model()->size() == _tabbar->count());
+						// } else {
+						// _record_controller->source_model()->remove_child(to_be_closed_view->page()->current_item());
+						// to_be_closed_view->page()->break_records(); // same as
+						// _record_controller->source_model()->remove_child()
+						// }
+
+						removeTab(index_to_close);
+						// if(sychronize_to_record_view)
+						_view_to_close->on_close_requested();
+						_view_to_close->deleteLater();
+						_rctrl->remove(it->id());
+						//				{// lead double deconstruct
+						//					emit
+						//_view_to_close->close_requested(); //
+						//_record_controller->remove_child(to_be_closed_view->page()->current_item()->id());
+						//				}
+						// delete to_be_closed_view;
+						{ //?
+							//				_view_to_close->deleteLater();
+						}
+						// move to WebView::on_close_requested
+						// int tab_widget_count = count();
+						// int tab_bar_count = _tabbar->count();
+						// int source_model_size = _record_controller->source_model()->size();
+
+						// if(source_model_size > tab_widget_count) {
+						// bool found = false;
+
+						// for(int i = 0; i < source_model_size; i++) {
+						// if(_record_controller->source_model()->child(i)->unique_page() ==
+						// to_be_closed_view->page()) {
+						// _record_controller->remove_child(_record_controller->source_model()->child(i)->id());
+						// found = true;
+						// break;
+						// }
+						// }
+
+						// assert(found == true);
+						// }
+						//				WebView *view_privious = nullptr;
+						//				view_privious =
+						//find([&](boost::intrusive_ptr<const Binder> b){return b->host() ==
+						//it->linker()->host_parent();});
+						//				if(!view_privious) view_privious =
+						//count() > 0 ? webView(-1 == _previous_index ? 0 : _previous_index) :
+						//nullptr;
+						//				if(view_privious)
+						//select_as_current(view_privious);
 					}
-					QWidget* lineEdit = _lineedits->widget(index_to_close);
-					if (lineEdit) {
-						_lineedits->removeWidget(lineEdit);
+					// move forward before removeTab(index);
+					// QWidget *lineEdit = _lineedits->widget(index);
 
-						lineEdit->deleteLater(); // delete lineEdit;
-					}
-					auto it = _view_to_close->page()->host();
-					assert(it->page() == _view_to_close->page());
-
-					// auto _tree_screen = _tree_screen;
-					_tree_screen->view()->selectionModel()->select(
-					    _tree_screen->view()->source_model()->index(it), QItemSelectionModel::SelectionFlag::Deselect);
-					_rctrl->view()->selectionModel()->select(_rctrl->source_model()->index(it), QItemSelectionModel::SelectionFlag::Deselect);
-					// _tree_screen->tree_view()->select_and_current(it, [](KnowView * v,
-					// const QModelIndex & _i)->QModelIndex {
-					// v->selectionModel()->select(_i,
-					// QItemSelectionModel::SelectionFlag::Deselect);
-					// assert(_i != v->selectionModel()->selectedIndexes().last());
-					// return v->selectionModel()->selectedIndexes().last();
-					// });
-
-					// if(!_record_controller->source_model()->is_item_exists(to_be_closed_view->page()->current_item()->id()))
-					// {
-					// assert(_record_controller->source_model()->size() == _tabbar->count());
-					// } else {
-					// _record_controller->source_model()->remove_child(to_be_closed_view->page()->current_item());
-					// to_be_closed_view->page()->break_records(); // same as
-					// _record_controller->source_model()->remove_child()
+					// if(lineEdit) {
+					// _lineedits->removeWidget(lineEdit);
+					////delete lineEdit;    //
+					// lineEdit->deleteLater();
 					// }
 
-					removeTab(index_to_close);
-					// if(sychronize_to_record_view)
-					_rctrl->remove(it->id());
-					//				{// lead double deconstruct
-					//					emit
-					//_view_to_close->close_requested(); //
-					//_record_controller->remove_child(to_be_closed_view->page()->current_item()->id());
-					//				}
-					// delete to_be_closed_view;
-					{       //?
-						//				_view_to_close->deleteLater();
-					}
-					// move to WebView::on_close_requested
+					emit tabsChanged();
+					// if(count() > 0){	// hasFocus &&
+					// auto behavior = _tabbar->selectionBehaviorOnRemove();
+					////		enum SelectionBehavior {
+					////		    SelectLeftTab,
+					////		    SelectRightTab,
+					////		    SelectPreviousTab
+					////		};
+					// WebView *current_view = nullptr;
+					// current_view = currentWebView();
+					// assert(current_view != webView(index));
+					// if(current_view != nullptr){
+					// current_view->setFocus();
+					// boost::intrusive_ptr<TreeItem> current_item =
+					// current_view->page()->host();
+					// if(current_item){
+					// assert((current_item->page_valid() && current_item->page()) ||
+					// (current_item->field<url_type>() == web::Browser::_defaulthome));
+					////                        // QModelIndex proxyindex =
+					///view->recordtablecontroller()->convertIdToProxyIndex(record->getField("id"));
+					////                        // int position =
+					///view->recordtablecontroller()->convertProxyIndexToPos(proxyindex);
+					////                        // RecordTableView *recordtableview =
+					///view->recordtablecontroller()->getView();
+					////                        //
+					///if(recordtableview)recordtableview->setSelectionToPos(position); // work
+					////                        current_view->setFocus();
+					////                        // globalparameters.mainwindow()
+					// if(_record_controller->view()->current_item() !=
+					// current_item)_record_controller->cursor_to_index(_record_controller->index<PosProxy>(current_item));
+					// // IdType(item->field("id"))
+					////                                selection_first<IdType>() !=
+					///current_item->field<id_type>()
+					// }
+					// }
+					// }
 					// int tab_widget_count = count();
 					// int tab_bar_count = _tabbar->count();
 					// int source_model_size = _record_controller->source_model()->size();
 
-					// if(source_model_size > tab_widget_count) {
-					// bool found = false;
-
-					// for(int i = 0; i < source_model_size; i++) {
-					// if(_record_controller->source_model()->child(i)->unique_page() ==
-					// to_be_closed_view->page()) {
-					// _record_controller->remove_child(_record_controller->source_model()->child(i)->id());
-					// found = true;
-					// break;
-					// }
-					// }
-
-					// assert(found == true);
-					// }
-					//				WebView *view_privious = nullptr;
-					//				view_privious =
-					//find([&](boost::intrusive_ptr<const Binder> b){return b->host() ==
-					//it->linker()->host_parent();});
-					//				if(!view_privious) view_privious =
-					//count() > 0 ? webView(-1 == _previous_index ? 0 : _previous_index) :
-					//nullptr;
-					//				if(view_privious)
-					//select_as_current(view_privious);
+					assert(count() == _tabbar->count());
+					// auto source_model_ = _record_controller->source_model();
+					// assert(_record_controller->source_model()->size() == _tabbar->count());
+					// if(sychronize_to_record_view)
+					_rctrl->on_recordtable_configchange();
+					// if(count() == 0)
+					if (0 == _tabbar->count()) emit lastTabClosed();
+				} else {
+					_browser->destroy_trigger_from_others()(_blogger);
 				}
-				// move forward before removeTab(index);
-				// QWidget *lineEdit = _lineedits->widget(index);
-
-				// if(lineEdit) {
-				// _lineedits->removeWidget(lineEdit);
-				////delete lineEdit;    //
-				// lineEdit->deleteLater();
-				// }
-
-				emit tabsChanged();
-				// if(count() > 0){	// hasFocus &&
-				// auto behavior = _tabbar->selectionBehaviorOnRemove();
-				////		enum SelectionBehavior {
-				////		    SelectLeftTab,
-				////		    SelectRightTab,
-				////		    SelectPreviousTab
-				////		};
-				// WebView *current_view = nullptr;
-				// current_view = currentWebView();
-				// assert(current_view != webView(index));
-				// if(current_view != nullptr){
-				// current_view->setFocus();
-				// boost::intrusive_ptr<TreeItem> current_item =
-				// current_view->page()->host();
-				// if(current_item){
-				// assert((current_item->page_valid() && current_item->page()) ||
-				// (current_item->field<url_type>() == web::Browser::_defaulthome));
-				////                        // QModelIndex proxyindex =
-				///view->recordtablecontroller()->convertIdToProxyIndex(record->getField("id"));
-				////                        // int position =
-				///view->recordtablecontroller()->convertProxyIndexToPos(proxyindex);
-				////                        // RecordTableView *recordtableview =
-				///view->recordtablecontroller()->getView();
-				////                        //
-				///if(recordtableview)recordtableview->setSelectionToPos(position); // work
-				////                        current_view->setFocus();
-				////                        // globalparameters.mainwindow()
-				// if(_record_controller->view()->current_item() !=
-				// current_item)_record_controller->cursor_to_index(_record_controller->index<PosProxy>(current_item));
-				// // IdType(item->field("id"))
-				////                                selection_first<IdType>() !=
-				///current_item->field<id_type>()
-				// }
-				// }
-				// }
-				// int tab_widget_count = count();
-				// int tab_bar_count = _tabbar->count();
-				// int source_model_size = _record_controller->source_model()->size();
-
-				assert(count() == _tabbar->count());
-				// auto source_model_ = _record_controller->source_model();
-				// assert(_record_controller->source_model()->size() == _tabbar->count());
-				// if(sychronize_to_record_view)
-				_rctrl->on_recordtable_configchange();
-				// if(count() == 0)
-				if (0 == _tabbar->count()) emit lastTabClosed();
 			}
 		}
 	}

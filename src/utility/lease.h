@@ -510,6 +510,12 @@ namespace sd {
 			return this->get();
 		}
 
+		operator element_type*() const
+		{
+			if (!internal_integrity()) const_cast<intrusive_ptr*>(this)->_shadow = nullptr;
+			return this->get();
+		}
+
 		void reset() BOOST_NOEXCEPT
 		{
 			intrusive_ptr().swap(*this);

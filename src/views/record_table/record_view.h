@@ -220,13 +220,20 @@ Q_DECLARE_METATYPE(QStyleOptionButton)
 // W_REGISTER_ARGTYPE(rs_t)
 // W_REGISTER_ARGTYPE(rctl_t)
 
-class rv_t : public QTableView {
+class rv_t : public QTableView
+#ifdef USE_SIGNAL_CLOSE
+	     ,
+	     public boost::intrusive_ref_counter<rctrl_t, boost::thread_safe_counter>,
+	     public sd::renter
+#endif // USE_SIGNAL_CLOSE
+{
 #if QT_VERSION == 0x050600
 	W_OBJECT(rv_t)
 #else
 	Q_OBJECT
 #endif
     public:
+	typedef QTableView super;
 	rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_); // W_CONSTRUCTOR(rs_t   *, rctl_t  *)
 	// // QString screen_name,
 

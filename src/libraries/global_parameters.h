@@ -52,6 +52,7 @@ class SysTrayIcon;
 class QUrl;
 class Blogger;
 class rctrl_t;
+class rv_t;
 
 #ifdef USE_SIGNAL_CLOSE
 typedef sd::intrusive_ptr<Blogger> blogger_ref;
@@ -59,6 +60,7 @@ typedef sd::intrusive_ptr<web::Browser> browser_ref;
 typedef sd::intrusive_ptr<web::TabWidget> tabwidget_ref;
 typedef sd::intrusive_ptr<rs_t> rs_ref;
 typedef sd::intrusive_ptr<rctrl_t> rctrl_ref;
+typedef sd::intrusive_ptr<rv_t> rv_ref;
 
 #else
 typedef Blogger* blogger_ref;
@@ -66,6 +68,7 @@ typedef web::Browser* browser_ref;
 typedef web::TabWidget* tabwidget_ref;
 typedef rs_t* rs_ref;
 typedef rctrl_t* rctrl_ref;
+typedef rv_t* rv_ref;
 #endif // USE_SIGNAL_CLOSE
 
 
@@ -183,37 +186,37 @@ class gl_para : public QObject {
 	// QMap<QString, QString>	index_xml() const;
 	// QMap<QString, QString>	editorconf() const;
 
-	// static constexpr const char *_defaulthome = "about:blank";
-	static constexpr const char* _program_root_dir_name = "rootdir";
-	static constexpr const char* _program_instance_name = "tute"; // QCoreApplication::applicationName();// won't work
-	static constexpr const char* _index_xml_file_name = "index.xml";
-	static constexpr const char* _mode_filename = "mode.ini";              // static constexpr const char _mode_filename[]	= "mode.ini";
-	static constexpr const char* _conf_filename = "conf.ini";              // static constexpr const char _conf_filename[]	= "conf.ini";
-	static constexpr const char* _browser_conf_filename = "browser.conf";  // static constexpr const char _browser_conf_filename[] = "browser.conf";
-	static constexpr const char* _dock_conf_filename = "dock.ini";         // static constexpr const char _dock_conf_filename[] = "dock.ini";
-	static constexpr const char* _dock_settings_section_name = "system";   // static constexpr const char _dock_settings_section_name[] = "system";
-	static constexpr const char* _editor_conf_filename = "editorconf.ini"; // static constexpr const char _editor_conf_filename[] = "editorconf.ini";
-	static constexpr const char* _data_conf_filename = "database.ini";     //	static constexpr const char *_browser_dock_conf_filename = "entrance.ini";//static constexpr char _entrance_conf_filename[] = "entrance.ini";
-	static constexpr const char* _stylesheet_filename = "stylesheet.css";  // static constexpr const char _stylesheet_filename[] = "stylesheet.css";
+	// static constexpr const char *_defaulthome = "about:blank"; // can work without definition in global_parameters.cpp but for lease.h it is an undefined reference
+	static constexpr char _program_root_dir_name[] = "rootdir";
+	static constexpr char _program_instance_name[] = "tute"; // QCoreApplication::applicationName();// won't work
+	static constexpr char _index_xml_file_name[] = "index.xml";
+	static constexpr char _mode_filename[] = "mode.ini";              // static constexpr char _mode_filename[]	= "mode.ini";
+	static constexpr char _conf_filename[] = "conf.ini";              // static constexpr char _conf_filename[]	= "conf.ini";
+	static constexpr char _browser_conf_filename[] = "browser.conf";  // static constexpr char _browser_conf_filename[] = "browser.conf";
+	static constexpr char _dock_conf_filename[] = "dock.ini";         // static constexpr char _dock_conf_filename[] = "dock.ini";
+	static constexpr char _dock_settings_section_name[] = "system";   // static constexpr char _dock_settings_section_name[] = "system";
+	static constexpr char _editor_conf_filename[] = "editorconf.ini"; // static constexpr char _editor_conf_filename[] = "editorconf.ini";
+	static constexpr char _data_conf_filename[] = "database.ini";     //	static constexpr char *_browser_dock_conf_filename = "entrance.ini";//static constexpr char _entrance_conf_filename[] = "entrance.ini";
+	static constexpr char _stylesheet_filename[] = "stylesheet.css";  // static constexpr char _stylesheet_filename[] = "stylesheet.css";
 	// static constexpr char _document_config_name[] = "document.ini";
-	static constexpr const char* _file_menu_name = "file_menu";
-	static constexpr const char* _tools_menu_name = "tools_menu";
-	static constexpr const char* _edit_menu_name = "edit_menu";
-	static constexpr const char* _view_menu_name = "view_menu";
-	static constexpr const char* _window_menu_name = "window_menu";
-	static constexpr const char* _help_menu_name = "help_menu";
-	static constexpr const char* _history_menu_name = "history_menu";
-	static constexpr const char* _bookmark_menu_name = "bookmark_menu";
+	static constexpr char _file_menu_name[] = "file_menu";
+	static constexpr char _tools_menu_name[] = "tools_menu";
+	static constexpr char _edit_menu_name[] = "edit_menu";
+	static constexpr char _view_menu_name[] = "view_menu";
+	static constexpr char _window_menu_name[] = "window_menu";
+	static constexpr char _help_menu_name[] = "help_menu";
+	static constexpr char _history_menu_name[] = "history_menu";
+	static constexpr char _bookmark_menu_name[] = "bookmark_menu";
 
-	static constexpr const char* _default_topic = "undefined";
-	static constexpr const char* _default_post = "Welcome to \"undefined\" topic";
+	static constexpr char _default_topic[] = "undefined";
+	static constexpr char _default_post[] = "Welcome to \"undefined\" topic";
 
 	//	static constexpr const char *_what_ever_topic	= "what_ever";
-	static constexpr const char* _current_browser = "current_browser";
-	static constexpr const char* _browser_navigater_name = "browser_navigater";
-	static constexpr const char* _blog_root_dir = "blog";
-	static constexpr const char* _custom_hidable_tab_style = "custom_hidable_tab_style.css";
-	static constexpr const char* _custom_browser_tabbar_style = "custom_browser_tabbar_style.css";
+	static constexpr char _current_browser[] = "current_browser";
+	static constexpr char _browser_navigater_name[] = "browser_navigater";
+	static constexpr char _blog_root_dir[] = "blog";
+	static constexpr char _custom_hidable_tab_style[] = "custom_hidable_tab_style.css";
+	static constexpr char _custom_browser_tabbar_style[] = "custom_browser_tabbar_style.css";
 	static constexpr int initialize_priority = 0;
 	template <typename T>
 	struct initialize_prior_to;

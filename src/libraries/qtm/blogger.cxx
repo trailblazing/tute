@@ -536,27 +536,9 @@ Blogger::Blogger(QString new_post_topic, QString new_post_content, QStringList h
 		assert(list[1] == _editor->width());
 		emit _splitter->splitterMoved(list[0], 0);
 	}
-	// _main_stack->hide();// for debug
-	// _console->hide();status
-	// _main_stack->setCurrentIndex(_console_id);
-	if (_browser) {
-		connect(this, &Blogger::topic_changed, &*_browser, &web::Browser::on_topic_changed);
-//	connect(this, &Blogger::topic_changed, _record_screen, &rs_t::on_topic_changed);
-#ifdef USE_SIGNAL_CLOSE
-		//		close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::Browser::on_close_requested, &*_browser, static_cast<sd::renter* const>(this))); //self_close_request.connect(_browser->self_close_request); //(std::bind(&web::Browser::self_close_request, _browser));
-		destroy_transfer(_browser->destroy_trigger_from_others()); //
-//		close_request_connect([=](renter* const r) {
-//			(void)r;
-//			if (_browser && r != _browser && !_browser->close_request_sent() && !_browser->destroy_request_sent()) {
-//				_browser->close_requested_from_others(r);
-//			}
-//		}); //std::bind(&web::Browser::close_requested_from_others, &*_browser, static_cast<sd::renter* const>(this))
-//                self_close_request.connect(std::bind(&web::Browser::test, _browser));//work
-//                bool result = false;
-//                close_connect(sd::method<sd::meta_info<void>>("", &web::Browser::close, &result, &*_browser));
-//                //		assert(result);
-#endif //USE_SIGNAL_CLOSE
-	}
+// _main_stack->hide();// for debug
+// _console->hide();status
+// _main_stack->setCurrentIndex(_console_id);
 #ifdef USE_SIGNAL_CLOSE
 	//	bool _closed = false;
 	destroy_transfer([&](renter* const r) {
@@ -569,6 +551,25 @@ Blogger::Blogger(QString new_post_topic, QString new_post_content, QStringList h
 		}
 	}); //std::make_shared<sd::method<sd::meta_info<void>>>("", &Blogger::close, &_closed, this) //self_close_request.connect(std::bind(&Blogger::close, this));
 #endif      //USE_SIGNAL_CLOSE
+
+	if (_browser) {
+		connect(this, &Blogger::topic_changed, _browser, &web::Browser::on_topic_changed);
+//	connect(this, &Blogger::topic_changed, _record_screen, &rs_t::on_topic_changed);
+#ifdef USE_SIGNAL_CLOSE
+//		//		close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::Browser::on_close_requested, _browser, static_cast<sd::renter* const>(this))); //self_close_request.connect(_browser->self_close_request); //(std::bind(&web::Browser::self_close_request, _browser));
+//		destroy_transfer(_browser->destroy_trigger_from_others()); //
+////		close_request_connect([=](renter* const r) {
+////			(void)r;
+////			if (_browser && r != _browser && !_browser->close_request_sent() && !_browser->destroy_request_sent()) {
+////				_browser->close_requested_from_others(r);
+////			}
+////		}); //std::bind(&web::Browser::close_requested_from_others, _browser, static_cast<sd::renter* const>(this))
+////                self_close_request.connect(std::bind(&web::Browser::test, _browser));//work
+////                bool result = false;
+////                close_connect(sd::method<sd::meta_info<void>>("", &web::Browser::close, &result, _browser));
+////                //		assert(result);
+#endif //USE_SIGNAL_CLOSE
+	}
 }
 
 Blogger::~Blogger()
@@ -578,21 +579,27 @@ Blogger::~Blogger()
 	_prepended(this);
 #endif
 
-	//	//	close_requested(this);
-	//	//    _browser->save();
-	//	//	_browser->_autosaver->changeOccurred();
-	//	//	_browser->_autosaver->saveIfNeccessary();
-	//	// if(_editor_dock->_editing_list.contains(this))
-	//	// _editor_dock->_editing_list.removeOne(this);
-	//	//	deleteLater();
-	//	//	if (_record_screen) connect(this, &Blogger::close_request, _record_screen, &rs_t::on_blogger_close_requested);
-	//	if (_browser) {
-	//		//		self_close_request.connect(std::bind(&web::Browser::on_blogger_close_requested, _browser)); //connect(this, &Blogger::self_close_request, &*_browser, &web::Browser::on_blogger_close_requested);
-	//		//		//		auto rs = _browser->record_screen();
-	//		_browser = nullptr;
-	//	}
-	//	//	emit self_close_request(this);
-	//	delete &*_browser;
+//	//	close_requested(this);
+//	//    _browser->save();
+//	//	_browser->_autosaver->changeOccurred();
+//	//	_browser->_autosaver->saveIfNeccessary();
+//	// if(_editor_dock->_editing_list.contains(this))
+//	// _editor_dock->_editing_list.removeOne(this);
+//	//	deleteLater();
+//	//	if (_record_screen) connect(this, &Blogger::close_request, _record_screen, &rs_t::on_blogger_close_requested);
+//	if (_browser) {
+//		//		self_close_request.connect(std::bind(&web::Browser::on_blogger_close_requested, _browser)); //connect(this, &Blogger::self_close_request, _browser, &web::Browser::on_blogger_close_requested);
+//		//		//		auto rs = _browser->record_screen();
+//		_browser = nullptr;
+//	}
+//	//	emit self_close_request(this);
+//	delete _browser;
+#ifdef USE_SIGNAL_CLOSE
+	if (_browser) {
+		if (!_browser->_close_request_sent)
+			_browser->destroy_trigger_from_others()(this);
+	}
+#endif // USE_SIGNAL_CLOSE
 }
 
 #ifdef USE_SYSTRAYICON
@@ -971,7 +978,7 @@ bool Blogger::handleArguments()
 		for (i = 1; i < args.size(); i++) {
 			if (create_) // if there is a current new window
 				d = create_;
-			create_ = new Blogger();
+			create_ = sd::make_intrusive<Blogger>();
 #ifdef Q_OS_MAC
 // setNoStatusBar( c );
 #endif
@@ -4248,7 +4255,7 @@ void Blogger::choose(QString fname)
 				}
 			}
 		} else {
-			Blogger* e = new Blogger();
+			Blogger* e = sd::make_intrusive<Blogger>();
 			if (e->load(fn, true)) {
 #ifdef USE_SYSTRAYICON
 				e->setSTI(sti);

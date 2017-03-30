@@ -47,15 +47,38 @@ extern const std::string program_title_string;
 W_OBJECT_IMPL(GlobalParameters)
 #endif
 
-// constexpr const char* gl_para::_program_instance_name;
-// constexpr char gl_para::_mode_filename[]; // = "mode.ini";
-// constexpr char gl_para::_conf_filename[]; // = "conf.ini";
-// constexpr char gl_para::_browser_conf_filename[]; // = "browser.conf";
-// constexpr char gl_para::_dock_conf_filename[]; // = "browserview.ini";
-// constexpr char gl_para::_dock_settings_section_name[];
-// constexpr char gl_para::_editor_conf_filename[]; // = "editorconf.ini";
-// constexpr char gl_para::_entrance_conf_filename[]; // = "entrance.ini";
-// constexpr char gl_para::_stylesheet_filename[]; // = "stylesheet.css";
+
+constexpr char gl_para::_program_root_dir_name[];      //  = "rootdir";
+constexpr char gl_para::_program_instance_name[];      //  = "tute"; // QCoreApplication::applicationName();// won't work // constexpr const char* gl_para::_program_instance_name;
+constexpr char gl_para::_index_xml_file_name[];        //  = "index.xml";
+constexpr char gl_para::_mode_filename[];              //  = "mode.ini";              // constexpr char gl_para::_mode_filename[]; //	= "mode.ini";
+constexpr char gl_para::_conf_filename[];              //  = "conf.ini";              // constexpr char gl_para::_conf_filename[]; //	= "conf.ini";
+constexpr char gl_para::_browser_conf_filename[];      //  = "browser.conf";  // constexpr char gl_para::_browser_conf_filename[]; //  = "browser.conf";
+constexpr char gl_para::_dock_conf_filename[];         //  = "dock.ini";         // constexpr char gl_para::_dock_conf_filename[]; //  = "dock.ini";
+constexpr char gl_para::_dock_settings_section_name[]; //  = "system";   // constexpr char gl_para::_dock_settings_section_name[]; //  = "system";
+constexpr char gl_para::_editor_conf_filename[];       //  = "editorconf.ini"; // constexpr char gl_para::_editor_conf_filename[]; //  = "editorconf.ini";
+constexpr char gl_para::_data_conf_filename[];         //  = "database.ini";     //	constexpr char gl_para::*_browser_dock_conf_filename; //  = "entrance.ini";//static constexpr char _entrance_conf_filename[]; //  = "entrance.ini";
+constexpr char gl_para::_stylesheet_filename[];        //  = "stylesheet.css";  // constexpr char gl_para::_stylesheet_filename[]; //  = "stylesheet.css";
+// constexpr char _document_config_name[]; //  = "document.ini";
+constexpr char gl_para::_file_menu_name[];     //  = "file_menu";
+constexpr char gl_para::_tools_menu_name[];    //  = "tools_menu";
+constexpr char gl_para::_edit_menu_name[];     //  = "edit_menu";
+constexpr char gl_para::_view_menu_name[];     //  = "view_menu";
+constexpr char gl_para::_window_menu_name[];   //  = "window_menu";
+constexpr char gl_para::_help_menu_name[];     //  = "help_menu";
+constexpr char gl_para::_history_menu_name[];  //  = "history_menu";
+constexpr char gl_para::_bookmark_menu_name[]; //  = "bookmark_menu";
+
+
+constexpr char gl_para::_default_topic[];               // = "undefined";
+constexpr char gl_para::_default_post[];                // = "Welcome to \"undefined\" topic";
+constexpr char gl_para::_current_browser[];             // = "current_browser";
+constexpr char gl_para::_browser_navigater_name[];      // = "browser_navigater";
+constexpr char gl_para::_blog_root_dir[];               // = "blog";
+constexpr char gl_para::_custom_hidable_tab_style[];    // = "custom_hidable_tab_style.css";
+constexpr char gl_para::_custom_browser_tabbar_style[]; // = "custom_browser_tabbar_style.css";
+constexpr int gl_para::initialize_priority;             // = 0;
+
 
 gl_para::gl_para(QObject* pobj)
     : mode_full_name_in_app_data_path_system([&] {

@@ -68,7 +68,7 @@ class rctrl_t : public QObject
 	typedef QObject super;
 	// typedef TreeItem::bind_helper       bind_helper;
 	// typedef TreeItem::activate_helper   active_helper;
-	rctrl_t(Blogger *blogger_, web::TabWidget *tabmanager_, rs_t *record_screen_);
+	rctrl_t(Blogger* blogger_, web::TabWidget* tabmanager_, rs_t* record_screen_);
 	virtual ~rctrl_t();
 
 	// void init(void);
@@ -76,7 +76,7 @@ class rctrl_t : public QObject
 	rv_t* view(void) const;
 	RecordModel* source_model(); // {return _source_model;}
 	RecordProxyModel* proxy_model();
-	web::TabWidget *tab_widget();
+	web::TabWidget* tab_widget();
 	//	void tab_widget(web::TabWidget* tab_);
 	boost::intrusive_ptr<i_t> index_invoke(const index_proxy& index_proxy_, bool force_update = false);
 
@@ -148,13 +148,13 @@ class rctrl_t : public QObject
 	// *main_window, MetaEditor *_editor_screen);
 	// bool no_view() {return _no_view;}
 
-	rs_t *record_screen();
+	rs_t* record_screen();
 
 	// RecordController *reocrd_controller() {return this;}
 	// RecordController *reocrd_controller()const {return
 	// const_cast<RecordController *>(this);}
 
-	Blogger *blogger();
+	Blogger* blogger();
 	//    signals:
 	//	void close_request(QObject*);
 	//	sd::shared_ptr<rctrl_t> renter() const;
@@ -212,7 +212,7 @@ class rctrl_t : public QObject
 	RecordModel* _source_model; // Class, advanced by QAbstractTableModel   //
 	// Класс, расширенный от QAbstractTableModel
 	RecordProxyModel* _proxy_model;
-	rv_t* _view;
+	rv_ref _view;
 	rs_ref _record_screen;
 	blogger_ref _blogger;
 	//	wn_t *_main_window;
