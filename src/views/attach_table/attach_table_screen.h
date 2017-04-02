@@ -40,6 +40,7 @@ class AttachTableScreen : public QWidget {
 	QAction* actionSaveAsAttach;
 	QAction* actionShowAttachInfo;
 
+	AttachTableController* attach_table_ctrl();
     signals:
 
     public slots:
@@ -51,16 +52,16 @@ class AttachTableScreen : public QWidget {
 	void assembly(void);
 
 	// Экранные элементы
-	QToolBar* toolsLine;
+	QToolBar* _tools_line;
 	// Указатель на контроллер таблицы приаттаченных файлов
-	AttachTableController* attachTableController;
+	AttachTableController* _attach_table_crtl;
 
 	// Указатель на таблицу приаттаченных файлов (представление)
-	AttachTableView* attachTableView;
+	AttachTableView* _attach_table_view;
 
-	QVBoxLayout* screenLayout;
+	QVBoxLayout* _screen_layout;
 
-	QAction* actionSwitchToEditor;
+	QAction* _action_switch_to_editor;
 };
 
 #endif // ATTACHTABLESCREEN_H

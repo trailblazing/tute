@@ -179,8 +179,8 @@ class gl_para : public QObject {
 	std::shared_ptr<EditorConfig> editor_config() const;
 	void editor_config(std::shared_ptr<EditorConfig> dialog);
 
-	AttachTableController* attachtable_controller() const;
-	void attachtable_controller(AttachTableController* _attachtable_controller);
+	//	AttachTableController* attachtable_controller() const;
+	//	void attachtable_controller(AttachTableController* _attachtable_controller);
 	// bool is_ini_config_exist(const QString &filename) const;
 	// QMap<QString, QString>	config_ini() const;
 	// QMap<QString, QString>	index_xml() const;

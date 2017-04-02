@@ -504,7 +504,8 @@ namespace web {
 		//			//					    );
 		//		}
 		//#endif // USE_SIGNAL_CLOSE
-		delete static_cast<Blogger*>(_blogger); //_blogger->destroy_trigger_from_others()(nullptr);
+		if (_blogger)
+			delete static_cast<Blogger*>(_blogger); //_blogger->destroy_trigger_from_others()(nullptr);
 	}
 
 	void Browser::run_script(const QString& style_source)
@@ -1868,7 +1869,7 @@ namespace web {
 
 	void Browser::showEvent(QShowEvent* event)
 	{
-		_destroyed_request_sent = false;
+		_destroy_request_sent = false;
 		QMainWindow::showEvent(event);
 	}
 

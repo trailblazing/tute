@@ -966,16 +966,16 @@ std::shared_ptr<EditorConfig> gl_para::editor_config() const
 	return _editor_config;
 }
 
-AttachTableController* gl_para::attachtable_controller() const
-{
-	return _attachtable_controller;
-}
+//AttachTableController* gl_para::attachtable_controller() const
+//{
+//	return _attachtable_controller;
+//}
 
-void gl_para::attachtable_controller(
-    AttachTableController* _attachtable_controller)
-{
-	this->_attachtable_controller = _attachtable_controller;
-}
+//void gl_para::attachtable_controller(
+//    AttachTableController* _attachtable_controller)
+//{
+//	this->_attachtable_controller = _attachtable_controller;
+//}
 
 void gl_para::tree_screen(ts_t* point)
 {

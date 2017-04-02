@@ -36,12 +36,12 @@ W_OBJECT_IMPL(AttachTableController)
 
 AttachTableController::AttachTableController(Blogger* blogger_, AttachTableScreen* parent)
     : QObject(parent)
-    , _view([&]() -> AttachTableView* {
+    , _view([&] {
 	    _view = nullptr;
 	    auto v = new AttachTableView(qobject_cast<QWidget*>(parent));
 	    return v;
     }())
-    , _model([&]() -> AttachTableModel* {
+    , _model([&] {
 	    _model = nullptr;
 	    auto at = new AttachTableModel(this);
 	    return at;

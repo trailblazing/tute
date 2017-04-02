@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 class SideTabWidget : public HidableTab {
     public:
-	SideTabWidget(web::Docker<Blogger> *editor_docker_, Blogger *blogger_, std::shared_ptr<QSettings> topic_editor_config_, QSplitter* splitter, QWidget* parent);
+	SideTabWidget(web::Docker<Blogger>* editor_docker_, Blogger* blogger_, std::shared_ptr<QSettings> topic_editor_config_, QSplitter* splitter, QWidget* parent);
 
 	void title(const QString& title_);
 	QString title() const;
@@ -65,6 +65,8 @@ class SideTabWidget : public HidableTab {
 	QString topic() const;
 
 	QLineEdit* lineedit_topic();
+
+	AttachTableScreen* attachtable_screen();
 
     private:
 	//	web::Docker *_editor_docker;

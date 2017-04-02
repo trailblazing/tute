@@ -122,7 +122,7 @@ class Editor : public QWidget {
 #endif
 
     public:
-	Editor(QStackedWidget* main_stack, Blogger *blogger_, std::shared_ptr<QSettings> topic_editor_config_, int mode, QStringList hide_editor_tools, bool enable_assembly = false, bool enable_random_seed = false);
+	Editor(QStackedWidget* main_stack, Blogger* blogger_, std::shared_ptr<QSettings> topic_editor_config_, int mode, QStringList hide_editor_tools, bool enable_assembly = false, bool enable_random_seed = false);
 	~Editor(void);
 
 	std::shared_ptr<EditorConfig> _editor_config;

@@ -217,6 +217,7 @@ class rctrl_t : public QObject
 	blogger_ref _blogger;
 	//	wn_t *_main_window;
 	//	bool _closed = false;
+
 	// web::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex>
 	// record_index_, bool make_current = true);	// , const int mode =
 	// add_new_record_after	// add_new_record_after

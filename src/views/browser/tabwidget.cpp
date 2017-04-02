@@ -998,17 +998,19 @@ namespace web {
 //		delete _record_screen;
 #ifdef USE_SIGNAL_CLOSE
 		if (_browser) {
-			//			_browser->close_connect([&](renter* const r) {if(r != this && !this->_closed) this->_closed = this->close(); });
-			//			destroy_transfer(
-			_browser->destroy_trigger_from_others()(this);
+			if (!_browser->close_request_sent() && !_browser->destroy_request_sent())
+
+				//			_browser->close_connect([&](renter* const r) {if(r != this && !this->_closed) this->_closed = this->close(); });
+				//			destroy_transfer(
+				_browser->destroy_trigger_from_others()(this);
 			//				    ); //std::bind(&Browser::close_requested_from_others, _browser, static_cast<sd::renter* const>(this))
 		}
 
 
 		// let Browser::~Browser() do it
-		if (_record_screen) { // close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &rs_t::on_close_requested, _record_screen, static_cast<sd::renter* const>(this))); //close_requested.connect(_record_screen->close_requested);               //(std::bind(&rs_t::self_close_request, _record_screen));
-				      //			destroy_transfer(
-			_record_screen->destroy_trigger_from_others()(this);
+		if (_record_screen) {                                                                         // close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &rs_t::on_close_requested, _record_screen, static_cast<sd::renter* const>(this))); //close_requested.connect(_record_screen->close_requested);               //(std::bind(&rs_t::self_close_request, _record_screen));
+			if (!_record_screen->close_request_sent() && !_record_screen->destroy_request_sent()) //			destroy_transfer(
+				_record_screen->destroy_trigger_from_others()(this);
 			//				    ); // std::bind(&rs_t::close_requested_from_others, _record_screen, static_cast<sd::renter* const>(this))
 		}
 
@@ -2080,7 +2082,7 @@ namespace web {
 						//_record_controller->remove_child(to_be_closed_view->page()->current_item()->id());
 						//				}
 						// delete to_be_closed_view;
-						{       //?
+						{ //?
 							//				_view_to_close->deleteLater();
 						}
 						// move to WebView::on_close_requested

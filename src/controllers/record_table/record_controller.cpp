@@ -21,6 +21,7 @@
 #include "libraries/flat_control.h"
 #include "libraries/global_parameters.h"
 #include "libraries/qtm/blogger.h"
+#include "libraries/qtm/side_tabwidget.h"
 #include "libraries/walk_history.h"
 #include "libraries/window_switcher.h"
 #include "main.h"
@@ -39,6 +40,7 @@
 #include "models/tree/tree_model.h"
 #include "record_controller.h"
 #include "views/app_config//app_config_dialog.h"
+#include "views/attach_table/attach_table_screen.h"
 #include "views/browser/browser.h"
 #include "views/browser/docker.h"
 #include "views/browser/tabwidget.h"
@@ -125,7 +127,7 @@ rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_fi
 	destroy_transfer([&](sd::renter* const r) {
 		(void)r;
 		if (r != this) { //&& !this->_destroyed_request_sent
-			this->_destroyed_request_sent = true;
+			this->_destroy_request_sent = true;
 			//			delete this; //this->deleteLater();
 		}
 	});
@@ -146,14 +148,14 @@ rctrl_t::~rctrl_t()
 	_source_model->deleteLater();
 #ifdef USE_SIGNAL_CLOSE
 	if (_record_screen) {
-		if (!_record_screen->close_request_sent())
+		if (!_record_screen->close_request_sent() && !_record_screen->destroy_request_sent())
 			//                        destroy_transfer(
 			_record_screen->destroy_trigger_from_others()(this);
 		//				    );
 	}
 
 	if (_view) {
-		if (!_record_screen->close_request_sent())
+		if (!_view->close_request_sent() && !_view->destroy_request_sent())
 			//                        destroy_transfer(
 			_view->destroy_trigger_from_others()(this);
 		//					    );
@@ -646,7 +648,7 @@ void rctrl_t::sychronize_attachtable_to_item(const pos_source pos)
 	// auto table = _source_model->tree_item();
 
 	// Устанавливается таблица приаттаченных файлов
-	AttachTableController* attachTableController = gl_paras->attachtable_controller(); // find_object<AttachTableController>("attachTableController");
+	AttachTableController* attachTableController = _blogger->control_tab()->attachtable_screen()->attach_table_ctrl(); //gl_paras->attachtable_controller(); // find_object<AttachTableController>("attachTableController");
 	attachTableController->attach_table_data(_source_model->item(pos)->attach_table());
 }
 
