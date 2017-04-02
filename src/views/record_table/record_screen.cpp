@@ -487,7 +487,7 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
 		if (r != this) { //&& !this->_destroyed_request_sent
 				 //			this->_destroyed_request_sent =
 			this->close();
-			assert(this->_destroyed_request_sent == true);
+			assert(this->_destroy_request_sent == true);
 			//			delete this;
 		}
 	}); //std::make_shared<sd::method<sd::meta_info<void>>>("", &rs_t::close, &_closed, this) //close_requested.connect(std::bind(&rs_t::close, this));
@@ -533,13 +533,13 @@ rs_t::~rs_t()
 //	// delete _recordtree_search;
 #ifdef USE_SIGNAL_CLOSE
 	if (_rctrl) { //		close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &rctrl_t::on_close_requested, _rctrl, static_cast<sd::renter* const>(this)));
-		if (!_rctrl->close_request_sent())
+		if (!_rctrl->close_request_sent() && !_rctrl->destroy_request_sent())
 			//		destroy_transfer(
 			_rctrl->destroy_trigger_from_others()(this);
 		//				    ); //std::bind(&rctrl_t::close_requested_from_others, _rctrl, static_cast<sd::renter* const>(this))
 	}
 	if (_browser) {
-		if (!_browser->close_request_sent())
+		if (!_browser->close_request_sent() && !_browser->destroy_request_sent())
 			//	destroy_transfer(
 			_browser->destroy_trigger_from_others()(this);
 		//			 );

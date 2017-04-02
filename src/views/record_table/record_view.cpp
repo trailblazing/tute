@@ -976,7 +976,7 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 			destroy_transfer([&](sd::renter* const r) {
 				(void)r;
 				if (r != this) { //&& !this->_destroyed_request_sent
-					this->_destroyed_request_sent = true;
+					this->_destroy_request_sent = true;
 					this->close();
 				}
 			});
@@ -1075,7 +1075,7 @@ rv_t::~rv_t()
 	if (_record_screen) { //never run
 		auto _blogger = _record_screen->blogger();
 		if (_blogger)
-			if (!_blogger->close_request_sent())
+			if (!_blogger->close_request_sent() && !_blogger->destroy_request_sent())
 				_blogger->destroy_trigger_from_others()(this);
 	}
 }

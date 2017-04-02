@@ -766,3 +766,6 @@ QLineEdit* SideTabWidget::lineedit_topic()
 {
 	return _lineedit_topic;
 }
+
+
+AttachTableScreen* SideTabWidget::attachtable_screen() { return _attachtable_screen; }
