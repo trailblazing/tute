@@ -202,7 +202,7 @@ namespace sd {
 		auto close_trigger_from_others() //sd::intrusive_ptr<renter_type>& this //(renter_type *const receiver_)
 		{
 			return [&](renter* const sender_) { // if (this) { //boost::intrusive_ptr<real_sender>(receiver_).get()
-				if (!this->_close_request_sent && !this->_destroyed_request_sent && sender_ != this) {
+				if (!this->_close_request_sent && !this->_destroy_request_sent && sender_ != this) {
 					_close_request_sent = true;
 					this->_close_request(sender_); //
 								       //					_close_request.disconnect_all_slots();
@@ -213,8 +213,8 @@ namespace sd {
 		auto destroy_trigger_from_others()
 		{
 			return [&](renter* const sender_) {
-				if (!_destroyed_request_sent && sender_ != this) {
-					_destroyed_request_sent = true;
+				if (!_destroy_request_sent && sender_ != this) {
+					_destroy_request_sent = true;
 					_destroy_request(sender_); //
 								   //					_destroy_request.disconnect_all_slots();
 				}
@@ -238,8 +238,8 @@ namespace sd {
 			//			boost::intrusive_ptr_release<renter, counter_policy>(this);
 			// for debug
 			// self_close_request_impl(this);
-			if (!_close_request_sent || !_destroyed_request_sent) {
-				_destroyed_request_sent = true;
+			if (!_close_request_sent || !_destroy_request_sent) {
+				_destroy_request_sent = true;
 				_destroy_request(nullptr); //if (!_close_request_sent && !_closed) _close_request(this);
 							   //				_destroy_request.disconnect_all_slots();
 			}
@@ -247,7 +247,7 @@ namespace sd {
 
 		bool close_request_sent() const { return _close_request_sent; }
 
-		bool destroy_request_sent() const { return _destroyed_request_sent; }
+		bool destroy_request_sent() const { return _destroy_request_sent; }
 	    protected:
 		//		void close_request_received(bool status) { _close_request_triggered = status; }
 		//		void is_destroyed(bool status) { _destroyed = status; }
@@ -257,7 +257,7 @@ namespace sd {
 			//			//			static_assert(std::is_base_of<renter, element_type>::value, "element_type needs to be a renter");
 			_close_request.connect(std::bind([&] { _close_request_sent = true; }));
 			_destroy_request.connect(std::bind([&] {
-				_destroyed_request_sent = true;
+				_destroy_request_sent = true;
 				if (!_close_request_sent) {
 					_close_request_sent = true;
 					_close_request(this);
@@ -289,7 +289,7 @@ namespace sd {
 
 		bool _close_request_sent = false;
 		//		std::map<size_t, std::shared_ptr<sd::method<sd::meta_info<void>>>> _slots;
-		bool _destroyed_request_sent = false;
+		bool _destroy_request_sent = false;
 
 	    private:
 #ifdef USE_SD_METHOD
@@ -333,11 +333,11 @@ namespace sd {
 		{
 			auto px = boost::intrusive_ptr<element_type>::get();
 			bool conflict = false;
-			if (!px || px->_close_request_sent || px->_destroyed_request_sent) conflict = (_shadow != nullptr);
+			if (!px || px->_close_request_sent || px->_destroy_request_sent) conflict = (_shadow != nullptr);
 			//			bool null = !px && !_shadow;
 			bool closed = !_shadow; //px && (px->_close_request_triggered || px->_destroyed_request_triggered) && !_shadow;
 
-			bool normal = px && !px->_close_request_sent && !px->_destroyed_request_sent && _shadow && (_shadow == px);
+			bool normal = px && !px->_close_request_sent && !px->_destroy_request_sent && _shadow && (_shadow == px);
 			//			assert(( //null ||
 			//				   closed || normal) &&
 			//			    !conflict);

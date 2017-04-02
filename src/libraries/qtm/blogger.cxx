@@ -596,7 +596,7 @@ Blogger::~Blogger()
 //	delete _browser;
 #ifdef USE_SIGNAL_CLOSE
 	if (_browser) {
-		if (!_browser->_close_request_sent)
+		if (!_browser->_close_request_sent && !_destroy_request_sent)
 			_browser->destroy_trigger_from_others()(this);
 	}
 #endif // USE_SIGNAL_CLOSE
@@ -1067,7 +1067,7 @@ void Blogger::showEvent(QShowEvent* event)
 	// chances are it's new
 	if (_editor->document()->isEmpty() && !_dirty_indicator->isVisible() &&
 	    !event->spontaneous() && !_entry_ever_saved) _control_tab->leTitle->setFocus(Qt::ActiveWindowFocusReason);
-	_destroyed_request_sent = false;
+	_destroy_request_sent = false;
 	super::showEvent(event);
 }
 

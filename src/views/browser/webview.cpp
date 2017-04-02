@@ -1069,7 +1069,7 @@ namespace web {
 		if (type == QWebEnginePage::NavigationTypeLinkClicked) {
 			// retrieve the url here
 			_hovered_url = url.toString();
-			return false;
+			//			return false;
 		}
 		return true;
 
@@ -2290,7 +2290,7 @@ namespace web {
 	    :               // std::enable_shared_from_this<Coupler>()
 	      _host(item_),
 	      _page(page_)
-	{ // , _make_current(make_current)
+	{       // , _make_current(make_current)
 		// _bounded_page->binder(new
 		// TreeItem::coupler_delegation(shared_from_this()));
 		// _bounded_item->binder(_bounded_page->record_binder());
