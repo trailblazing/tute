@@ -35,6 +35,7 @@
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
 #include "views/record/editor_wrap.h"
+#include "views/record_table/record_view.h"
 #include "views/record_table/vertical_scrollarea.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
@@ -1469,6 +1470,11 @@ void rs_t::tools_update()
 			// // (item_selection_model->selectedRows()).size();// always crash because
 			// tabmanager inaccessible
 			bool has_selection = item_selection_model->hasSelection();
+			if (!has_selection && _tab_widget->count() > 0) {
+
+				_rctrl->select_as_current(_rctrl->index<pos_proxy>(_view->current_item()));
+				has_selection = true;
+			}
 			//	if(_browser){
 			//		auto tab = _browser->tabmanager();
 			//		if(tab){

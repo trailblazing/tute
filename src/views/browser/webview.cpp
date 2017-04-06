@@ -65,13 +65,14 @@
 
 //#include "models/tree/tree_item.dec"
 
-#include "libraries/qt_single_application5/qtsingleapplication.h"
+
 #include <thread>
 
 #include "browser.h"
 #include "cookiejar.h"
 #include "downloadmanager.h"
 #include "featurepermissionbar.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "libraries/qtm/blogger.h"
 #include "libraries/walk_history.h"
 #include "libraries/window_switcher.h"
@@ -291,11 +292,11 @@ namespace web {
 		passwordDialog.introLabel->setText(introMessage);
 		passwordDialog.introLabel->setWordWrap(true);
 		if (dialog.exec() == QDialog::Accepted) {
-			QByteArray key = sapp_t::authenticationKey(requestUrl, auth->realm());
+			QByteArray key = ::sapp_t::authenticationKey(requestUrl, auth->realm());
 			auth->setUser(passwordDialog.userNameLineEdit->text());
 			auth->setPassword(passwordDialog.passwordLineEdit->text());
 			auth->setOption("key", key);
-			sapp_t::instance()->setLastAuthenticator(auth);
+			::sapp_t::instance()->setLastAuthenticator(auth);
 		} else {
 			// Set authenticator null if dialog is cancelled
 			*auth = QAuthenticator();
@@ -326,11 +327,11 @@ namespace web {
 		if (dialog.exec() == QDialog::Accepted) {
 			QString user = proxyDialog.userNameLineEdit->text();
 			QByteArray key =
-			    sapp_t::proxyAuthenticationKey(user, proxyHost, auth->realm());
+			    ::sapp_t::proxyAuthenticationKey(user, proxyHost, auth->realm());
 			auth->setUser(user);
 			auth->setPassword(proxyDialog.passwordLineEdit->text());
 			auth->setOption("key", key);
-			sapp_t::instance()->setLastProxyAuthenticator(auth);
+			::sapp_t::instance()->setLastProxyAuthenticator(auth);
 		} else {
 			// Set authenticator null if dialog is cancelled
 			*auth = QAuthenticator();
@@ -606,7 +607,10 @@ namespace web {
 			if (is_current) { // globalparameters.mainwindow()
 				if (tree_view->current_item() != it)
 					tree_view->select_as_current(TreeIndex::require_treeindex([&] { return tree_view->source_model(); }, it));
-				if (_rctrl->view()->current_item() != it)
+				auto _record_view = _rctrl->view();
+				QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+				bool has_selection = item_selection_model->hasSelection();
+				if (_rctrl->view()->current_item() != it || !has_selection)
 					_rctrl->select_as_current(_rctrl->index<pos_proxy>(it)); // IdType(_binder->item()->field("id"))
 			}
 			if (is_current)
@@ -901,7 +905,10 @@ namespace web {
 												       // *>(_lineedits->currentWidget());
 						if (line_edit) line_edit->setText(_url_str);
 						// }
-						if (_rctrl->view()->current_item() != _binder->host())
+						auto _record_view = _rctrl->view();
+						QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+						bool has_selection = item_selection_model->hasSelection();
+						if (_rctrl->view()->current_item() != _binder->host() || !has_selection)
 							_rctrl->select_as_current(_rctrl->index<pos_proxy>(_binder->host())); // if(_record_controller->view()->selection_first<IdType>()
 															      // != _binder->host()->field<id_type>()){
 															      // IdType(_binder->item()->field("id"))
@@ -1409,11 +1416,11 @@ namespace web {
 		passwordDialog.introLabel->setText(introMessage);
 		passwordDialog.introLabel->setWordWrap(true);
 		if (dialog.exec() == QDialog::Accepted) {
-			QByteArray key = sapp_t::authenticationKey(requestUrl, auth->realm());
+			QByteArray key = ::sapp_t::authenticationKey(requestUrl, auth->realm());
 			auth->setUser(passwordDialog.userNameLineEdit->text());
 			auth->setPassword(passwordDialog.passwordLineEdit->text());
 			auth->setOption("key", key);
-			sapp_t::instance()->setLastAuthenticator(auth);
+			::sapp_t::instance()->setLastAuthenticator(auth);
 		} else {
 			// Set authenticator null if dialog is cancelled
 			*auth = QAuthenticator();
@@ -1451,11 +1458,11 @@ namespace web {
 		if (dialog.exec() == QDialog::Accepted) {
 			QString user = proxyDialog.userNameLineEdit->text();
 			QByteArray key =
-			    sapp_t::proxyAuthenticationKey(user, proxyHost, auth->realm());
+			    ::sapp_t::proxyAuthenticationKey(user, proxyHost, auth->realm());
 			auth->setUser(user);
 			auth->setPassword(proxyDialog.passwordLineEdit->text());
 			auth->setOption("key", key);
-			sapp_t::instance()->setLastProxyAuthenticator(auth);
+			::sapp_t::instance()->setLastProxyAuthenticator(auth);
 		} else {
 			// Set authenticator null if dialog is cancelled
 			*auth = QAuthenticator();
@@ -1601,20 +1608,23 @@ namespace web {
 	{
 		if (!_icon.isNull())
 			return _icon;
-		return sapp_t::instance()->defaultIcon();
+		return ::sapp_t::instance()->defaultIcon();
 	}
 
 	void PopupView::onIconUrlChanged(const QUrl& url)
 	{
 		QNetworkRequest iconRequest(url);
-		_icon_reply = sapp_t::networkAccessManager()->get(iconRequest);
+		_icon_reply = ::sapp_t::networkAccessManager()->get(iconRequest);
 		_icon_reply->setParent(this);
 		connect(_icon_reply, &QNetworkReply::finished, this, &PopupView::iconLoaded);
 	}
 
 	void PopupView::iconLoaded()
 	{
-		_icon = qobject_cast<sapp_t*>(sapp_t::instance())->defaultIcon(); // QIcon();
+		_icon = //qobject_cast<::sapp_t*>(
+		    ::sapp_t::instance()
+			//			    )
+			->defaultIcon(); // QIcon();
 		if (_icon_reply) {
 			QByteArray data = _icon_reply->readAll();
 			QPixmap pixmap;
@@ -1746,7 +1756,10 @@ namespace web {
 				return r;
 			}();
 			if (_rctrl) {
-				if (_rctrl->source_model()->current_item() != current) {
+				auto _record_view = _rctrl->view();
+				QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+				bool has_selection = item_selection_model->hasSelection();
+				if (_rctrl->source_model()->current_item() != current || !has_selection) {
 					auto pp = _rctrl->index<pos_proxy>(current);
 					// auto	index_proxy_	= _record_controller->index<index_proxy>(pp);
 					_rctrl->select_as_current(pp);
@@ -2060,7 +2073,10 @@ namespace web {
 		setFocus();
 		// globalparameters.mainwindow()
 		if (_rctrl) {
-			if (_rctrl->view()->selection_first<id_value>() != _page->host()->field<id_key>())
+			auto _record_view = _rctrl->view();
+			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+			bool has_selection = item_selection_model->hasSelection();
+			if (_record_view->selection_first<id_value>() != _page->host()->field<id_key>() || !has_selection)
 				_rctrl->select_as_current(_rctrl->index<pos_proxy>(_page->host())); // IdType(_page->item()->field("id"))
 		}
 		// }
@@ -2127,13 +2143,13 @@ namespace web {
 	{
 		if (!_icon.isNull())
 			return _icon;
-		return sapp_t::instance()->defaultIcon();
+		return ::sapp_t::instance()->defaultIcon();
 	}
 
 	void WebView::onIconUrlChanged(const QUrl& url)
 	{
 		QNetworkRequest iconRequest(url);
-		_icon_reply = sapp_t::networkAccessManager()->get(iconRequest);
+		_icon_reply = ::sapp_t::networkAccessManager()->get(iconRequest);
 		_icon_reply->setParent(this);
 		connect(_icon_reply, &QNetworkReply::finished, this, &WebView::iconLoaded);
 	}
@@ -2183,7 +2199,10 @@ namespace web {
 
 	void WebView::iconLoaded()
 	{
-		_icon = qobject_cast<sapp_t*>(sapp_t::instance())->defaultIcon(); // QIcon();
+		_icon = //qobject_cast<sapp_t*>(
+		    ::sapp_t::instance()
+			//					      )
+			->defaultIcon(); // QIcon();
 		if (_icon_reply) {
 			QByteArray data = _icon_reply->readAll();
 			QPixmap pixmap;
@@ -2264,10 +2283,12 @@ namespace web {
 		if (it) {
 			if (it != _tree_view->current_item())
 				_tree_view->select_as_current(TreeIndex::require_treeindex([&] { return _tree_view->source_model(); }, it));
-			if ((_rctrl->view()->current_item() != it) ||
-			    (_tab_widget->currentWebView() != this))
-				_rctrl->select_as_current(
-				    _rctrl->index<pos_proxy>(it));
+			auto _record_view = _rctrl->view();
+			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+			bool has_selection = item_selection_model->hasSelection();
+			if ((_record_view->current_item() != it) ||
+			    (_tab_widget->currentWebView() != this) || !has_selection)
+				_rctrl->select_as_current(_rctrl->index<pos_proxy>(it));
 			if (_page->title() != it->field<name_key>())
 				_page->record_info_update(_page->url(), _page->title());
 			if (it)

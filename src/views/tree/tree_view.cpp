@@ -1645,10 +1645,15 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index,
 			auto p = v->page();
 			if (p) {
 				if (p->tabmanager()->current_item() != _item) p->tabmanager()->select_as_current(v);
-				auto ctrl = p->record_ctrl();
-				if (ctrl->view()->current_item() != _item)
-					ctrl->select_as_current(ctrl->index<pos_proxy>(ctrl->source_model()->index(_item)));
-				//
+				auto _rctrl = p->record_ctrl();
+				if (_rctrl) {
+					auto _record_view = _rctrl->view();
+					QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+					bool has_selection = item_selection_model->hasSelection();
+					if (_rctrl->view()->current_item() != _item || !has_selection)
+						_rctrl->select_as_current(_rctrl->index<pos_proxy>(_rctrl->source_model()->index(_item)));
+					//
+				}
 			}
 		}
 	}
@@ -4258,7 +4263,7 @@ tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge)
 				    static_cast<tkm_t*>(_current_model())->session_id())
 					session_id_changed = true;
 
-				rctrl_t* r_ctrl = nullptr;
+				rctrl_t* _rctrl = nullptr;
 				if (_to_be_operated->binder()) {
 					//					auto b = _to_be_operated->binder();
 					if (web_view) {
@@ -4266,9 +4271,9 @@ tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge)
 						auto p = web_view->page(); // b->page();
 						if (p) {
 							//                                                        auto web_view = p->view();
-							r_ctrl = p->record_ctrl();
-							if (web_view && r_ctrl) {
-								auto rv = r_ctrl->view();
+							_rctrl = p->record_ctrl();
+							if (web_view && _rctrl) {
+								auto rv = _rctrl->view();
 								if (rv)
 									if (rv->current_item() == _to_be_operated)
 										_to_be_operated_is_current_of_rocord_view = true;
@@ -4286,8 +4291,8 @@ tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge)
 				if (session_id_changed)
 					static_cast<tkm_t*>(_current_model())->session_id(TreeIndex::require_treeindex(_current_model, result));
 				if (_to_be_operated_is_current_of_rocord_view)
-					if (r_ctrl)
-						r_ctrl->select_as_current(r_ctrl->index<pos_proxy>(_to_be_operated));
+					if (_rctrl)
+						_rctrl->select_as_current(_rctrl->index<pos_proxy>(_to_be_operated));
 				know_model_save();
 
 				// find_object<MainWindow>("mainwindow")
