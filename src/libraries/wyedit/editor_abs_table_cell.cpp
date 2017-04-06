@@ -5,43 +5,51 @@
 #include "../../main.h"
 
 // Конструктор по умолчанию пустой ячейки
-EditorAbsTableCell::EditorAbsTableCell() {
+EditorAbsTableCell::EditorAbsTableCell()
+{
 	clear();
 	return;
 }
 
 // Конструктор ячейки с указанным содержимым
-EditorAbsTableCell::EditorAbsTableCell(QString init_value) {
+EditorAbsTableCell::EditorAbsTableCell(QString init_value)
+{
 	clear();
 	value = init_value;
 }
 
 // Установка значения содержимого ячейки
-void EditorAbsTableCell::set_value(QString init_value) {
+void EditorAbsTableCell::set_value(QString init_value)
+{
 	value = init_value;
 }
 
-QString EditorAbsTableCell::get_value(void) {
+QString EditorAbsTableCell::get_value(void)
+{
 	return value;
 }
 
 // Установка HTML-свойства ячейки (свойство в теге td)
-void EditorAbsTableCell::set_html_property(QString propName, QString propValue) {
+void EditorAbsTableCell::set_html_property(QString propName, QString propValue)
+{
 	htmlProperty[propName] = propValue;
 }
 
 // Получение HTML-свойства ячейки по имени
-QString EditorAbsTableCell::get_html_property(QString propName) {
+QString EditorAbsTableCell::get_html_property(QString propName)
+{
 	return htmlProperty[propName];
 }
 
 // Получение всех HTML-свойств ячейки
-QMap<QString, QString> EditorAbsTableCell::get_html_property_map(void) {
+QMap<QString, QString> EditorAbsTableCell::get_html_property_map(void)
+{
 	return htmlProperty;
 }
 
 // Полная очистка ячейки
-void EditorAbsTableCell::clear(void) {
+void EditorAbsTableCell::clear(void)
+{
 	// Очистка свойств
 	htmlProperty.clear();
 
@@ -59,37 +67,45 @@ void EditorAbsTableCell::clear(void) {
 	superCellSizeIsModify = false;
 }
 
-int EditorAbsTableCell::get_cell_type(void) {
+int EditorAbsTableCell::get_cell_type(void)
+{
 	return cellType;
 }
 
-void EditorAbsTableCell::set_cell_type(int i) {
+void EditorAbsTableCell::set_cell_type(int i)
+{
 	cellType = i;
 }
 
-void EditorAbsTableCell::set_ref_super_cell_xy(int x, int y) {
+void EditorAbsTableCell::set_ref_super_cell_xy(int x, int y)
+{
 	refSuperCellX = x;
 	refSuperCellY = y;
 }
 
-void EditorAbsTableCell::set_ref_super_cell_x(int x) {
+void EditorAbsTableCell::set_ref_super_cell_x(int x)
+{
 	refSuperCellX = x;
 }
 
-void EditorAbsTableCell::set_ref_super_cell_y(int y) {
+void EditorAbsTableCell::set_ref_super_cell_y(int y)
+{
 	refSuperCellY = y;
 }
 
-int EditorAbsTableCell::get_ref_super_cell_x(void) {
+int EditorAbsTableCell::get_ref_super_cell_x(void)
+{
 	return refSuperCellX;
 }
 
-int EditorAbsTableCell::get_ref_super_cell_y(void) {
+int EditorAbsTableCell::get_ref_super_cell_y(void)
+{
 	return refSuperCellY;
 }
 
 // Вывод содержимого ячейки для отладки
-void EditorAbsTableCell::print_cell(void) {
+void EditorAbsTableCell::print_cell(void)
+{
 	char type;
 	if (cellType == IS_NULL_CELL)
 		type = 'O';
@@ -100,14 +116,15 @@ void EditorAbsTableCell::print_cell(void) {
 	if (cellType == IS_SUB_CELL)
 		type = 'U';
 	QString val = value.simplified().trimmed();
-	val = val.leftJustified(5, '.', true);
+	val = val.leftJustified(8, '.', true);
 
 	printf("%c[%d,%d](%d,%d)%s ", type, htmlProperty["colspan"].toInt(), htmlProperty["rowspan"].toInt(), refSuperCellX, refSuperCellY,
-	       val.toUtf8().data());  // анее было toAscii, но в Qt 5.2 toAscii уже не
-	                              // поддерживается
+	    val.toUtf8().data()); // анее было toAscii, но в Qt 5.2 toAscii уже не
+				  // поддерживается
 }
 
-void EditorAbsTableCell::set_supercell_size_is_modify(bool i) {
+void EditorAbsTableCell::set_supercell_size_is_modify(bool i)
+{
 	if (cellType != IS_SUPER_CELL) {
 		critical_error("Try set flag size_is_modify to not supercell");
 		return;
@@ -115,7 +132,8 @@ void EditorAbsTableCell::set_supercell_size_is_modify(bool i) {
 		superCellSizeIsModify = i;
 }
 
-bool EditorAbsTableCell::get_supercell_size_is_modify(void) {
+bool EditorAbsTableCell::get_supercell_size_is_modify(void)
+{
 	if (cellType != IS_SUPER_CELL) {
 		critical_error("Try get flag size_is_modify from not supercell");
 		return false;

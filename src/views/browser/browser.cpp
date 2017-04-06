@@ -736,7 +736,7 @@ namespace web {
 		    auto t =
 #ifdef USE_SIGNAL_CLOSE
 			sd::make_intrusive<web::TabWidget>(_blogger,
-			    sd::intrusive_ptr<web::Browser>(this),
+			    this,
 			    _main_window, gl_paras->profile());
 #else
 			new web::TabWidget(_blogger, this, _main_window, gl_paras->profile());
@@ -975,6 +975,7 @@ namespace web {
 			}
 			//
 		}
+		if (this->windowTitle() == topic) this->setWindowTitle(topic);
 		//			if (_record_screen) _record_screen->tabbar_topic(topic);
 
 		return true;
@@ -2105,6 +2106,12 @@ namespace web {
 		size_t index = 0;
 		for (auto& _browser : gl_paras->main_window()->browsers()) { // for(size_t i = 0; i < _browsers.size(); i++) {
 			// auto window = it;   // _browsers[i];
+			qDebug() << "_browser->windowTitle()=" << _browser->windowTitle();
+			auto topic = _browser->blogger()->topic();
+			assert(topic != "");
+			if (_browser->windowTitle() != topic) {
+				_browser->setWindowTitle(topic); //.leftJustified(8, '.', true)
+			}
 			QAction* action = _windowmenu->addAction(_browser->windowTitle(), this, &Browser::slotShowWindow);
 			action->setData(static_cast<uint>(index));
 			action->setCheckable(true);
@@ -2366,6 +2373,7 @@ namespace web {
 		//                }
 		auto _record_screen = _tab_widget->record_screen();
 		_record_screen->on_topic_changed(original_topic_, new_topic, append_mode);
+		if (this->windowTitle() == new_topic) this->setWindowTitle(new_topic); //.leftJustified(8, '.', true)
 		this->save();
 	}
 	//	void Browser::test()
