@@ -1794,11 +1794,11 @@ namespace web {
 					connect(view->page(), &WebPage::toolBarVisibilityChangeRequested, this, &TabWidget::toolBarVisibilityChangeRequested);
 #endif
 
-					// int index = addTab(view, target->field("name").leftJustified(5, '.',
+					// int index = addTab(view, target->field("name").leftJustified(8, '.',
 					// true)); //, tr("(Untitled)")
 
 					//
-					QString short_title = detail::to_qstring(result_item->field<name_key>()).leftJustified(5, '.', true);
+					QString short_title = detail::to_qstring(result_item->field<name_key>()).leftJustified(8, '.', true);
 					_previous_index = static_cast<QModelIndex>(record_index->sibling_index()).row(); // tab_brother ? tab_brother->binder() ?
 															 // webViewIndex(tab_brother->binder()->page()->view()) + 1
 															 // : 0 : 0;
@@ -2092,7 +2092,7 @@ namespace web {
 						//_record_controller->remove_child(to_be_closed_view->page()->current_item()->id());
 						//				}
 						// delete to_be_closed_view;
-						{ //?
+						{       //?
 							//				_view_to_close->deleteLater();
 						}
 						// move to WebView::on_close_requested
@@ -2228,7 +2228,7 @@ namespace web {
 	{
 		WebView* webView = qobject_cast<WebView*>(sender());
 		int index = webViewIndex(webView);
-		auto _real_title = title.leftJustified(5, '.', true);
+		auto _real_title = title.leftJustified(8, '.', true);
 		if (-1 != index) setTabText(index, _real_title);
 		if (currentIndex() == index) emit setCurrentTitle(title); // _real_title// "test"
 		//
