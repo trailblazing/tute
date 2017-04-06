@@ -1102,7 +1102,10 @@ namespace web {
 					if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
 					auto _rctrl = _record_screen->record_ctrl();
 					if (_rctrl) {
-						if (_rctrl->view()->current_item() != it) _rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(index)));
+						auto _record_view = _rctrl->view();
+						QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+						bool has_selection = item_selection_model->hasSelection();
+						if (_rctrl->view()->current_item() != it || !has_selection) _rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(index)));
 					}
 					if (page->title() != it->field<name_key>()) page->record_info_update(page->url(), page->title());
 					_main_window->synchronize_title(it->field<name_key>());
@@ -1198,7 +1201,11 @@ namespace web {
 					if (_target_item != _tree_view->current_item()) _tree_view->select_as_current(TreeIndex::require_treeindex([&] { return _tree_view->source_model(); }, _target_item));
 					auto _rctrl = _record_screen->record_ctrl();
 					if (_rctrl) {
-						if ((_rctrl->view()->current_item() != _target_item) || (currentWebView() != _target_item->page()->view())) _rctrl->select_as_current(_rctrl->index<pos_proxy>(_target_item));
+						auto _record_view = _rctrl->view();
+						QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+						bool has_selection = item_selection_model->hasSelection();
+						if ((_record_view->current_item() != _target_item) || (currentWebView() != _target_item->page()->view()) || !has_selection)
+							_rctrl->select_as_current(_rctrl->index<pos_proxy>(_target_item));
 					}
 				}
 				// else{
@@ -1748,7 +1755,7 @@ namespace web {
 						if (!_lineeditcompleter && count() > 0) {
 							HistoryCompletionModel* completionModel = new HistoryCompletionModel(this);
 							completionModel->setSourceModel(
-							    sapp_t::historyManager()->historyFilterModel());
+							    ::sapp_t::historyManager()->historyFilterModel());
 							_lineeditcompleter = new QCompleter(completionModel, this);
 							// Should this be in Qt by default?
 							QAbstractItemView* popup = _lineeditcompleter->popup();
@@ -1890,12 +1897,9 @@ namespace web {
 			// result->record_binder()->binder(result);
 			// }
 			// result->record_binder()->binder();   //recursive calling
-			if (count() == 1) currentChanged(currentIndex()); // default this is input the new index
 
-			emit tabsChanged();
-			// webView->openLinkInNewTab(QUrl());    // don't need, initialized
-			// }
-			if (make_current) {
+			if (make_current || (1 == count())) {
+
 				setCurrentWidget(view);
 				// auto _tree_view = _tree_screen->view();
 				// QModelIndex _i =
@@ -1911,11 +1915,17 @@ namespace web {
 				// _tree_view->select_and_current(_record_binder->bounded_item());
 
 				// if(!_record_controller->source_model()->find(item))
-				RecordIndex::synchronize(
-				    result_item); // _record_controller->addnew_item_fat(result);
+				RecordIndex::synchronize(result_item); // _record_controller->addnew_item_fat(result);
 
 				// item->activate(); // activate after initialization of browser
+				//				if (count() == 1)
+				currentChanged(currentIndex()); // default this is input the new index
 			}
+
+			emit tabsChanged();
+			// webView->openLinkInNewTab(QUrl());    // don't need, initialized
+			// }
+
 			assert(view);
 			// assert(item->page_valid() && item->unique_page());
 			assert(!result_item->is_lite());
@@ -2224,7 +2234,7 @@ namespace web {
 		//
 		// if(_real_title != "")
 		if (title != webView->page()->title()) webView->page()->record_info_update(webView->page()->url(), title);
-		sapp_t::historyManager()->updateHistoryItem(webView->page()->url(), title);
+		::sapp_t::historyManager()->updateHistoryItem(webView->page()->url(), title);
 	}
 
 	void TabWidget::webViewUrlChanged(const QUrl& url)
@@ -2241,7 +2251,7 @@ namespace web {
 		for (int i = 0; i < _recentlyclosedtabs.count(); ++i) {
 			QAction* action = new QAction(_recentlyclosedtabsmenu);
 			action->setData(_recentlyclosedtabs.at(i));
-			QIcon icon = sapp_t::instance()->icon(_recentlyclosedtabs.at(i));
+			QIcon icon = ::sapp_t::instance()->icon(_recentlyclosedtabs.at(i));
 			action->setIcon(icon);
 			action->setText(_recentlyclosedtabs.at(i).toString());
 			_recentlyclosedtabsmenu->addAction(action);
@@ -2595,7 +2605,7 @@ namespace web {
 			// if(_current_download_acceptance.second){
 			if (state == QWebEngineDownloadItem::DownloadRequested || state == QWebEngineDownloadItem::DownloadInProgress) {
 				// download->accept();  // default in construction
-				if (state == QWebEngineDownloadItem::DownloadRequested) sapp_t::request_download_manager()->download(this, download);
+				if (state == QWebEngineDownloadItem::DownloadRequested) ::sapp_t::request_download_manager()->download(this, download);
 			}
 			// else																																			// if(state ==
 			// QWebEngineDownloadItem::DownloadCompleted || state ==
