@@ -1149,10 +1149,10 @@ rctrl_t* rv_t::record_ctrl()
 	return _rctrl;
 }
 
-QModelIndex rv_t::previous_index() const
-{
-	return _previous_index;
-}
+//QModelIndex rv_t::previous_index() const
+//{
+//	return _previous_index;
+//}
 
 void rv_t::restore_header_state(void)
 {
@@ -1197,8 +1197,9 @@ void rv_t::restore_header_state(void)
 void rv_t::on_click(const QModelIndex& index_proxy_)
 {
 	// setSelectionMode(QAbstractItemView::SingleSelection);// ExtendedSelection
-	if (index_proxy_.isValid() && _previous_index != index_proxy_) {
-		_previous_index = index_proxy_;
+	if (index_proxy_.isValid()) {
+		if ( //&&
+		    _previous_index != index_proxy_) _previous_index = index_proxy_;
 		if (_rctrl)
 			_rctrl->index_invoke(index_proxy(index_proxy_));
 	}
@@ -1434,7 +1435,10 @@ boost::intrusive_ptr<i_t> rv_t::current_item() const
 			///_record_controller->proxy_model()->mapFromSource(static_cast<QModelIndex>(source_index));
 			////	assert(proxy_curi == proxy_index);
 			//
-			if (pos_proxy_ != static_cast<QModelIndex>(_rctrl->index<index_proxy>(_rctrl->source_model()->current_index())).row()) { //
+			QItemSelectionModel* item_selection_model = selectionModel();
+			bool has_selection = item_selection_model->hasSelection();
+
+			if (pos_proxy_ != static_cast<QModelIndex>(_rctrl->index<index_proxy>(_rctrl->source_model()->current_index())).row() || (!has_selection)) { //
 				// if(pos_proxy_ != static_cast<QModelIndex>(proxy_curi).row()){	//
 				// never equaled	// currentIndex().row()){	//
 				// selectionModel()->currentIndex().row()
@@ -1642,15 +1646,17 @@ void rv_t::mousePressEvent(QMouseEvent* event)
 	// }
 	//	auto _rctrl = _rctrl;
 	if (_rctrl) {
-		auto it = _rctrl->source_model()->item(
-		    _rctrl->index<pos_source>(_rctrl->index<pos_proxy>(index_proxy(next_index)))); // pos_source(pos_proxy(index.row()))
-		auto header_title =
-		    _rctrl->source_model()->headerData(next_index.column(), Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
-		auto rating_field_description = fixedparameters.record_field_description(
-		    QStringList() << boost::mpl::c_str<
-			rating_key>::value)[boost::mpl::c_str<rating_key>::value];
-		if (it && header_title != rating_field_description)
-			_rctrl->select_as_current(_rctrl->index<pos_proxy>(index_proxy(next_index)));
+		auto it = _rctrl->source_model()->item(_rctrl->index<pos_source>(_rctrl->index<pos_proxy>(index_proxy(next_index))));    // pos_source(pos_proxy(index.row()))
+		auto header_title = _rctrl->source_model()->headerData(next_index.column(), Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
+		auto rating_field_description = fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_key>::value)[boost::mpl::c_str<rating_key>::value];
+
+		if (it) {
+			auto _record_view = _rctrl->view();
+			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+			bool has_selection = item_selection_model->hasSelection();
+			if (header_title != rating_field_description || !has_selection)
+				_rctrl->select_as_current(_rctrl->index<pos_proxy>(index_proxy(next_index)));
+		}
 	}
 	QTableView::mousePressEvent(event);
 }

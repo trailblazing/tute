@@ -264,7 +264,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 		}
 		_view->setFocus();
 	}
-	_record_screen->tools_update();
+	//	_record_screen->tools_update();
 }
 
 // Принимает индекс Proxy модели
@@ -289,6 +289,11 @@ boost::intrusive_ptr<i_t> rctrl_t::index_invoke(const index_proxy& index_proxy_,
 	// auto	ov	= result->page()->view();
 	// auto v =
 	force_update ? result->binder()->activate() : result->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
+	QItemSelectionModel* item_selection_model = _view->selectionModel();
+	bool has_selection = item_selection_model->hasSelection();
+	if (!has_selection) {
+		select_as_current(index<pos_proxy>(index_proxy_));
+	}
 	// assert(v == ov);
 	// assert(v->page()->host() == result);
 	// v->recovery_global_consistency();
@@ -2439,7 +2444,7 @@ boost::intrusive_ptr<i_t> rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex>
 	_view->restore_column_width();
 	_view->restore_header_state();
 
-	// select_as_current(index<pos_proxy>(_found_item));
+	select_as_current(index<pos_proxy>(_found_item));
 	//// }item
 
 	return _found_item; // _record;

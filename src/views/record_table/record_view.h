@@ -270,22 +270,21 @@ class rv_t : public QTableView
 	std::function<int()> rating_width;
     signals:
 	void tabMoved(int from, int to);
-	// void list_selection_changed(const QItemSelection &selected, const
-	// QItemSelection &deselected);
-	void tap_and_hold_gesture_finished(const QPoint& p)
+// void list_selection_changed(const QItemSelection &selected, const
+// QItemSelection &deselected);
+
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(tap_and_hold_gesture_finished, (const QPoint&), p) //
+	void tap_and_hold_gesture_finished(const QPoint& p) W_SIGNAL(tap_and_hold_gesture_finished, (const QPoint&), p); //
 #else
-	    ;
+	void tap_and_hold_gesture_finished(const QPoint& p);
 #endif
 
-	    // int	vertical_scroll_bar_width() const;
-	    // void	vertical_scroll_bar_width(int w);
-	    public slots :
+	// int	vertical_scroll_bar_width() const;
+	// void	vertical_scroll_bar_width(int w);
+    public slots:
 
-	    // Открытие контекстного меню
-	    void on_custom_context_menu_requested(
-		const QPoint& pos); // W_SLOT(on_custom_context_menu_requested)
+	// Открытие контекстного меню
+	void on_custom_context_menu_requested(const QPoint& pos); // W_SLOT(on_custom_context_menu_requested)
 
 	// Слот, срабатывающий после перетаскивания колонки
 	void on_section_moved(int logicalIndex, int oldVisualIndex,
@@ -297,7 +296,7 @@ class rv_t : public QTableView
 	// инфополей записи
 	void edit_field_context(void);                 // W_SLOT(edit_field_context)
 	void on_doubleclick(const QModelIndex& index); // W_SLOT(on_doubleclick)
-	QModelIndex previous_index() const;            // W_SLOT(previous_index)
+						       //	QModelIndex previous_index() const;            // W_SLOT(previous_index)
 
 	void assembly_context_menu(const std::map<std::string, QMenu*>& main_menu_map_);
     protected slots:
@@ -309,15 +308,9 @@ class rv_t : public QTableView
 	// Слот, который автоматически срабатыват при изменении selection в списке
 	// Этот слот нигде не надо прописывать через connect(), так как он
 	// является переопределенным, так как его тип virtual protected slot
-	virtual void selectionChanged(
-	    const QItemSelection& selected,
-	    const QItemSelection&
-		deselected); // W_SLOT(selectionChanged, W_Access::Protected)	// ;
-	bool
-	eventFilter(QObject* obj,
-	    QEvent* event); // W_SLOT(eventFilter, W_Access::Protected)// ;
-	void
-	on_click(const QModelIndex& index_proxy_); // W_SLOT(on_click, W_Access::Protected)	// ;
+	virtual void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected); // W_SLOT(selectionChanged, W_Access::Protected)	// ;
+	bool eventFilter(QObject* obj, QEvent* event);                                                   // W_SLOT(eventFilter, W_Access::Protected)// ;
+	void on_click(const QModelIndex& index_proxy_);                                                  // W_SLOT(on_click, W_Access::Protected)	// ;
 
     protected:
 	QMenu* _context_menu;

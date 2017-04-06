@@ -711,7 +711,7 @@ namespace web {
 	    , _find_screen(gl_paras->find_screen())
 	    , _main_window(gl_paras->main_window())
 	    , _navigater(new QToolBar(this)) // , _toolbarsearch(_find_screen->toolbarsearch())
-	    , _bookmarkstoolbar(new BookmarksToolBar(sapp_t::bookmarksManager()->bookmarksModel(), this))
+	    , _bookmarkstoolbar(new BookmarksToolBar(::sapp_t::bookmarksManager()->bookmarksModel(), this))
 	    , _file_menu([&]() -> QMenu* {auto fm = new QMenu(tr("&File"), this); fm->setContentsMargins(0, 0, 0, 0); return fm; }())
 	    , _edit_menu([&]() -> QMenu* {auto fm = new QMenu(tr("&Edit"), this); fm->setContentsMargins(0, 0, 0, 0); return fm; }())
 	    , _view_menu([&]() -> QMenu* {auto fm = new QMenu(tr("&View"), this); fm->setContentsMargins(0, 0, 0, 0); return fm; }())
@@ -1053,7 +1053,7 @@ namespace web {
 			return data;
 		};
 		_tab_widget->check_topic(_blogger->topic());
-		sapp_t::instance()->saveSession();
+		::sapp_t::instance()->saveSession();
 		// std::shared_ptr<QSettings> _configuration =
 		// std::make_shared<QSettings>(gl_paras->root_path() + "/" +
 		// gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename,
@@ -1201,7 +1201,7 @@ namespace web {
 		fileMenu->addAction(tr("&Save As..."), this, &Browser::slotFileSaveAs, QKeySequence(QKeySequence::Save));
 		fileMenu->addSeparator();
 #endif
-		BookmarksManager* bookmarksManager = sapp_t::bookmarksManager();
+		BookmarksManager* bookmarksManager = ::sapp_t::bookmarksManager();
 		_file_menu->addAction(tr("&Import Bookmarks..."), bookmarksManager, &BookmarksManager::importBookmarks);
 		_file_menu->addAction(tr("&Export Bookmarks..."), bookmarksManager, &BookmarksManager::exportBookmarks);
 		_file_menu->addSeparator();
@@ -1212,8 +1212,8 @@ namespace web {
 #endif
 		QAction* action = _file_menu->addAction(tr("Private &Browsing..."), this, &Browser::slotPrivateBrowsing);
 		action->setCheckable(true);
-		action->setChecked(sapp_t::instance()->privateBrowsing());
-		connect(sapp_t::instance(), &sapp_t::privateBrowsingChanged, action, &QAction::setChecked);
+		action->setChecked(::sapp_t::instance()->privateBrowsing());
+		connect(::sapp_t::instance(), &::sapp_t::privateBrowsingChanged, action, &QAction::setChecked);
 		_file_menu->addSeparator();
 
 		//// #if defined(Q_OS_OSX)
@@ -1443,8 +1443,8 @@ namespace web {
 
 #if defined(QWEBENGINEHISTORY_RESTORESESSION)
 		_restorelastsession = new QAction(tr("Restore Last Session"), this);
-		connect(_restorelastsession, &QAction::triggered, sapp_t::instance(), &sapp_t::restoreLastSession);
-		_restorelastsession->setEnabled(sapp_t::instance()->canRestoreSession());
+		connect(_restorelastsession, &QAction::triggered, ::sapp_t::instance(), &::sapp_t::restoreLastSession);
+		_restorelastsession->setEnabled(::sapp_t::instance()->canRestoreSession());
 		historyActions.append(_tab_widget->recentlyClosedTabsAction());
 		historyActions.append(_restorelastsession);
 #endif
@@ -1510,7 +1510,7 @@ namespace web {
 	//		assert(_main_window->help_menu());
 	//		_help_menu = _main_window->help_menu(); //
 	//menuBar()->addMenu(tr("&Help"));
-	//		// helpMenu->addAction(tr("About &Qt"), sapp_t::instance(), SLOT(aboutQt()));
+	//		// helpMenu->addAction(tr("About &Qt"), ::sapp_t::instance(), SLOT(aboutQt()));
 	//		_help_menu->addAction(tr("About &Embedded Browser"), this,
 	//&Browser::slotAboutApplication);
 	//	}
@@ -1709,7 +1709,7 @@ namespace web {
 
 	void Browser::slotDownloadManager()
 	{
-		sapp_t::request_download_manager()->show();
+		::sapp_t::request_download_manager()->show();
 	}
 
 	void Browser::slotSelectLineEdit()
@@ -1831,7 +1831,7 @@ namespace web {
 
 	void Browser::slotPrivateBrowsing()
 	{
-		if (!sapp_t::instance()->privateBrowsing()) {
+		if (!::sapp_t::instance()->privateBrowsing()) {
 			QString title = tr("Are you sure you want to turn on private browsing?");
 			QString text = tr("<b>%1</b><br><br>"
 					  "This action will reload all open tabs.<br>"
@@ -1849,10 +1849,10 @@ namespace web {
 
 			QMessageBox::StandardButton button = QMessageBox::question(
 			    this, QString(), text, QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok);
-			if (button == QMessageBox::Ok) sapp_t::instance()->setPrivateBrowsing(true);
+			if (button == QMessageBox::Ok) ::sapp_t::instance()->setPrivateBrowsing(true);
 		} else {
 			// TODO: Also ask here
-			sapp_t::instance()->setPrivateBrowsing(false);
+			::sapp_t::instance()->setPrivateBrowsing(false);
 		}
 	}
 
@@ -2064,7 +2064,7 @@ namespace web {
 			QWebEngineHistoryItem item = history->backItems(history->count()).at(i);
 			QAction* action = new QAction(this);
 			action->setData(-1 * (historyCount - i - 1));
-			QIcon icon = sapp_t::instance()->icon(item.url());
+			QIcon icon = ::sapp_t::instance()->icon(item.url());
 			action->setIcon(icon);
 			action->setText(item.title());
 			_historybackmenu->addAction(action);
@@ -2081,7 +2081,7 @@ namespace web {
 			QWebEngineHistoryItem item = history->forwardItems(historyCount).at(i);
 			QAction* action = new QAction(this);
 			action->setData(historyCount - i);
-			QIcon icon = sapp_t::instance()->icon(item.url());
+			QIcon icon = ::sapp_t::instance()->icon(item.url());
 			action->setIcon(icon);
 			action->setText(item.title());
 			_historyforwardmenu->addAction(action);

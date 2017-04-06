@@ -233,7 +233,7 @@ namespace web {
 						newList.prepend(search_text);
 						if (newList.size() >= _maxsavedsearches)
 							newList.removeLast();
-						if (!sapp_t::instance()->privateBrowsing()) {
+						if (!::sapp_t::instance()->privateBrowsing()) {
 							_stringlistmodel->setStringList(newList);
 							_autosaver->changeOccurred();
 						}
