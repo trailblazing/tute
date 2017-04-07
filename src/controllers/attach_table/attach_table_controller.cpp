@@ -298,7 +298,7 @@ void AttachTableController::save_attach_to_user_place(
 	// Проверка наличия исходного файла (ведь по каким-то причинам его может не
 	// быть, например после какого-нибудь сбоя)
 	QFile file(from_full_file_name);
-	if (file.exists() == false) {
+	if (!file.exists()) {
 		show_message_box(tr("Can't save file. File %1 not exists in database.").arg(from_full_file_name));
 
 		return;

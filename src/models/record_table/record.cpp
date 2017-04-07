@@ -1157,14 +1157,13 @@ void r_t::text_to_direct(QString _text_source)
 		out << _text_source;
 	} else if (boost::fusion::at_key<crypt_key>(_fields_data_map) == crypt_value(true)) {
 		// Текст шифруется
-		QByteArray encryptData = CryptService::encryptStringToByteArray(
-		    gl_paras->crypt_key(), _text_source);
+		QByteArray encryptData = CryptService::encryptStringToByteArray(gl_paras->crypt_key(), _text_source);
 
 		// В файл сохраняются зашифрованные данные
-		QFile wfile(file_name);
-		if (!wfile.open(QIODevice::WriteOnly))
+		QFile file(file_name);
+		if (!file.open(QIODevice::WriteOnly))
 			critical_error("Cant open binary file " + file_name + " for write.");
-		wfile.write(encryptData);
+		file.write(encryptData);
 	} else
 		critical_error("Record::text_to_direct() : Unavailable crypt field value \"" + detail::to_qstring(boost::fusion::at_key<crypt_key>(_fields_data_map)) + "\"");
 }
@@ -1177,14 +1176,12 @@ void r_t::create_file_and_save_text()
 	if (_text.size() != 0) {
 		check_and_create_text_file();
 		// В файл сохраняются зашифрованные данные
-		QFile wfile(fileName);
-		if (!wfile.open(QIODevice::WriteOnly))
-			critical_error(
-			    "Record::create_file_and_save_text() : Can\'t open binary file " +
-			    fileName + " for write.");
+		QFile file(fileName);
+		if (!file.open(QIODevice::WriteOnly))
+			critical_error("Record::create_file_and_save_text() : Can\'t open binary file " + fileName + " for write.");
 		// Сохраняется QByteArray с текстом записи (в QByteArray могут быть как
 		// зашифрованные, так и не зашифрованные данные)
-		wfile.write(_text);
+		file.write(_text);
 	}
 }
 
