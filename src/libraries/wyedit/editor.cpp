@@ -99,8 +99,7 @@ Editor::Editor(QStackedWidget* main_stack, Blogger* blogger_, std::shared_ptr<QS
 	save_callback_func = nullptr;
 	load_callback_func = nullptr;
 	back_callback_func = nullptr;
-	work_directory(blogger_->_current_topic_full_folder_name);
-	file_name(blogger_->_default_filename + ".html");
+	work_directory(blogger_->_current_topic_full_folder_name,  QString(Blogger::_default_filename) + ".html"); // file_name(blogger_->_default_filename + ".html");
 	// init_enable_assembly(enable_assembly);
 	// init_enable_random_seed(enable_random_seed);
 	init(mode, hide_editor_tools, enable_assembly, enable_random_seed);
@@ -957,15 +956,15 @@ QTextDocument* Editor::document(void)
 	return _text_area->document();
 }
 
-bool Editor::work_directory(QString dir_name)
+bool Editor::work_directory(const QString &dir_name, const QString &file_name_)
 {
+	bool result = false;
 	auto original_dir = _work_directory;
 	QDir directory(dir_name);
 	// QDir directory_child(dir_name);
 	if (directory.exists()) {
 		_work_directory = dir_name;
-
-		return true;
+		result = true;
 	} else {
 		QString child_dir = directory.dirName();
 		QString path = directory.absolutePath();
@@ -973,43 +972,38 @@ bool Editor::work_directory(QString dir_name)
 		directory.setPath(path);
 		// directory.rmdir(child_dir);// globalparameters.main_program_file()
 		// + get_unical_id();
-
-		bool result = directory.mkdir(child_dir); // _work_directory // short_dir()
+		result = directory.mkdir(child_dir); // _work_directory // short_dir()
 		if (!result)
 			critical_error(
-			    "Editor::work_directory(QString dir_name) : Can't create "
-			    "directory '" +
-			    _work_directory + "'");
+			    "Editor::work_directory(QString dir_name) : Can't create directory '" + _work_directory + "'");
 		_work_directory = dir_name;
-
-		// critical_error("WyEdit: Can not set work directory to " + dirName
-		// + ". Directory not exists.");
-		return result; // false;
+		//		// critical_error("WyEdit: Can not set work directory to " + dirName + ". Directory not exists.");
+		//		return result; // false;
 	}
+	auto file_name = [&](QString file_name_) {
+		// QString fileName = full_text_file_name();
+		if (file_name_.size() > 0) {
+			QFile f(file_name_);
+			QFileInfo fileInfo(f);
+			if (!f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::ReadOnly))
+				critical_error("Editor::file_name(QString _file_name) : Can\'t open text file " + file_name_ + " for read / write.");
+			if (fileInfo.absoluteDir().exists() && f.exists()) _work_file_name = file_name_;
+		} else
+			_work_file_name = "";
+	};
+
+	file_name(file_name_);
 	if (original_dir != dir_name) load_textarea();
+	return result;
 }
 
-QString Editor::work_directory(void)
+QString Editor::work_directory(void) const
 {
 	return _work_directory;
 }
 
-void Editor::file_name(QString _file_name)
-{
-	// QString fileName = full_text_file_name();
-	if (_file_name.size() > 0) {
-		QFile f(_file_name);
-		QFileInfo fileInfo(f);
-		if (!f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::ReadOnly))
-			critical_error(
-			    "Editor::file_name(QString _file_name) : Can\'t open text file " +
-			    _file_name + " for read / write.");
-		if (fileInfo.absoluteDir().exists() && f.exists()) _work_file_name = _file_name;
-	} else
-		_work_file_name = "";
-}
 
-QString Editor::file_name(void)
+QString Editor::file_name(void) const
 {
 	return _work_file_name;
 }
@@ -1087,23 +1081,19 @@ void Editor::editor_save_callback(QObject* editor, const QString& save_text)
 	// Если шифровать ненужно
 	if (work_with_crypt == false) {
 		// Текст сохраняется в файл
-		QFile wfile(file_name);
-		if (!wfile.open(QIODevice::WriteOnly | QIODevice::Text)) critical_error("Editor::editor_save_callback() : Can\'t open text file " + file_name + " for write.");
-		QTextStream out(&wfile);
+		QFile file(file_name);
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) critical_error("Editor::editor_save_callback() : Can\'t open text file " + file_name + " for write.");
+		QTextStream out(&file);
 		out.setCodec("UTF-8");
 		out << save_text;
 	} else {
 		// Текст шифруется
-		QByteArray encryptData = CryptService::encryptStringToByteArray(
-		    gl_paras->crypt_key(), save_text);
-
+		QByteArray encryptData = CryptService::encryptStringToByteArray(gl_paras->crypt_key(), save_text);
 		// В файл сохраняются зашифрованные данные
-		QFile wfile(file_name);
-		if (!wfile.open(QIODevice::WriteOnly))
-			critical_error(
-			    "Editor::editor_save_callback() : Can\'t open binary file " +
-			    file_name + " for write.");
-		wfile.write(encryptData);
+		QFile file(file_name);
+		if (!file.open(QIODevice::WriteOnly))
+			critical_error("Editor::editor_save_callback() : Can\'t open binary file " + file_name + " for write.");
+		file.write(encryptData);
 	}
 	// Вызывается сохранение картинок
 	// В данной реализации картинки сохраняются незашифрованными
@@ -1955,7 +1945,7 @@ void Editor::on_selection_changed(void)
 
 	// Выравнивание относится к форматированию строк, начальное состояние
 	// берётся из начального положения курсора
-	int startAlign = cursor.blockFormat().alignment();
+	auto startAlign = cursor.blockFormat().alignment();
 
 	// Курсор сдвигается на одну позицию вперёд
 	cursor.movePosition(QTextCursor::NextCharacter);

@@ -225,6 +225,9 @@ class Blogger : public QMainWindow
 
 	void setup_closebutton(void);
 
+    public:
+	static constexpr char _default_filename[] = "text";
+
     private:
 	//	sapp_t *_app;
 
@@ -266,7 +269,8 @@ class Blogger : public QMainWindow
 	QHash<QString, int> autoLinkTargetDictionary;
 	QByteArray responseData;
 	QString entryNumber, dateTime;
-	QString _default_filename = "text", _filename = "";
+
+	QString _filename = "";
 	int primaryCat;
 	QString otherCatsList;
 	QRegExpValidator* tagValidator;

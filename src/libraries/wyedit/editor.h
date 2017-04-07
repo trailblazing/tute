@@ -234,13 +234,13 @@ class Editor : public QWidget {
 
 	// Абсолютный или относительный путь (т.е. директория),
 	// куда будет сохраняться текст. Без завершающего слеша
-	bool work_directory(QString dir_name);
-	QString work_directory(void);
+	bool work_directory(const QString& dir_name, const QString& file_name_);
+	QString work_directory(void) const;
 
 	// Имя файла, куда должен сохраняться текст
 	// Без пути, только имя
-	void file_name(QString _file_name);
-	QString file_name(void);
+	//	void file_name(QString _file_name);
+	QString file_name(void) const;
 
 	static void editor_load_callback(QObject* editor, QString& load_text);
 	static void editor_save_callback(QObject* editor, const QString& save_text);
