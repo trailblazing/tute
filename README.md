@@ -32,7 +32,7 @@ _______________________________________________________________________
 Let's say the directory of your current project is named "working":
 ```
 	working
-	    |____verdigris (created by or synchronized with git) (does not needed for Qt 5.7)
+            |____verdigris (created by or synchronized with git) (does not needed for Qt 5.7 and after)
 	    |       |____src
 	    |
 	    |____knowledge management (name is whatever)
@@ -40,21 +40,23 @@ Let's say the directory of your current project is named "working":
 ```
 ####1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
-####1.2 Install verdigris (for remove qt::moc in Qt 5.6. Two header-only files.)
+####1.2 Install verdigris (only needed by remove qt::moc in Qt 5.6. Two header-only files.)
 ```
 	git clone https://github.com/woboq/verdigris.git
 ```
-####1.3 Download and install Qt 5.7.0
+####1.3 Download and install Qt packages
 ```
-        wget http://download.qt.io/official_releases/qt/5.7/5.7.0/qt-opensource-linux-x64-5.7.0.run
+        wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run
+        chmod a+x ./qt-unified-linux-x64-online.run
+        ./qt-unified-linux-x64-online.run
 ```
 * Run the installation. Default location for administrator installation (hereafter called "path-to-qt-installation"):
 ```
-	/opt/Qt/5.7
+        /opt
 ```
-but it's not a must
+But it's not a must. Current support Qt version: 5.9.0.
 
-* Environment in ~/.profile (~/.bash_profile or ~/.bashrc)
+* Environment in ~/.profile (~/.bash_profile or ~/.bashrc) [* If you compile and debug the project by qt-creator, environment variable could be overrided by qt-creeator. So you can skip this step and check them in qt-creator's Projects mode => Build Environment settings :)]
 ```
 	QT5DIR=/path-to-qt-installation/gcc_64
 
@@ -96,7 +98,7 @@ but it's not a must
 ```
 * Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7 or more recent version):
         Open "tute.pro" under tute in qtcreator
-        "Configure" the project in qtcreator (append "-j*" with prefer process number * to "make" options might be better)
+        "Configure" the project in qtcreator (append "-j*" with prefer progress number * to "make" options might be better)
         Build it.
 
 _______________________________________________________________________
