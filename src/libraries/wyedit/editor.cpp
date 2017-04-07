@@ -99,7 +99,7 @@ Editor::Editor(QStackedWidget* main_stack, Blogger* blogger_, std::shared_ptr<QS
 	save_callback_func = nullptr;
 	load_callback_func = nullptr;
 	back_callback_func = nullptr;
-	work_directory(blogger_->_current_topic_full_folder_name,  QString(Blogger::_default_filename) + ".html"); // file_name(blogger_->_default_filename + ".html");
+	work_directory(blogger_->_current_topic_full_folder_name, QString(Blogger::_default_filename) + ".html"); // file_name(blogger_->_default_filename + ".html");
 	// init_enable_assembly(enable_assembly);
 	// init_enable_random_seed(enable_random_seed);
 	init(mode, hide_editor_tools, enable_assembly, enable_random_seed);
@@ -956,7 +956,7 @@ QTextDocument* Editor::document(void)
 	return _text_area->document();
 }
 
-bool Editor::work_directory(const QString &dir_name, const QString &file_name_)
+bool Editor::work_directory(const QString& dir_name, const QString& file_name_)
 {
 	bool result = false;
 	auto original_dir = _work_directory;
@@ -1114,15 +1114,15 @@ bool Editor::save_textarea_text()
 	QString fullFileName = _work_directory + "/" + _work_file_name;
 
 	// Создание нового файла записи
-	QFile wfile(fullFileName);
-	if (!wfile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+	QFile file(fullFileName);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
 		critical_error("WyEdit: Cant open file " + fullFileName + " for write.");
 
 		return false;
 	}
 	qDebug() << "Write to file " << _work_file_name;
 
-	QTextStream out(&wfile);
+	QTextStream out(&file);
 	QString content = _text_area->document()->toHtml("UTF-8");
 	out.setCodec("UTF-8");
 	out << content;
@@ -1239,6 +1239,7 @@ void Editor::save_textarea(void)
 
 bool Editor::load_textarea()
 {
+	bool result = false;
 	// Если не заданы директория или файл
 	// Но установлен режим подавления ошибки
 	if (_work_file_name.length() == 0 || _work_directory.length() == 0)
@@ -1246,18 +1247,17 @@ bool Editor::load_textarea()
 			// Никаких действий с областью редактирования не делается
 
 			// скорее всего она останется просто пустой
-			return true;
+			result = true;
 		}
 	if (_work_file_name.length() == 0) {
-		critical_error(
-		    "WyEdit: Load function. Not setted work file name for editor.");
+		critical_error("WyEdit: Load function. Not setted work file name for editor.");
 
-		return false;
+		//		return false;
 	}
 	if (_work_directory.length() == 0) {
 		critical_error("WyEdit: Not setted work directory for editor.");
 
-		return false;
+		//		return false;
 	}
 	QString fileName = _work_directory + "/" + _work_file_name;
 
@@ -1268,15 +1268,14 @@ bool Editor::load_textarea()
 		QFile f(fileName);
 		// Если нужный файл не существует
 		if (!f.exists()) {
-			critical_error("WyEdit: File " + fileName + " not found");
-
-			return false;
+			result = save_textarea_text();
+			//			critical_error("WyEdit: File " + fileName + " not found");
+			//			return false;
 		}
 		// Если нужный файл недоступен для чтения
 		if (!f.open(QIODevice::ReadOnly)) {
 			critical_error("WyEdit: File " + fileName + " not readable. Check permission.");
-
-			return false;
+			result = false;
 		}
 		content = QString::fromUtf8(f.readAll());
 	} else {
@@ -1300,7 +1299,7 @@ bool Editor::load_textarea()
 	// qDebug() << "Set content:";
 	// qDebug() << textArea->toHtml();
 
-	return true;
+	return result;
 }
 
 void Editor::textarea_modified(bool modify)
