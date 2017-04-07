@@ -59,7 +59,7 @@ CONFIG  +=      qt      \
                 exception   \
                 console     \
 #        debug
-
+CONFIG  +=      scroller
 CONFIG  +=      c++14
 CONFIG  +=      gnu++14
 #CONFIG  +=      -Wno-multichar
