@@ -56,7 +56,7 @@ Let's say the directory of your current project is named "working":
 ```
 But it's not a must. Current support Qt version: 5.9.0.
 
-* Environment in ~/.profile (~/.bash_profile or ~/.bashrc) [* If you compile and debug the project by qt-creator, environment variable could be overrided by qt-creeator. So you can skip this step and check them in qt-creator's Projects mode => Build Environment settings :)]
+* Environment in ~/.profile (~/.bash_profile or ~/.bashrc)
 ```
 	QT5DIR=/path-to-qt-installation/gcc_64
 
@@ -83,7 +83,14 @@ But it's not a must. Current support Qt version: 5.9.0.
 	export QT5DIR QT5INC QT5LIB PATH
 ```
 * Do not recommend to mix it up with system installation of Qt
+* If you compile and debug the project by qt-creator, environment variable could be overrided by qt-creeator. So you can skip the shell settings and just check them in qt-creator's Projects mode => Build Environment settings as following:
+```
+Set PATH to /path-to-qt-installation/bin:/path-to-qt-installation/plugins/platforms:/path-to-qt-installation/lib:/path-to-qt-installation/include:/path-to-compiler-installation/bin:/path-to-compiler-installation/include:/path-to-compiler-installation/lib:...
+Set QT5DIR to /path-to-qt-installation
+Set QT5INC to /path-to-qt-installation/include
+Set QT5LIB to /path-to-qt-installation/plugins/platforms:/path-to-qt-installation/lib
 
+```
 ####1.4 Clone the repo to your workbench
 ```
 	git clone https://github.com/beimprovised/tute.git
