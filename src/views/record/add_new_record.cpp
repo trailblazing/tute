@@ -193,11 +193,8 @@ void AddNewRecord::okClick(void)
 
 	// Картинки сохраняются
 	imagesDirName = DiskHelper::create_temp_directory();
-	_blogger->editor()->work_directory(
-	    imagesDirName); // recordTextEditor->work_directory(imagesDirName);
-	_blogger->editor()->save_textarea_images(
-	    Editor::
-		SAVE_IMAGES_SIMPLE); // recordTextEditor->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);
+	_blogger->editor()->work_directory(imagesDirName, QString(Blogger::_default_filename) + ".html"); // recordTextEditor->work_directory(imagesDirName);
+	_blogger->editor()->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);                     // recordTextEditor->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);
 
 	emit(accept());
 }

@@ -212,6 +212,7 @@ extern const std::string editor_prefix;
 #endif
 
 //#define editor_object _editor
+constexpr char Blogger::_default_filename[];
 
 Blogger::Blogger(QString new_post_topic, QString new_post_content, QStringList hide_editor_tools_, const QByteArray& state_, Qt::WindowFlags flags)
     : super(nullptr, flags)
@@ -3943,7 +3944,7 @@ void Blogger::on_topic_changed(const QString& tp)
 			}();
 			_local_storage_file_extension = _topic_editor_config->value("local_storage_file_ext", "cqt").toString();
 			if (new_topic != _control_tab->topic()) _control_tab->topic(new_topic);
-			_editor->work_directory(_current_topic_full_folder_name);
+			_editor->work_directory(_current_topic_full_folder_name, QString(_default_filename) + ".html");
 
 			_filename = _current_topic_full_folder_name + "/" + _default_filename + "." + _local_storage_file_extension;
 
