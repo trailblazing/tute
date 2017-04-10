@@ -45,6 +45,12 @@
 
 #include <QtCore/QSettings>
 
+#include <QDockWidget>
+#include <QStackedWidget>
+#include <QWebEngineHistory>
+#include <QWebEngineProfile>
+#include <QWebEngineSettings>
+#include <QtCore/QDebug>
 #include <QtPrintSupport/QPrintDialog>
 #include <QtPrintSupport/QPrintPreviewDialog>
 #include <QtPrintSupport/QPrinter>
@@ -56,12 +62,6 @@
 #include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
-
-#include <QDockWidget>
-#include <QWebEngineHistory>
-#include <QWebEngineProfile>
-#include <QWebEngineSettings>
-#include <QtCore/QDebug>
 
 //#include "models/tree/tree_item.dec"
 
@@ -98,6 +98,7 @@
 #include "views/browser/docker.h"
 #include "views/browser/history.h"
 #include "views/browser/tabwidget.h"
+#include "views/browser/toolbar_search.h"
 #include "views/find_in_base_screen/find_screen.h"
 #include "views/main_window/main_window.h"
 #include "views/record_table/record_screen.h"
@@ -312,13 +313,21 @@ namespace web {
 		_centralwidget->setLayout(_layout);
 		setCentralWidget(_centralwidget);
 
-		connect(_tab_widget, &TabWidget::loadPage // , this, &Browser::loadPage
-		    ,
-		    [&](const QString& file) {
+		connect(_tab_widget, &TabWidget::loadPage, // this, &Browser::loadPage
+		    [&](const QString& search_text) {
+			    //			    assert(to_be_url(search_text) != QUrl());
 			    tv_t* tree_view = _tree_screen->view();
 			    auto it = tree_view->session_root_auto();
-			    TreeIndex::activate(
-				[&] { return tree_view->source_model(); }, it, url_value(file), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(detail::to_qstring(it_->field<home_key>()), file) || url_equal(detail::to_qstring(it_->field<url_key>()), file); });
+			    real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(url_value(search_text),
+				[&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+					return TreeIndex::url_activate(
+					    real_target_url_, //real_url_t<url_value>::instance(url_value(search_text)),
+					    [&] { return tree_view->source_model(); },
+					    it,
+					    std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					    [&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(detail::to_qstring(it_->field<home_key>()), search_text) || url_equal(detail::to_qstring(it_->field<url_key>()), search_text); },
+					    this);
+				});
 		    });
 		connect(_tab_widget, &TabWidget::setCurrentTitle, _main_window, &wn_t::synchronize_title); // this, &Browser::slotUpdateWindowTitle
 		//			, [&](const QString &title_){
@@ -457,6 +466,7 @@ namespace web {
 
 
 #endif //USE_SIGNAL_CLOSE
+		if (0 == _tab_widget->count()) _find_screen->switch_stack();
 	}
 
 	Browser::~Browser()
@@ -712,9 +722,18 @@ namespace web {
 	    , _main_window(gl_paras->main_window())
 	    , _navigater(new QToolBar(this)) // , _toolbarsearch(_find_screen->toolbarsearch())
 	    , _bookmarkstoolbar(new BookmarksToolBar(::sapp_t::bookmarksManager()->bookmarksModel(), this))
-	    , _file_menu([&]() -> QMenu* {auto fm = new QMenu(tr("&File"), this); fm->setContentsMargins(0, 0, 0, 0); return fm; }())
-	    , _edit_menu([&]() -> QMenu* {auto fm = new QMenu(tr("&Edit"), this); fm->setContentsMargins(0, 0, 0, 0); return fm; }())
-	    , _view_menu([&]() -> QMenu* {auto fm = new QMenu(tr("&View"), this); fm->setContentsMargins(0, 0, 0, 0); return fm; }())
+	    , _file_menu([&]() -> QMenu* {
+			auto fm = new QMenu(tr("&File"), this);
+			fm->setContentsMargins(0, 0, 0, 0);
+			return fm; }())
+	    , _edit_menu([&]() -> QMenu* {
+			auto fm = new QMenu(tr("&Edit"), this);
+			fm->setContentsMargins(0, 0, 0, 0);
+			return fm; }())
+	    , _view_menu([&]() -> QMenu* {
+			auto fm = new QMenu(tr("&View"), this);
+			fm->setContentsMargins(0, 0, 0, 0);
+			return fm; }())
 	    , _tools_menu(_main_window->tools_menu()) //([&]() -> QMenu *{auto fm = new QMenu(tr("&Tools"), this); fm->setContentsMargins(0, 0, 0, 0); return fm;} ())
 	    , _bookmarks_menu(new BookmarksMenu())
 	    , _chasewidget(_find_screen->chasewidget())
@@ -722,14 +741,20 @@ namespace web {
 	    , _historyhome(new QAction(tr("Home"), _navigater))       //(_find_screen->historyhome())
 	    , _historyback(new QAction(tr("Back"), _navigater))       //(_find_screen->historyback())
 	    , _historyforward(new QAction(tr("Forward"), _navigater)) //(_find_screen->historyforward())
-	    , _windowmenu([&]() -> QMenu* {auto fm = new QMenu(tr("&Window"), this); fm->setContentsMargins(0, 0, 0, 0); return fm; }())
+	    , _windowmenu([&]() -> QMenu* {
+			auto fm = new QMenu(tr("&Window"), this);
+			fm->setContentsMargins(0, 0, 0, 0);
+			return fm; }())
 	    , _stop(new QAction(tr("&Stop"), _navigater))         //(_find_screen->stop())
 	    , _reload(new QAction(tr("Reload Page"), _navigater)) //(_find_screen->reload())
 	    , _stopreload(new QAction(_navigater))                //(_find_screen->stopreload())
 	    , _autosaver(new AutoSaver(this))
 	    , _centralwidget(new QWidget(this))
 	    , _layout(new QVBoxLayout)
-	    , _blogger([&] {static_assert(Browser::initialize_prior_to<Blogger>::value == false, "Browser instance need a blogger was ready"); assert(blogger_); return blogger_; }()) // new Blogger(vtab_record, this, hide_editor_tools_, new_post_topic, new_post_content)
+	    , _blogger([&] {
+			static_assert(Browser::initialize_prior_to<Blogger>::value == false, "Browser instance need a blogger was ready");
+			assert(blogger_);
+			return blogger_; }()) // new Blogger(vtab_record, this, hide_editor_tools_, new_post_topic, new_post_content)
 	    //	    , _record_screen(record_screen_)
 	    , _tab_widget([&] {
 		    //		    _tab_widget = nullptr;
@@ -856,7 +881,7 @@ namespace web {
 
 		//		_entrance->on_activate_window();
 
-		_find_screen->toolbarsearch()->lineedits(this->tab_widget()->lineEditStack());
+		//		_find_screen->switch_stack(this->tab_widget()->lineEditStack());
 
 		//		auto _vtab_record = _record_screen->vtab_record();
 		auto _record_screen = _tab_widget->record_screen();
@@ -878,7 +903,7 @@ namespace web {
 			if (_rctrl) {
 				auto it = _rctrl->view()->current_item();
 				if (it) {
-					_tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] { return _tree_screen->view()->source_model(); }, it));
+					_tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_screen->view()->source_model(); }, it));
 				}
 			}
 		}
@@ -887,6 +912,7 @@ namespace web {
 		if (it) _main_window->synchronize_title(it->field<name_key>());
 		this->setVisible(true);
 		this->adjustSize();
+		if (0 == _tab_widget->count()) _find_screen->switch_stack();
 		QMainWindow::activateWindow();
 	}
 
@@ -1066,6 +1092,7 @@ namespace web {
 		QByteArray data = get_state(); // false
 		_configuration->setValue(QLatin1String("default_state"), data);
 		_configuration->endGroup();
+		if (0 == _tab_widget->count()) _find_screen->switch_stack();
 	}
 
 
@@ -1590,7 +1617,7 @@ namespace web {
 
 			// if(_tab_widget->lineEditStack() == nullptr)
 			// _tab_widget->lineEditStack(_find_screen->toolbarsearch()->lineedits());
-
+			_find_screen->switch_stack(this->tab_widget()->lineEditStack());
 			////_toolbarsearch = new ToolbarSearch(_tab_widget->lineEditStack(),
 			///findscreen->findtable(), navigater);
 
@@ -1793,7 +1820,15 @@ namespace web {
 		// loadPage(file);
 		tv_t* tree_view = _tree_screen->view();
 		auto it = tree_view->session_root_auto();
-		TreeIndex::activate([&] { return tree_view->source_model(); }, it, url_value(file), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(detail::to_qstring(it_->field<home_key>()), file) || url_equal(detail::to_qstring(it_->field<url_key>()), file); });
+		real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(url_value(file),
+		    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+			    return TreeIndex::url_activate(real_target_url_,
+				[&] { return tree_view->source_model(); },
+				it,
+				std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+				[&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(detail::to_qstring(it_->field<home_key>()), file) || url_equal(detail::to_qstring(it_->field<url_key>()), file); },
+				this);
+		    });
 	}
 
 #define QT_NO_PRINTPREVIEWDIALOG
@@ -1980,17 +2015,24 @@ namespace web {
 		auto current_item = tree_view->current_item();
 		auto parent = current_item->parent();
 		if (!parent) throw std::runtime_error(formatter() << "! parent");
-		TreeIndex::activate([&] { return tree_view->source_model(); }, current_item, url_value(home), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(detail::to_qstring(it_->field<home_key>()), home) || url_equal(detail::to_qstring(it_->field<url_key>()), home); });
-		// }
+		real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(url_value(home),
+		    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+			    return TreeIndex::url_activate(real_target_url_,
+				[&] { return tree_view->source_model(); },
+				current_item,
+				std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+				[&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(detail::to_qstring(it_->field<home_key>()), home) || url_equal(detail::to_qstring(it_->field<url_key>()), home); },
+				this);
+		    });
 		_configuration->endGroup();
 	}
 
 	void Browser::slotWebSearch()
 	{
 		// _toolbarsearch
-		_find_screen->toolbarsearch()->lineEdit()->selectAll();
+		static_cast<ToolbarSearch*>(_find_screen->lineedit_stack()->currentWidget())->lineEdit()->selectAll();
 		// _toolbarsearch
-		_find_screen->toolbarsearch()->lineEdit()->setFocus();
+		_find_screen->lineedit_stack()->currentWidget()->setFocus();
 	}
 
 	void Browser::slotToggleInspector(bool enable)
@@ -2381,6 +2423,10 @@ namespace web {
 	//		QDialog dlg;
 	//		dlg.exec();
 	//	}
+	web::WebView* Browser::find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal) const
+	{
+		return _tab_widget->find(_equal);
+	}
 }
 
 //

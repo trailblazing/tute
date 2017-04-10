@@ -208,7 +208,7 @@ void Editor::init(int mode, QStringList hide_editor_tools, bool enable_assembly,
 	// std::make_shared<EditorConfig>(_init_data_config_file_name, nullptr);//
 	// this
 	_editor_config->setObjectName("editorconfig");
-	gl_paras->editor_config(_editor_config);
+	//	gl_paras->editor_config(_editor_config);
 
 	// Выясняется перечень кнопок на панели инструментов
 	_tools_name_list_in_line_0 = (_editor_config->tools_line_0()).split(",");
@@ -602,7 +602,7 @@ void Editor::setup_buttons(void)
 
 	// Кнопка "назад", используется в мобильном интерфейсе
 	// Button "back", used in the mobile interface
-	_back = add_action(_tools_line_0, this, tr((editor_prefix + "back").c_str()), tr("Back"), tr("Back"), QIcon(":/resource/pic/mobile_back.svg"), [&](bool) { WindowSwitcher::record_to_recordtable(); });
+	_back = add_action(_tools_line_0, this, tr((editor_prefix + "back").c_str()), tr("Back"), tr("Back"), QIcon(":/resource/pic/mobile_back.svg"), [&](bool) { WindowSwitcher::record_to_record_screen(); });
 
 	// Кнопка "поиск по базе", используется в мобильном интерфейсе
 	// Button "search database" used in the mobile interface
@@ -2280,7 +2280,7 @@ void Editor::on_custom_contextmenu_requested(const QPoint& _position)
 void Editor::on_settings_clicked(void)
 {
 	// Создается окно настроек, после выхода из этой функции окно удалится
-	EditorConfigDialog dialog;
+	EditorConfigDialog dialog(_editor_config);
 	dialog.show();
 }
 
@@ -3015,6 +3015,7 @@ void Editor::scrollbar_position(int n)
 	_text_area->verticalScrollBar()->setValue(n);
 }
 
+std::shared_ptr<EditorConfig> Editor::editor_config() const { return _editor_config; }
 // QToolBar *Editor::tool_bar(){return _tools_line_0;}
 
 // SuperMenu *Editor::context_menu(){return _context_menu;}

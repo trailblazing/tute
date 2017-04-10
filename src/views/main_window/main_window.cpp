@@ -14,7 +14,7 @@
 #include <QVBoxLayout>
 
 //#include "models/tree/tree_item.dec"
-
+#include "libraries/fixed_parameters.h"
 #include "libraries/global_parameters.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "libraries/qtm/blogger.h"
@@ -33,7 +33,6 @@
 #include "models/tree/tree_know_model.h"
 #include "views/app_config/app_config_dialog.h"
 #include "views/browser/bookmarks.h"
-#include "views/browser/browser.h"
 #include "views/browser/browser.h"
 #include "views/browser/docker.h"
 #include "views/browser/downloadmanager.h"
@@ -892,7 +891,7 @@ void wn_t::setup_signals(void)
 													if (tree_screen_) {
 														if (tree_screen_->view()->current_item()->id() != it->id()) {
 															//
-															tree_screen_->view()->select_as_current(TreeIndex::require_treeindex([&] { return tree_screen_->view()->source_model(); }, it));
+															tree_screen_->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_screen_->view()->source_model(); }, it));
 														}
 													}
 													//													auto to_home = gl_paras->find_screen()->historyhome();
@@ -1592,7 +1591,7 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
 
 			// Курсор устанавливается в нужную позицию
 
-			boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::require_treeindex(
+			boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::item_require_treeindex(
 			    [&] { return _tree_view->source_model(); }, it);
 			// try {tree_index = new TreeIndex([&] {return tree_view->source_model();
 			// }, it->parent(), it->parent()->sibling_order([&]
@@ -1610,7 +1609,7 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
 				r = _tree_view->tree_empty_controll();
 			else
 				r = it->child_direct(0);
-			boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::require_treeindex(
+			boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::item_require_treeindex(
 			    [&] { return _tree_view->source_model(); }, r);
 			// try {tree_index = new TreeIndex([&] {return tree_view->source_model();
 			// }, it, 0); } catch(std::exception &e) {throw e; }
@@ -1975,8 +1974,8 @@ void wn_t::tools_find(void)
 				       ->find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
 	if (!(_find_screen->isVisible())) {
 		_find_screen->show();
-		_find_screen->toolbarsearch()->lineEdit()->selectAll();
-		_find_screen->toolbarsearch()->lineEdit()->setFocus();
+		static_cast<web::ToolbarSearch*>(_find_screen->lineedit_stack()->currentWidget())->lineEdit()->selectAll();
+		_find_screen->lineedit_stack()->currentWidget()->setFocus();
 	} else
 		_find_screen->hide();
 }
@@ -2480,25 +2479,46 @@ wn_t::browser<QUrl>(const QUrl& url_, bool force)
 {
 	(void)force;
 
-	return browser<url_value>(url_value(url_.toString()), force);
+	return real_url_t<url_value>::instance<web::Browser*>(url_value(url_.toString()),
+	    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) {
+		    return browser<boost::intrusive_ptr<real_url_t<url_value>>>(real_target_url_, force);
+	    });
 }
 
 // not sure to succeeded if force is false
 template <>
 web::Browser*
-wn_t::browser<url_value>(const url_value& real_url_, bool force)
+wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusive_ptr<real_url_t<url_value>>& real_find_url_, bool force)
 {
 	(void)force;
-	auto real_url = real_url_;
-	//	auto url_str = detail::to_string(real_url);
-	QUrl qurl = QUrl(detail::to_qstring(real_url));
-	if (qurl.isEmpty() && !qurl.isValid()) real_url = web::Browser::_defaulthome;
-	auto it = TreeIndex::require_item(
-	    real_url, std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it) -> bool {
+	boost::intrusive_ptr<real_url_t<url_value>> dummy = real_find_url_;
+	(void)dummy;
+	auto real_url = real_find_url_->value();
+	//	//	auto url_str = detail::to_string(real_url);
+	//	QUrl qurl = QUrl(detail::to_qstring(real_url));
+	//	if (to_be_url(qurl) == QUrl() //qurl.isEmpty() && !qurl.isValid()
+	//	    ) real_url = web::Browser::_defaulthome;
+	//	assert(to_be_url(real_url) != QUrl());
+	//	assert(real_url != web::Browser::_defaulthome);
+	auto it = TreeIndex::url_require_item_from_tree(
+	    real_find_url_, std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it) -> bool {
 		    return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
 	    });
 	web::Browser* v(nullptr);
-	if (it) v = browser(it);
+	if (it) {
+		auto binder_ = it->binder();
+		if (binder_) {
+			auto page_ = binder_->page();
+			if (page_) {
+				auto bro_ = page_->browser();
+				if (bro_)
+					v = bro_;
+			}
+
+		} else {
+			v = browser(it);
+		}
+	}
 	return v;
 }
 
@@ -2532,6 +2552,11 @@ wn_t::browser<QString>(const QString& topic_, bool force)
 	// std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
 	web::Browser* browser_(nullptr);
 	assert(!((topic == gl_para::_current_browser) && (force)));
+	//	auto try_real_url = to_be_url(topic);
+
+	//	if (try_real_url != QUrl() && try_real_url != detail::to_qstring(web::Browser::_defaulthome)) {
+	//		browser_ = static_cast<web::ToolbarSearch*>(_find_screen->lineedit_stack()->currentWidget())->search_now(topic);
+	//	} else
 	if (topic == gl_para::_current_browser) {
 		auto rs = _vtab_record->currentWidget();
 		if (rs)

@@ -6180,8 +6180,15 @@ void Blogger::go_walk_history(void)
 			// }
 			auto url_target = item->field<url_key>();
 			// walkhistory.set_drop(false);
-			TreeIndex::activate(
-			    [&] { return _tree_view->source_model(); }, _tree_view->current_item(), item->field<url_key>(), std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), url_target) || url_equal(url_value(detail::to_qstring(it_->field<url_key>())), url_target); });
+			real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(item->field<url_key>(),
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+				    return TreeIndex::url_activate(real_target_url_,
+					[&] { return _tree_view->source_model(); },
+					_tree_view->current_item(),
+					std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					[&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), url_target) || url_equal(url_value(detail::to_qstring(it_->field<url_key>())), url_target); },
+					_browser);
+			    });
 		}
 		// else {
 		// walkhistory.set_drop(false);

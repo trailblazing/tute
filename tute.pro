@@ -61,11 +61,14 @@ CONFIG  +=      qt      \
 #        debug
 CONFIG  +=      scroller
 CONFIG  +=      c++14
-CONFIG  +=      gnu++14
+#CONFIG  +=      gnu++14
+
 #CONFIG  +=      -Wno-multichar
 #CONFIG  +=  staticlib static
 #QMAKE_CFLAGS    +=      -Wno-multichar -Wfour-char-constants
-QMAKE_CXXFLAGS  +=       -std=c++14 -std=gnu++14
+QMAKE_CXXFLAGS  +=       -std=c++14
+#QMAKE_CXXFLAGS  +=       -std=gnu++14
+
 #QMAKE_CXXFLAGS  +=       -Wno-multichar -Wfour-char-constants
 #QMAKE_LFLAGS += -static-libgcc
 
@@ -473,7 +476,6 @@ SOURCES     =   src/main.cpp \
     src/libraries/qtm/accounts_dialog.cxx \
     src/libraries/qtm/application.cxx \
     src/libraries/qtm/dbus_adaptor.cxx \
-    src/libraries/qtm/editing_window_response_handlers.cxx \
     src/libraries/qtm/highlighter.cxx \
     src/libraries/qtm/location_line_edit.cc \
     src/libraries/qtm/prefs_dialog.cxx \
@@ -497,7 +499,8 @@ SOURCES     =   src/main.cpp \
     src/models/tree/tree_item.inl \
     src/models/record_table/record.inl \
     src/libraries/qtm/blogger.inl \
-    src/libraries/wyedit/editor.inl
+    src/libraries/wyedit/editor.inl \
+    src/libraries/qtm/blogger_response_handlers.cxx
 #    src/views/browser/cookiejar.cpp \
 
 lessThan(QT_MAJOR_VERSION,5) {

@@ -176,8 +176,8 @@ class gl_para : public QObject {
 	void download_manager(web::DownloadManager* dm);
 	web::DownloadManager* download_manager() const;
 
-	std::shared_ptr<EditorConfig> editor_config() const;
-	void editor_config(std::shared_ptr<EditorConfig> dialog);
+//	std::shared_ptr<EditorConfig> editor_config() const;
+//	void editor_config(std::shared_ptr<EditorConfig> dialog);
 
 	//	AttachTableController* attachtable_controller() const;
 	//	void attachtable_controller(AttachTableController* _attachtable_controller);

@@ -128,6 +128,83 @@ BOOST_STRONG_TYPEDEF_EXTENSION(bool, has_attach_value)
 BOOST_STRONG_TYPEDEF_EXTENSION(int, attach_size_value)
 BOOST_STRONG_TYPEDEF_EXTENSION(QString, dynamic_name_value)
 
+class i_t;
+namespace web{
+    class Browser;
+}
+
+template <typename input_t>
+struct real_url_t;
+
+namespace detail {
+	template <typename output_t, typename input_t>
+	output_t //boost::intrusive_ptr<::real_url_t<input_t>>
+	    real_url_instance(const input_t& url_, std::function<output_t(const input_t&)>);
+
+
+	template <typename output_t>
+	output_t //boost::intrusive_ptr<::real_url_t<QString>>
+	    real_url_instance(const QString& url_, std::function<output_t(boost::intrusive_ptr<real_url_t<QString>>)>);
+
+	extern template web::Browser* //boost::intrusive_ptr<::real_url_t<url_value>>
+	    real_url_instance(const QString& url_, std::function<web::Browser*(boost::intrusive_ptr<real_url_t<QString>>)>);
+
+
+	template <typename output_t>
+	output_t //boost::intrusive_ptr<::real_url_t<url_value>>
+	    real_url_instance(const url_value& url_, std::function<output_t(boost::intrusive_ptr<real_url_t<url_value>>)>);
+
+	extern template
+	boost::intrusive_ptr<i_t> //boost::intrusive_ptr<::real_url_t<url_value>>
+	    real_url_instance(const url_value& url_, std::function<boost::intrusive_ptr<i_t>(boost::intrusive_ptr<real_url_t<url_value>>)>);
+
+	extern template
+	web::Browser* //boost::intrusive_ptr<::real_url_t<url_value>>
+	    real_url_instance(const url_value& url_, std::function<web::Browser*(boost::intrusive_ptr<real_url_t<url_value>>)>);
+}
+
+template <typename input_t>
+struct real_url_t : public boost::intrusive_ref_counter<real_url_t<input_t>, boost::thread_safe_counter> {
+	template <typename output_t>
+	static output_t //boost::intrusive_ptr<::real_url_t<input_t>>
+	    instance(const input_t& url_, std::function<output_t(boost::intrusive_ptr<real_url_t<input_t>>)> func_)
+	{
+		return detail::real_url_instance(url_, func_);
+	}
+	input_t value() const { return _url; }
+
+    protected:
+	real_url_t(const input_t& url_)
+	    : _url(url_) {}
+
+	input_t _url;
+
+	template <typename output_t>
+	friend output_t //boost::intrusive_ptr<real_url_t<input_t>>
+	    detail::real_url_instance(const input_t& url_, std::function<output_t(boost::intrusive_ptr<real_url_t<input_t>>)>);
+};
+
+
+extern template struct real_url_t<QString>;
+//	: public boost::intrusive_ref_counter<real_url_t<QString>, boost::thread_safe_counter> {
+//	static boost::intrusive_ptr<real_url_t<QString>> instance(const QString& url_);
+//	QString value() const;
+
+//    protected:
+//	real_url_t(const QString& url_);
+//	QString _url;
+//};
+extern template struct real_url_t<url_value>;
+//	: public boost::intrusive_ref_counter<real_url_t<url_value>, boost::thread_safe_counter> {
+//	static boost::intrusive_ptr<real_url_t<url_value>> instance(const url_value& url_);
+//	url_value value() const;
+
+//    protected:
+//	real_url_t(const url_value& url_);
+//	url_value _url;
+//};
+
+
 typedef boost::mpl::set<name_key, author_key, home_key, url_key, tags_key> crypt_fields_keys;
 // typedef boost::mpl::map<pin_type, name_type, author_type, home_type,
 // url_type, tags_type> crypt_field_map;

@@ -658,13 +658,13 @@ web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_ite
 			auto tab = _rctrl->tab_widget();
 			if (tab)
 				view = tab->newTab(record_index); // , _item->field("name")
-			// else{
-			// view = _record_controller->tabmanager()->webView((int)source_insert_pos);
-			// view->page()->binder()->host()->activate(std::bind(&web::Entrance::find,
-			// globalparameters.entrance(), std::placeholders::_1));
-			//// addTab()-> wrong design, demage the function TabWidget::newTab and the
-			///function QTabWidget::addTab
-			// }
+								  // else{
+								  // view = _record_controller->tabmanager()->webView((int)source_insert_pos);
+								  // view->page()->binder()->host()->activate(std::bind(&web::Entrance::find,
+								  // globalparameters.entrance(), std::placeholders::_1));
+								  //// addTab()-> wrong design, demage the function TabWidget::newTab and the
+								  ///function QTabWidget::addTab
+								  // }
 		}
 		assert(view);
 		returned_position = position(id_value(_item->field<id_key>())); // pos_source(_record_controller->tabmanager()->indexOf(view));
@@ -717,12 +717,22 @@ web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_ite
 			// _tree_view->source_model();}, brother);
 			auto target_url = _target_item->field<url_key>();
 			auto _target_item = // this_index->
-			    TreeIndex::require_item(
-				target_url,
-				std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-				[&](boost::intrusive_ptr<const i_t> it_) -> bool {
-					return url_equal(detail::to_string(it_->field<home_key>()), detail::to_string(target_url)) || url_equal(detail::to_string(it_->field<url_key>()), detail::to_string(target_url)); // return it_->field<url_type>() == target_url.toString();
+			    real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(target_url,
+				[&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+					return TreeIndex::url_require_item_from_tree(
+					    real_target_url_, //std::placeholders::_1,
+					    std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					    [&](boost::intrusive_ptr<const i_t> it_) -> bool {
+						    return url_equal(detail::to_string(it_->field<home_key>()), detail::to_string(target_url)) || url_equal(detail::to_string(it_->field<url_key>()), detail::to_string(target_url)); // return it_->field<url_type>() == target_url.toString();
+					    });
 				});
+
+			//			    TreeIndex::url_require_item_from_tree(
+			//				real_url_t<url_value>::instance(target_url),
+			//				std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+			//				[&](boost::intrusive_ptr<const i_t> it_) -> bool {
+			//					return url_equal(detail::to_string(it_->field<home_key>()), detail::to_string(target_url)) || url_equal(detail::to_string(it_->field<url_key>()), detail::to_string(target_url)); // return it_->field<url_type>() == target_url.toString();
+			//				});
 
 			view = insert_new_tab(returned_position, _target_item); // , source_insert_pos
 			assert(returned_position != -1);

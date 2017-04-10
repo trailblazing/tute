@@ -17,22 +17,24 @@
 W_OBJECT_IMPL(ConfigDialog)
 #endif
 
-ConfigDialog::ConfigDialog(QWidget *parent)
-    : QDialog(parent) {
+ConfigDialog::ConfigDialog(QWidget* parent)
+    : QDialog(parent)
+{
 	setup_ui();
 	setup_signals();
 	assembly();
 }
 
-void ConfigDialog::setup_ui(void) {
+void ConfigDialog::setup_ui(void)
+{
 	// Список конфигурирующих виджетов
-	contentsWidget = new QListWidget;
-	contentsWidget->setViewMode(QListView::ListMode);
-	contentsWidget->setMovement(QListView::Static);
+	_contentsWidget = new QListWidget;
+	_contentsWidget->setViewMode(QListView::ListMode);
+	_contentsWidget->setMovement(QListView::Static);
 	// contentsWidget->setMinimumWidth(100); //
 	// contentsWidget->setMaximumWidth(150);
-	contentsWidget->setCurrentRow(0);
-	contentsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+	_contentsWidget->setCurrentRow(0);
+	_contentsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	// contentsWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 	// // Не компилируется в Qt4
 
@@ -42,38 +44,39 @@ void ConfigDialog::setup_ui(void) {
 	// scrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 	// Область переключения конфигурирующих виджетов
-	pagesWidget = new QStackedWidget;
-	pagesWidget->setMinimumWidth(250);
-	pagesWidget->setMinimumHeight(250);
-	pagesWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+	_pagesWidget = new QStackedWidget;
+	_pagesWidget->setMinimumWidth(250);
+	_pagesWidget->setMinimumHeight(250);
+	_pagesWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
 	// Кнопки закрытия диалога
-	confirmButtons =
+	_confirmButtons =
 	    new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 }
 
-void ConfigDialog::setup_signals(void) {
-	connect(confirmButtons, &QDialogButtonBox::accepted, this, &ConfigDialog::apply_changes);
+void ConfigDialog::setup_signals(void)
+{
+	connect(_confirmButtons, &QDialogButtonBox::accepted, this, &ConfigDialog::apply_changes);
 
-	connect(confirmButtons, &QDialogButtonBox::rejected, this, &ConfigDialog::reject);
+	connect(_confirmButtons, &QDialogButtonBox::rejected, this, &ConfigDialog::reject);
 
-	connect(contentsWidget, &QListWidget::currentItemChanged, this, &ConfigDialog::change_page);
+	connect(_contentsWidget, &QListWidget::currentItemChanged, this, &ConfigDialog::change_page);
 }
 
-void ConfigDialog::assembly(void) {
-	QHBoxLayout *horizontalLayout = new QHBoxLayout;
-	horizontalLayout->addWidget(contentsWidget);
-	horizontalLayout->addWidget(
-	    pagesWidget, 1);  // horizontalLayout->addWidget(pagesWidget, 1);
+void ConfigDialog::assembly(void)
+{
+	QHBoxLayout* horizontalLayout = new QHBoxLayout;
+	horizontalLayout->addWidget(_contentsWidget);
+	horizontalLayout->addWidget(_pagesWidget, 1); // horizontalLayout->addWidget(pagesWidget, 1);
 
 	// scrollArea->setWidget(pagesWidget);
 	// scrollArea->adjustSize();
 
-	QHBoxLayout *buttonsLayout = new QHBoxLayout;
+	QHBoxLayout* buttonsLayout = new QHBoxLayout;
 	buttonsLayout->addStretch(1);
-	buttonsLayout->addWidget(confirmButtons);
+	buttonsLayout->addWidget(_confirmButtons);
 
-	QVBoxLayout *mainLayout = new QVBoxLayout;
+	QVBoxLayout* mainLayout = new QVBoxLayout;
 	mainLayout->addLayout(horizontalLayout);
 	mainLayout->addStretch(1);
 	mainLayout->addSpacing(12);
@@ -83,20 +86,23 @@ void ConfigDialog::assembly(void) {
 	this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 }
 
-void ConfigDialog::set_window_title(QString title) {
+void ConfigDialog::set_window_title(QString title)
+{
 	// Строка в заголовке окна
 	setWindowTitle(title);
 }
 
-QListWidgetItem *ConfigDialog::add_widget(QWidget *inswidget, QString name) {
-	pagesWidget->addWidget(inswidget);
+QListWidgetItem* ConfigDialog::add_widget(QWidget* inswidget, QString name)
+{
+	_pagesWidget->addWidget(inswidget);
 
 	return create_items(name);
 }
 
 // Создаются пункты для вызова нужных конфигурирующих виджетов
-QListWidgetItem *ConfigDialog::create_items(QString name) {
-	QListWidgetItem *item = new QListWidgetItem(contentsWidget);
+QListWidgetItem* ConfigDialog::create_items(QString name)
+{
+	QListWidgetItem* item = new QListWidgetItem(_contentsWidget);
 	item->setText(name);
 	item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
@@ -105,33 +111,37 @@ QListWidgetItem *ConfigDialog::create_items(QString name) {
 
 // Приватный слот, переключение виджета настройки при клике по списку
 // настроечных виджетов
-void ConfigDialog::change_page(QListWidgetItem *current, QListWidgetItem *previous) {
+void ConfigDialog::change_page(QListWidgetItem* current, QListWidgetItem* previous)
+{
 	if (!current)
 		current = previous;
-	pagesWidget->setCurrentIndex(contentsWidget->row(current));
+	_pagesWidget->setCurrentIndex(_contentsWidget->row(current));
 
 	// scrollArea->adjustSize();
 }
 
-void ConfigDialog::externalChangePage(QListWidgetItem *item) {
-	contentsWidget->setCurrentItem(item);
+void ConfigDialog::externalChangePage(QListWidgetItem* item)
+{
+	_contentsWidget->setCurrentItem(item);
 
 	// scrollArea->adjustSize();
 }
 
-void ConfigDialog::updateListWidth(void) {
-	contentsWidget->updateGeometry();
-	contentsWidget->update();
+void ConfigDialog::updateListWidth(void)
+{
+	_contentsWidget->updateGeometry();
+	_contentsWidget->update();
 
 	// scrollArea->adjustSize();
 }
 
-void ConfigDialog::apply_changes(void) {
+void ConfigDialog::apply_changes(void)
+{
 	int difficult_flag = 0;
 	// Перебираются виджеты настройки
-	for (int i = 0; i < pagesWidget->count(); i++) {
+	for (int i = 0; i < _pagesWidget->count(); i++) {
 		// Выясняется указатель на виджет
-		ConfigPage *cnpg = qobject_cast<ConfigPage *>(pagesWidget->widget(i));
+		ConfigPage* cnpg = qobject_cast<ConfigPage*>(_pagesWidget->widget(i));
 		// Вызывается метод apply_changes() для текущего перебираемого виджета
 		if (cnpg->apply_changes() == 1)
 			difficult_flag = 1;

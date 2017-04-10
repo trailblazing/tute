@@ -61,15 +61,10 @@ class FindScreen : public QWidget
 #endif
 
     public:
-	static const constexpr char* _find_in_base_expand =
-	    "findInBaseExpand"; // "find_in_base_expand";
+	static constexpr char _find_in_base_expand[] = "findInBaseExpand"; // "find_in_base_expand";
 	FindScreen(QString object_name, ts_t* tree_screen_, QWidget* parent = 0);
 	virtual ~FindScreen(void);
 	// QToolBar *navigater() {return _navigater;}
-
-	// void toolbarsearch(web::ToolbarSearch *toolbarsearch) {_toolbarsearch =
-	// toolbarsearch;}
-	web::ToolbarSearch* toolbarsearch();
 
 	FlatToolButton* findstartbutton();
 
@@ -98,12 +93,16 @@ class FindScreen : public QWidget
 	// std::shared_ptr<sd::_interface<sd::meta_info<void >, web::TabWidget *>>
 	// tabmanager;         // for entrance
 
+	//	web::ToolbarSearch* toolbarsearch() const;
+	QStackedWidget* lineedit_stack() { return _lineedit_stack; }
+	void lineedit_stack(QStackedWidget* lineedit_stack_) { _lineedit_stack = lineedit_stack_; }
+	void switch_stack(QStackedWidget* lineedit_stack_ = nullptr);
     public slots:
 
 	void widget_show(void);
 	void widget_hide(void);
-	boost::intrusive_ptr<i_t> find_clicked(void);
-	void find_text(QString text);
+	boost::intrusive_ptr<i_t> find_internal_decomposed(const QString& search_text);
+	void find_text(QString text_);
 
 	void replace_navigater(QToolBar* nv);
 
@@ -225,8 +224,10 @@ class FindScreen : public QWidget
 	// bool            _is_search_global = true;
 	// FindTableWidget     *_findtable;
 	// std::shared_ptr<ItemsFlat>      _selected_branch_as_pages;
-	web::ToolbarSearch* _toolbarsearch; // QLineEdit *_findtext;     //
+	QVBoxLayout* _stack_layout;
+	web::ToolbarSearch* _toolbarsearch_buffer; // QLineEdit *_findtext;     //
 	// QStackedWidget *_lineedits;
+	QStackedWidget* _lineedit_stack;
 
 	// Поля, где нужно искать (Заголовок, текст, теги...)
 	QMap<QString, bool> _search_area;
@@ -237,6 +238,7 @@ class FindScreen : public QWidget
 	int _total_progress_counter = 0;
 
 	int _cancel_flag = 0;
+	friend class web::ToolbarSearch;
 };
 
 #endif /* _FINDSCREEN_H_ */

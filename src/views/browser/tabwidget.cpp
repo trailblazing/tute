@@ -804,7 +804,7 @@ namespace web {
 	    , _recentlyclosedtabsmenu(new QMenu(this))
 	    // , _completionModel(new HistoryCompletionModel(this))
 	    , _lineeditcompleter(nullptr) // new QCompleter(_completionModel, this)
-	    , _lineedits(new QStackedWidget(this))
+	    , _lineedit_stack(new QStackedWidget())
 	    , _tabbar(new TabBar(this))
 	    , _profile(profile_) // globalparameters.profile()   // QWebEngineProfile::defaultProfile()
 	    , _fullscreenview(nullptr)
@@ -831,7 +831,7 @@ namespace web {
 		// , _shadow_source_model(new TableModel(QString(table_screen_singleton_name)
 		// + QString("_shadow"), _tree_item, this))
 		// , _table_data(std::make_shared<TableData>(_tree_item))
-		gl_paras->find_screen()->toolbarsearch()->lineedits(_lineedits);
+		if (gl_paras->find_screen()->lineedit_stack() != _lineedit_stack) gl_paras->find_screen()->switch_stack(_lineedit_stack);
 
 		// _lineedits = globalparameters.find_screen()->toolbarsearch()->lineedits();
 		// connect(parent, []() {}, globalparameters.find_screen()->toolbarsearch(),
@@ -856,8 +856,24 @@ namespace web {
 		//		auto parent = _tree_screen->view()->current_item()->parent();
 		//		if(!parent) throw std::runtime_error("! parent");
 		connect(_tabbar, &TabBar::newTab, [&]() {
-			auto it = TreeIndex::activate(
-			    [&] { return _tree_screen->view()->source_model(); }, _tree_screen->view()->current_item(), web::Browser::_defaulthome, std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), web::Browser::_defaulthome) || url_equal(it_->field<url_key>(), web::Browser::_defaulthome); });
+			auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(web::Browser::_defaulthome,
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+				    return TreeIndex::url_activate(
+					real_target_url_, //std::placeholders::_1,
+					[&] { return _tree_screen->view()->source_model(); },
+					_tree_screen->view()->current_item(),
+					std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					[](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), web::Browser::_defaulthome) || url_equal(it_->field<url_key>(), web::Browser::_defaulthome); },
+					_browser);
+			    });
+
+			//				TreeIndex::url_activate(real_url_t<url_value>::instance(web::Browser::_defaulthome),
+			//			    [&] { return _tree_screen->view()->source_model(); },
+			//			    _tree_screen->view()->current_item(),
+			//			    std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+			//			    [](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), web::Browser::_defaulthome) || url_equal(it_->field<url_key>(), web::Browser::_defaulthome); },
+			//			    _browser);
+
 			if (currentWebView() != it->page()->view()) setCurrentIndex(webViewIndex(it->page()->view()));
 		});
 
@@ -896,8 +912,23 @@ namespace web {
 		    [&](bool make_current) {
 			    Q_UNUSED(make_current)
 
-			    auto it = TreeIndex::activate(
-				[&] { return _tree_screen->view()->source_model(); }, _tree_screen->view()->current_item(), web::Browser::_defaulthome, std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), web::Browser::_defaulthome) || url_equal(url_value(detail::to_qstring(it_->field<url_key>())), web::Browser::_defaulthome); });
+			    auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(web::Browser::_defaulthome,
+				[&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+					return TreeIndex::url_activate(
+					    real_target_url_, //std::placeholders::_1,
+					    [&] { return _tree_screen->view()->source_model(); },
+					    _tree_screen->view()->current_item(),
+					    std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					    [](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), web::Browser::_defaulthome) || url_equal(url_value(detail::to_qstring(it_->field<url_key>())), web::Browser::_defaulthome); },
+					    _browser);
+				});
+
+			    //				    TreeIndex::url_activate(real_url_t<url_value>::instance(web::Browser::_defaulthome),
+			    //				[&] { return _tree_screen->view()->source_model(); },
+			    //				_tree_screen->view()->current_item(),
+			    //				std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+			    //				[](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), web::Browser::_defaulthome) || url_equal(url_value(detail::to_qstring(it_->field<url_key>())), web::Browser::_defaulthome); },
+			    //				_browser);
 			    if (currentWebView() != it->page()->view()) setCurrentIndex(webViewIndex(it->page()->view()));
 		    });
 
@@ -938,9 +969,9 @@ namespace web {
 		// _lineedits = ;
 
 		// _lineedits->setMaximumSize(0, 0);
-
-		_lineedits->hide();
-
+		{       //?
+			//			_lineedit_stack->hide();
+		}
 // setStyleSheet("QTabWidget::tab-bar { max-width: 200px; align: left;
 // text-align: left; margin-left: 2px; padding: 2px;}");         // left: 1px;
 // alignment: left; // does not work
@@ -1026,7 +1057,7 @@ namespace web {
 		// clear the recently closed tabs
 		_recentlyclosedtabs.clear();
 		// clear the line edit history
-		for (int i = 0; i < _lineedits->count(); ++i) {
+		for (int i = 0; i < _lineedit_stack->count(); ++i) {
 			QLineEdit* qLineEdit = lineEdit(i);
 			qLineEdit->setText(qLineEdit->text());
 		}
@@ -1035,11 +1066,11 @@ namespace web {
 	void TabWidget::moveTab(int fromIndex, int toIndex)
 	{
 		auto pre_view = webView(_previous_index);
-		QWidget* lineEdit = _lineedits->widget(fromIndex);
+		QWidget* lineEdit = _lineedit_stack->widget(fromIndex);
 		auto _rctrl = _record_screen->record_ctrl();
 		if (_rctrl) {
-			_lineedits->removeWidget(lineEdit);
-			_lineedits->insertWidget(toIndex, lineEdit);
+			_lineedit_stack->removeWidget(lineEdit);
+			_lineedit_stack->insertWidget(toIndex, lineEdit);
 
 			auto source_index = static_cast<QModelIndex>(
 			    _rctrl->index<index_source>(pos_source(fromIndex)));
@@ -1099,7 +1130,7 @@ namespace web {
 			auto it = v->page()->host();
 			if (it) {
 				if (static_cast<QModelIndex>(tree_screen->view()->source_model()->index(it)).isValid()) {
-					if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
+					if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
 					auto _rctrl = _record_screen->record_ctrl();
 					if (_rctrl) {
 						auto _record_view = _rctrl->view();
@@ -1188,17 +1219,20 @@ namespace web {
 				if (!index_on_tree.isValid()) {
 					if (!static_cast<QModelIndex>(_tree_view->know_model_board()->index(_target_item)).isValid()) {
 						auto _url = QUrl(_target_item->field<url_key>()); //
-						_target_item = TreeIndex::require_item(_target_item->field<url_key>(), std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-							return url_equal(detail::to_string(it_->field<home_key>()), _url.toString().toStdString()) || url_equal(detail::to_string(it_->field<url_key>()), _url.toString().toStdString());
-						}); // instance([&] {return _tree_view->source_model();},
-						    // _tree_view->current_item())->
+						_target_item = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(_target_item->field<url_key>(),
+						    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+							    return TreeIndex::url_require_item_from_tree(real_target_url_, //real_url_t<url_value>::instance(_target_item->field<url_key>()),
+								std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
+									return url_equal(detail::to_string(it_->field<home_key>()), _url.toString().toStdString()) || url_equal(detail::to_string(it_->field<url_key>()), _url.toString().toStdString());
+								});
+						    });
 					}
 					_tree_view->cursor_focus(_target_item);
 					index_on_tree = _tree_view->source_model()->index(_target_item);
 					assert(index_on_tree.isValid());
 				}
 				if (index_on_tree.isValid()) {
-					if (_target_item != _tree_view->current_item()) _tree_view->select_as_current(TreeIndex::require_treeindex([&] { return _tree_view->source_model(); }, _target_item));
+					if (_target_item != _tree_view->current_item()) _tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_view->source_model(); }, _target_item));
 					auto _rctrl = _record_screen->record_ctrl();
 					if (_rctrl) {
 						auto _record_view = _rctrl->view();
@@ -1261,11 +1295,11 @@ namespace web {
 			// int lc = _lineedits->count();
 			// int c = count();
 			// assert(lc == c);
-			Q_ASSERT(_lineedits->count() == count());
+			Q_ASSERT(_lineedit_stack->count() == count());
 
-			qDebug() << "_lineedits->count()\t" << _lineedits->count() << "\tcount()\n";
+			qDebug() << "_lineedits->count()\t" << _lineedit_stack->count() << "\tcount()\n";
 
-			WebView* view_previous = this->webView(_lineedits->currentIndex());
+			WebView* view_previous = this->webView(_lineedit_stack->currentIndex());
 			if (view_previous && view_current != view_previous) {
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
 				disconnect(oldWebView, &PageView::statusBarMessage, this, &TabManager::showStatusBarMessage);
@@ -1325,11 +1359,11 @@ namespace web {
 			}
 			emit setCurrentTitle(view_current->title()); // "test"//
 
-			_lineedits->setCurrentIndex(index);
+			_lineedit_stack->setCurrentIndex(index);
 
 			emit loadProgress(view_current->progress());
 			emit showStatusBarMessage(view_current->lastStatusBarText());
-			if (view_current->page()->url().isEmpty()) _lineedits->currentWidget()->setFocus();
+			if (view_current->page()->url().isEmpty()) _lineedit_stack->currentWidget()->setFocus();
 			// else {}
 		}
 	}
@@ -1352,12 +1386,12 @@ namespace web {
 	// QWidget *
 	QStackedWidget* TabWidget::lineEditStack() const
 	{
-		return _lineedits;
+		return _lineedit_stack;
 	}
 
 	QLineEdit* TabWidget::currentLineEdit() const
 	{
-		return lineEdit(_lineedits->currentIndex());
+		return lineEdit(_lineedit_stack->currentIndex());
 	}
 
 	// void TabWidget::lineEditStack(QStackedWidget *lineedits)
@@ -1367,7 +1401,7 @@ namespace web {
 
 	QLineEdit* TabWidget::lineEdit(int index) const
 	{
-		UrlLineEdit* urlLineEdit = qobject_cast<UrlLineEdit*>(_lineedits->widget(index));
+		UrlLineEdit* urlLineEdit = qobject_cast<UrlLineEdit*>(_lineedit_stack->widget(index));
 		if (urlLineEdit) return urlLineEdit->lineEdit();
 		return 0;
 	}
@@ -1750,12 +1784,11 @@ namespace web {
 
 					{
 						// line edit
-						UrlLineEdit* urlLineEdit = new UrlLineEdit(view);
+						auto urlLineEdit = new ToolbarSearch(gl_paras->find_screen(), view); //UrlLineEdit(view);
 						QLineEdit* lineEdit = urlLineEdit->lineEdit();
 						if (!_lineeditcompleter && count() > 0) {
 							HistoryCompletionModel* completionModel = new HistoryCompletionModel(this);
-							completionModel->setSourceModel(
-							    ::sapp_t::historyManager()->historyFilterModel());
+							completionModel->setSourceModel(::sapp_t::historyManager()->historyFilterModel());
 							_lineeditcompleter = new QCompleter(completionModel, this);
 							// Should this be in Qt by default?
 							QAbstractItemView* popup = _lineeditcompleter->popup();
@@ -1764,8 +1797,8 @@ namespace web {
 						}
 						lineEdit->setCompleter(_lineeditcompleter);
 						connect(lineEdit, &QLineEdit::returnPressed, this, &TabWidget::lineEditReturnPressed);
-						_lineedits->addWidget(urlLineEdit);
-						_lineedits->setSizePolicy(lineEdit->sizePolicy());
+						_lineedit_stack->addWidget(urlLineEdit);
+						_lineedit_stack->setSizePolicy(lineEdit->sizePolicy());
 					}
 
 					// urlLineEdit->setWebView(view);    // move inside
@@ -1849,7 +1882,7 @@ namespace web {
 					assert(static_cast<QModelIndex>(_tree_screen->view()->source_model()->index(result_item)).isValid());
 					if (item_with_same_url != result_item)
 						result_item = TreeLevel::instance(
-								  TreeIndex::require_treeindex(
+								  TreeIndex::item_require_treeindex(
 								      [&]() { return _tree_screen->view()->source_model(); }, result_item),
 								  item_with_same_url)
 								  ->merge();
@@ -1871,7 +1904,7 @@ namespace web {
 				auto item_with_same_id = view->page()->host();
 				if (item_with_same_id != result_item)
 					result_item = TreeLevel::instance(
-							  TreeIndex::require_treeindex(
+							  TreeIndex::item_require_treeindex(
 							      [&]() { return _tree_screen->view()->source_model(); }, item_with_same_id),
 							  result_item)
 							  ->merge(); // TreeIndex::instance([&](){return
@@ -1949,10 +1982,13 @@ namespace web {
 	void TabWidget::lineEditReturnPressed()
 	{
 		if (QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender())) {
-			emit loadPage(lineEdit->text());
-			if (_lineedits->currentWidget() == lineEdit) {
-				auto v = currentWebView();
-				if (v) v->setFocus();
+			auto real_url_ = to_be_url(lineEdit->text());
+			if (real_url_ != QUrl() && real_url_ != detail::to_qstring(web::Browser::_defaulthome)) {
+				emit loadPage(lineEdit->text());
+				if (_lineedit_stack->currentWidget() == lineEdit) {
+					auto v = currentWebView();
+					if (v) v->setFocus();
+				}
 			}
 		}
 	}
@@ -2051,9 +2087,9 @@ namespace web {
 							_recentlyclosedtabs.prepend(_view_to_close->page()->url());
 							if (_recentlyclosedtabs.size() >= TabWidget::_recentlyclosedtabssize) _recentlyclosedtabs.removeLast();
 						}
-						QWidget* lineEdit = _lineedits->widget(index_to_close);
+						QWidget* lineEdit = _lineedit_stack->widget(index_to_close);
 						if (lineEdit) {
-							_lineedits->removeWidget(lineEdit);
+							_lineedit_stack->removeWidget(lineEdit);
 
 							lineEdit->deleteLater(); // delete lineEdit;
 						}
@@ -2292,9 +2328,16 @@ namespace web {
 			// } catch(std::exception &e) {}
 
 			// if(modelindex) {
-			TreeIndex::activate([&] { return tree_view->source_model(); }, current_item, web::Browser::_defaulthome, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), web::Browser::_defaulthome) || url_equal(it_->field<url_key>(), web::Browser::_defaulthome); });
-			// }
-
+			real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(web::Browser::_defaulthome,
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+				    return TreeIndex::url_activate(real_target_url_,
+					[&] { return tree_view->source_model(); },
+					current_item,
+					std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					[](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), web::Browser::_defaulthome) || url_equal(it_->field<url_key>(), web::Browser::_defaulthome); },
+					_browser);
+				    // }
+			    });
 			return;
 		}
 		QTabWidget::mouseDoubleClickEvent(event);
@@ -2335,8 +2378,15 @@ namespace web {
 				    formatter() << typeid(decltype(&TabWidget::mouseReleaseEvent)).name()
 						<< "! parent");
 			if (!url.isEmpty() && url.isValid() && !url.scheme().isEmpty()) {
-				TreeIndex::activate(
-				    [&] { return tree_view->source_model(); }, current_item, real_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url); });
+				real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
+				    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+					    return TreeIndex::url_activate(real_target_url_,
+						[&] { return tree_view->source_model(); },
+						current_item,
+						std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+						[&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url); },
+						_browser);
+				    });
 			}
 		}
 	}
@@ -2357,11 +2407,14 @@ namespace web {
 					    formatter()
 					    << typeid(decltype(&TabWidget::loadUrlInCurrentTab)).name()
 					    << "! parent");
-				auto it = TreeIndex::require_item(
-				    real_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-					    return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
-				    }); // instance([&] {return tree_view->source_model();},
-				// current_item)->
+				auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
+				    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+					    return TreeIndex::url_require_item_from_tree(
+						real_target_url_, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
+							return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
+						}); // instance([&] {return tree_view->source_model();},
+						    // current_item)->
+				    });
 				auto r = webView->page()->bind(it); // _record_controller
 				r->activate(std::bind(&TabWidget::find, this, std::placeholders::_1));
 			}
@@ -2536,19 +2589,23 @@ namespace web {
 
 			auto tree_view = _tree_screen->view();
 
-			boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::require_treeindex([&] { return tree_view->source_model(); }, tree_view->current_item());
+			boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, tree_view->current_item());
 			if (tree_index) {
 				// if(i != 0){
-				auto ti = tree_index->bind(
-				    real_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-					    return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
-				    },
-				    static_cast<web::Browser*>(_browser));
-				if (ti && ti->field<id_key>() == id_value(current_tab_id)) {
-					auto v = ti->activate(std::bind(&TabWidget::find, this, std::placeholders::_1)); // std::bind(&HidableTabWidget::find,
-															 // globalparameters.main_window()->vtab_record(),
-															 // std::placeholders::_1)
-					select_as_current(v);
+				auto ti = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
+				    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+					    return tree_index->url_bind_browser(real_target_url_,
+						std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+						[&](boost::intrusive_ptr<const i_t> it_) -> bool {
+							return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
+						},
+						static_cast<web::Browser*>(_browser));
+				    });
+				if (ti) {
+					if (ti->field<id_key>() == id_value(current_tab_id)) {
+						auto v = ti->activate(std::bind(&TabWidget::find, this, std::placeholders::_1)); // std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)
+						select_as_current(v);
+					}
 				}
 				// }else{
 				// if(webView(0)->page()->url() != _url){
@@ -2842,8 +2899,7 @@ namespace web {
 		return bv;
 	}
 
-	WebView* TabWidget::find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal)
-	    const
+	WebView* TabWidget::find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal) const
 	{
 		WebView* view = nullptr;
 		for (int i = 0; i < count(); i++) {
@@ -2899,7 +2955,7 @@ namespace web {
 			_fullscreennotification->show();
 		} else {
 			if (!_fullscreenview) return;
-			WebView* oldWebView = this->webView(_lineedits->currentIndex());
+			WebView* oldWebView = this->webView(_lineedit_stack->currentIndex());
 			webPage->setView(oldWebView);
 			request.accept();
 			raise();

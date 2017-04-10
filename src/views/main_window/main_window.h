@@ -91,6 +91,8 @@ class QVBoxLayout;
 class SysTrayIcon;
 class i_t;
 struct url_value;
+template<typename>
+struct real_url_t;
 
 extern std::shared_ptr<gl_para> gl_paras;
 
@@ -148,8 +150,7 @@ class wn_t : public QMainWindow {
 	QSplitter* h_tree_splitter() const;
 	// std::vector<tsv_t *>	tree_viewers() const;
 
-	web::WebView*
-	find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal) const;
+	web::WebView* find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal) const;
 
 	// EditingWindow *current_editing_window();
 	//	Blogger *editing_window(const QString &topic, const QByteArray &state_ =
@@ -281,7 +282,7 @@ web::Browser*
 wn_t::browser<QUrl>(const QUrl& url_, bool force);
 template <>
 web::Browser*
-wn_t::browser<url_value>(const url_value& url_, bool force);
+wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusive_ptr<real_url_t<url_value>>& real_find_url_, bool force);
 template <>
 web::Browser*
 wn_t::browser<QByteArray>(const QByteArray& state_, bool force);

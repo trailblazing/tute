@@ -306,7 +306,8 @@ class Editor : public QWidget {
 	enum { WYEDIT_DESKTOP_MODE = 0,
 		WYEDIT_MOBILE_MODE = 1 };
 
-    signals:
+	std::shared_ptr<EditorConfig> editor_config() const;
+signals:
 
 	// Сигналы установки отступов на линейке с движками
 	// согласно текущему форматированию

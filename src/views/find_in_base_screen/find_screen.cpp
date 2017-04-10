@@ -58,48 +58,49 @@ extern std::shared_ptr<AppConfig> appconfig;
 extern std::shared_ptr<gl_para> gl_paras;
 extern const char* global_root_id;
 
+constexpr char FindScreen::_find_in_base_expand[];
+
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(FindScreen)
 #endif
 
 FindScreen::FindScreen(
-    QString object_name,                 //
-    ts_t* tree_screen_, QWidget* parent) // boost::intrusive_ptr<TreeItem> _selected_branch_root
-    : QWidget(parent),
-      _tree_screen(tree_screen_),
-      _navigater(new QToolBar(this)),
-      _historyback(new QAction(tr("Back"), _navigater)),       // FlatToolButton *_history_back;
-      _historyforward(new QAction(tr("Forward"), _navigater)), // FlatToolButton *_history_forward;
-      _historyhome(new QAction(tr("Home"), _navigater)),       // FlatToolButton *_history_home;
-      _stopreload(new QAction(_navigater)),                    // FlatToolButton *_stop_reload;
-      _stop(new QAction(tr("&Stop"), _navigater)),
-      _reload(new QAction(tr("Reload Page"), _navigater)), // , back_ground{      //      // _tree_screen->know_branch()->root_item()      // //_selected_branch_root      // }
-      _chasewidget(new web::ChaseWidget(QSize(17, 17), this)),
+    QString object_name, //
+    ts_t* tree_screen_,
+    QWidget* parent // ,boost::intrusive_ptr<TreeItem> _selected_branch_root
+    )
+    : QWidget(parent), _tree_screen(tree_screen_), _navigater(new QToolBar(this)), _historyback(new QAction(tr("Back"), _navigater)) // FlatToolButton *_history_back;
+    , _historyforward(new QAction(tr("Forward"), _navigater))                                                                        // FlatToolButton *_history_forward;
+    , _historyhome(new QAction(tr("Home"), _navigater))                                                                              // FlatToolButton *_history_home;
+    , _stopreload(new QAction(_navigater))                                                                                           // FlatToolButton *_stop_reload;
+    , _stop(new QAction(tr("&Stop"), _navigater))
+    , _reload(new QAction(tr("Reload Page"), _navigater)) // , back_ground{      //      // _tree_screen->know_branch()->root_item()      // //_selected_branch_root      // }
+    , _chasewidget(new web::ChaseWidget(QSize(17, 17), this))
 #ifdef SHOW_PROCESS_DIALOG
-      ,
-      _progress(new QProgressDialog(this))
+    , _progress(new QProgressDialog(this))
 #endif
-      // , _findtable(new FindTableWidget(this)) // deprecated
-      // , _is_search_global(_tree_screen->know_branch()->root_item()->id() ==
-      // global_root_id)
-      // , _selected_branch_as_pages([ & ]
-      // {
-      // std::shared_ptr<ItemsFlat> result = std::make_shared<ItemsFlat>();
+    // , _findtable(new FindTableWidget(this)) // deprecated
+    // , _is_search_global(_tree_screen->know_branch()->root_item()->id() ==
+    // global_root_id)
+    // , _selected_branch_as_pages([ & ]
+    // {
+    // std::shared_ptr<ItemsFlat> result = std::make_shared<ItemsFlat>();
 
-      // for(int i = 0; i <
-      // _tree_screen->know_branch()->root_item()->current_count(); i++) {
-      // auto it = _tree_screen->know_branch()->root_item()->child(i);
+    // for(int i = 0; i <
+    // _tree_screen->know_branch()->root_item()->current_count(); i++) {
+    // auto it = _tree_screen->know_branch()->root_item()->child(i);
 
-      // if(it->is_lite())it->to_fat();
+    // if(it->is_lite())it->to_fat();
 
-      // result->insert_new_item(result->current_count() - 1, it);
-      // }
+    // result->insert_new_item(result->current_count() - 1, it);
+    // }
 
-      // return result;
-      // }())    // static_cast<ItemsFlat *>(_selected_branch_root.get()) //
-      // never transfer this data directly, it is come from _treeknowmodel!   //
-      // _resultset_data(std::make_shared<RecordTable>(QDomElement()))
-      _toolbarsearch([&]() -> web::ToolbarSearch* {_toolbarsearch = nullptr; auto ts = new web::ToolbarSearch(this); return ts; }())
+    // return result;
+    // }())    // static_cast<ItemsFlat *>(_selected_branch_root.get()) //
+    // never transfer this data directly, it is come from _treeknowmodel!   //
+    // _resultset_data(std::make_shared<RecordTable>(QDomElement()))
+    , _toolbarsearch_buffer([&]() -> web::ToolbarSearch* {_toolbarsearch_buffer = nullptr; auto ts = new web::ToolbarSearch(this); return ts; }())
+    , _lineedit_stack(new QStackedWidget())
 {
 	setObjectName(object_name);
 	_navigater->setObjectName(gl_para::_browser_navigater_name);
@@ -111,9 +112,9 @@ FindScreen::FindScreen(
 	_progress->reset();
 #endif
 
-	_toolbarsearch->setMinimumWidth(100);
+	_toolbarsearch_buffer->setMinimumWidth(100);
 
-	_toolbarsearch->sizePolicy().setHorizontalStretch(10);
+	_toolbarsearch_buffer->sizePolicy().setHorizontalStretch(10);
 	// _toolbarsearch->setContentsMargins(0, 0, 0, 0);
 
 	// if(appconfig->getInterfaceMode() == "desktop") {
@@ -146,7 +147,6 @@ FindScreen::~FindScreen(void)
 	// delete _selected_branch_as_pages;
 }
 
-web::ToolbarSearch* FindScreen::toolbarsearch() { return _toolbarsearch; }
 
 FlatToolButton* FindScreen::findstartbutton() { return _find_start_button; }
 
@@ -302,7 +302,10 @@ void FindScreen::assembly_findtext_and_button(void)
 	// toolsAreaFindTextAndButton->addWidget(_history_back);
 	// toolsAreaFindTextAndButton->addWidget(_stop_reload);
 	// toolsAreaFindTextAndButton->addLayout(addressbar);
-	_find_text_and_button_tools_area->addWidget(_toolbarsearch); // _findtext
+	_stack_layout = new QVBoxLayout();
+	_lineedit_stack->addWidget(_toolbarsearch_buffer);
+	_stack_layout->addWidget(_lineedit_stack);
+	_find_text_and_button_tools_area->addLayout(_stack_layout); //addWidget(_toolbarsearch); // _findtext
 	// toolsAreaFindTextAndButton->addWidget(con);
 	auto chase_layout = new QVBoxLayout();
 	chase_layout->addWidget(_chasewidget);
@@ -312,7 +315,44 @@ void FindScreen::assembly_findtext_and_button(void)
 	// toolsAreaFindTextAndButton->addStretch();
 	// toolsAreaFindTextAndButton->setContentsMargins(0, 0, 0, 0);
 }
+void FindScreen::switch_stack(QStackedWidget* lineedit_stack_)
+{
+	auto clear_layout = [&](QVBoxLayout* _stack_layout) {
+		while (_stack_layout->count() > 0) { // (child_item = _item_tags_layout->takeAt(0)) != 0
+			auto child_item = _stack_layout->takeAt(0);
+			auto widget = child_item->widget();
+			_stack_layout->removeItem(child_item);
+			if (widget) { // if(child_item->widget() != nullptr && child_item->widget() != 0)
+				//					disconnect(static_cast<QLabel*>(widget), &QLabel::linkActivated, this, &EditorWrap::on_click_to_tag);
+				widget->hide(); // delete (widget);
+			}
+			//                                delete child_item;
+		}
+	};
+	if (lineedit_stack_) {
+		if (_stack_layout->widget() != lineedit_stack_) {
+			//			if (_stack_layout->widget()) {
+			//				_stack_layout->widget()->hide();
+			//				_stack_layout->removeWidget(_stack_layout->widget());
+			//			}
 
+			if (_stack_layout->count() > 0) clear_layout(_stack_layout);
+			_stack_layout->addWidget(lineedit_stack_);
+			lineedit_stack_->show();
+		}
+	} else {
+		if (_stack_layout->widget() != _lineedit_stack) {
+			//			if (_stack_layout->widget()) {
+			//				_stack_layout->widget()->hide();
+			//				_stack_layout->removeWidget(_stack_layout->widget());
+			//			}
+			if (_stack_layout->count() > 0) clear_layout(_stack_layout);
+			_stack_layout->addWidget(_lineedit_stack);
+			assert(_stack_layout->count() > 0);
+			_lineedit_stack->show();
+		}
+	}
+}
 // Набор опций поиска в виде выпадающих списков
 void FindScreen::setup_combooption(void)
 {
@@ -458,28 +498,49 @@ void FindScreen::assembly_wherefind_line(void)
 void FindScreen::setup_signals(void)
 {
 	// При каждом изменении текста в строке запроса
-	connect(_toolbarsearch, &web::ToolbarSearch::textChanged, this, &FindScreen::enable_findbutton);
+	connect(_toolbarsearch_buffer, &web::ToolbarSearch::textChanged, this, &FindScreen::enable_findbutton);
+	// При нажатии Enter в строке запроса
+	connect(_toolbarsearch_buffer, &web::ToolbarSearch::return_pressed, // this,
+	    [this] {
+		    real_url_t<QString>::instance<decltype(((web::ToolbarSearch*)nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(_toolbarsearch_buffer->text(),
+			[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+				return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
+			});
+	    });
 
 	// При каждом изменении текста извне может вырабатыватся этот сигнал
 	// Он вырабатывается в слоте setFindText()
 	connect(this, &FindScreen::text_changed_from_another, this, &FindScreen::enable_findbutton);
 
-	// При нажатии Enter в строке запроса
-	connect(_toolbarsearch, &web::ToolbarSearch::return_pressed, // this,
-	    [this] {
-		    _toolbarsearch->search_now(); // FindScreen::find_clicked();
-	    });
 
 	// При нажатии кнопки Find
 	connect(_find_start_button, &QPushButton::clicked, //this,
 	    [this] {
-		    _toolbarsearch->search_now(); //FindScreen::find_clicked();
+		auto stack = static_cast<QStackedWidget*>(_stack_layout->widget());
+		if (stack) {
+			auto line_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
+			if (line_edit)
+				real_url_t<QString>::instance<decltype(((web::ToolbarSearch*)nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
+				    line_edit->text(), //_toolbarsearch_buffer->text(),
+				    [&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+					    return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
+				    });
+		}
 	    });
 
 	// После установки текста извне, вырабатывается этот сигнал
 	connect(this, &FindScreen::find_clicked_after_another_text_changed, //this,
 	    [this] {
-		    _toolbarsearch->search_now(); //FindScreen::find_clicked();
+		    auto stack = static_cast<QStackedWidget*>(_stack_layout->widget());
+		    if (stack) {
+			    auto line_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
+			    if (line_edit)
+				    real_url_t<QString>::instance<decltype(((web::ToolbarSearch*)nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
+					line_edit->text(), //_toolbarsearch_buffer->text(),
+					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+						return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
+					});
+		    }
 	    });
 
 	// При нажатии кнопки разворачивания/сворачивания инструментов поиска
@@ -541,7 +602,7 @@ void FindScreen::setup_ui(void)
 
 void FindScreen::assembly(void)
 {
-	_central_desktop_layout = new QVBoxLayout(this);
+	_central_desktop_layout = new QVBoxLayout();
 	if (appconfig->interface_mode() == "desktop") {
 		_tools_line = new QHBoxLayout();
 		_tools_line->setEnabled(true);
@@ -605,18 +666,19 @@ void FindScreen::enable_findbutton(const QString& text)
 
 // Слот, с помощью которого другие виджеты могут устанавливать
 // текст для поиска
-void FindScreen::find_text(QString text)
+void FindScreen::find_text(QString text_)
 {
 	// _findtext
-	_toolbarsearch->text(text);
+	_toolbarsearch_buffer->text(text_);
 
-	emit text_changed_from_another(text);
+	emit text_changed_from_another(text_);
 	emit find_clicked_after_another_text_changed();
 }
 
 // Слот, срабатывающий при нажатии на кнопку начала поиска
-boost::intrusive_ptr<i_t> FindScreen::find_clicked(void)
+boost::intrusive_ptr<i_t> FindScreen::find_internal_decomposed(const QString& search_text)
 {
+	boost::intrusive_ptr<i_t> result(nullptr);
 	// Поля, где нужно искать (Заголовок, текст, теги...)
 	_search_area["pin"] = _find_in_pin->isChecked();
 	_search_area["name"] = _find_in_name->isChecked();
@@ -632,7 +694,23 @@ boost::intrusive_ptr<i_t> FindScreen::find_clicked(void)
 	foreach (bool value, _search_area)
 		if (value == true) findEnableFlag = 1;
 	// Если не отмечены поля для поиска
-	if (findEnableFlag == 0) {
+	if (findEnableFlag != 0) {
+		// Выясняется список слов, которые нужно искать
+		_search_word_list = text_delimiter_decompose(search_text); //_toolbarsearch->text()
+		if (_search_word_list.size() != 0) {
+			result = find_start();
+		} else {
+			QMessageBox messageBox(this);
+			messageBox.setWindowTitle(tr("Can not start find process"));
+			messageBox.setText(
+			    tr("The search request is too short. Enter at least one word."));
+			messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
+			messageBox.exec();
+
+			//		return nullptr;
+		}
+
+	} else {
 		QMessageBox messageBox(this);
 		messageBox.setWindowTitle(tr("Can not start find process"));
 		messageBox.setText(tr(
@@ -641,21 +719,10 @@ boost::intrusive_ptr<i_t> FindScreen::find_clicked(void)
 		messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
 		messageBox.exec();
 
-		return nullptr;
+		//		return nullptr;
 	}
-	// Выясняется список слов, которые нужно искать
-	_search_word_list = text_delimiter_decompose(_toolbarsearch->text());
-	if (_search_word_list.size() == 0) {
-		QMessageBox messageBox(this);
-		messageBox.setWindowTitle(tr("Can not start find process"));
-		messageBox.setText(
-		    tr("The search request is too short. Enter at least one word."));
-		messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
-		messageBox.exec();
 
-		return nullptr;
-	}
-	return find_start();
+	return result;
 }
 
 boost::intrusive_ptr<i_t> FindScreen::find_start(void)
@@ -1219,7 +1286,7 @@ boost::intrusive_ptr<i_t>& FindScreen::find_recursive(boost::intrusive_ptr<i_t>&
 								//									tags_ +=
 								//search_topic;
 								//								candidate->field<tags_type>(tags_);
-								candidate->topic_append(_toolbarsearch->text());
+								candidate->topic_append(_toolbarsearch_buffer->text());
 								final_result << candidate; // result->linker();
 							}
 							// else if(alternative != candidate)
@@ -1363,7 +1430,7 @@ void FindScreen::widget_show(void)
 
 	// При появлении виджета курсор должен сразу стоять на поле ввода
 	// _findtext
-	_toolbarsearch->setFocus();
+	_toolbarsearch_buffer->setFocus();
 }
 
 // Полное сокрытие виджета
@@ -1422,6 +1489,8 @@ void FindScreen::switch_tools_expand(bool flag)
 	this->adjust_size();
 }
 
+
+//web::ToolbarSearch* FindScreen::toolbarsearch() const { return _toolbarsearch; }
 //// dangerous!
 // void FindScreen::remove_child(const QString &id)
 // {

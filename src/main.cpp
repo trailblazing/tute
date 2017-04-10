@@ -495,7 +495,6 @@ QString replace_css_meta_iconsize(QString styleText)
 }
 
 
-
 void set_kinetic_scrollarea(QAbstractItemView* object)
 {
 #if QT_VERSION < 0x050000
@@ -793,10 +792,10 @@ void set_kinetic_scrollarea(QAbstractItemView* object)
 QString purify(QString text)
 {
 	text = QObject::tr(
-	    text.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str());
+	    text.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]")).toStdString().c_str()); //QRegExp("[\"/\\\\<>\\?:\\*\\|]+")
 	text.replace('"', ' ');
 	text.replace("'", " ");
-	text.replace('.', ' ');
+	//	text.replace('.', ' ');
 	text.replace(',', ' ');
 	text.replace(';', ' ');
 	text.replace(':', ' ');
@@ -939,7 +938,7 @@ int main(int argc, char** argv)
 // smenu->handleNewWindowAtStartup();
 #endif
 		{
-		  // app.setQuitOnLastWindowClosed(false);
+		    // app.setQuitOnLastWindowClosed(false);
 		} // }
 		// }else{
 		{
@@ -1021,4 +1020,37 @@ std::string truncate(std::string str, size_t width, bool show_ellipsis)
 			return str.substr(0, width);
 	}
 	return str;
+}
+
+auto to_be_url(const url_value& url_) -> QUrl
+{
+	return to_be_url(detail::to_qstring(url_));
+}
+
+auto to_be_url(const QUrl& url_) -> QUrl
+{
+	QUrl url = url_;
+	QUrl result;
+	qDebug()
+	    << "main.cpp::to_be_url::url.scheme() =\t" << url.scheme();
+	if (url.scheme().isEmpty() && !url.topLevelDomain().isNull()) {
+
+		url.setScheme("https"); //QUrl(QString("https://") + url.toString());
+					//				result = url;
+	}
+
+	qDebug()
+	    << "\t!url.isRelative() =\t" << !url.isRelative() << "\n"
+	    << "\t!url.topLevelDomain().isNull() =\t" << !url.topLevelDomain().isNull() << "\n"
+	    << "\t!url.isEmpty() =\t" << !url.isEmpty() << "\n"
+	    << "\t!url.host().isNull() =\t" << !url.host().isNull() << "\n" // flase
+	    << "\turl.isValid() =\t" << url.isValid() << "\n"
+	    << "\t!url.scheme().isEmpty() =\t" << !url.scheme().isEmpty();
+	if (!url.isEmpty() && //&& !url.host().isNull()
+	    !url.scheme().isEmpty() &&
+	    !url.topLevelDomain().isNull() &&
+	    !url.isRelative() &&
+	    url != QUrl(web::Browser::_defaulthome) &&
+	    url.isValid()) result = url;
+	return result;
 }
