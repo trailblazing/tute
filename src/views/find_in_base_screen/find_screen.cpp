@@ -502,7 +502,7 @@ void FindScreen::setup_signals(void)
 	// При нажатии Enter в строке запроса
 	connect(_toolbarsearch_buffer, &web::ToolbarSearch::return_pressed, // this,
 	    [this] {
-		    real_url_t<QString>::instance<decltype(((web::ToolbarSearch*)nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(_toolbarsearch_buffer->text(),
+		    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(_toolbarsearch_buffer->text(),
 			[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
 				return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
 			});
@@ -520,7 +520,7 @@ void FindScreen::setup_signals(void)
 		if (stack) {
 			auto line_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
 			if (line_edit)
-				real_url_t<QString>::instance<decltype(((web::ToolbarSearch*)nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
+				real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
 				    line_edit->text(), //_toolbarsearch_buffer->text(),
 				    [&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
 					    return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
@@ -535,7 +535,7 @@ void FindScreen::setup_signals(void)
 		    if (stack) {
 			    auto line_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
 			    if (line_edit)
-				    real_url_t<QString>::instance<decltype(((web::ToolbarSearch*)nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
+				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
 					line_edit->text(), //_toolbarsearch_buffer->text(),
 					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
 						return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
