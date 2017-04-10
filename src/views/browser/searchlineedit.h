@@ -59,8 +59,9 @@ QT_END_NAMESPACE
 // QT_BEGIN_NAMESPACE
 
 namespace web {
+	class UrlLineEdit;
 	class SearchButton;
-
+	class WebView;
 	/*
             Clear button on the right hand side of the search widget.
             Hidden by default
@@ -81,7 +82,9 @@ namespace web {
 		void textChanged(const QString& text);
 	};
 
-	class SearchLineEdit : public ExLineEdit {
+	class SearchLineEdit : public UrlLineEdit //ExLineEdit
+	{
+		typedef UrlLineEdit super;
 #if QT_VERSION == 0x050600
 		W_OBJECT(SearchLineEdit)
 #else
@@ -97,7 +100,7 @@ namespace web {
 #endif
 
 	    public:
-		SearchLineEdit(QWidget* parent = 0);
+		SearchLineEdit(QWidget* parent = 0, WebView* view = nullptr);
 
 		QString inactiveText() const;
 		void setInactiveText(const QString& text);

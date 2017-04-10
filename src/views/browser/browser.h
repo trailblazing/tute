@@ -224,6 +224,7 @@ namespace web {
 		// QStatusBar *status_bar();
 		// QStatusBar *status_bar() const;
 		boost::intrusive_ptr<i_t> bind(boost::intrusive_ptr<RecordIndex> record_index, bool make_current = true);
+		web::WebView* find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal) const;
 // boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem>
 // item);
 #ifdef USE_SIGNAL_CLOSE

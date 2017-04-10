@@ -53,6 +53,7 @@
 
 // #include "models/tree/TreeItem.h"
 // #include "models/tree/TreeModel.h"
+#include "libraries/fixed_parameters.h"
 #include "views/tree/tree_screen.h"
 
 #if QT_VERSION == 0x050600
@@ -79,6 +80,9 @@ class i_t;
 class tm_t;
 class ts_t;
 class tkm_t;
+class FindScreen;
+template <typename>
+struct real_url_t;
 
 namespace web {
 	class ChaseWidget;
@@ -133,23 +137,22 @@ namespace web {
 		void return_pressed();
 #endif
 	    public:
-		ToolbarSearch(QWidget* parent = 0); // QStackedWidget *lineedits, QLineEdit *findtext,
+		ToolbarSearch(FindScreen* parent = 0, WebView* view_ = nullptr); // QStackedWidget *lineedits, QLineEdit *findtext,
 
 		~ToolbarSearch();
-		void text(const QString& text);
+		void text(const QString& text_);
 		QString text() const;
 
-		QLineEdit* findtext() { return _findtext; }
+		//		QLineEdit* findtext() { return _findtext; }
 
 		// void findtext(QLineEdit *findtext) {_findtext = findtext;}
 
-		QStackedWidget* lineedits() { return _lineedits; }
-
-		void lineedits(QStackedWidget* lineedits) { _lineedits = lineedits; }
+		//		QStackedWidget* lineedit_stack() { return _lineedit_stack; }
+		//		void lineedit_stack(QStackedWidget* lineedit_stack_) { _lineedit_stack = lineedit_stack_; }
 
 	    public slots:
 		void clear();
-		void search_now();
+		Browser* search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_);
 
 	    private slots:
 		void save();
@@ -162,10 +165,13 @@ namespace web {
 		AutoSaver* _autosaver;
 		int _maxsavedsearches;
 		QStringListModel* _stringlistmodel;
-		QStackedWidget* _lineedits;
+//		QStackedWidget* _lineedit_stack;
+#ifdef USE_ADDITIONAL_BUFFER
 		QLineEdit* _findtext;
+#endif // USE_ADDITIONAL_BUFFER
 		// TabManager           *_tab_widget;
 		// web::ChaseWidget *_chasewidget;
+		FindScreen* _find_screen;
 	};
 }
 

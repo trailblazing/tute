@@ -723,7 +723,7 @@ namespace web {
 		// HistoryCompletionModel *_completionModel;// = new
 		// HistoryCompletionModel(this);
 		QCompleter* _lineeditcompleter; // = new QCompleter(_completionModel, this);
-		QStackedWidget* _lineedits;
+		QStackedWidget* _lineedit_stack;
 		TabBar* _tabbar;
 		// QWebEngineProfile
 		Profile* _profile;

@@ -1635,7 +1635,7 @@ void rs_t::on_walkhistory_next_click(void)
 // Возвращение к дереву разделов в мобильном интерфейсе
 void rs_t::on_back_click(void)
 {
-	gl_paras->window_switcher()->recordtable_to_tree();
+	gl_paras->window_switcher()->record_screen_to_tree_screen();
 }
 
 void rs_t::close_sender_id(const std::string& close_sender_id_)

@@ -4,6 +4,8 @@
 #endif
 
 #include "fixed_parameters.h"
+#include "main.h"
+#include "views/browser/browser.h"
 #include "views/record/info_field_enter.h"
 #include <QMutableMapIterator>
 #include <QString>
@@ -446,3 +448,88 @@ namespace detail {
 		return value_type(input.split(QRegExp("[,:]+"), QString::SkipEmptyParts));
 	}
 }
+
+//template <>
+//boost::intrusive_ptr<::real_url_t<QString>> real_url_t<QString>::
+//    instance(const QString& url_)
+//{
+//	auto real_url_ = to_be_url(url_);
+//	if (!(real_url_ == QUrl() && url_ != web::Browser::_defaulthome // || real_url_ == detail::to_qstring(web::Browser::_defaulthome)
+//		)) {
+//		critical_error("The url is valid, that\'s not what you want");
+//		//		throw std::runtime_error("url is not valid");
+//	}
+//	return new ::real_url_t<QString>(url_);
+//}
+
+//template <>
+//boost::intrusive_ptr<::real_url_t<url_value>> real_url_t<url_value>::
+//    instance(const url_value& url_)
+//{
+//	auto real_url_ = to_be_url(url_);
+//	if (real_url_ == QUrl() && url_ != web::Browser::_defaulthome // || real_url_ == detail::to_qstring(web::Browser::_defaulthome)
+//	    ) {
+//		critical_error("The url is not valid");
+//		//		throw std::runtime_error("url is not valid");
+//	}
+//	return new ::real_url_t<url_value>(url_);
+//}
+
+template struct real_url_t<QString>;
+template struct real_url_t<url_value>;
+
+namespace detail {
+
+	template <typename output_t>
+	output_t //boost::intrusive_ptr<::real_url_t<QString>> //real_url_t<QString>::
+	    real_url_instance(const QString& url_, std::function<output_t(boost::intrusive_ptr<real_url_t<QString>>)> func_)
+	{
+		output_t result = nullptr;
+		auto real_url_ = to_be_url(url_);
+		if (real_url_ == QUrl() && url_ != web::Browser::_defaulthome // || real_url_ == detail::to_qstring(web::Browser::_defaulthome)
+		    ) {
+			//			critical_error("The url is valid, that\'s not what you want");// throw std::runtime_error("url is not valid");
+			//		} else
+			result = func_(new ::real_url_t<QString>(url_));
+		}
+		return result;
+	}
+
+	template web::Browser* //boost::intrusive_ptr<::real_url_t<url_value>>
+	    real_url_instance(const QString& url_, std::function<web::Browser*(boost::intrusive_ptr<real_url_t<QString>>)>);
+
+	template <typename output_t>
+	output_t //boost::intrusive_ptr<::real_url_t<url_value>> //real_url_t<url_value>::
+	    real_url_instance(const url_value& url_, std::function<output_t(boost::intrusive_ptr<real_url_t<url_value>>)> func_)
+	{
+		output_t result = nullptr;
+		auto real_url_ = to_be_url(url_);
+		if (!(real_url_ == QUrl() && url_ != web::Browser::_defaulthome // || real_url_ == detail::to_qstring(web::Browser::_defaulthome)
+			)) {
+			//			critical_error("The url is not valid");// throw std::runtime_error("url is not valid");
+			result = func_(new ::real_url_t<url_value>(url_));
+		}
+		return result;
+	}
+
+	template boost::intrusive_ptr<i_t> //boost::intrusive_ptr<::real_url_t<url_value>>
+	    real_url_instance(const url_value& url_, std::function<boost::intrusive_ptr<i_t>(boost::intrusive_ptr<real_url_t<url_value>>)>);
+
+	template web::Browser* //boost::intrusive_ptr<::real_url_t<url_value>>
+	    real_url_instance(const url_value& url_, std::function<web::Browser*(boost::intrusive_ptr<real_url_t<url_value>>)>);
+
+	//	template boost::intrusive_ptr<::real_url_t<QString>> real_url_instance(const QString& url_);
+	//	template boost::intrusive_ptr<::real_url_t<url_value>> real_url_instance(const url_value& url_);
+}
+
+//template<>
+//url_value real_url_t<url_value>::value() const
+//{
+//	return _url;
+//}
+
+//template<>
+//real_url_t<url_value>::real_url_t(const url_value& url_)
+//    : _url(url_)
+//{
+//}

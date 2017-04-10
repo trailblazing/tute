@@ -28,17 +28,17 @@ class WindowSwitcher : public QObject {
 	void enable(void);
 	void disable(void);
 
-	void tree_to_record_screen(void);
-	void tree_to_find_in_base(void);
+	void tree_screen_to_record_screen(void);
+	void tree_screen_to_find_in_base(void);
 	bool status(void);
 
-	static void record_to_recordtable(
+	static void record_to_record_screen(
 	    void); // Используется как callback из редактора MetaEditor
 	void record_to_find_in_base(void);
 
-	void recordtable_ro_record_editor(void);
-	void recordtable_to_find_in_base(void);
-	void recordtable_to_tree(void);
+	void record_screen_to_editor_docker(void);
+	void record_screen_to_find_in_base(void);
+	void record_screen_to_tree_screen(void);
 
 	void close_find_in_base(void);
 

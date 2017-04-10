@@ -356,10 +356,7 @@ namespace web {
 	    , _browser_docker(browser_docker_)
 	    , _browser(browser)
 	    , _tab_widget(tabmanager)
-	    , _rctrl(rctrl_ //[&] {
-			    //		rctrl_->close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::WebView::close_requested, parent));
-			    //		return rctrl_; }()
-		  )
+	    , _rctrl(rctrl_) //[&] { rctrl_->close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::WebView::close_requested, parent)); return rctrl_; }()
 	    , _view(parent)
 	    , _hovered_url(Browser::_defaulthome)
 	{
@@ -516,8 +513,7 @@ namespace web {
 	void WebPage::record_view_remove(boost::intrusive_ptr<i_t> host_)
 	{
 		if (_tab_widget && _tab_widget->count() > 0) {
-			RecordModel* source_model =
-			    _rctrl->source_model(); // tab_manager->source_model();
+			RecordModel* source_model = _rctrl->source_model(); // tab_manager->source_model();
 			assert(host_);
 			// assert((item->page_valid() && item->unique_page() == this) ||
 			// !item->page_valid());
@@ -606,7 +602,7 @@ namespace web {
 			auto tree_view = _tree_screen->view();
 			if (is_current) { // globalparameters.mainwindow()
 				if (tree_view->current_item() != it)
-					tree_view->select_as_current(TreeIndex::require_treeindex([&] { return tree_view->source_model(); }, it));
+					tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, it));
 				auto _record_view = _rctrl->view();
 				QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 				bool has_selection = item_selection_model->hasSelection();
@@ -886,7 +882,7 @@ namespace web {
 			}
 			auto it = _binder->host();
 			auto tree_view = _tree_screen->view();
-			if (it != tree_view->current_item()) tree_view->select_as_current(TreeIndex::require_treeindex([&] { return tree_view->source_model(); }, it));
+			if (it != tree_view->current_item()) tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, it));
 			// if(_url_str != web::Browser::_defaulthome){	// && _loadingurl.isValid()
 			// // && _loadingurl == _url
 			if (_view) {
@@ -1145,12 +1141,10 @@ namespace web {
 		assert(parent);
 		// auto parent_parent = parent->parent();
 
-		boost::intrusive_ptr<TreeIndex> this_treeindex = TreeIndex::require_treeindex(
-		    [&] { return tree_view->source_model(); },
-		    this->host()); // parent_parent ? TreeIndex::instance([&] {return
-				   // tree_view->source_model();}, parent) :
-				   // TreeIndex::instance([&] {return
-				   // tree_view->source_model();}, this->host());
+		boost::intrusive_ptr<TreeIndex> this_treeindex = TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, this->host()); // parent_parent ? TreeIndex::instance([&] {return
+																			     // tree_view->source_model();}, parent) :
+																			     // TreeIndex::instance([&] {return
+																			     // tree_view->source_model();}, this->host());
 		auto find_binder = [&](boost::intrusive_ptr<const ::Binder> b) {
 			return url_equal(b->host()->field<url_key>(), real_url) || url_equal(b->host()->field<home_key>(), real_url);
 		};
@@ -1161,15 +1155,19 @@ namespace web {
 			WebView* v = find_target();
 			if (v)
 				v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
-			auto _browser_new = gl_paras->main_window()->browser(real_url, true); // QtSingleApplication::instance()->newMainWindow();
-
-			auto it = // this_index->
-			    TreeIndex::require_item(
-				real_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-				[&](boost::intrusive_ptr<const i_t> it_) -> bool {
-					return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(url_value(detail::to_qstring(it_->field<url_key>())), real_url);
-				}); // return it_->field<url_type>() == target_url.toString();
-			// web::Browser::_defaulthome
+			auto _browser_new = real_url_t<url_value>::instance<web::Browser*>(real_url,
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) {
+				    return gl_paras->main_window()->browser(real_target_url_, true); // QtSingleApplication::instance()->newMainWindow();
+			    });
+			auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url, // this_index->
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+				    return TreeIndex::url_require_item_from_tree(
+					real_target_url_, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					[&](boost::intrusive_ptr<const i_t> it_) -> bool {
+						return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(url_value(detail::to_qstring(it_->field<url_key>())), real_url);
+					}); // return it_->field<url_type>() == target_url.toString();
+					    // web::Browser::_defaulthome
+			    });
 			it->topic_append(gl_para::_default_topic);
 			page = _browser_new->bind(RecordIndex::instance([&] {
 						   RecordModel* rm = nullptr;
@@ -1213,12 +1211,13 @@ namespace web {
 				// already create window, why do this? -- refer to demo browser
 				assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
-				auto it = this_treeindex->bind(
-				    real_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-						  std::placeholders::_4) // std::placeholders::_1
-				    ,
-				    [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-					    return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
+				auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
+				    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+					    return this_treeindex->url_bind_browser(
+						real_target_url_, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), // std::placeholders::_1
+						[&](boost::intrusive_ptr<const i_t> it_) -> bool {
+							return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
+						});
 				    });
 				// page = it ? it->activate(std::bind(&HidableTabWidget::find,
 				// globalparameters.main_window()->vtab_record(),
@@ -1263,11 +1262,13 @@ namespace web {
 				// already create window, why do this? -- refer to demo browser
 				assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
-				auto it = this_treeindex->bind(
-				    real_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-						  std::placeholders::_4), // std::placeholders::_1
-				    [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-					    return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
+				auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
+				    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+					    return this_treeindex->url_bind_browser(
+						real_target_url_, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), // std::placeholders::_1
+						[&](boost::intrusive_ptr<const i_t> it_) -> bool {
+							return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
+						});
 				    });
 				if (it)
 					it->topic_append(_blogger->topic());
@@ -1733,7 +1734,7 @@ namespace web {
 									_rctrl->select_as_current(_rctrl->index<pos_proxy>(target_)); // if(_record_controller->source_model()->current_item() != _it)
 																      // _record_controller->select_as_current(_record_controller->index<pos_proxy>(_it));
 							}
-							auto it_ = TreeLevel::instance(TreeIndex::require_treeindex([&] { return tree_view_->source_model(); }, target_), _it)->merge(); // TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
+							auto it_ = TreeLevel::instance(TreeIndex::item_require_treeindex([&] { return tree_view_->source_model(); }, target_), _it)->merge(); // TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
 
 							// std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
 						}
@@ -2254,35 +2255,15 @@ namespace web {
 		auto _tree_view = _tree_screen->view();
 		// auto _tab_widget = v->tabmanager();
 		auto index = _tab_widget->webViewIndex(this);
-		// auto _record_controller = _tab_widget->record_ctrl();
+//			_rctrl->synchronize_record_view(_page->item());
 		if (index != _tab_widget->currentIndex())
-			_tab_widget->setCurrentIndex(
-			    index); // c->index<PosSource>(c->source_model()->index(_binder->item()))
-		if (!_browser->isVisible()) {
-			_browser->raise();
-			_browser->activateWindow();
-		}
-		// _record_controller->synchronize_record_view(_page->item());
-		if (_record_screen && _vtab_record->currentWidget() != _record_screen)
-			_vtab_record->setCurrentWidget(_record_screen);
-		// for(int i = 0; i < _vtab_tree->count(); i ++){
-		// auto tree_viewer = _vtab_tree->widget(i);
-		// if(tree_viewer->objectName() == tree_screen_viewer_name){
-		// auto tree_viewer_ = dynamic_cast<tsv_t *>(tree_viewer);
-		// if(tree_viewer_){
-		// if(tree_viewer_->widget_right() == _record_screen){
-		// if(_vtab_tree->currentIndex() != i){
-		// if(! tree_viewer_->tree_screen())tree_viewer_->tree_screen(_tree_screen);
-		// _vtab_tree->setCurrentIndex(i);
-		// }
-		// }
-		// }
-		// }
-		// }
+			_tab_widget->setCurrentIndex(index); // c->index<PosSource>(c->source_model()->index(_binder->item()))
+
+
 		auto it = _page->binder()->host();
 		if (it) {
 			if (it != _tree_view->current_item())
-				_tree_view->select_as_current(TreeIndex::require_treeindex([&] { return _tree_view->source_model(); }, it));
+				_tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_view->source_model(); }, it));
 			auto _record_view = _rctrl->view();
 			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 			bool has_selection = item_selection_model->hasSelection();
@@ -2291,8 +2272,17 @@ namespace web {
 				_rctrl->select_as_current(_rctrl->index<pos_proxy>(it));
 			if (_page->title() != it->field<name_key>())
 				_page->record_info_update(_page->url(), _page->title());
-			if (it)
-				gl_paras->main_window()->synchronize_title(it->field<name_key>());
+
+			if (!_browser->isVisible()) {
+				if (_vtab_record->currentWidget() == _record_screen) {
+					_browser->raise();
+					_browser->activateWindow();
+					gl_paras->main_window()->synchronize_title(it->field<name_key>());
+				}
+			}
+
+			//			if (_record_screen && _vtab_record->currentWidget() != _record_screen)
+			//				_vtab_record->setCurrentWidget(_record_screen);
 		}
 #ifdef USE_EDITOR_WRAP
 		_page->_blogger->name(_page->title());
