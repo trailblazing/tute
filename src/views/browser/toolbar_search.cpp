@@ -123,7 +123,7 @@ namespace web {
 
 		connect(lineEdit(), &QLineEdit::returnPressed, //this, &ToolbarSearch::search_now); // , [&] {std::thread(&ToolbarSearch::searchNow,
 		    [&] {
-			    real_url_t<QString>::instance<decltype(search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(), [&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) -> decltype(search_now(real_target_url_)) {
+			    real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(), [&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_)  {
 				    auto bro = search_now(real_target_url_); //search_text
 				    bro->activateWindow();
 				    return bro;
@@ -476,8 +476,8 @@ namespace web {
 			QString text = v.toString();
 			lineEdit()->setText(text);
 			//			auto real_url_ =
-			real_url_t<QString>::instance<decltype(search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(), [&](auto real_url_) {
-				return search_now(real_url_);
+			real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(), [&](auto real_url_) {
+				return this->search_now(real_url_);
 			});
 			// std::thread(&ToolbarSearch::searchNow, this).detach();
 		}
