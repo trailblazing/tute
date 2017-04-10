@@ -1136,10 +1136,8 @@ void sapp_t::newLocalSocketConnection()
 	if (_url.isEmpty()) real_url = web::Browser::_defaulthome; // web::DockedWindow *w = nullptr;
 
 	// if(!url.isEmpty()) {
-	auto setting_path = gl_paras->root_path() + "/" + gl_paras->target_os() +
-	    "/" + gl_para::_browser_conf_filename;
-	auto s = ":/resource/standardconfig/" + gl_paras->target_os() + "/" +
-	    gl_para::_browser_conf_filename;
+	auto setting_path = gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename;
+	auto s = ":/resource/standardconfig/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename;
 	if (!QFile(setting_path).exists())
 		if (!DiskHelper::copy_file_force(s, setting_path))
 			critical_error("Unhandled error when copy \"" + s + "\" to \"" + setting_path + "\"");
@@ -1166,7 +1164,10 @@ void sapp_t::newLocalSocketConnection()
 	////    std::pair<web::Browser *, web::WebView *> dp;
 	if (entrance && tree_screen) { // && _tree_modelindex
 		if (openLinksIn == 1) {
-			auto browser = gl_paras->main_window()->browser(real_url);
+			auto browser = real_url_t<url_value>::instance<web::Browser*>(real_url,
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) {
+				    return gl_paras->main_window()->browser(real_target_url_);
+			    });
 			// boost::intrusive_ptr<TreeIndex> tree_index;
 			// try {tree_index = new TreeIndex([&] {return tree_view->source_model();
 			// }, tree_view->current_item()->parent(),
@@ -1176,13 +1177,14 @@ void sapp_t::newLocalSocketConnection()
 			boost::intrusive_ptr<i_t> it;
 
 			// if(tree_index)
-			it = TreeIndex::require_item(
-			    real_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-			    [&](boost::intrusive_ptr<const i_t> it) -> bool {
-				    return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
-			    }); // instance([&] {return tree_view->source_model();},
-			// tree_view->current_item())->
-
+			it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+				    return TreeIndex::url_require_item_from_tree(
+					real_target_url_, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					[&](boost::intrusive_ptr<const i_t> it) -> bool {
+						return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
+					});
+			    });
 			// boost::intrusive_ptr<RecordIndex> record_index(nullptr);
 
 			// try {
@@ -1212,13 +1214,17 @@ void sapp_t::newLocalSocketConnection()
 			// catch(std::exception &e) {throw e; }
 
 			// if(tree_index)
-			TreeIndex::activate(
-			    [&] { return tree_view->source_model(); }, tree_view->current_item(),
-			    real_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-			    [&](boost::intrusive_ptr<const i_t> it) -> bool {
-				    return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
-			    })
-			    ->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
+			real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+				    return TreeIndex::url_activate(
+					real_target_url_,
+					[&] { return tree_view->source_model(); }, tree_view->current_item(),
+					std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					[&](boost::intrusive_ptr<const i_t> it) -> bool {
+						return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
+					});
+				    //			    ->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
+			    });
 		}
 		// browser_view->mainWindow()->load_record(record);
 	}
@@ -1334,11 +1340,14 @@ void sapp_t::postLaunch()
 			// browser->loadPage(args.last()); // mainWindow()->loadPage(args.last());
 			tv_t* tree_view = gl_paras->tree_screen()->view();
 			auto it = tree_view->session_root_auto();
-			TreeIndex::activate(
-			    [&] { return tree_view->source_model(); }, it, url_value(args.last()),
-			    std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-			    [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-				    return url_equal(detail::to_qstring(it_->field<home_key>()), args.last()) || url_equal(detail::to_qstring(it_->field<url_key>()), args.last());
+			real_url_t<url_value>::instance< boost::intrusive_ptr<i_t>>(url_value(args.last()),
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+				    return TreeIndex::url_activate(real_target_url_,
+					[&] { return tree_view->source_model(); }, it,
+					std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					[&](boost::intrusive_ptr<const i_t> it_) -> bool {
+						return url_equal(detail::to_qstring(it_->field<home_key>()), args.last()) || url_equal(detail::to_qstring(it_->field<url_key>()), args.last());
+					});
 			    });
 		}
 		// else

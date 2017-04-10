@@ -1581,7 +1581,7 @@ tkm_t::delete_permanent(boost::intrusive_ptr<Linker> delete_linker)
 			// assert(tree_index);
 
 			// if(tree_index) {
-			auto result = view->move(TreeIndex::require_treeindex([&] { return view->source_model(); }, host_parent), linker_first->host(), [&](boost::intrusive_ptr<const Linker> il) -> bool {
+			auto result = view->move(TreeIndex::item_require_treeindex([&] { return view->source_model(); }, host_parent), linker_first->host(), [&](boost::intrusive_ptr<const Linker> il) -> bool {
 				return il->host()->id() == linker_first->host()->id();
 			});
 			assert(result->id() == linker_first->host()->id());
@@ -1590,7 +1590,7 @@ tkm_t::delete_permanent(boost::intrusive_ptr<Linker> delete_linker)
 				assert(tree_view);
 				result = merge(
 				    TreeLevel::instance(
-					TreeIndex::require_treeindex([&] { return this; }, result),
+					TreeIndex::item_require_treeindex([&] { return this; }, result),
 					linker_first->host()),
 				    std::bind(&tv_t::delete_permanent, tree_view, [&] { return this; }, QList<boost::intrusive_ptr<i_t>>() << linker_first->host(), &tkm_t::delete_permanent, "cut", false));
 			}
@@ -1602,7 +1602,7 @@ tkm_t::delete_permanent(boost::intrusive_ptr<Linker> delete_linker)
 			// assert(tree_index_first);
 			// if(tree_index_first) {
 			for (auto& il : host->child_linkers()) {
-				view->move(TreeIndex::require_treeindex([&] { return view->source_model(); }, result), il->host(), [&](boost::intrusive_ptr<const Linker> link) -> bool {
+				view->move(TreeIndex::item_require_treeindex([&] { return view->source_model(); }, result), il->host(), [&](boost::intrusive_ptr<const Linker> link) -> bool {
 					return il->host()->id() == link->host()->id();
 				});
 			}

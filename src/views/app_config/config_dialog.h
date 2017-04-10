@@ -42,9 +42,9 @@ class ConfigDialog : public QDialog {
 
 	QListWidgetItem *create_items(QString name);
 
-	QListWidget *contentsWidget;  // QScrollArea *scrollArea;
-	QStackedWidget *pagesWidget;
-	QDialogButtonBox *confirmButtons;
+	QListWidget *_contentsWidget;  // QScrollArea *scrollArea;
+	QStackedWidget *_pagesWidget;
+	QDialogButtonBox *_confirmButtons;
 };
 
 #endif  // _CONFIGDIALOG_H_

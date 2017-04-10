@@ -342,11 +342,11 @@ namespace web {
 	template <typename real_t>
 	Docker<real_t>* Docker<real_t>::prepend(real_t* child_, Qt::WindowFlags flags)
 	{
-		auto win = this->widget();
-		if (win) {
-			win->setParent(nullptr, flags);
-			win->hide();
-		}
+		//		auto win = this->widget();
+		//		if (win) {
+		//			win->setParent(nullptr, flags);
+		//			win->hide();
+		//		}
 		child_->setParent(this, flags);
 		setWidget(child_);
 		child_->show();

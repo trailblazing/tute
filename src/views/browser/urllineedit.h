@@ -111,7 +111,7 @@ namespace web {
 #endif
 
 	    public:
-		UrlLineEdit(WebView* view, QWidget* parent = 0);
+		UrlLineEdit(WebView* view = nullptr, QWidget* parent = 0);
 		void setWebView(WebView* webView);
 
 	    protected:

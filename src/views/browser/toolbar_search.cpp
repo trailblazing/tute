@@ -93,18 +93,23 @@ namespace web {
    history.
         Searches are turned into urls that use Google to perform search
  */
-	ToolbarSearch::ToolbarSearch(
-	    QWidget* parent // QStackedWidget *lineedits, QLineEdit *findtext,
-	    )
-	    : SearchLineEdit(parent)
+	ToolbarSearch::ToolbarSearch(FindScreen* parent, // QStackedWidget *lineedits, QLineEdit *findtext,
+	    WebView* view_)
+	    : SearchLineEdit(parent, view_)
 	    , _autosaver(new AutoSaver(this))
 	    , _maxsavedsearches(10)
 	    , _stringlistmodel(new QStringListModel(this))
-	    , _lineedits(nullptr) // new QStackedWidget(this))  // , _lineedits(lineedits)
+//	    , _lineedit_stack(nullptr) // new QStackedWidget(this))  // , _lineedits(lineedits)
+#ifdef USE_ADDITIONAL_BUFFER
 	    , _findtext(new QLineEdit(this))
+#else
+#endif // USE_ADDITIONAL_BUFFER
+	    , _find_screen(parent)
 	{ // , _findtext(findtext)
-		// _lineedits->setVisible(false);
+	  // _lineedits->setVisible(false);
+#ifdef USE_ADDITIONAL_BUFFER
 		_findtext->setVisible(false);
+#endif // USE_ADDITIONAL_BUFFER
 
 		QMenu* m = menu();
 		connect(m, &QMenu::aboutToShow, this, &ToolbarSearch::show_menu);
@@ -115,13 +120,30 @@ namespace web {
 		lineEdit()->setCompleter(completer);
 
 		assert(lineEdit());
-		connect(lineEdit(), &QLineEdit::returnPressed, this, &ToolbarSearch::search_now); // , [&] {std::thread(&ToolbarSearch::searchNow,
-												  // this).detach();});	//
 
+		connect(lineEdit(), &QLineEdit::returnPressed, //this, &ToolbarSearch::search_now); // , [&] {std::thread(&ToolbarSearch::searchNow,
+		    [&] {
+			    real_url_t<QString>::instance<decltype(search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(), [&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) -> decltype(search_now(real_target_url_)) {
+				    auto bro = search_now(real_target_url_); //search_text
+				    bro->activateWindow();
+				    return bro;
+			    });
+		    } // .detach();});	//
+		    );
+#ifdef USE_ADDITIONAL_BUFFER
 		connect(this, &SearchLineEdit::textChanged, _findtext, [&](const QString& text) { _findtext->setText(text); });
-		// connect(this, &ToolbarSearch::returnPressed, _tab_widget,
-		// &TabManager::lineEditReturnPressed);
+		// connect(this, &ToolbarSearch::returnPressed, _tab_widget, &TabManager::lineEditReturnPressed);
 		connect(this, &ToolbarSearch::return_pressed, _findtext, &QLineEdit::returnPressed);
+#else
+		//		connect(this, &SearchLineEdit::textChanged, [&](const QString& text_) { lineEdit()->setText(text_); });
+		connect(this, &ToolbarSearch::return_pressed, [&] {
+			lineEdit()->returnPressed();
+			//			_find_screen->find_text(lineEdit()->text());
+		});
+		// При каждом изменении текста в строке запроса
+		connect(this, &ToolbarSearch::textChanged, _find_screen, &FindScreen::enable_findbutton);
+
+#endif // USE_ADDITIONAL_BUFFER
 
 		setInactiveText(tr("Google"));
 
@@ -154,236 +176,276 @@ namespace web {
 		settings.endGroup();
 	}
 
-	void ToolbarSearch::search_now()
+	web::Browser* ToolbarSearch::search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_)
 	{
-		QString search_text = text(); // lineEdit()->text();
+		auto to_be_url_ = to_be_url(non_url_search_text_->value());
+		assert(to_be_url_ == QUrl() || to_be_url_ == detail::to_qstring(web::Browser::_defaulthome));
+		//move to main.cpp
+		//		auto to_be_url = [&](const QUrl& url_) {
+		//			QUrl url = url_;
+		//			QUrl result;
+		//			qDebug()
+		//			    << "ToolbarSearch::search_now::to_be_url::url.scheme() =\t" << url.scheme();
+		//			if (url.scheme().isEmpty() && !url.topLevelDomain().isNull()) {
 
-		auto result_item = gl_paras->find_screen()->find_clicked();
-		if (result_item) {
-			ts_t* _tree_screen = gl_paras->tree_screen();
-			auto tree_view = _tree_screen->view();
-			auto current_item = tree_view->current_item();
-			boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::require_treeindex([&] { return tree_view->source_model(); }, current_item);
-			//		auto topic = Blogger::purify_topic(_findtext->text());
-			auto browser_ = gl_paras->main_window()->browser(search_text);
-			if (0 >= result_item->count_direct()) {
-				QUrl url = QUrl(search_text);
-				url_value real_url = url_value(search_text);
-				// if(url.host().isSimpleText());
-				// bool url_isRelative = url.isRelative();
-				// bool url_isValid = url.isValid();
-				// bool host_not_null = !url.host().isNull();
-				// bool host_isDetached = url.host().isDetached();
-				// bool host_isEmpty = url.host().isEmpty();
-				// bool host_isSimpleText = url.host().isSimpleText();
-				// bool path_empty = url.path().isEmpty();
-				// bool path_null = url.path().isNull();
-				// QString path = url.path();
-				// if( // !url.host().isEmpty() &&
-				// url.isValid()
-				// ) {
-				// if(url.scheme().isEmpty()    //url.scheme().isNull()
-				//// && url.isRelative() //&& !url.host().isNull()
-				// ) {
-				////url = QUrl("http://" + searchText);
-				// url.setScheme(QLatin1String("https"));
-				// }
-				// if(url.path().isEmpty()
-				// ) {
-				// url.setPath(QLatin1String("//"));
-				// }
-				// }
-				// auto tree_view = _tree_screen->tree_view();
-				if (tree_index) {
-					// example !url.isEmpty() && url.isValid() && !url.scheme().isEmpty()
-					if (!url.isEmpty() && !url.host().isNull() && url.isValid() &&
-					    !url.scheme().isEmpty()
-					    // && url != QUrl(DockedWindow::_defaulthome) //&&
-					    // !url.host().isNull()
-					    ) {
-						// QLineEdit *lineedit =
+		//				url.setScheme("https"); //QUrl(QString("https://") + url.toString());
+		//							//				result = url;
+		//			}
 
-						auto ti = tree_index->bind(
-						    real_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-						    [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-							    return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
-						    },
-						    browser_);
-						if (ti)
-							ti->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
-						assert(_lineedits);
-						if (_lineedits) {
-							QLineEdit* line_edit =
-							    qobject_cast<QLineEdit*>(_lineedits->currentWidget());
-							if (line_edit)
-								line_edit->setText(search_text);
-						}
-						// globalparameters.entrance()->activebrowser()->tabWidget()->currentLineEdit()->setText(searchText);
+		//			qDebug()
+		//			    << "\t!url.isRelative() =\t" << !url.isRelative()
+		//			    << "\t!url.topLevelDomain().isNull() =\t" << !url.topLevelDomain().isNull()
+		//			    << "\t!url.isEmpty() =\t" << !url.isEmpty()
+		//			    << "\t!url.host().isNull() =\t" << !url.host().isNull() // flase
+		//			    << "\turl.isValid() =\t" << url.isValid()
+		//			    << "\t!url.scheme().isEmpty() =\t" << !url.scheme().isEmpty();
+		//			if (!url.isEmpty() && //&& !url.host().isNull()
+		//			    url.isValid() &&
+		//			    !url.scheme().isEmpty() &&
+		//			    !url.topLevelDomain().isNull() &&
+		//			    !url.isRelative() &&
+		//			    url != QUrl(web::Browser::_defaulthome)) result = url;
+		//			return result;
+		//		};
 
-						// globalparameters.entrance()->activebrowser()->tabWidget()->new_view(register_record(url));
+		auto deal_with_url = [&](tv_t* tree_view_, const QString& search_text, boost::intrusive_ptr<TreeIndex> tree_index, url_value real_url, web::Browser* browser_) {
+			// QLineEdit *lineedit =
+			auto ti = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+				    return tree_index->url_bind_browser(
+					real_target_url_, //std::placeholders::_1,
+					std::bind(&tv_t::move, tree_view_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					[&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url); },
+					browser_);
+			    });
+			//				tree_index->url_bind_browser(
+			//			    real_url_t<url_value>::instance(real_url),
+			//			    std::bind(&tv_t::move, tree_view_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+			//			    [&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url); },
+			//			    browser_);
+			if (ti)
+				ti->activate(std::bind(&web::Browser::find, browser_, std::placeholders::_1));
 
-						// currentLineEdit();  // lineEditReturnPressed();
-						// assert(lineedit);
-						// lineedit->setText(searchText);
-						// lineedit->returnPressed();
-					} else {
-						QStringList newList = _stringlistmodel->stringList();
-						if (newList.contains(search_text))
-							newList.removeAt(newList.indexOf(search_text));
-						newList.prepend(search_text);
-						if (newList.size() >= _maxsavedsearches)
-							newList.removeLast();
-						if (!::sapp_t::instance()->privateBrowsing()) {
-							_stringlistmodel->setStringList(newList);
-							_autosaver->changeOccurred();
-						}
-						QUrl search_engine(QLatin1String("https://www.google.com/search"));
-						QUrlQuery url_query;
+			//					assert(_lineedit_stack);
+			//					if (_lineedit_stack) {
+			//						QLineEdit* line_edit =
+			//						    qobject_cast<QLineEdit*>(_lineedit_stack->currentWidget());
+			//						if (line_edit)
+			//							line_edit->setText(search_text);
+			//					}
+			lineEdit()->setText(search_text);
 
-						// url_query.addQueryItem(QLatin1String("q"), searchText);
-						url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
-						url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
-						url_query.addQueryItem(
-						    QLatin1String("client"),
-						    QLatin1String(
-							gl_paras->application_name()
-							    .toLatin1())); // globalparameters.main_program_file().toLatin1()
+			// globalparameters.entrance()->activebrowser()->tabWidget()->currentLineEdit()->setText(searchText);
+			// currentLineEdit();  // lineEditReturnPressed();
+			// assert(lineedit);
+			// lineedit->setText(searchText);
+			// lineedit->returnPressed();
+		};
 
-						// urlQuery.addQueryItem();
-
-						search_engine.setQuery(url_query);
-						search_engine.setFragment("q=" + search_text);
-						// emit search(url, std::bind(&TreeScreen::view_paste_child,
-						// _tree_screen, std::placeholders::_1, std::placeholders::_2,
-						// std::placeholders::_3));
-						auto real_url_ = url_value(search_engine.toString());
-						auto ti = tree_index->bind(
-						    real_url_,
-						    std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-						    [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-							    return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url_) || url_equal(it_->field<url_key>(), real_url_);
-						    },
-						    browser_);
-						if (ti)
-							ti->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
-					}
-				}
+		auto query_internet_decomposed = [&](tv_t* tree_view_, const QString& search_text, boost::intrusive_ptr<TreeIndex> tree_index, web::Browser* browser_) {
+			QStringList newList = _stringlistmodel->stringList();
+			if (newList.contains(search_text))
+				newList.removeAt(newList.indexOf(search_text));
+			newList.prepend(search_text);
+			if (newList.size() >= _maxsavedsearches)
+				newList.removeLast();
+			if (!::sapp_t::instance()->privateBrowsing()) {
+				_stringlistmodel->setStringList(newList);
+				_autosaver->changeOccurred();
 			}
-			// else if(result_item != tree_view->current_item()){
-			// auto index_result = tree_view->source_model()->index(result_item);
-			// if(static_cast<QModelIndex>(index_result).isValid()){
-			// auto it = tree_view->source_model()->child(index_result);
-			// tree_view->select_as_current(TreeIndex::instance([&] {return
-			// tree_view->source_model();}, it, it->parent()));
-			// tree_view->index_invoke(globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager()->currentWebView(),
-			// index_result);
-			// }
-			// }
-			else {
-				// tree_view->select_as_current(TreeIndex::instance([&] {return
-				// tree_view->source_model();}, result_item, result_item->parent()));
-				// //
-				// tree_view->index_invoke(tree_view->source_model()->index(result_item));
-				// move_children is time consuming!
-				auto child_items = // tree_view->move(tree_index, result_item,
-						   // [&](boost::intrusive_ptr<const Linker> target) ->
-						   // bool {return target->host()->field<url_type>() ==
-						   // current_item->field<url_type>() &&
-						   // target->host()->field<name_type>() ==
-						   // current_item->field<name_type>();});
-						   // //
-				    tree_view->move_children(
-					tree_index, result_item,
-					[&](boost::intrusive_ptr<const Linker> target,
-					    boost::intrusive_ptr<const Linker> source) -> bool {
-						return target->host()->field<url_key>() ==
-						    source->host()->field<url_key>() &&
-						    target->host()->field<name_key>() ==
-						    source->host()->field<name_key>();
-					});
-				//
-				// auto	child_items		= std::async(std::launch::async,
-				// &tv_t::move_children, tree_view, tree_index, result_item,
-				// [&](boost::intrusive_ptr<const Linker> target,
-				// boost::intrusive_ptr<const Linker> source) -> bool {return
-				// target->host()->field<url_type>() == source->host()->field<url_type>()
-				// && target->host()->field<name_type>() ==
-				// source->host()->field<name_type>();}).get();
-				// auto _vtab_record = globalparameters.main_window()->vtab_record();
-				// auto browser =
-				// gl_paras->main_window()->new_editing_window(_findtext->text())->record_screen()->browser();//
-				// activated_browser();
-				bool changes_happened = false;
-				auto rctrl_ = browser_->tab_widget()->record_screen()->record_ctrl();
-				if (rctrl_) {
-					auto last = rctrl_->source_model()->item(pos_source(rctrl_->source_model()->count() - 1));
-					// auto	current_item_	= ctrl->view()->current_item();	//
-					// source_model()->item(pos_source(0));
-					////	    auto	child_linkers		=
-					///result_item->child_linkers();
-					// auto _total_progress_counter = 0;
+			QUrl search_engine(QLatin1String("https://www.google.com/search"));
+			QUrlQuery url_query;
 
-					for (auto it : child_items) { // for(auto il :
-						// result_item->child_linkers()){//	// move
-						// to search result
-						// auto it = il->host();
-						if (!rctrl_->source_model()->item(
-							[&](const id_value id) { return id == it->id(); })) {
-							boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return rctrl_->source_model(); }, it, last); // current_item_
-							last = it;                                                                                                                // current_item_ = it;	//
-							// if(record_index){
-							// if(  (candidate->parent() != _session_root_item->parent())		//
-							// _current_item->parent())
-							// && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const
-							// Linker> il){return il == candidate->linker();})
-							// ){
-							// auto result = browser->item_bind(record_index);
-							// result->activate(std::bind(&web::Entrance::find,
-							// globalparameters.entrance(), std::placeholders::_1));
-							// _result_list << result->linker();
-							// //
-							// }else{
-							// auto previous_item =
-							// _source_model()->item(tree_view->previous_index());
-							// auto result =
-							browser_->bind(record_index);
+			// url_query.addQueryItem(QLatin1String("q"), searchText);
+			url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
+			url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
+			url_query.addQueryItem(
+			    QLatin1String("client"),
+			    QLatin1String(gl_paras->application_name().toLatin1())); // globalparameters.main_program_file().toLatin1()
+
+			// urlQuery.addQueryItem();
+
+			search_engine.setQuery(url_query);
+			search_engine.setFragment("q=" + search_text);
+			// emit search(url, std::bind(&TreeScreen::view_paste_child,
+			// _tree_screen, std::placeholders::_1, std::placeholders::_2,
+			// std::placeholders::_3));
+			url_value real_url = url_value(search_engine.toString());
+
+			deal_with_url(tree_view_, search_text, tree_index, real_url, browser_);
+		};
+
+		QString search_text = non_url_search_text_->value(); //text(); // lineEdit()->text();
+		boost::intrusive_ptr<i_t> result_item(nullptr);
+		ts_t* _tree_screen = gl_paras->tree_screen();
+		auto tree_view_ = _tree_screen->view();
+		auto current_item = tree_view_->current_item();
+		boost::intrusive_ptr<TreeIndex> sibling_tree_index = TreeIndex::item_require_treeindex([&] { return tree_view_->source_model(); }, current_item);
+		//		QUrl url = QUrl(search_text);
+		//		url_value real_url = url_value(search_text);
+		//		auto topic = Blogger::purify_topic(_findtext->text());
+		auto browser_ = gl_paras->main_window()->browser(search_text);
+		// if(url.host().isSimpleText());
+		// bool url_isRelative = url.isRelative();
+		// bool url_isValid = url.isValid();
+		// bool host_not_null = !url.host().isNull();
+		// bool host_isDetached = url.host().isDetached();
+		// bool host_isEmpty = url.host().isEmpty();
+		// bool host_isSimpleText = url.host().isSimpleText();
+		// bool path_empty = url.path().isEmpty();
+		// bool path_null = url.path().isNull();
+		// QString path = url.path();
+		// if( // !url.host().isEmpty() &&
+		// url.isValid()
+		// ) {
+		// if(url.scheme().isEmpty()    //url.scheme().isNull()
+		//// && url.isRelative() //&& !url.host().isNull()
+		// ) {
+		////url = QUrl("http://" + searchText);
+		// url.setScheme(QLatin1String("https"));
+		// }
+		// if(url.path().isEmpty()
+		// ) {
+		// url.setPath(QLatin1String("//"));
+		// }
+		// }
+		// auto tree_view = _tree_screen->tree_view();
+		if (sibling_tree_index) {
+			// example !url.isEmpty() && url.isValid() && !url.scheme().isEmpty()
+			// move to TabWidget::loadPage
+			//			auto real_url_ = to_be_url(url);
+			//			if (real_url_ != QUrl() && real_url_ != detail::to_qstring(web::Browser::_defaulthome))
+			//				deal_with_url(tree_view_, search_text, tree_index, url_value(url.toString()), browser_);
+			//			else
+			if ((result_item = gl_paras->find_screen()->find_internal_decomposed(search_text))) {
+				if (result_item->count_direct() > 0) {
+					// tree_view->select_as_current(TreeIndex::instance([&] {return
+					// tree_view->source_model();}, result_item, result_item->parent()));
+					// //
+					// tree_view->index_invoke(tree_view->source_model()->index(result_item));
+					// move_children is time consuming!
+					auto child_items = // tree_view->move(tree_index, result_item,
+							   // [&](boost::intrusive_ptr<const Linker> target) ->
+							   // bool {return target->host()->field<url_type>() ==
+							   // current_item->field<url_type>() &&
+							   // target->host()->field<name_type>() ==
+							   // current_item->field<name_type>();});
+							   // //
+					    tree_view_->move_children(
+						sibling_tree_index, result_item,
+						[&](boost::intrusive_ptr<const Linker> target,
+						    boost::intrusive_ptr<const Linker> source) -> bool {
+							return target->host()->field<url_key>() ==
+							    source->host()->field<url_key>() &&
+							    target->host()->field<name_key>() ==
+							    source->host()->field<name_key>();
+						});
+					//
+					// auto	child_items		= std::async(std::launch::async,
+					// &tv_t::move_children, tree_view, tree_index, result_item,
+					// [&](boost::intrusive_ptr<const Linker> target,
+					// boost::intrusive_ptr<const Linker> source) -> bool {return
+					// target->host()->field<url_type>() == source->host()->field<url_type>()
+					// && target->host()->field<name_type>() ==
+					// source->host()->field<name_type>();}).get();
+					// auto _vtab_record = globalparameters.main_window()->vtab_record();
+					// auto browser =
+					// gl_paras->main_window()->new_editing_window(_findtext->text())->record_screen()->browser();//
+					// activated_browser();
+					bool changes_happened = false;
+					auto _rctrl = browser_->tab_widget()->record_screen()->record_ctrl();
+					if (_rctrl) {
+						auto last = _rctrl->source_model()->item(pos_source(_rctrl->source_model()->count() - 1));
+						// auto	current_item_	= ctrl->view()->current_item();	//
+						// source_model()->item(pos_source(0));
+						////	    auto	child_linkers		=
+						///result_item->child_linkers();
+						// auto _total_progress_counter = 0;
+
+						for (auto it : child_items) { // for(auto il :
+							// result_item->child_linkers()){//	// move
+							// to search result
+							// auto it = il->host();
+							if (!_rctrl->source_model()->item(
+								[&](const id_value id) { return id == it->id(); })) {
+								boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return _rctrl->source_model(); }, it, last); // current_item_
+								last = it;                                                                                                                // current_item_ = it;	//
+								// if(record_index){
+								// if(  (candidate->parent() != _session_root_item->parent())		//
+								// _current_item->parent())
+								// && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const
+								// Linker> il){return il == candidate->linker();})
+								// ){
+								// auto result = browser->item_bind(record_index);
+								// result->activate(std::bind(&web::Entrance::find,
+								// globalparameters.entrance(), std::placeholders::_1));
+								// _result_list << result->linker();
+								// //
+								// }else{
+								// auto previous_item =
+								// _source_model()->item(tree_view->previous_index());
+								// auto result =
+								browser_->bind(record_index);
 #ifdef USE_LOAD_ON_FOUND
-							result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
+								result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
 #else
 
 #endif
-							////		std::thread(&TreeItem::activate, result,
-							///std::bind(&HidableTabWidget::find,
-							///globalparameters.main_window()->vtab_record(),
-							///std::placeholders::_1)).join();
-							// globalparameters.status_bar()->showMessage("added node(s) : " +
-							// QString::number(++ _total_progress_counter), 1000);	// across
-							// thread message
-							changes_happened = true;
+								////		std::thread(&TreeItem::activate, result,
+								///std::bind(&HidableTabWidget::find,
+								///globalparameters.main_window()->vtab_record(),
+								///std::placeholders::_1)).join();
+								// globalparameters.status_bar()->showMessage("added node(s) : " +
+								// QString::number(++ _total_progress_counter), 1000);	// across
+								// thread message
+								changes_happened = true;
+							}
+						}
+						if (changes_happened) {
+							auto _view = _rctrl->view();
+							_view->reset();
+							_rctrl->proxy_model()->setSourceModel(_rctrl->source_model());
+							_view->setModel(_rctrl->proxy_model());
 						}
 					}
-					if (changes_happened) {
-						auto _view = rctrl_->view();
-						_view->reset();
-						rctrl_->proxy_model()->setSourceModel(rctrl_->source_model());
-						_view->setModel(rctrl_->proxy_model());
-					}
-				}
-				// if(! tab_brother)
-				//
-				if (changes_happened) child_items[0]->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1)); // result_item->child_linkers()[0]->host()
+					// if(! tab_brother)
+					//
+					if (changes_happened) child_items[0]->activate(std::bind(&web::Browser::find, browser_, std::placeholders::_1)); // result_item->child_linkers()[0]->host()
 
-				// std::function<void()> startWorkInAThread = [&] {
-				// WorkerThread *workerThread = new WorkerThread(this, child_items);
-				// connect(workerThread, &WorkerThread::resultReady, this, [&]
-				// {if(child_items.size() > 0)startWorkInAThread();});
-				// connect(workerThread, &WorkerThread::finished, workerThread,
-				// &QObject::deleteLater);
-				// workerThread->start();
-				// };
-				// startWorkInAThread();
+					// std::function<void()> startWorkInAThread = [&] {
+					// WorkerThread *workerThread = new WorkerThread(this, child_items);
+					// connect(workerThread, &WorkerThread::resultReady, this, [&]
+					// {if(child_items.size() > 0)startWorkInAThread();});
+					// connect(workerThread, &WorkerThread::finished, workerThread,
+					// &QObject::deleteLater);
+					// workerThread->start();
+					// };
+					// startWorkInAThread();
+				} else {
+					query_internet_decomposed(tree_view_, search_text, sibling_tree_index, browser_);
+				}
+			} else {
+				query_internet_decomposed(tree_view_, search_text, sibling_tree_index, browser_);
 			}
 		}
+
+		//		if (result_item) {
+		//			if (0 >= result_item->count_direct()) {
+		//			}
+		//			// else if(result_item != tree_view->current_item()){
+		//			// auto index_result = tree_view->source_model()->index(result_item);
+		//			// if(static_cast<QModelIndex>(index_result).isValid()){
+		//			// auto it = tree_view->source_model()->child(index_result);
+		//			// tree_view->select_as_current(TreeIndex::instance([&] {return
+		//			// tree_view->source_model();}, it, it->parent()));
+		//			// tree_view->index_invoke(globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager()->currentWebView(),
+		//			// index_result);
+		//			// }
+		//			// }
+		//			else {
+		//			}
+		//		}
+		return browser_;
 	}
 
 	void ToolbarSearch::show_menu()
@@ -413,7 +475,11 @@ namespace web {
 		if (v.canConvert<QString>()) {
 			QString text = v.toString();
 			lineEdit()->setText(text);
-			search_now(); // std::thread(&ToolbarSearch::searchNow, this).detach();
+			//			auto real_url_ =
+			real_url_t<QString>::instance<decltype(search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(), [&](auto real_url_) {
+				return search_now(real_url_);
+			});
+			// std::thread(&ToolbarSearch::searchNow, this).detach();
 		}
 	}
 
@@ -421,17 +487,24 @@ namespace web {
 	{
 		_stringlistmodel->setStringList(QStringList());
 		_autosaver->changeOccurred();
-		;
 	}
 
-	void ToolbarSearch::text(const QString& text)
+	void ToolbarSearch::text(const QString& text_)
 	{
-		_findtext->setText(text);
+#ifdef USE_ADDITIONAL_BUFFER
+		_findtext->setText(text_);
+#else
+		lineEdit()->setText(text_);
+#endif // USE_ADDITIONAL_BUFFER
 	}
 
 	QString ToolbarSearch::text() const
 	{
-		return purify(_findtext->text());
+#ifdef USE_ADDITIONAL_BUFFER
+		return _findtext->text();
+#else
+		return lineEdit()->text();
+#endif // USE_ADDITIONAL_BUFFER
 	}
 
 	void WorkerThread::run()
@@ -439,12 +512,12 @@ namespace web {
 		// QString result;
 		auto element = _child_items.last(); // acrosss thread
 		// auto _vtab_record = globalparameters.main_window()->vtab_record();
-		auto browser = element->page()->browser(); // gl_paras->main_window()->activated_browser(gl_para::_what_ever_topic);
-		auto rctrl = browser->tab_widget()->record_screen()->record_ctrl();
-		if (rctrl) {
+		auto browser_ = element->page()->browser(); // gl_paras->main_window()->activated_browser(gl_para::_what_ever_topic);
+		auto _rctrl = browser_->tab_widget()->record_screen()->record_ctrl();
+		if (_rctrl) {
 			// auto					tab_brother		=
 			// record_controller->view()->current_item();	// acrosss thread
-			boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return rctrl->source_model(); }, element); // tab_brother
+			boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return _rctrl->source_model(); }, element); // tab_brother
 			// if(record_index){
 			// if(  (candidate->parent() != _session_root_item->parent())		//
 			// _current_item->parent())
@@ -458,8 +531,8 @@ namespace web {
 			// //
 			// }else{
 			// auto previous_item = _source_model()->item(tree_view->previous_index());
-			auto result = browser->bind(record_index);
-			result->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
+			auto result = browser_->bind(record_index);
+			result->activate(std::bind(&web::Browser::find, browser_, std::placeholders::_1));
 			_child_items.pop_back();
 			emit result_ready();
 		}

@@ -431,7 +431,7 @@ void ts_t::setup_actions(void)
 	ac->setIcon(QIcon(":/resource/pic/add_subbranch.svg"));
 	connect(ac, &QAction::triggered, [&]() mutable -> void {
 		_tree_view->new_item(
-		    TreeIndex::require_treeindex(
+		    TreeIndex::item_require_treeindex(
 			[&]() -> tkm_t* { return _tree_view->source_model(); },
 			_tree_view->current_item()),
 		    std::bind(&tv_t::new_child, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
@@ -448,7 +448,7 @@ void ts_t::setup_actions(void)
 	ac->setIcon(QIcon(":/resource/pic/add_branch.svg"));
 	connect(ac, &QAction::triggered, [&]() mutable {
 		_tree_view->new_item(
-		    TreeIndex::require_treeindex(
+		    TreeIndex::item_require_treeindex(
 			[&]() -> tkm_t* { return _tree_view->source_model(); },
 			_tree_view->current_item()) // tree_index
 		    ,
@@ -479,7 +479,7 @@ void ts_t::setup_actions(void)
 				    result = it.next();
 				    while (it.hasNext())
 					    result = TreeLevel::instance(
-							 TreeIndex::require_treeindex(_current_model, result),
+							 TreeIndex::item_require_treeindex(_current_model, result),
 							 it.next())
 							 ->merge(); // TreeIndex::instance(_current_model,
 								    // result, result->parent()), it.next());
@@ -487,7 +487,7 @@ void ts_t::setup_actions(void)
 			    } else {
 				    // Вставка новых данных в модель дерева записей
 				    result = _current_model()->new_child(
-					TreeIndex::require_treeindex(
+					TreeIndex::item_require_treeindex(
 					    [&]() -> tkm_t* { return _tree_view->source_model(); },
 					    _tree_view->current_item()->parent()) // _tree_index
 					,
@@ -585,7 +585,7 @@ void ts_t::setup_actions(void)
 		// try{tree_index = new TreeIndex([&] () -> KnowModel* {return
 		// _tree_view->source_model();}, _parent, sibling_order);}
 		// catch(std::exception &e) {throw e; }
-		_tree_view->paste_clipboard(TreeIndex::require_treeindex([&]() -> tkm_t* { return _tree_view->source_model(); },
+		_tree_view->paste_clipboard(TreeIndex::item_require_treeindex([&]() -> tkm_t* { return _tree_view->source_model(); },
 		    _parent)); // std::bind(&KnowModel::model_paste_sibling_from_clipboard,
 			       // _tree_view->source_model(), std::placeholders::_1,
 			       // std::placeholders::_2)
@@ -611,7 +611,7 @@ void ts_t::setup_actions(void)
 		// return _tree_view->source_model();
 		// }, _current_item, 0);
 		// } catch(std::exception &e) {throw e; }
-		_tree_view->paste_clipboard(TreeIndex::require_treeindex([&]() -> tkm_t* { return _tree_view->source_model(); },
+		_tree_view->paste_clipboard(TreeIndex::item_require_treeindex([&]() -> tkm_t* { return _tree_view->source_model(); },
 		    _parent)); // std::bind(&KnowModel::model_paste_child_from_clipboard,
 			       // _tree_view->source_model(), std::placeholders::_1,
 			       // std::placeholders::_2)
@@ -1286,7 +1286,7 @@ void ts_t::item_move_up_dn_branch(int (i_t::*_move)())
 		// Установка курсора на позицию, куда была перенесена ветка
 		if (index_after_move.isValid() && index_after_move != _index) {
 			auto it = _tree_view->source_model()->child(index_after_move);
-			_tree_view->select_as_current(TreeIndex::require_treeindex([&] { return _tree_view->source_model(); }, it));
+			_tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_view->source_model(); }, it));
 		}
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)

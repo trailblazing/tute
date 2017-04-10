@@ -70,7 +70,7 @@ bool WindowSwitcher::status(void)
 	return enableSwitcher;
 }
 
-void WindowSwitcher::tree_to_record_screen(void)
+void WindowSwitcher::tree_screen_to_record_screen(void)
 {
 	if (!enableSwitcher)
 		return; // on desktop, default false
@@ -102,7 +102,7 @@ void WindowSwitcher::tree_to_record_screen(void)
 	}
 }
 
-void WindowSwitcher::tree_to_find_in_base(void)
+void WindowSwitcher::tree_screen_to_find_in_base(void)
 {
 	if (!enableSwitcher)
 		return;
@@ -110,7 +110,7 @@ void WindowSwitcher::tree_to_find_in_base(void)
 
 // Статическая функция, используется редактором как callback функция при нажатии
 // кнопки back в редакторе конечной записи
-void WindowSwitcher::record_to_recordtable(void)
+void WindowSwitcher::record_to_record_screen(void)
 {
 	if (gl_paras->window_switcher() == nullptr)
 		return;
@@ -120,26 +120,29 @@ void WindowSwitcher::record_to_recordtable(void)
 	if (appconfig->interface_mode() != "mobile")
 		return; // В статическом методе использовать нестатическую переменну
 			// enableSwitcher нельзя
+	auto _tree_screen = gl_paras->tree_screen();
+	if (_tree_screen) {
 
-	// Скрываются все прочие области
-	gl_paras->tree_screen()->hide();
-	gl_paras->editor_docker()->hide();
-	// globalParameters.getFindScreen()->hide();
-	auto _index = gl_paras->tree_screen()->view()->current_index();
-	if (_index.isValid()) {
-		auto item = gl_paras->tree_screen()->view()->source_model()->child(_index);
-		if (item != gl_paras->tree_screen()->view()->source_model()->root_item()) {
-			auto _record_screen = item->page()->tabmanager()->browser()->record_screen();
-			if (_record_screen) {
-				QWidget* object = static_cast<QWidget*>(_record_screen); // temporary setting
-											 // // globalparameters.record_screens()[0]
-
-				object->show();
-
-				gl_paras->vtab_record()->setCurrentWidget(_record_screen); // temporary setting		//
-											   // globalparameters.record_screens()[0]
-
-				appconfig->focus_widget(object->objectName());
+		// Скрываются все прочие области
+		_tree_screen->hide();
+		gl_paras->editor_docker()->hide();
+		// globalParameters.getFindScreen()->hide();
+		auto _tree_view = _tree_screen->view();
+		if (_tree_view) {
+			auto _index = _tree_view->current_index();
+			if (_index.isValid()) {
+				auto item = _tree_view->source_model()->child(_index);
+				if (item != _tree_view->source_model()->root_item()) {
+					auto _record_screen = item->page()->tabmanager()->browser()->record_screen();
+					if (_record_screen) {
+						QWidget* object = static_cast<QWidget*>(_record_screen); // temporary setting
+						// // globalparameters.record_screens()[0]
+						object->show();
+						gl_paras->vtab_record()->setCurrentWidget(_record_screen); // temporary setting		//
+													   // globalparameters.record_screens()[0]
+						appconfig->focus_widget(object->objectName());
+					}
+				}
 			}
 		}
 	}
@@ -151,7 +154,7 @@ void WindowSwitcher::record_to_find_in_base(void)
 		return;
 }
 
-void WindowSwitcher::recordtable_ro_record_editor(void)
+void WindowSwitcher::record_screen_to_editor_docker(void)
 {
 	if (!enableSwitcher) // on desktop, default false
 		return;
@@ -166,13 +169,13 @@ void WindowSwitcher::recordtable_ro_record_editor(void)
 	appconfig->focus_widget(object->objectName());
 }
 
-void WindowSwitcher::recordtable_to_find_in_base(void)
+void WindowSwitcher::record_screen_to_find_in_base(void)
 {
 	if (!enableSwitcher)
 		return;
 }
 
-void WindowSwitcher::recordtable_to_tree(void)
+void WindowSwitcher::record_screen_to_tree_screen(void)
 {
 	if (!enableSwitcher)
 		return;
@@ -252,18 +255,11 @@ void WindowSwitcher::restore_focus_widget()
 				auto _record_screen = item->page()->tabmanager()->browser()->record_screen();
 				if (_record_screen) {
 					QWidget* object = static_cast<QWidget*>(_record_screen); // globalparameters.record_screens()[0]
-					// temporary setting
 					object->show();
-
 					gl_paras->vtab_record()->setCurrentWidget(_record_screen); // globalparameters.record_screens()[0]
-					// temporary setting
-
 					appconfig->focus_widget(object->objectName());
-
 					// for(auto &i : globalparameters.record_screens())i->show();
-
 					// for(auto &i : globalparameters.record_screens())i->setFocus(); //
-					// temporary setting
 				}
 			}
 		}

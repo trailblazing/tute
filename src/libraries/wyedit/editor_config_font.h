@@ -19,6 +19,7 @@ class FlatToolButton;
 
 #include "views/app_config/config_page.h"
 
+class Editor;
 class EditorConfig;
 
 class EditorConfigFont : public ConfigPage {
@@ -29,7 +30,7 @@ class EditorConfigFont : public ConfigPage {
 #endif
 
 	public:
-	EditorConfigFont(QWidget *parent = 0);
+	EditorConfigFont(std::shared_ptr<EditorConfig> editor_config_, QWidget *parent = 0);
 
 	void setup_ui(void);
 	void setup_signals(void);
@@ -64,7 +65,7 @@ class EditorConfigFont : public ConfigPage {
 	FlatToolButton *codeSelectColorButton;
 	QColor *codeColor;
 
-	std::shared_ptr<EditorConfig> conf;
+	std::shared_ptr<EditorConfig> _editor_config;
 };
 
 #endif  // _EDITORCONFIGFONT_H_

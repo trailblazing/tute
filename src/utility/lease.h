@@ -347,9 +347,10 @@ namespace sd {
 
 	    public:
 		~intrusive_ptr()
-		{ //: boost::intrusive_ptr<element_type>::~intrusive_ptr()
+		{       //: boost::intrusive_ptr<element_type>::~intrusive_ptr()
 			//			delete boost::intrusive_ptr<element_type>::get();
 			//			if(!internal_integrity());
+			if (_shadow == nullptr) detach();
 			_shadow = nullptr;
 		}
 

@@ -705,8 +705,7 @@ void EditorWrap::on_click_to_tag(const QString& link_text)
 	// FindScreen *_find_screen = globalparameters.find_screen();    //
 	// find_object<FindScreen>(find_screen_singleton_name);
 	// Если виджет не показан, он выводится на экран
-	if (_find_screen->isVisible() == false)
-		_find_screen->widget_show();
+	if (_find_screen->isVisible() == false) _find_screen->widget_show();
 	emit set_find_text_signal(tag);
 }
 

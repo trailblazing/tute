@@ -257,12 +257,12 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			if (this->_view->hasFocus()) {                                                                                                // view is the curretn controller
 				if (_tab_widget->currentIndex() != static_cast<int>(pos_source_)) _tab_widget->select_as_current(it->page()->view()); // setCurrentIndex(static_cast<int>(pos_source_));
 				auto tree_screen = gl_paras->main_window()->tree_screen();
-				if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
+				if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
 			}
 			if (it)
 				if (it->page()) it->page()->metaeditor_sychronize();
 		}
-		_view->setFocus();
+		//		_view->setFocus();
 	}
 	//	_record_screen->tools_update();
 }
@@ -277,18 +277,15 @@ boost::intrusive_ptr<i_t> rctrl_t::index_invoke(const index_proxy& index_proxy_,
 	index_source source_index = index<index_source>(index_proxy_);
 
 	// Позиция записи в списке
-	pos_source pos_source_ =
-	    index<pos_source>(index_proxy_); // (((QModelIndex)source_index).row());
+	pos_source pos_source_ = index<pos_source>(index_proxy_); // (((QModelIndex)source_index).row());
 	qDebug() << "rctrl_t::index_invoke() : current item num " << pos_source_;
 
-	_view->setFocus(); // select_as_current(index<pos_proxy>(pos_source_));
-	// //    select_as_current(index<pos_proxy>(index_proxy_));
-	// // ?
+	_view->setFocus(); //    select_as_current(index<pos_proxy>(index_proxy_));
 
 	result = source_model()->item(pos_source_);
 	// auto	ov	= result->page()->view();
 	// auto v =
-	force_update ? result->binder()->activate() : result->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
+	force_update ? result->binder()->activate() : result->activate(std::bind(&web::TabWidget::find, &*_tab_widget, std::placeholders::_1));
 	QItemSelectionModel* item_selection_model = _view->selectionModel();
 	bool has_selection = item_selection_model->hasSelection();
 	if (!has_selection) {
@@ -305,7 +302,7 @@ boost::intrusive_ptr<i_t> rctrl_t::index_invoke(const index_proxy& index_proxy_,
 		// browser_update(pos_source_); // if new one, create it? no, you can't
 		// click a record which does not exist.
 	}
-	gl_paras->window_switcher()->recordtable_ro_record_editor();
+	gl_paras->window_switcher()->record_screen_to_editor_docker();
 
 	return result;
 }

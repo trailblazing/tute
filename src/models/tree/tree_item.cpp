@@ -2832,17 +2832,13 @@ web::WebView* i_t::bind()
 	return view;
 }
 
-web::WebView* i_t::activate(
-    const std::function<web::WebView*(
-	const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal)>& find_activated)
+web::WebView* i_t::activate(const std::function<web::WebView*(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal)>& find_activated)
 {
 	assert(_binder); // auto result =
 	// globalparameters.entrance()->item_bind(this);  // may be
 	// not registered to tree model
 	web::WebView* v = nullptr;
-	auto check_view = find_activated([&](boost::intrusive_ptr<const ::Binder> b) -> bool {
-		return b->host()->id() == id();
-	});
+	auto check_view = find_activated([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return b->host()->id() == id(); });
 	if (check_view) {
 		if (this != check_view->page()->host().get() || !_binder) {
 			bind();

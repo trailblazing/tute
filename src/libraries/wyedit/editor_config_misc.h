@@ -24,7 +24,7 @@ class EditorConfigMisc : public ConfigPage {
 #endif
 
 	public:
-	EditorConfigMisc(QWidget *parent = 0);
+	EditorConfigMisc(std::shared_ptr<EditorConfig> editor_config_, QWidget *parent = 0);
 
 	int apply_changes(void);
 
@@ -33,7 +33,7 @@ class EditorConfigMisc : public ConfigPage {
 	private:
 	QSpinBox *indentStep;
 
-	std::shared_ptr<EditorConfig> conf;
+	std::shared_ptr<EditorConfig> _editor_config;
 };
 
 #endif  // _EDITORCONFIGMISC_H_
