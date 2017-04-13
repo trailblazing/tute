@@ -65,6 +65,7 @@
 
 #include "utility/delegate.h"
 #include "utility/strong_typedef.hxx"
+//#include "libraries/global_parameters.h"
 //#include "utility/variant.h" // for Unify template
 
 // extern const char *id_field;

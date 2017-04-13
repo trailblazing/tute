@@ -75,7 +75,7 @@ class rs_t : public QWidget
 #endif
 
     public:
-	rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager_);
+	rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget *tabmanager_);
 
 	virtual ~rs_t();
 
@@ -87,7 +87,7 @@ class rs_t : public QWidget
 	void tree_path(QString path);
 	QString tree_path(void);
 
-	rctrl_t* record_ctrl() const;
+	rctrl_t *record_ctrl() const;
 
 	// bool                inited() {return _inited;}
 	// web::TabWidget	*tabmanager();

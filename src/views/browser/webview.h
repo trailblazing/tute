@@ -120,8 +120,8 @@ namespace web {
 
 #endif
 	    public:
-		PopupPage(PopupView* view_, Browser* browser_, Profile* profile_);
-		Browser* browser();
+		PopupPage(PopupView* view_, web::Browser* browser_, Profile* profile_);
+		web::Browser* browser();
 
 	    protected:
 		bool acceptNavigationRequest(const QUrl& url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
@@ -198,13 +198,13 @@ namespace web {
 		WebPage(Profile* profile, boost::intrusive_ptr<i_t> item, ts_t* tree_screen,
 		    Blogger* blogger_,
 		    web::Docker<web::Browser>* browser_docker_, web::Browser* browser, web::TabWidget* tabmanager,
-		    rctrl_t* rctrl_,
+		    rctrl_t *rctrl_,
 		    WebView* parent = 0);
 
 		~WebPage();
 
-		TabWidget* tabmanager();
-		Browser* browser();
+		web::TabWidget* tabmanager();
+		web::Browser* browser();
 		WebView* view(); // {assert(_view); return _view;}
 
 		rctrl_t* record_ctrl(); // {return _record_controller;}
@@ -395,7 +395,7 @@ namespace web {
 		    ts_t* tree_screen,
 		    Blogger* blogger_,
 		    web::Docker<web::Browser>* entrance,
-		    web::Browser* browser,
+		    Browser *browser,
 		    web::TabWidget* tabmanager,
 		    rctrl_t* rctrl_);
 
@@ -417,7 +417,7 @@ namespace web {
 					//		void record_ctrl(rctrl_t* rctrl_); // {this->_record_controller =
 		// _record_controller;}
 
-		TabWidget* tabmanager() const;
+		web::TabWidget* tabmanager() const;
 
 		void current_view_global_consistency();
 

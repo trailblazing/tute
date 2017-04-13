@@ -739,7 +739,7 @@ void tv_t::dropEvent(QDropEvent* event)
 											 // // Указатель на контроллер таблицы
 											 // конечных записей
 			if (_record_controller) {
-				tabwidget_ref _tab_widget =
+				web::TabWidget* _tab_widget =
 				    tree_item_drag->page()->view()->tabmanager();
 				if (check_crypt(tree_item_drag)) {
 					// Удаление записи из исходной ветки, удаление должно быть вначале,

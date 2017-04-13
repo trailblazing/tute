@@ -2459,31 +2459,41 @@ wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bo
 		// В каждой метке убираются лишние пробелы по краям
 		for (int i = 0; i < item_tags_text_list.size(); ++i) {
 			auto topic = (item_tags_text_list[i] = item_tags_text_list.at(i).trimmed());
-			if ((bro = browser(topic, false))) break;
+			bro = real_url_t<QString>::instance<web::Browser*>(topic,
+			    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
+				    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, false);
+			    });
+			if (bro) break;
 		}
 	} else
 		bro = view->page()->browser();
 	if (!bro) {
 		if (item_tags_text_list.size() > 0)
-			bro = browser(item_tags_text_list[0]);
+			bro = real_url_t<QString>::instance<web::Browser*>(item_tags_text_list[0],
+			    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
+				    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, false); // browser(item_tags_text_list[0]);
+			    });
 		else
-			bro = browser(detail::to_qstring(item->field<name_key>()));
+			bro = real_url_t<QString>::instance<web::Browser*>(detail::to_qstring(item->field<name_key>()),
+			    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
+				    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, false); // browser(detail::to_qstring(item->field<name_key>()));
+			    });
 	}
 	return bro;
 }
 
-// not sure to succeeded if force is false
-template <>
-web::Browser*
-wn_t::browser<QUrl>(const QUrl& url_, bool force)
-{
-	(void)force;
+//// not sure to succeeded if force is false
+//template <>
+//web::Browser*
+//wn_t::browser<QUrl>(const QUrl& url_, bool force)
+//{
+//	(void)force;
 
-	return real_url_t<url_value>::instance<web::Browser*>(url_value(url_.toString()),
-	    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) {
-		    return browser<boost::intrusive_ptr<real_url_t<url_value>>>(real_target_url_, force);
-	    });
-}
+//	return real_url_t<url_value>::instance<web::Browser*>(url_value(url_.toString()),
+//	    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) {
+//		    return browser<boost::intrusive_ptr<real_url_t<url_value>>>(real_target_url_, force);
+//	    });
+//}
 
 // not sure to succeeded if force is false
 template <>
@@ -2543,14 +2553,16 @@ wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
 // not sure to succeeded if force is false
 template <>
 web::Browser*
-wn_t::browser<QString>(const QString& topic_, bool force)
+wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_ptr<real_url_t<QString>>& topic_, //const QString& topic_,
+    bool force)
 {
 	// clean();
-	QString topic = topic_;
-	if ("" == topic_) topic = gl_para::_default_topic;
+	QString topic = topic_->value();
+	if ("" == topic) topic = gl_para::_default_topic;
 
 	// std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
 	web::Browser* browser_(nullptr);
+#ifdef USE_CURRENT_BROWSER_KEY_WORD
 	assert(!((topic == gl_para::_current_browser) && (force)));
 	//	auto try_real_url = to_be_url(topic);
 
@@ -2562,7 +2574,7 @@ wn_t::browser<QString>(const QString& topic_, bool force)
 		if (rs)
 			browser_ = dynamic_cast<rs_t*>(rs)->browser();
 		else {
-			int count_browser = 0;
+			//			int count_browser = 0;
 			for (int i = 0; i < _vtab_record->count();
 			     i++) { // for(auto i : _record_screens){
 				auto rs = _vtab_record->widget(i);
@@ -2570,7 +2582,7 @@ wn_t::browser<QString>(const QString& topic_, bool force)
 					// auto	rs		= dynamic_cast<rs_t *>(w);
 					auto bro_ = dynamic_cast<rs_t*>(rs)->browser();
 					if (bro_) {
-						if (count_browser == _vtab_record->currentIndex()) { //_vtab_record->currentWidget()){  //
+						if (rs == _vtab_record->currentWidget()) { //_vtab_record->currentWidget()){  //
 							//browser_->isVisible() ||
 							//browser_->isActiveWindow()
 							browser_ = bro_; // .data();
@@ -2578,31 +2590,36 @@ wn_t::browser<QString>(const QString& topic_, bool force)
 							break;
 						}
 					}
-					count_browser++;
+					//					count_browser++;
 				}
 			}
 		}
 	} else {
-		int count_browser = 0;
-		for (int i = 0; i < _vtab_record->count();
-		     i++) { // for(auto i : _record_screens){
-			auto rs = _vtab_record->widget(i);
-			if (rs->objectName() == record_screen_multi_instance_name) {
-				// auto	rs		= dynamic_cast<rs_t *>(w);
-				auto bro_ = dynamic_cast<rs_t*>(rs)->browser();
-				if (bro_) {
-					if (bro_->blogger()->topic() == topic) { //|| topic ==
-						//gl_para::_what_ever_topic//_vtab_record->currentWidget()){
-						//// browser_->isVisible() || browser_->isActiveWindow()
-						browser_ = bro_; // .data();
+#else
+	int count_browser = 0;
+	for (int i = 0; i < _vtab_record->count();
+	     i++) { // for(auto i : _record_screens){
+		auto rs = _vtab_record->widget(i);
+		if (rs->objectName() == record_screen_multi_instance_name) {
+			// auto	rs		= dynamic_cast<rs_t *>(w);
+			auto bro_ = dynamic_cast<rs_t*>(rs)->browser();
+			if (bro_) {
+				if (bro_->blogger()->topic() == topic) { //|| topic ==
+					//gl_para::_what_ever_topic//_vtab_record->currentWidget()){
+					//// browser_->isVisible() || browser_->isActiveWindow()
+					browser_ = bro_; // .data();
 
-						break;
-					}
+					break;
 				}
-				count_browser++;
 			}
+			count_browser++;
 		}
 	}
+#endif // USE_CURRENT_BROWSER_KEY_WORD
+#ifdef USE_CURRENT_BROWSER_KEY_WORD
+	}
+#endif // USE_CURRENT_BROWSER_KEY_WORD
+
 	if (!browser_) {
 		auto state = DiskHelper::get_topic_from_directory(gl_paras->root_path() + "/" + gl_para::_blog_root_dir, topic);
 		if (state != QByteArray())

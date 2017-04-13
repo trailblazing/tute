@@ -176,8 +176,8 @@ class gl_para : public QObject {
 	void download_manager(web::DownloadManager* dm);
 	web::DownloadManager* download_manager() const;
 
-//	std::shared_ptr<EditorConfig> editor_config() const;
-//	void editor_config(std::shared_ptr<EditorConfig> dialog);
+	//	std::shared_ptr<EditorConfig> editor_config() const;
+	//	void editor_config(std::shared_ptr<EditorConfig> dialog);
 
 	//	AttachTableController* attachtable_controller() const;
 	//	void attachtable_controller(AttachTableController* _attachtable_controller);
@@ -211,8 +211,10 @@ class gl_para : public QObject {
 	static constexpr char _default_topic[] = "undefined";
 	static constexpr char _default_post[] = "Welcome to \"undefined\" topic";
 
-	//	static constexpr const char *_what_ever_topic	= "what_ever";
+//	static constexpr const char *_what_ever_topic	= "what_ever";
+#ifdef USE_CURRENT_BROWSER_KEY_WORD
 	static constexpr char _current_browser[] = "current_browser";
+#endif // USE_CURRENT_BROWSER_KEY_WORD
 	static constexpr char _browser_navigater_name[] = "browser_navigater";
 	static constexpr char _blog_root_dir[] = "blog";
 	static constexpr char _custom_hidable_tab_style[] = "custom_hidable_tab_style.css";
