@@ -1769,7 +1769,7 @@ namespace web {
 					// ) {
 
 					view = new WebView(result_item, _profile, // use record for return
-					    _tree_screen, static_cast<Blogger*>(_blogger), _browser_docker, static_cast<web::Browser*>(_browser), this, _record_screen->record_ctrl());
+					    _tree_screen, _blogger, _browser_docker, _browser, this, _record_screen->record_ctrl());
 					// } else {
 					// view = record->unique_page()->view();
 					// }

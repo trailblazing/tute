@@ -70,9 +70,11 @@ constexpr char gl_para::_history_menu_name[];  //  = "history_menu";
 constexpr char gl_para::_bookmark_menu_name[]; //  = "bookmark_menu";
 
 
-constexpr char gl_para::_default_topic[];               // = "undefined";
-constexpr char gl_para::_default_post[];                // = "Welcome to \"undefined\" topic";
+constexpr char gl_para::_default_topic[]; // = "undefined";
+constexpr char gl_para::_default_post[];  // = "Welcome to \"undefined\" topic";
+#ifdef USE_CURRENT_BROWSER_KEY_WORD
 constexpr char gl_para::_current_browser[];             // = "current_browser";
+#endif                                                  // USE_CURRENT_BROWSER_KEY_WORD
 constexpr char gl_para::_browser_navigater_name[];      // = "browser_navigater";
 constexpr char gl_para::_blog_root_dir[];               // = "blog";
 constexpr char gl_para::_custom_hidable_tab_style[];    // = "custom_hidable_tab_style.css";

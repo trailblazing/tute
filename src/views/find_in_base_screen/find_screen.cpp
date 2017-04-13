@@ -499,14 +499,15 @@ void FindScreen::setup_signals(void)
 {
 	// При каждом изменении текста в строке запроса
 	connect(_toolbarsearch_buffer, &web::ToolbarSearch::textChanged, this, &FindScreen::enable_findbutton);
-	// При нажатии Enter в строке запроса
-	connect(_toolbarsearch_buffer, &web::ToolbarSearch::return_pressed, // this,
-	    [this] {
-		    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(_toolbarsearch_buffer->text(),
-			[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
-				return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
-			});
-	    });
+	//	// Done in constructor. При нажатии Enter в строке запроса
+	//	connect(_toolbarsearch_buffer, &web::ToolbarSearch::return_pressed, // this,
+	//	    [this] {
+	//		emit _toolbarsearch_buffer->lineEdit()->returnPressed();
+	////		    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(_toolbarsearch_buffer->text(),
+	////			[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+	////				return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
+	////			});
+	//	    });
 
 	// При каждом изменении текста извне может вырабатыватся этот сигнал
 	// Он вырабатывается в слоте setFindText()
@@ -516,16 +517,18 @@ void FindScreen::setup_signals(void)
 	// При нажатии кнопки Find
 	connect(_find_start_button, &QPushButton::clicked, //this,
 	    [this] {
-		auto stack = static_cast<QStackedWidget*>(_stack_layout->widget());
-		if (stack) {
-			auto line_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
-			if (line_edit)
-				real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
-				    line_edit->text(), //_toolbarsearch_buffer->text(),
-				    [&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
-					    return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
-				    });
-		}
+		    auto stack = static_cast<QStackedWidget*>(_stack_layout->widget());
+		    if (stack) {
+			    auto line_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
+			    if (line_edit) {
+				    emit line_edit->return_pressed();
+				    //				real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
+				    //				    line_edit->text(), //_toolbarsearch_buffer->text(),
+				    //				    [&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+				    //					    return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
+				    //				    });
+			    }
+		    }
 	    });
 
 	// После установки текста извне, вырабатывается этот сигнал
@@ -534,12 +537,14 @@ void FindScreen::setup_signals(void)
 		    auto stack = static_cast<QStackedWidget*>(_stack_layout->widget());
 		    if (stack) {
 			    auto line_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
-			    if (line_edit)
-				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
-					line_edit->text(), //_toolbarsearch_buffer->text(),
-					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
-						return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
-					});
+			    if (line_edit) {
+				    emit line_edit->return_pressed();
+				    //				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
+				    //					line_edit->text(), //_toolbarsearch_buffer->text(),
+				    //					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+				    //						return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
+				    //					});
+			    }
 		    }
 	    });
 
@@ -548,9 +553,9 @@ void FindScreen::setup_signals(void)
 
 	// При нажатии кнопки закрытия
 	connect(_close_button, &FlatToolButton::clicked, this, &FindScreen::widget_hide);
-	connect(_close_button, &FlatToolButton::clicked, [] {
-		auto browser = gl_paras->main_window()->browser(QString(gl_para::_current_browser), false);
-		if (browser) browser->updateToolbarActionText(false);
+	connect(_close_button, &FlatToolButton::clicked, [&] {
+//		auto browser_ = _browser ? static_cast<web::Browser*>(_browser) : gl_paras->main_window()->browser(QString(gl_para::_current_browser), false);
+		if (_browser) _browser->updateToolbarActionText(false);
 	});
 
 	// Сигналы для запоминания состояния интерфейса
@@ -1489,6 +1494,7 @@ void FindScreen::switch_tools_expand(bool flag)
 	this->adjust_size();
 }
 
+void FindScreen::browser(web::Browser* bro) { _browser = bro; }
 
 //web::ToolbarSearch* FindScreen::toolbarsearch() const { return _toolbarsearch; }
 //// dangerous!

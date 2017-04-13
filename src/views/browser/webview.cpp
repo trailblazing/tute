@@ -142,7 +142,7 @@ namespace web {
 
 	web::Browser* PopupPage::browser()
 	{
-		return static_cast<web::Browser*>(_browser);
+		return _browser;
 		// QObject *w = this->parent();
 		// while(w){
 		// if(Browser *mw = qobject_cast<Browser *>(w))return mw;
@@ -807,7 +807,7 @@ namespace web {
 
 	web::Browser* WebPage::browser()
 	{
-		return static_cast<web::Browser*>(_browser);
+		return _browser;
 	} // return _entrance->activiated_registered().first;
 	  // //QtSingleApplication::instance()->mainWindow();
 
@@ -1279,10 +1279,8 @@ namespace web {
 			assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 		}
 #ifdef USE_POPUP_WINDOW
-		else { // type == WebDialog
-			PopupWindow* popup = new PopupWindow(static_cast<web::Browser*>(_browser)
-			    // view()->tabmanager()
-			    ,
+		else {                                                 // type == WebDialog
+			PopupWindow* popup = new PopupWindow(_browser, // view()->tabmanager()
 			    _profile
 			    // , QUrl(web::Browser::_defaulthome)
 			    // , _record_controller
@@ -1663,7 +1661,7 @@ namespace web {
 	W_OBJECT_IMPL(PopupWindow)
 #endif
 
-	PopupWindow::PopupWindow(Browser* browser_, Profile* profile_)
+	PopupWindow::PopupWindow(web::Browser* browser_, Profile* profile_)
 	    : QWidget(browser_)
 	    , _browser(browser_)
 	    , _addressbar(new QLineEdit(this))
@@ -2122,7 +2120,7 @@ namespace web {
 
 	rctrl_t* WebView::record_ctrl()
 	{
-		return static_cast<rctrl_t*>(_rctrl);
+		return _rctrl;
 	}
 
 	//	void WebView::record_ctrl(rctrl_t* rctrl_)
@@ -2255,7 +2253,7 @@ namespace web {
 		auto _tree_view = _tree_screen->view();
 		// auto _tab_widget = v->tabmanager();
 		auto index = _tab_widget->webViewIndex(this);
-//			_rctrl->synchronize_record_view(_page->item());
+		//			_rctrl->synchronize_record_view(_page->item());
 		if (index != _tab_widget->currentIndex())
 			_tab_widget->setCurrentIndex(index); // c->index<PosSource>(c->source_model()->index(_binder->item()))
 
@@ -2431,11 +2429,11 @@ namespace web {
 
 	rctrl_t* WebPage::record_ctrl()
 	{
-		return static_cast<rctrl_t*>(_rctrl);
+		return _rctrl;
 	}
 
 	web::TabWidget* WebPage::tabmanager()
 	{
-		return static_cast<web::TabWidget*>(_tab_widget);
+		return _tab_widget;
 	}
 }

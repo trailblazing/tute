@@ -700,7 +700,7 @@ RecordProxyModel* rctrl_t::proxy_model()
 
 web::TabWidget* rctrl_t::tab_widget()
 {
-	return static_cast<web::TabWidget*>(_tab_widget);
+	return _tab_widget;
 }
 
 //void rctrl_t::tab_widget(web::TabWidget* tab_)
@@ -1357,7 +1357,7 @@ web::WebView* rctrl_t::addnew_blank()
 
 rs_t* rctrl_t::record_screen()
 {
-	return static_cast<rs_t*>(_record_screen);
+	return _record_screen;
 }
 
 //// Вызов окна добавления данных в таблицу конечных записей
@@ -3183,7 +3183,7 @@ boost::intrusive_ptr<i_t> rctrl_t::index<boost::intrusive_ptr<i_t>>(const id_val
 
 Blogger* rctrl_t::blogger()
 {
-	return static_cast<Blogger*>(_blogger);
+	return _blogger;
 }
 
 //sd::shared_ptr<rctrl_t> rctrl_t::renter() const { return _renter; }

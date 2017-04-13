@@ -277,9 +277,9 @@ class wn_t : public QMainWindow {
 template <>
 web::Browser*
 wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bool force);
-template <>
-web::Browser*
-wn_t::browser<QUrl>(const QUrl& url_, bool force);
+//template <>
+//web::Browser*
+//wn_t::browser<QUrl>(const QUrl& url_, bool force);
 template <>
 web::Browser*
 wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusive_ptr<real_url_t<url_value>>& real_find_url_, bool force);
@@ -288,6 +288,6 @@ web::Browser*
 wn_t::browser<QByteArray>(const QByteArray& state_, bool force);
 template <>
 web::Browser*
-wn_t::browser<QString>(const QString& topic, bool force);
+wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_ptr<real_url_t<QString>>& topic_, bool force);
 
 #endif
