@@ -1340,7 +1340,7 @@ void sapp_t::postLaunch()
 			// browser->loadPage(args.last()); // mainWindow()->loadPage(args.last());
 			tv_t* tree_view = gl_paras->tree_screen()->view();
 			auto it = tree_view->session_root_auto();
-			real_url_t<url_value>::instance< boost::intrusive_ptr<i_t>>(url_value(args.last()),
+			real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(url_value(args.last()),
 			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
 				    return TreeIndex::url_activate(real_target_url_,
 					[&] { return tree_view->source_model(); }, it,
@@ -1538,7 +1538,11 @@ void sapp_t::restoreLastSession()
 	}
 	for (int i = 0; i < history_topics.count(); ++i) {
 		//		auto tuple_ = web::Browser::state(historywindows.at(i));
-		gl_paras->main_window()->browser(history_topics.at(i));
+		real_url_t<QString>::instance<web::Browser*>(history_topics.at(i).simplified(),
+		    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
+			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); //gl_paras->main_window()->browser(history_topics.at(i));
+		    });
+
 		//		if(  0 == i
 		//		  && gl_paras->main_window()->record_screens().size() == 1
 		//		  )

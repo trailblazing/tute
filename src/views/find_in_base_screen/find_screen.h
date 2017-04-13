@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "libraries/global_parameters.h"
 #include "models/record_table/items_flat.h"
 #include "models/tree/tree_item.h"
 #include "utility/delegate.h"
@@ -97,6 +98,7 @@ class FindScreen : public QWidget
 	QStackedWidget* lineedit_stack() { return _lineedit_stack; }
 	void lineedit_stack(QStackedWidget* lineedit_stack_) { _lineedit_stack = lineedit_stack_; }
 	void switch_stack(QStackedWidget* lineedit_stack_ = nullptr);
+	void browser(web::Browser* bro);
     public slots:
 
 	void widget_show(void);
@@ -238,6 +240,7 @@ class FindScreen : public QWidget
 	int _total_progress_counter = 0;
 
 	int _cancel_flag = 0;
+	browser_ref _browser;
 	friend class web::ToolbarSearch;
 };
 

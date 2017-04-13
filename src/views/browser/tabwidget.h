@@ -497,7 +497,7 @@ namespace web {
 #endif
 
 	    public:
-		TabWidget(Blogger* blogger_, Browser* browser_, wn_t* main_window_, Profile* profile_);
+		TabWidget(Blogger *blogger_, Browser *browser_, wn_t* main_window_, Profile* profile_);
 		// , TableController *_page_controller
 		// , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 

@@ -123,7 +123,7 @@ namespace web {
 
 		connect(lineEdit(), &QLineEdit::returnPressed, //this, &ToolbarSearch::search_now); // , [&] {std::thread(&ToolbarSearch::searchNow,
 		    [&] {
-			    real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(), [&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_)  {
+			    real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(), [&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
 				    auto bro = search_now(real_target_url_); //search_text
 				    bro->activateWindow();
 				    return bro;
@@ -176,7 +176,7 @@ namespace web {
 		settings.endGroup();
 	}
 
-	web::Browser* ToolbarSearch::search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_)
+	Browser* ToolbarSearch::search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_)
 	{
 		auto to_be_url_ = to_be_url(non_url_search_text_->value());
 		assert(to_be_url_ == QUrl() || to_be_url_ == detail::to_qstring(web::Browser::_defaulthome));
@@ -284,7 +284,10 @@ namespace web {
 		//		QUrl url = QUrl(search_text);
 		//		url_value real_url = url_value(search_text);
 		//		auto topic = Blogger::purify_topic(_findtext->text());
-		auto browser_ = gl_paras->main_window()->browser(search_text);
+		auto browser_ = real_url_t<QString>::instance<web::Browser*>(search_text,
+		    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
+			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); // gl_paras->main_window()->browser(search_text);
+		    });
 		// if(url.host().isSimpleText());
 		// bool url_isRelative = url.isRelative();
 		// bool url_isValid = url.isValid();

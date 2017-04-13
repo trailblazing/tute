@@ -152,7 +152,7 @@ namespace web {
 
 	    public slots:
 		void clear();
-		Browser* search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_);
+		web::Browser* search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_); // return browser_ref will lead lease.h need web::Browser defined
 
 	    private slots:
 		void save();

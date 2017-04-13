@@ -1,6 +1,7 @@
 #ifndef TREEINDEX_HXX
 #define TREEINDEX_HXX
 
+#include "libraries/global_parameters.h"
 #include "utility/lease.h"
 #include "utility/strong_typedef.hxx"
 #include <QModelIndex>

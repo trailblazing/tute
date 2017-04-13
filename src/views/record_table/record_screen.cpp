@@ -1677,7 +1677,7 @@ web::Browser* rs_t::browser()
 	//			browser_ = tab->browser();
 	//		}
 	//	}
-	return static_cast<web::Browser*>(_browser);
+	return _browser;
 }
 
 ts_t* rs_t::tree_screen()
@@ -1691,7 +1691,7 @@ ts_t* rs_t::tree_screen()
 
 Blogger* rs_t::blogger()
 {
-	return static_cast<Blogger*>(_blogger);
+	return _blogger;
 }
 
 //void rs_t::on_blogger_close_requested()

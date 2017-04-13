@@ -1583,7 +1583,8 @@ namespace web {
 		//				       };
 
 
-		auto reset_find_screen_navigater = [&]() {
+		auto synchronize_find_screen_navigater = [&]() {
+			assert(_find_screen);
 			//		_find_screen->historyhome(_historyhome);
 			//		_find_screen->historyforward(_historyforward);
 			//		_find_screen->historyback(_historyback);
@@ -1593,7 +1594,7 @@ namespace web {
 			_find_screen->replace_navigater(_navigater);
 			// auto mainwindow = _main_window;
 			// FindScreen *_find_screen = globalparameters.find_screen();
-			assert(_find_screen);
+
 			// QToolBar *navigater = findscreen->navigater();
 			// assert(navigater);
 			// navigater = addToolBar(tr("Navigation"));
@@ -1628,6 +1629,7 @@ namespace web {
 
 			////_chasewidget = new ChaseWidget(findscreen->size(), findscreen); //this
 			////navigater->addWidget(_chasewidget);
+			_find_screen->browser(this);
 		};
 
 		//
@@ -1647,7 +1649,7 @@ namespace web {
 		//		_tree_screen->append_main_menu();
 		setMenuBar(_main_window->menuBar());
 
-		reset_find_screen_navigater();
+		synchronize_find_screen_navigater();
 	}
 
 
@@ -2358,7 +2360,7 @@ namespace web {
 	}
 	Blogger* Browser::blogger()
 	{
-		return static_cast<Blogger*>(_blogger);
+		return _blogger;
 	}
 	//	void Browser::on_blogger_close_requested()
 	//	{

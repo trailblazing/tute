@@ -802,7 +802,7 @@ QString purify(QString text)
 	text.replace('-', ' ');
 	text.replace('?', ' ');
 	text.replace('!', ' ');
-
+	text = text.simplified();
 	//	QStringList list = text.split(QRegExp("\\W + "),
 	//QString::SkipEmptyParts);
 
@@ -1031,21 +1031,20 @@ auto to_be_url(const QUrl& url_) -> QUrl
 {
 	QUrl url = url_;
 	QUrl result;
-	qDebug()
-	    << "main.cpp::to_be_url::url.scheme() =\t" << url.scheme();
+	qDebug() << "\n\tmain.cpp::to_be_url::url=\t" << url << "\n"
+		 << "\turl.scheme() =\t" << url.scheme();
 	if (url.scheme().isEmpty() && !url.topLevelDomain().isNull()) {
 
 		url.setScheme("https"); //QUrl(QString("https://") + url.toString());
 					//				result = url;
 	}
 
-	qDebug()
-	    << "\t!url.isRelative() =\t" << !url.isRelative() << "\n"
-	    << "\t!url.topLevelDomain().isNull() =\t" << !url.topLevelDomain().isNull() << "\n"
-	    << "\t!url.isEmpty() =\t" << !url.isEmpty() << "\n"
-	    << "\t!url.host().isNull() =\t" << !url.host().isNull() << "\n" // flase
-	    << "\turl.isValid() =\t" << url.isValid() << "\n"
-	    << "\t!url.scheme().isEmpty() =\t" << !url.scheme().isEmpty();
+	qDebug() << "\t!url.isRelative() =\t" << !url.isRelative() << "\n"
+		 << "\t!url.topLevelDomain().isNull() =\t" << !url.topLevelDomain().isNull() << "\n"
+		 << "\t!url.isEmpty() =\t" << !url.isEmpty() << "\n"
+		 << "\t!url.host().isNull() =\t" << !url.host().isNull() << "\n" // flase
+		 << "\turl.isValid() =\t" << url.isValid() << "\n"
+		 << "\t!url.scheme().isEmpty() =\t" << !url.scheme().isEmpty();
 	if (!url.isEmpty() && //&& !url.host().isNull()
 	    !url.scheme().isEmpty() &&
 	    !url.topLevelDomain().isNull() &&
