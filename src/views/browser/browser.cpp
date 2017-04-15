@@ -451,6 +451,7 @@ namespace web {
 			(void)r;
 			if (r != this) { //&& !this->_destroyed_request_sent
 				assert(this->testAttribute(Qt::WA_DeleteOnClose));
+				close_trigger_from_others()(r);
 				//				save();//move to Blogger::save()
 				//				this->_destroyed_request_sent =
 				this->close();

@@ -554,7 +554,7 @@ void FindScreen::setup_signals(void)
 	// При нажатии кнопки закрытия
 	connect(_close_button, &FlatToolButton::clicked, this, &FindScreen::widget_hide);
 	connect(_close_button, &FlatToolButton::clicked, [&] {
-//		auto browser_ = _browser ? static_cast<web::Browser*>(_browser) : gl_paras->main_window()->browser(QString(gl_para::_current_browser), false);
+		//		auto browser_ = _browser ? static_cast<web::Browser*>(_browser) : gl_paras->main_window()->browser(QString(gl_para::_current_browser), false);
 		if (_browser) _browser->updateToolbarActionText(false);
 	});
 
@@ -983,8 +983,8 @@ boost::intrusive_ptr<i_t> FindScreen::find_start(void)
 		// find_recursive(_result_list, _session_root_item, _start_item); //
 		// candidate_root->tabledata();
 		return final_result; //
-		// find_recursive(final_result, _session_root_item, _start_item);				//
-		// _result_list;
+				     // find_recursive(final_result, _session_root_item, _start_item);				//
+				     // _result_list;
 	};
 
 	// deprecated by KnowModel::model_move_as_child_impl in this->find_recursive
@@ -1494,7 +1494,10 @@ void FindScreen::switch_tools_expand(bool flag)
 	this->adjust_size();
 }
 
-void FindScreen::browser(web::Browser* bro) { _browser = bro; }
+void FindScreen::browser(web::Browser* bro)
+{
+	if (_browser != bro) _browser = bro;
+}
 
 //web::ToolbarSearch* FindScreen::toolbarsearch() const { return _toolbarsearch; }
 //// dangerous!

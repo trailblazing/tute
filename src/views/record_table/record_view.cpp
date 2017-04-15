@@ -976,6 +976,7 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 			destroy_transfer([&](sd::renter* const r) {
 				(void)r;
 				if (r != this) { //&& !this->_destroyed_request_sent
+					close_trigger_from_others()(r);
 					this->_destroy_request_sent = true;
 					this->close();
 				}

@@ -546,6 +546,7 @@ Blogger::Blogger(QString new_post_topic, QString new_post_content, QStringList h
 		(void)r;
 		if (r != this) { // && !this->_destroyed_request_sent
 			assert(this->testAttribute(Qt::WA_DeleteOnClose));
+			close_trigger_from_others()(r);
 			//			this->_destroyed_request_sent =
 			this->close();
 			//			delete this;
@@ -906,6 +907,7 @@ void Blogger::doUiSetup()
 		(void)checked;
 		_editor_docker->hide();
 		appconfig->editor_show(false);
+		close_trigger_from_others()(nullptr);
 		this->close();
 	});
 

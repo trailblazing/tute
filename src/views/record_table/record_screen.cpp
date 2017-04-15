@@ -486,6 +486,7 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
 	destroy_transfer([&](renter* const r) {
 		(void)r;
 		if (r != this) { //&& !this->_destroyed_request_sent
+			close_trigger_from_others()(r);
 				 //			this->_destroyed_request_sent =
 			this->close();
 			assert(this->_destroy_request_sent == true);
