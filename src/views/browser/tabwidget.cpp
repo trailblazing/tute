@@ -983,6 +983,7 @@ namespace web {
 		destroy_transfer([&](sd::renter* const r) {
 			(void)r;
 			if (r != this) { //&& !this->_destroyed_request_sent
+				close_trigger_from_others()(r);
 				//				this->_destroyed_request_sent =
 				this->close();
 				//				delete this;// do it by browser
