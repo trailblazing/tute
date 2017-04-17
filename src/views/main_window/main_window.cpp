@@ -2604,12 +2604,15 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_
 			// auto	rs		= dynamic_cast<rs_t *>(w);
 			auto bro_ = dynamic_cast<rs_t*>(rs)->browser();
 			if (bro_) {
-				if (bro_->blogger()->topic() == topic) { //|| topic ==
-					//gl_para::_what_ever_topic//_vtab_record->currentWidget()){
-					//// browser_->isVisible() || browser_->isActiveWindow()
-					browser_ = bro_; // .data();
+				auto blogger_ = bro_->blogger();
+				if (blogger_) {
+					if (blogger_->topic() == topic) { //|| topic ==
+						//gl_para::_what_ever_topic//_vtab_record->currentWidget()){
+						//// browser_->isVisible() || browser_->isActiveWindow()
+						browser_ = bro_; // .data();
 
-					break;
+						break;
+					}
 				}
 			}
 			count_browser++;

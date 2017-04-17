@@ -265,13 +265,13 @@ void FindScreen::replace_navigater(QToolBar* nv)
 	bool need_update = false;
 	//	auto widget_list = _find_text_and_button_tools_area->findChildren<QObject*>();
 	for (int i = 0; i < _find_text_and_button_tools_area->count(); i++) {
-		auto obj = _find_text_and_button_tools_area->itemAt(i);
+		auto item_ = _find_text_and_button_tools_area->itemAt(i);
 		//		auto item = qobject_cast<QLayoutItem*>(obj);
-		auto navigater = obj->widget();
+		auto navigater = item_->widget();
 		if (navigater) {
 			if (navigater->objectName() == gl_para::_browser_navigater_name) {
 
-				_find_text_and_button_tools_area->removeItem(obj);
+				_find_text_and_button_tools_area->removeItem(item_);
 				//				break;
 				navigater->hide();
 				need_update = true;

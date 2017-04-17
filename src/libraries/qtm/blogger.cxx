@@ -907,8 +907,8 @@ void Blogger::doUiSetup()
 		(void)checked;
 		_editor_docker->hide();
 		appconfig->editor_show(false);
-		close_trigger_from_others()(nullptr);
-		this->close();
+//		close_trigger_from_others()(nullptr);
+//		this->close();
 	});
 
 	////	moved to HidableTabWidget
