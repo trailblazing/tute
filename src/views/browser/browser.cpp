@@ -1292,7 +1292,7 @@ namespace web {
 		_edit_menu->addSeparator();
 
 		QAction* find_ = _edit_menu->addAction(tr("&Find"));
-		find_->setShortcuts(QKeySequence::Find); //QKeySequence::fromString("Ctrl+F")
+		find_->setShortcuts(QKeySequence::Find); // setShortcut(QKeySequence::fromString("Ctrl+F"));
 		connect(find_, &QAction::triggered, this, &Browser::slotEditFind);
 		// new QShortcut(QKeySequence(Qt::Key_Slash), this, SLOT(slotEditFind()));
 
@@ -1549,10 +1549,12 @@ namespace web {
 		//		_main_window->menuBar()->clear();
 		auto& _main_window_menu_map = _main_window->main_menu_map();
 		auto reset_file_menu = [&]() {
-			_main_window_menu_map[gl_para::_file_menu_name] = _file_menu;
+			if (_main_window_menu_map[gl_para::_file_menu_name] != _file_menu)
+				_main_window_menu_map[gl_para::_file_menu_name] = _file_menu;
 		};
 		auto reset_edit_menu = [&]() {
-			_main_window_menu_map[gl_para::_edit_menu_name] = _edit_menu;
+			if (_main_window_menu_map[gl_para::_edit_menu_name] != _edit_menu)
+				_main_window_menu_map[gl_para::_edit_menu_name] = _edit_menu;
 		};
 
 		auto reset_tools_menu = [&]() {
@@ -1567,16 +1569,20 @@ namespace web {
 #endif
 		};
 		auto reset_view_menu = [&]() {
-			_main_window_menu_map[gl_para::_view_menu_name] = _view_menu;
+			if (_main_window_menu_map[gl_para::_view_menu_name] != _view_menu)
+				_main_window_menu_map[gl_para::_view_menu_name] = _view_menu;
 		};
 		auto reset_history_menu = [&]() {
-			_main_window_menu_map[gl_para::_history_menu_name] = _history_menu;
+			if (_main_window_menu_map[gl_para::_history_menu_name] != _history_menu)
+				_main_window_menu_map[gl_para::_history_menu_name] = _history_menu;
 		};
 		auto reset_bookmark_menu = [&]() {
-			_main_window_menu_map[gl_para::_bookmark_menu_name] = _bookmarks_menu;
+			if (_main_window_menu_map[gl_para::_bookmark_menu_name] != _bookmarks_menu)
+				_main_window_menu_map[gl_para::_bookmark_menu_name] = _bookmarks_menu;
 		};
 		auto reset_window_menu = [&]() {
-			_main_window_menu_map[gl_para::_window_menu_name] = _windowmenu;
+			if (_main_window_menu_map[gl_para::_window_menu_name] != _windowmenu)
+				_main_window_menu_map[gl_para::_window_menu_name] = _windowmenu;
 		};
 		//		auto reset_help_menu = [&](){
 		//					       _main_window_menu_map["help_menu"] =
@@ -1648,7 +1654,7 @@ namespace web {
 		for (auto menu : _main_window_menu_map) button->addMenu(menu.second);
 		_tree_screen->init_context_menu();
 		//		_tree_screen->append_main_menu();
-		setMenuBar(_main_window->menuBar());
+		if (menuBar() != _main_window->menuBar()) setMenuBar(_main_window->menuBar());
 
 		synchronize_find_screen_navigater();
 	}

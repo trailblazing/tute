@@ -609,7 +609,7 @@ void Editor::setup_buttons(void)
 	_find_in_base = add_action(_tools_line_0, this, tr((editor_prefix + "find_in_base").c_str()), tr("Find in base"), tr("Find in base"), QIcon(":/resource/pic/find_in_base.svg"), [&](bool) { on_find_in_base_clicked(); });
 	// Кнопка вызова виджета поиска текста
 	_find_text = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "findtext").c_str()), tr("Find text (Ctrl+F)"), tr("Find text (Ctrl+F)"), QIcon(":/resource/pic/edit_findtext.svg"), [&](bool) { on_findtext_clicked(); }, QKeySequence(tr("Ctrl+F")));
+	    _tools_line_0, this, tr((editor_prefix + "findtext").c_str()), tr("Find text (Ctrl+Shift+F)"), tr("Find text (Ctrl+Shift+F)"), QIcon(":/resource/pic/edit_findtext.svg"), [&](bool) { on_findtext_clicked(); }, QKeySequence(tr("Ctrl+Shift+F")));
 
 	// Кнопка вызова виджета конфигурирования редактора
 	_settings =

@@ -251,10 +251,10 @@ SuperMenu::SuperMenu(Blogger* bloger_, QWidget* parent, SysTrayIcon* sti)
 	abortAction->setShortcut(QKeySequence::fromString("Ctrl+A"));
 	undoAction->setShortcut(QKeySequence::fromString("Ctrl+Z"));
 	redoAction->setShortcut(QKeySequence::fromString("Shift+Ctrl+Z"));
-	cutAction->setShortcut(QKeySequence::fromString("Ctrl+X"));
-	copyAction->setShortcut(QKeySequence::fromString("Ctrl+C"));
-	pasteAction->setShortcut(QKeySequence::fromString("Ctrl+V"));
-	findAction->setShortcut(QKeySequence::fromString("Ctrl+F"));
+	//	cutAction->setShortcut(QKeySequence::fromString("Ctrl+X"));//?, make system shortcut does not work
+	//	copyAction->setShortcut(QKeySequence::fromString("Ctrl+C"));//?, make system shortcut does not work
+	//	pasteAction->setShortcut(QKeySequence::fromString("Ctrl+V"));//?, make system shortcut does not work
+	//	findAction->setShortcut(QKeySequence::fromString("Ctrl+F"));
 	findAgainAction->setShortcut(QKeySequence::fromString("Ctrl+G"));
 	boldAction->setShortcut(QKeySequence::fromString("Ctrl+B"));
 	italicAction->setShortcut(QKeySequence::fromString("Ctrl+I"));
