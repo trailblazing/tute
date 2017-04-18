@@ -763,7 +763,7 @@ namespace web {
 #ifdef USE_SIGNAL_CLOSE
 			sd::make_intrusive<web::TabWidget>(_blogger,
 			    this,
-			    _main_window, gl_paras->profile());
+			    _main_window); //, gl_paras->profile()
 #else
 			new web::TabWidget(_blogger, this, _main_window, gl_paras->profile());
 #endif //USE_SIGNAL_CLOSE
@@ -1746,7 +1746,7 @@ namespace web {
 
 	void Browser::slotDownloadManager()
 	{
-		::sapp_t::request_download_manager()->show();
+		gl_paras->request_download_manager()->show();
 	}
 
 	void Browser::slotSelectLineEdit()

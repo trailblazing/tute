@@ -497,7 +497,7 @@ namespace web {
 #endif
 
 	    public:
-		TabWidget(Blogger *blogger_, Browser *browser_, wn_t* main_window_, Profile* profile_);
+		TabWidget(Blogger* blogger_, Browser* browser_, wn_t* main_window_);
 		// , TableController *_page_controller
 		// , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
@@ -730,7 +730,9 @@ namespace web {
 		QWebEngineView* _fullscreenview;
 		FullScreenNotification* _fullscreennotification;
 
-		std::pair<QUrl, bool> _current_download_acceptance;
+		//		std::pair<QWebEngineDownloadItem*, bool>
+		QUrl
+		    _current_download_acceptance; //= {nullptr, false};
 		int _previous_index = -1;
 		rs_ref _record_screen;
 		//		bool _closed = false;

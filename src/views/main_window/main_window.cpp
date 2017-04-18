@@ -2441,6 +2441,40 @@ web::WebView* wn_t::find(const std::function<bool(boost::intrusive_ptr<const ::B
 //_style_source, appconfig->hide_editor_tools(), state_, topic);
 //}
 
+
+//// not sure to succeeded if force is false
+//template <>
+//web::Browser*
+//wn_t::browser<QUrl>(const QUrl& url_, bool force)
+//{
+//	(void)force;
+
+//	return real_url_t<url_value>::instance<web::Browser*>(url_value(url_.toString()),
+//	    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) {
+//		    return browser<boost::intrusive_ptr<real_url_t<url_value>>>(real_target_url_, force);
+//	    });
+//}
+
+// not sure to succeeded if force is false
+template <>
+web::Browser*
+wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
+{
+	(void)force;
+	auto state_data = web::Browser::state(state_);
+	auto topic = std::get<3>(state_data);
+	auto title = std::get<2>(state_data);
+	web::Browser* bro(nullptr);
+	auto real_topic = (topic != gl_para::_default_topic) ? topic : (title != gl_para::_default_topic) ? title : gl_para::_default_topic;
+	//	bs = browser<QString>(topic, false);
+	//	if (!bs)
+
+	bro = (sd::make_intrusive<Blogger>(real_topic, gl_para::_default_post, appconfig->hide_editor_tools(), state_))->browser();
+
+	assert(bro);
+	return bro;
+}
+
 // not sure to succeeded if force is false
 template <>
 web::Browser*
@@ -2483,19 +2517,6 @@ wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bo
 	return bro;
 }
 
-//// not sure to succeeded if force is false
-//template <>
-//web::Browser*
-//wn_t::browser<QUrl>(const QUrl& url_, bool force)
-//{
-//	(void)force;
-
-//	return real_url_t<url_value>::instance<web::Browser*>(url_value(url_.toString()),
-//	    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) {
-//		    return browser<boost::intrusive_ptr<real_url_t<url_value>>>(real_target_url_, force);
-//	    });
-//}
-
 // not sure to succeeded if force is false
 template <>
 web::Browser*
@@ -2534,25 +2555,6 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusiv
 	return bro;
 }
 
-// not sure to succeeded if force is false
-template <>
-web::Browser*
-wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
-{
-	(void)force;
-	auto state_data = web::Browser::state(state_);
-	auto topic = std::get<3>(state_data);
-	auto title = std::get<2>(state_data);
-	web::Browser* bro(nullptr);
-	auto real_topic = (topic != gl_para::_default_topic) ? topic : (title != gl_para::_default_topic) ? title : gl_para::_default_topic;
-	//	bs = browser<QString>(topic, false);
-	//	if (!bs)
-
-	bro = (sd::make_intrusive<Blogger>(real_topic, gl_para::_default_post, appconfig->hide_editor_tools(), state_))->browser();
-
-	assert(bro);
-	return bro;
-}
 
 // not sure to succeeded if force is false
 template <>
@@ -2639,7 +2641,7 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_
 		bro = (sd::make_intrusive<Blogger>(checked_topic))->browser();
 	}
 	assert(bro || !force);
-//	assert(bro);
+	//	assert(bro);
 	return bro; // qobject_cast<DockedWindow *>(widget()); //
 }
 
