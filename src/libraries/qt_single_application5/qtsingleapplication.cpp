@@ -1146,11 +1146,11 @@ void sapp_t::newLocalSocketConnection()
 	int openLinksIn = settings.value(QLatin1String("openLinksIn"), 0).toInt();
 	settings.endGroup();
 
-	auto entrance = gl_paras->browser_docker();
-	auto tree_screen = gl_paras->tree_screen();
-	auto tree_view = tree_screen->view();
+	auto browser_docker_ = gl_paras->browser_docker();
+	auto tree_screen_ = gl_paras->tree_screen();
+	auto tree_view_ = tree_screen_->view();
 	// boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
-	auto current_item = tree_view->current_item();
+	auto current_item = tree_view_->current_item();
 	auto parent = current_item->parent();
 	if (!parent)
 		throw std::runtime_error(formatter() << "! parent"); // std::exception();
@@ -1162,7 +1162,7 @@ void sapp_t::newLocalSocketConnection()
 	// }));
 	// } catch(std::exception &e) {} //    Record *record = request_record(url);
 	////    std::pair<web::Browser *, web::WebView *> dp;
-	if (entrance && tree_screen) { // && _tree_modelindex
+	if (browser_docker_ && tree_screen_) { // && _tree_modelindex
 		if (openLinksIn == 1) {
 			auto browser = real_url_t<url_value>::instance<web::Browser*>(real_url,
 			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) {
@@ -1180,7 +1180,7 @@ void sapp_t::newLocalSocketConnection()
 			it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
 			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
 				    return TreeIndex::url_require_item_from_tree(
-					real_target_url_, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					real_target_url_, std::bind(&tv_t::move, tree_view_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 					[&](boost::intrusive_ptr<const i_t> it) -> bool {
 						return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
 					});
@@ -1218,8 +1218,8 @@ void sapp_t::newLocalSocketConnection()
 			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
 				    return TreeIndex::url_activate(
 					real_target_url_,
-					[&] { return tree_view->source_model(); }, tree_view->current_item(),
-					std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					[&] { return tree_view_->source_model(); }, tree_view_->current_item(),
+					std::bind(&tv_t::move, tree_view_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 					[&](boost::intrusive_ptr<const i_t> it) -> bool {
 						return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
 					});

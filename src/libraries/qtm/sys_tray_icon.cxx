@@ -519,21 +519,21 @@ void SysTrayIcon::quickpost(QClipboard::Mode mode)
 	bool qpt = false;
 	QRegExp regExp;
 
-	cbtext = QApplication::clipboard()->text(mode);
-	if (cbtext == "") {
+	_cb_text = QApplication::clipboard()->text(mode);
+	if (_cb_text == "") {
 #ifdef Q_OS_MAC
 		QMessageBox::warning(0, tr("No selection! - QTM"), tr("No web location specified to blog about."), QMessageBox::Cancel);
 #else
 		showMessage(tr("No selection!"), tr("No web location specified to blog about."), QSystemTrayIcon::Warning);
 #endif
 	} else {
-		if (!cbtext.startsWith("http://")
+		if (!_cb_text.startsWith("http://")
 #if !defined DONT_USE_SSL
-		    && !cbtext.startsWith("https://")
+		    && !_cb_text.startsWith("https://")
 #endif
 			) {
 			// If it's not obviously an URL.
-			if (cbtext.startsWith("https")) {
+			if (_cb_text.startsWith("https")) {
 #ifndef Q_OS_MAC
 				showMessage(tr("Error"), tr("This version of QTM does not support HTTPS."));
 #else
@@ -544,8 +544,8 @@ void SysTrayIcon::quickpost(QClipboard::Mode mode)
 			}
 			doQP("");
 		} else {
-			if (!QUrl(cbtext, QUrl::StrictMode).isValid()) {
-				if (cbtext.contains(QChar(' ')))
+			if (!QUrl(_cb_text, QUrl::StrictMode).isValid()) {
+				if (_cb_text.contains(QChar(' ')))
 					doQP("");
 				else {
 #ifdef Q_OS_MAC
@@ -563,12 +563,12 @@ void SysTrayIcon::quickpost(QClipboard::Mode mode)
 							if (assocHostLists.at(i).count()) {
 								for (j = 0; j < assocHostLists.at(i).count(); j++) {
 									if ((!assocHostLists.at(i).at(j).isEmpty()) &&
-									    cbtext.contains(
+									    _cb_text.contains(
 										QRegExp(QString("[/\\.]%1[/\\.]").arg(assocHostLists.at(i).at(j))))) {
 										qpt = true;
 										quickpostFromTemplate(
 										    i, quickpostTemplateActions.value(i)->postTemplate(),
-										    cbtext);
+										    _cb_text);
 										break;
 									}
 								}
@@ -580,7 +580,7 @@ void SysTrayIcon::quickpost(QClipboard::Mode mode)
 					if (!qpt) {
 						//// qDebug() << "doing quickpost";
 						QNetworkRequest request;
-						request.setUrl(QUrl(cbtext));
+						request.setUrl(QUrl(_cb_text));
 						request.setRawHeader("User-Agent", userAgentString);
 						currentReply = netmgr->get(request);
 						qDebug() << "Fetching URL:" << request.url();
@@ -621,17 +621,17 @@ void SysTrayIcon::quickpostFromTemplate(int id, QString templateString, QString 
 	(void)templateString;
 	activeTemplate = id;
 	if (t.isNull())
-		cbtext = QApplication::clipboard()->text(QClipboard::Clipboard);
+		_cb_text = QApplication::clipboard()->text(QClipboard::Clipboard);
 	else
-		cbtext = t;
-	if (cbtext.startsWith("https://")) {
+		_cb_text = t;
+	if (_cb_text.startsWith("https://")) {
 #ifndef Q_OS_MAC
 		showMessage(tr("Error"), tr("This version of QTM does not support HTTPS."));
 #else
 		QMessageBox::information(0, tr("Quickpost Error"), tr("This version of QTM does not support HTTPS."));
 #endif
 	}
-	if (!QUrl(cbtext, QUrl::StrictMode).isValid()) {
+	if (!QUrl(_cb_text, QUrl::StrictMode).isValid()) {
 #ifdef Q_OS_MAC
 		QMessageBox::warning(
 		    0, tr("No selection!"),
@@ -643,7 +643,7 @@ void SysTrayIcon::quickpostFromTemplate(int id, QString templateString, QString 
 	} else {
 		if (!httpBusy) {
 			QNetworkRequest request;
-			request.setUrl(QUrl(cbtext));
+			request.setUrl(QUrl(_cb_text));
 			request.setRawHeader("User-Agent", userAgentString);
 			currentReply = netmgr->get(
 			    request); /*
@@ -697,7 +697,7 @@ void SysTrayIcon::quickpostFromDBus(QString& url, QString& content)
 			}
 		}
 	}
-	cbtext = url;
+	_cb_text = url;
 	doQP(content);
 }
 
@@ -829,14 +829,14 @@ void SysTrayIcon::doQP(QString receivedText)
 	QRegExp closeTitleRX("</title", Qt::CaseInsensitive);
 	if (activeTemplate >= 0) {
 		if (receivedText == "")
-			newPost = cbtext;
+			newPost = _cb_text;
 		else {
 			newPost = templateList[activeTemplate];
-			newPost.replace("%url%", cbtext);
-			newPost.replace("%host%", cbtext.section("//", 1, 1).section("/", 0, 0));
+			newPost.replace("%url%", _cb_text);
+			newPost.replace("%host%", _cb_text.section("//", 1, 1).section("/", 0, 0));
 			newPost.replace(
 			    "%domain%",
-			    cbtext.section("//", 1, 1).section("/", 0, 0).remove("www."));
+			    _cb_text.section("//", 1, 1).section("/", 0, 0).remove("www."));
 			if (receivedText.contains(titleRegExp) &&
 			    receivedText.section(openTitleRX, 1)
 				.section(">", 1)
@@ -851,7 +851,7 @@ void SysTrayIcon::doQP(QString receivedText)
 		newPost.replace("\\n", "\n");
 	} else {
 		if (receivedText == "")
-			newPost = cbtext;
+			newPost = _cb_text;
 		else {
 			//// // qDebug( receivedText.left( 300 ).toAscii().constData() );
 			// The title check will accept flaky 1990s HTML - this isn't a browser
@@ -866,10 +866,10 @@ void SysTrayIcon::doQP(QString receivedText)
 				if (!templateQPActive)
 					newPost = QString("<a title = \"%1\" href=\"%2\">%1</a>\n\n")
 						      .arg(newTitle)
-						      .arg(cbtext);
+						      .arg(_cb_text);
 			} else // Post has no valid title
 				newPost =
-				    QString(tr("<a href=\"%1\">Insert link text here</a>")).arg(cbtext);
+				    QString(tr("<a href=\"%1\">Insert link text here</a>")).arg(_cb_text);
 		}
 	}
 	Blogger* c = sd::make_intrusive<Blogger>(gl_para::_default_topic, newPost);

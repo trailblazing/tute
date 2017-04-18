@@ -214,12 +214,12 @@ extern const std::string editor_prefix;
 //#define editor_object _editor
 constexpr char Blogger::_default_filename[];
 
-Blogger::Blogger(QString new_post_topic, QString new_post_content, QStringList hide_editor_tools_, const QByteArray& state_, Qt::WindowFlags flags)
+Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content, QStringList hide_editor_tools_, const QByteArray& state_, Qt::WindowFlags flags)
     : super(nullptr, flags)
 #ifdef USE_SIGNAL_CLOSE
     , sd::renter() //sd::renter<Blogger>()
 #endif
-    , _current_topic_name([&] {if("" == new_post_topic) new_post_topic = gl_para::_default_topic; return purify(new_post_topic); }()) //(tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()))
+    , _current_topic_name([&] {auto topic_copy = new_post_topic; if("" == new_post_topic) topic_copy = gl_para::_default_topic; return purify(topic_copy); }()) //(tr(new_post_topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).toStdString().c_str()))
     , _current_topic_full_folder_name([&]() -> QString {
 	    assert(gl_paras->editors_shared_full_path_name() != "");
 	    auto fn = gl_paras->editors_shared_full_path_name() + "/" + _current_topic_name;
@@ -244,11 +244,7 @@ Blogger::Blogger(QString new_post_topic, QString new_post_content, QStringList h
     , _splitter([&]() -> QSplitter* {_splitter = nullptr; auto sp = new QSplitter(Qt::Horizontal, _central_widget); return sp; }())
     , _main_stack([&]() -> QStackedWidget* {_main_stack = nullptr; auto ms = new QStackedWidget(_central_widget); return ms; }())
     , _control_tab([&]() -> SideTabWidget* {_control_tab = nullptr; auto st = new SideTabWidget(gl_paras->editor_docker(),
-#ifdef USE_SIGNAL_CLOSE
-												sd::intrusive_ptr<Blogger>(this),
-#else
 												this,
-#endif
 												_topic_editor_config, _splitter, _central_widget); st->topic(_current_topic_name); st->title(_current_topic_name); return st; }())
     , _console([&]() -> TEXTEDIT_FOR_READ* {_console = nullptr; auto e = new TEXTEDIT_FOR_READ(_main_stack); return e; }())
 // Set up editor widget
@@ -907,8 +903,8 @@ void Blogger::doUiSetup()
 		(void)checked;
 		_editor_docker->hide();
 		appconfig->editor_show(false);
-//		close_trigger_from_others()(nullptr);
-//		this->close();
+		//		close_trigger_from_others()(nullptr);
+		//		this->close();
 	});
 
 	////	moved to HidableTabWidget
