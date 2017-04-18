@@ -354,14 +354,17 @@ namespace sd {
 		{ //: boost::intrusive_ptr<element_type>::~intrusive_ptr()
 			//			delete boost::intrusive_ptr<element_type>::get();
 			//			if(!internal_integrity());
-			if (_shadow == nullptr)
-				detach();
-			else {
+			if (_shadow != nullptr) {
+				//				detach();}
+				//			else {
 
 				_shadow = nullptr;
-				_destroyed_request_received = true;
-				assert(internal_integrity());
+				//				_destroyed_request_received = true;
+				//				assert(internal_integrity());
 			}
+			detach();
+			_destroyed_request_received = true;
+			assert(internal_integrity());
 		}
 
 
@@ -497,7 +500,8 @@ namespace sd {
 
 			assert(rhs.internal_integrity());
 			//                        auto px =
-			this->detach();
+			//			this->reset(); //
+			detach();
 			this_type(static_cast<intrusive_ptr&&>(rhs)).swap(*this);
 
 			assert(internal_integrity());
@@ -509,7 +513,7 @@ namespace sd {
 		intrusive_ptr& operator=(intrusive_ptr const& rhs) // = delete;
 		{
 			assert(rhs.internal_integrity());
-			//			renew_connection(*this, rhs);
+			detach(); //			renew_connection(*this, rhs);
 			this_type(rhs).swap(*this);
 			assert(internal_integrity());
 			return *this;
@@ -623,6 +627,7 @@ namespace sd {
 			//			assert(original_ && "When signal sent, original object might be on distructing operation or not. At current moment, Current _shadow pointer, one copy of the element_type* normally is undefined. With this original pointer, you still can do something here that is not too late!");
 			//			//			(void)renter_; //With this pointer, you still can do something here that is not too late!
 			//			boost::intrusive_ptr<element_type>::detach();
+			//			this->reset(); //
 			detach(); //_shadow = nullptr;
 			//			if (original_) {
 			//				if (!original_->close_request_received()) {
@@ -645,6 +650,7 @@ namespace sd {
 			//				}
 			//			}
 
+			//			this->reset(); //
 			detach(); //_shadow = nullptr;
 				  //			sender_->_destroyed_request_sent = true;
 

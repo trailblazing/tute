@@ -86,16 +86,17 @@ class DownloadWidget : public QWidget,
 #endif
 
 	    public
-	    : DownloadWidget(QWebEngineDownloadItem *_download, TabWidget *_tab_manager,
-	                     DownloadManager *_parent = 0  // QWidget *parent = 0
-	                     );
+	    : DownloadWidget(QWebEngineDownloadItem *download_, TabWidget *tab_manager_,
+			     DownloadManager *parent_ = 0  // QWidget *parent = 0
+			     );
 	bool downloading() const;
 	bool downloadedSuccessfully() const;
 
 	void init();
 	bool getFileName(bool prompt_for_filename = true);
 	TabWidget *tab_manager() const;
-	private slots:
+	QWebEngineDownloadItem *download() const;
+private slots:
 	void stop();
 	void open();
 
