@@ -133,7 +133,7 @@ class SysTrayIcon : public STI_SUPERCLASS {
 	QNetworkAccessManager* netmgr;
 	QNetworkReply* currentReply;
 	QByteArray responseData;
-	QString cbtext;
+	QString _cb_text;
 	// bool cbtextIsURL;
 	int doubleClickFunction;
 	bool httpBusy;

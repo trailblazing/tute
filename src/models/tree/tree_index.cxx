@@ -474,6 +474,7 @@ TreeIndex::url_bind_browser(boost::intrusive_ptr<real_url_t<url_value>> real_fin
 		view = recommend_browser_ ? recommend_browser_->find(_equal) : gl_paras->main_window()->find(_equal);
 	}
 	auto host_browser_ = recommend_browser_ ? recommend_browser_ : view ? view->page()->browser() : gl_paras->main_window()->browser(real_find_url_);
+	assert(host_browser_);
 	auto _current_item = host_browser_->tab_widget()->current_item(); // _tree_view->current_item();
 
 	auto target_ = TreeIndex::url_require_item_from_tree(real_find_url_, view_insert_strategy_, equal_url_);

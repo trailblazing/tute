@@ -136,8 +136,8 @@ class Blogger : public QMainWindow
 	// EditingWindow( QWidget *widget = 0 );
 	/*  Catkin( QList<QString>, QList<QString>, int,
              QWidget *parent = 0 );*/
-	Blogger(QString new_post_topic = gl_para::_default_topic, // global_root_id// get_unical_id()
-	    QString new_post_content = gl_para::_default_post,    // (std::string("Welcome to \"") + gl_para::_default_topic + "\" topic").c_str() // = QString()
+	Blogger(const QString &new_post_topic = gl_para::_default_topic, // global_root_id// get_unical_id()
+	    const QString &new_post_content = gl_para::_default_post,    // (std::string("Welcome to \"") + gl_para::_default_topic + "\" topic").c_str() // = QString()
 	    QStringList hide_editor_tools_ = appconfig->hide_editor_tools(),
 	    const QByteArray& state_ = QByteArray(),
 	    Qt::WindowFlags flags = Qt::Widget);
