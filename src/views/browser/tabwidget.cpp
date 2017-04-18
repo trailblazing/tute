@@ -2457,7 +2457,7 @@ namespace web {
 				if (p) {
 					auto h = p->host();
 					if (h) {
-						QStringList tags = h->field<tags_key>();
+						QStringList tags_list = h->field<tags_key>();
 						//						if (tags.length() > 0) {
 						//										QStringListIterator it(tags);
 						//										while (it.hasNext()) {
@@ -2476,9 +2476,9 @@ namespace web {
 						//												count_found++;
 						//											}
 						//										}
-						if ("" != original_topic_ && tags.contains(original_topic_)) tags.removeAll(original_topic_);
-						if (!tags.contains(new_topic_)) tags << new_topic_;
-						h->field<tags_key>(tags_value(tags));
+						if ("" != original_topic_ && tags_list.contains(original_topic_)) tags_list.removeAll(original_topic_);
+						if (!tags_list.contains(new_topic_)) tags_list << new_topic_;
+						h->field<tags_key>(tags_value(tags_list));
 						//						}
 					}
 				}

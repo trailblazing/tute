@@ -417,10 +417,25 @@ namespace web {
 					// record_view_synchronize(_binder->host());
 				}
 				// }
-			}
-			if (_blogger) {
-				if (_blogger->topic() == gl_para::_default_topic)
-					_blogger->topic(title_);
+
+
+				if (_blogger) {
+					if (_blogger->topic() == gl_para::_default_topic || _blogger->topic() == host_->field<name_key>() || _blogger->topic() == host_->field<url_key>())
+						_blogger->topic(title_);
+				}
+				auto tags_list = detail::to_qstring(host_->field<tags_key>());
+				bool changed = false;
+				if (tags_list.contains(gl_para::_default_topic)) {
+					tags_list.replace(gl_para::_default_topic, _blogger->topic());
+					changed = true;
+				} else if (tags_list.contains(host_->field<name_key>())) {
+					tags_list.replace(host_->field<name_key>(), _blogger->topic());
+					changed = true;
+				} else if (tags_list.contains(host_->field<url_key>())) {
+					tags_list.replace(host_->field<url_key>(), _blogger->topic());
+					changed = true;
+				}
+				if (changed) host_->field<tags_key>(detail::from_qstring<tags_key>(tags_list));
 			}
 		};
 		// , _keyboardmodifiers(Qt::NoModifier)
@@ -1119,9 +1134,10 @@ namespace web {
 		// var.toString();assert(url_ != "");});
 		// assert(url_ != "");
 		QUrl target_url = QUrl(_hovered_url);
-		auto real_url = url_value(_hovered_url);
+
 		if (!target_url.isValid())
 			target_url = web::Browser::_defaulthome;
+		auto real_url = url_value(target_url.toString());
 		// assert(url != "");
 
 		// QWebChannel *channel = new QWebChannel(this);
@@ -1168,7 +1184,7 @@ namespace web {
 					}); // return it_->field<url_type>() == target_url.toString();
 					    // web::Browser::_defaulthome
 			    });
-			it->topic_append(gl_para::_default_topic);
+			it->topic_append(target_url.toString());
 			page = _browser_new->bind(RecordIndex::instance([&] {
 						   RecordModel* rm = nullptr;
 						   auto rctrl = _browser_new->tab_widget()->record_screen()->record_ctrl();
@@ -1194,7 +1210,7 @@ namespace web {
 				page = view->page();
 				auto _item = page->host();
 				if (_item) {
-					_item->topic_append(gl_para::_default_topic);
+					_item->topic_append(target_url.toString());
 					// auto _index = tree_view->source_model()->index(_item);
 					// if(static_cast<QModelIndex>(_index).isValid())_item->activate(std::bind(&HidableTabWidget::find,
 					// globalparameters.main_window()->vtab_record(),
@@ -1223,7 +1239,7 @@ namespace web {
 				// globalparameters.main_window()->vtab_record(),
 				// std::placeholders::_1))->page() : nullptr;
 				if (it)
-					it->topic_append(gl_para::_default_topic);
+					it->topic_append(target_url.toString());
 				page = it ? it->page() : nullptr;
 				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 			}

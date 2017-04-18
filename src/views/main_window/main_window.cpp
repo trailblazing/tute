@@ -2471,14 +2471,15 @@ wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bo
 		if (item_tags_text_list.size() > 0)
 			bro = real_url_t<QString>::instance<web::Browser*>(item_tags_text_list[0],
 			    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
-				    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, false); // browser(item_tags_text_list[0]);
+				    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, force); // browser(item_tags_text_list[0]);
 			    });
 		else
 			bro = real_url_t<QString>::instance<web::Browser*>(detail::to_qstring(item->field<name_key>()),
 			    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
-				    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, false); // browser(detail::to_qstring(item->field<name_key>()));
+				    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, force); // browser(detail::to_qstring(item->field<name_key>()));
 			    });
 	}
+	assert(bro);
 	return bro;
 }
 
@@ -2514,7 +2515,7 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusiv
 	    real_find_url_, std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it) -> bool {
 		    return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
 	    });
-	web::Browser* v(nullptr);
+	web::Browser* bro(nullptr);
 	if (it) {
 		auto binder_ = it->binder();
 		if (binder_) {
@@ -2522,14 +2523,15 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusiv
 			if (page_) {
 				auto bro_ = page_->browser();
 				if (bro_)
-					v = bro_;
+					bro = bro_;
 			}
 
 		} else {
-			v = browser(it);
+			bro = browser(it);
 		}
 	}
-	return v;
+	assert(bro);
+	return bro;
 }
 
 // not sure to succeeded if force is false
@@ -2540,14 +2542,16 @@ wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
 	(void)force;
 	auto state_data = web::Browser::state(state_);
 	auto topic = std::get<3>(state_data);
-
-	web::Browser* bs(nullptr);
+	auto title = std::get<2>(state_data);
+	web::Browser* bro(nullptr);
+	auto real_topic = (topic != gl_para::_default_topic) ? topic : (title != gl_para::_default_topic) ? title : gl_para::_default_topic;
 	//	bs = browser<QString>(topic, false);
 	//	if (!bs)
-	if (topic != gl_para::_default_topic)
-		bs = (sd::make_intrusive<Blogger>(topic, gl_para::_default_post, appconfig->hide_editor_tools(), state_))->browser();
 
-	return bs;
+	bro = (sd::make_intrusive<Blogger>(real_topic, gl_para::_default_post, appconfig->hide_editor_tools(), state_))->browser();
+
+	assert(bro);
+	return bro;
 }
 
 // not sure to succeeded if force is false
@@ -2561,7 +2565,7 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_
 	if ("" == topic) topic = gl_para::_default_topic;
 
 	// std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
-	web::Browser* browser_(nullptr);
+	web::Browser* bro(nullptr);
 #ifdef USE_CURRENT_BROWSER_KEY_WORD
 	assert(!((topic == gl_para::_current_browser) && (force)));
 	//	auto try_real_url = to_be_url(topic);
@@ -2609,7 +2613,7 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_
 					if (blogger_->topic() == topic) { //|| topic ==
 						//gl_para::_what_ever_topic//_vtab_record->currentWidget()){
 						//// browser_->isVisible() || browser_->isActiveWindow()
-						browser_ = bro_; // .data();
+						bro = bro_; // .data();
 
 						break;
 					}
@@ -2623,20 +2627,20 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_
 	}
 #endif // USE_CURRENT_BROWSER_KEY_WORD
 
-	if (!browser_) {
+	if (!bro) {
 		auto state = DiskHelper::get_topic_from_directory(gl_paras->root_path() + "/" + gl_para::_blog_root_dir, topic);
 		if (state != QByteArray())
-			browser_ = browser<QByteArray>(state);
+			bro = browser<QByteArray>(state);
 	}
-	if (!browser_ && force) {
+	if (!bro && force) {
 		auto checked_topic = topic;
 		//		if(topic == gl_para::_what_ever_topic) checked_topic =
 		//gl_para::_default_topic;
-		browser_ = (sd::make_intrusive<Blogger>(checked_topic))->browser();
+		bro = (sd::make_intrusive<Blogger>(checked_topic))->browser();
 	}
-	assert(browser_ || !force);
-
-	return browser_; // qobject_cast<DockedWindow *>(widget()); //
+	assert(bro || !force);
+//	assert(bro);
+	return bro; // qobject_cast<DockedWindow *>(widget()); //
 }
 
 std::map<std::string, QMenu*>& wn_t::main_menu_map()
