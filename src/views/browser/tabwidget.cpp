@@ -784,10 +784,10 @@ namespace web {
 	W_OBJECT_IMPL(TabWidget)
 #endif
 
-	TabWidget::TabWidget(Blogger* blogger_, web::Browser* browser_, wn_t* main_window_, web::Profile* profile_)
+	TabWidget::TabWidget(Blogger* blogger_, web::Browser* browser_, wn_t* main_window_ //, web::Profile* profile_
+	    )
 #ifdef USE_SIGNAL_CLOSE
-	    : QTabWidget()
-	    , sd::renter() //sd::renter<TabWidget>()
+	    : QTabWidget(), sd::renter() //sd::renter<TabWidget>()
 #else
 	    : QTabWidget(browser_)
 #endif //USE_SIGNAL_CLOSE
@@ -806,7 +806,7 @@ namespace web {
 	    , _lineeditcompleter(nullptr) // new QCompleter(_completionModel, this)
 	    , _lineedit_stack(new QStackedWidget())
 	    , _tabbar(new TabBar(this))
-	    , _profile(profile_) // globalparameters.profile()   // QWebEngineProfile::defaultProfile()
+	    , _profile(new web::Profile(profile_storage_name, this)) //(profile_) // globalparameters.profile()   // QWebEngineProfile::defaultProfile()
 	    , _fullscreenview(nullptr)
 	    , _fullscreennotification(nullptr)
 	    , _record_screen(
@@ -2648,75 +2648,81 @@ namespace web {
 	void TabWidget::downloadRequested(QWebEngineDownloadItem* download)
 	{
 		int ret = !QMessageBox::Ok;
-		// if(_current_download_acceptance.first != download->url()){	//!
-		// _current_download_acceptance.second &&
-		QMessageBox message_box;
+		auto url_ = download->url();
+		if (_current_download_acceptance //.first
+		    != url_) {                   //!
+			// _current_download_acceptance.second &&
+			QMessageBox message_box;
 
-		message_box.setText(tr("Do you want to download the file?"));
-		message_box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-		message_box.setDefaultButton(QMessageBox::Cancel);
-		ret = message_box.exec();
-		// }
-		auto state = download->state();
-		if (ret == QMessageBox::Ok) {
-			// _current_download_acceptance = {download->url(), true};}
-			// if(_current_download_acceptance.second){
-			if (state == QWebEngineDownloadItem::DownloadRequested || state == QWebEngineDownloadItem::DownloadInProgress) {
-				// download->accept();  // default in construction
-				if (state == QWebEngineDownloadItem::DownloadRequested) ::sapp_t::request_download_manager()->download(this, download);
+			message_box.setText(tr("Do you want to download the file?"));
+			message_box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+			message_box.setDefaultButton(QMessageBox::Cancel);
+			ret = message_box.exec();
+			auto state = download->state();
+			if (ret == QMessageBox::Ok) {
+				//				_current_download_acceptance = {download->url(), true};
+				// if(_current_download_acceptance.second){
+				if (state == QWebEngineDownloadItem::DownloadRequested || state == QWebEngineDownloadItem::DownloadInProgress) {
+					// download->accept();  // default in construction
+					if (state == QWebEngineDownloadItem::DownloadRequested) {
+						gl_paras->request_download_manager()->download(this, download);
+					}
+				}
+				// else																																			// if(state ==
+				// QWebEngineDownloadItem::DownloadCompleted || state ==
+				// QWebEngineDownloadItem::DownloadCancelled || state ==
+				// QWebEngineDownloadItem::DownloadInterrupted) {
+				// _current_download_acceptance.second = false;
+			} else {
+				download->cancel();
+				////	    fileNameLabel->setText(QString("Download canceled: ") +
+				///download->path());
+				//				_current_download_acceptance.first = download->url();
 			}
-			// else																																			// if(state ==
-			// QWebEngineDownloadItem::DownloadCompleted || state ==
-			// QWebEngineDownloadItem::DownloadCancelled || state ==
-			// QWebEngineDownloadItem::DownloadInterrupted) {
-			// _current_download_acceptance.second = false;
-		} else {
-			download->cancel();
-			////	    fileNameLabel->setText(QString("Download canceled: ") +
-			///download->path());
-			// _current_download_acceptance.first = download->url();
+			_current_download_acceptance //.first
+			    = url_;
+			// auto	_main_window	= globalparameters.mainwindow();
+			// auto	_vtab_tree	= _main_window->vtab_tree();
+			// auto	_vtab_record	= _main_window->vtab_record();
+			// if(_vtab_record->currentWidget()->objectName() !=
+			// download_manager_singleton_name)
+			// for(auto tree_viewer : _main_window->tree_viewers())
+			// if(tree_viewer->widget_right()->objectName() ==
+			// download_manager_singleton_name)_vtab_tree->setCurrentWidget(tree_viewer);
+			//
+			// auto	_h_tree_splitter	= _main_window->h_tree_splitter();
+			// auto	sizes			= _h_tree_splitter->sizes();
+			//// auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0]
+			///== 0
+			// if(0 == sizes[0]){	// _h_left_splitter->widget(0)->width()
+			// auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();	//
+			// _tree_screen->minimumSizeHint().width();                 //
+			// globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();
+			// // 6xx   // h_right_splitter->widget(0)->width();    // 0    //
+			// sizeHint().width();    // 23
+			//// auto h = h_right_splitter->handle(1);
+			//// h->move(lr + shw, h->rect().top());
+
+			// auto	size_memory	= appconfig->h_tree_splitter_sizelist();
+			// auto	sum		= size_memory[0] + size_memory[1];
+			// sizes[0]	= size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ?
+			// size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
+			// sizes[1]	= sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;		//
+			// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+			//// h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
+			// _h_tree_splitter->setSizes(sizes);	// emit
+			// _h_left_splitter->splitterMoved(sizes[0], 1);
+
+			//// auto s_0 = _vtab_tree->minimumSizeHint();   // (146, 146)
+			//// auto s_1 = _vtab_record->minimumSizeHint(); // (25, 146)
+			//// auto s_2 = _entrance->minimumSizeHint();
+			//// auto s_3 = _h_right_splitter->minimumSizeHint();    // (241,146)
+			//// auto s_4 = _h_right_splitter->maximumWidth();    // (241,146)
+			//// auto sizes_check = _h_left_splitter->sizes();
+			//// h_right_splitter->resize(h_right_splitter->sizeHint().width(),
+			///h_right_splitter->height());
+			// }
 		}
-		// auto	_main_window	= globalparameters.mainwindow();
-		// auto	_vtab_tree	= _main_window->vtab_tree();
-		// auto	_vtab_record	= _main_window->vtab_record();
-		// if(_vtab_record->currentWidget()->objectName() !=
-		// download_manager_singleton_name)
-		// for(auto tree_viewer : _main_window->tree_viewers())
-		// if(tree_viewer->widget_right()->objectName() ==
-		// download_manager_singleton_name)_vtab_tree->setCurrentWidget(tree_viewer);
-		//
-		// auto	_h_tree_splitter	= _main_window->h_tree_splitter();
-		// auto	sizes			= _h_tree_splitter->sizes();
-		//// auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0]
-		///== 0
-		// if(0 == sizes[0]){	// _h_left_splitter->widget(0)->width()
-		// auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();	//
-		// _tree_screen->minimumSizeHint().width();                 //
-		// globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();
-		// // 6xx   // h_right_splitter->widget(0)->width();    // 0    //
-		// sizeHint().width();    // 23
-		//// auto h = h_right_splitter->handle(1);
-		//// h->move(lr + shw, h->rect().top());
-
-		// auto	size_memory	= appconfig->h_tree_splitter_sizelist();
-		// auto	sum		= size_memory[0] + size_memory[1];
-		// sizes[0]	= size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ?
-		// size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
-		// sizes[1]	= sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;		//
-		// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
-		//// h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
-		// _h_tree_splitter->setSizes(sizes);	// emit
-		// _h_left_splitter->splitterMoved(sizes[0], 1);
-
-		//// auto s_0 = _vtab_tree->minimumSizeHint();   // (146, 146)
-		//// auto s_1 = _vtab_record->minimumSizeHint(); // (25, 146)
-		//// auto s_2 = _entrance->minimumSizeHint();
-		//// auto s_3 = _h_right_splitter->minimumSizeHint();    // (241,146)
-		//// auto s_4 = _h_right_splitter->maximumWidth();    // (241,146)
-		//// auto sizes_check = _h_left_splitter->sizes();
-		//// h_right_splitter->resize(h_right_splitter->sizeHint().width(),
-		///h_right_splitter->height());
-		// }
 	}
 
 	void TabWidget::onTabsChanged()

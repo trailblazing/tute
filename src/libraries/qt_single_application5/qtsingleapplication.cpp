@@ -1682,16 +1682,16 @@ web::CookieJar* sapp_t::cookieJar()
 #endif
 }
 
-web::DownloadManager* sapp_t::request_download_manager()
-{
-	// if(!_downloadmanager) {
-	// _downloadmanager = new web::DownloadManager();
-	// }
+//web::DownloadManager* sapp_t::request_download_manager()
+//{
+//	// if(!_downloadmanager) {
+//	// _downloadmanager = new web::DownloadManager();
+//	// }
 
-	// return _downloadmanager;
+//	// return _downloadmanager;
 
-	return gl_paras->request_download_manager();
-}
+//	return gl_paras->request_download_manager();
+//}
 
 QNetworkAccessManager* sapp_t::networkAccessManager()
 {

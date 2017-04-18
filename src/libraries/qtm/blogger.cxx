@@ -267,7 +267,7 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
 #endif
 
     , _browser([&] {
-	    _browser = sd::intrusive_ptr<web::Browser>(nullptr);
+	    _browser.detach(); // = sd::intrusive_ptr<web::Browser>(nullptr);
 	    auto bro = sd::make_intrusive<web::Browser>(this, state_);
 	    return bro;
     }())

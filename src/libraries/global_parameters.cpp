@@ -182,6 +182,10 @@ gl_para::gl_para(QObject* pobj)
 
 gl_para::~gl_para()
 {
+	if (_download_manager) {
+		delete _download_manager;
+		_download_manager = nullptr;
+	}
 }
 
 // void GlobalParameters::main_program_full_file(QString
@@ -817,11 +821,6 @@ QString gl_para::style_source() const
 	return _style_source;
 }
 
-void gl_para::download_manager(web::DownloadManager* dm)
-{
-	_download_manager = dm;
-}
-
 // QString GlobalParameters::root_path(void) const {return _root_path;}
 // QString gl_para::config_filename(void) const {return
 // gl_para::_conf_filename;}
@@ -934,23 +933,34 @@ HidableTab* gl_para::vtab_record() const
 
 web::DownloadManager* gl_para::request_download_manager()
 {
-	bool found = false;
-	for (int i = 0; i < _vtab_record->count(); i++) {
-		auto widget_ = _vtab_record->widget(i);
-		if (widget_->objectName() == download_manager_singleton_name) {
-			_download_manager = dynamic_cast<web::DownloadManager*>(widget_);
-			found = true;
-			break;
-		}
-	}
-	if (!found)
+	//	bool found = false;
+	if (!_download_manager) {
 		_download_manager =
 		    new web::DownloadManager(download_manager_singleton_name, _vtab_record);
+	}
+
+	//	for (int i = 0; i < _vtab_record->count(); i++) {
+	//		auto widget_ = _vtab_record->widget(i);
+	//		if (widget_->objectName() == download_manager_singleton_name) {
+	//			_download_manager = dynamic_cast<web::DownloadManager*>(widget_);
+	//			found = true;
+	//			break;
+	//		}
+	//	}
+	//	if(!found){}
+	if (_vtab_record->indexOf(_download_manager) == -1)
+		_vtab_record->addTab(static_cast<QWidget*>(_download_manager), QIcon(":/resource/pic/apple.svg"), "Download");
+
 	// if(! _download_manager)_download_manager = new
 	// web::DownloadManager(download_manager_singleton_name, _vtab_record);
 	if (_vtab_record->currentIndex() != _vtab_record->indexOf(_download_manager))
 		_vtab_record->setCurrentWidget(static_cast<QWidget*>(_download_manager));
 	return _download_manager;
+}
+
+void gl_para::download_manager(web::DownloadManager* dm)
+{
+	_download_manager = dm;
 }
 
 web::DownloadManager* gl_para::download_manager() const
