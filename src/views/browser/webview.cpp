@@ -344,9 +344,13 @@ namespace web {
 	W_OBJECT_IMPL(WebPage)
 #endif
 
-	WebPage::WebPage(Profile* profile, boost::intrusive_ptr<i_t> item, ts_t* tree_screen,
+	WebPage::WebPage(Profile* profile,
+	    boost::intrusive_ptr<i_t> item,
+	    ts_t* tree_screen,
 	    Blogger* blogger_,
-	    web::Docker<web::Browser>* browser_docker_, web::Browser* browser, web::TabWidget* tabmanager,
+	    web::Docker<web::Browser>* browser_docker_,
+	    web::Browser* browser,
+	    web::TabWidget* tabmanager,
 	    rctrl_t* rctrl_,
 	    WebView* parent)
 	    : QWebEnginePage(profile, parent)
@@ -400,16 +404,16 @@ namespace web {
 			auto title_index = source_model()->index(static_cast<QModelIndex>(_rctrl->index<index_source>(host_)).row(), title_column);
 			auto record_view_title = static_cast<RecordModel*>(source_model())->data(title_index, Qt::DisplayRole).toString();
 			if (host_) {
-				// if(  url() != QUrl()
-				// && ! url().host().isEmpty()
-				// && ! url().scheme().isEmpty()
-				// && url() != QUrl(web::Browser::_defaulthome)
-				// && url() == _loadingurl
-				// && url().toString() == _binder->host()->field<url_type>()
-				// ){
-				//#ifndef USE_SIGNAL_CLOSE
-				assert(_blogger);
-				//#endif // USE_SIGNAL_CLOSE
+				//				// if(  url() != QUrl()
+				//				// && ! url().host().isEmpty()
+				//				// && ! url().scheme().isEmpty()
+				//				// && url() != QUrl(web::Browser::_defaulthome)
+				//				// && url() == _loadingurl
+				//				// && url().toString() == _binder->host()->field<url_type>()
+				//				// ){
+				//				//#ifndef USE_SIGNAL_CLOSE
+				//				assert(_blogger);
+				//				//#endif // USE_SIGNAL_CLOSE
 				if ((title_ != "" &&
 					title_ != host_->field<name_key>()) // && !QUrl(title).isValid()
 				    || (!record_view_title.contains(title_))) {
@@ -420,22 +424,23 @@ namespace web {
 
 
 				if (_blogger) {
-					if (_blogger->topic() == gl_para::_default_topic || _blogger->topic() == host_->field<name_key>() || _blogger->topic() == host_->field<url_key>())
+					if (_blogger->topic() == gl_para::_default_topic || _blogger->topic() == purify(host_->field<name_key>()) || _blogger->topic() == purify(host_->field<url_key>()))
 						_blogger->topic(title_);
+
+					auto tags_list = detail::to_qstring(host_->field<tags_key>());
+					bool changed = false;
+					if (tags_list.contains(gl_para::_default_topic)) {
+						tags_list.replace(gl_para::_default_topic, _blogger->topic());
+						changed = true;
+					} else if (tags_list.contains(purify(host_->field<name_key>()))) {
+						tags_list.replace(host_->field<name_key>(), _blogger->topic());
+						changed = true;
+					} else if (tags_list.contains(purify(host_->field<url_key>()))) {
+						tags_list.replace(host_->field<url_key>(), _blogger->topic());
+						changed = true;
+					}
+					if (changed) host_->field<tags_key>(detail::from_qstring<tags_key>(tags_list));
 				}
-				auto tags_list = detail::to_qstring(host_->field<tags_key>());
-				bool changed = false;
-				if (tags_list.contains(gl_para::_default_topic)) {
-					tags_list.replace(gl_para::_default_topic, _blogger->topic());
-					changed = true;
-				} else if (tags_list.contains(host_->field<name_key>())) {
-					tags_list.replace(host_->field<name_key>(), _blogger->topic());
-					changed = true;
-				} else if (tags_list.contains(host_->field<url_key>())) {
-					tags_list.replace(host_->field<url_key>(), _blogger->topic());
-					changed = true;
-				}
-				if (changed) host_->field<tags_key>(detail::from_qstring<tags_key>(tags_list));
 			}
 		};
 		// , _keyboardmodifiers(Qt::NoModifier)
@@ -456,8 +461,9 @@ namespace web {
 										// TreeItem::coupler(std::make_shared<WebPage::coupler>(item,
 										// this));
 			assert(_binder->integrity_external(item, this));
-			auto topic = _blogger->topic();
-			if (!QStringList(item->field<tags_key>()).contains(topic)) item->topic_append(topic);
+			//			auto topic = _blogger->topic();
+			//			if (!QStringList(item->field<tags_key>()).contains(topic))
+			item->topic_append(_blogger->topic()); //topic
 			return std::forward<boost::intrusive_ptr<::Binder>>(item->binder());
 		}();
 
@@ -506,10 +512,10 @@ namespace web {
 					_main_window->synchronize_title(host_->field<name_key>());
 			}
 		});
-		connect(this, &WebPage::become_current, [&](boost::intrusive_ptr<::Binder> _binder) {
-			(void)_binder;
-			this->metaeditor_sychronize();
-		});
+		//		connect(this, &WebPage::become_current, [&](boost::intrusive_ptr<::Binder> _binder) {
+		//			(void)_binder;
+		//			this->metaeditor_sychronize();
+		//		});
 	}
 
 	WebPage::~WebPage()
@@ -637,188 +643,190 @@ namespace web {
 		// }
 	}
 
-	void WebPage::metaeditor_sychronize()
-	{
-		boost::intrusive_ptr<i_t> current_item = _binder->host();
-		// boost::intrusive_ptr<Record> record =
-		// this->table_model()->table_data()->record(pos);
-		assert(current_item);
-		// assert(record ==
-		// view()->tabmanager()->currentWebView()->page()->current_record()); // may
-		// be in backend?
 
-		// Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь
-		// только получить данные из таблицы
+	// moved to Blogger
+	//	void WebPage::metaeditor_sychronize()
+	//	{
+	//		boost::intrusive_ptr<i_t> current_item = _binder->host();
+	//		// boost::intrusive_ptr<Record> record =
+	//		// this->table_model()->table_data()->record(pos);
+	//		assert(current_item);
+	//		// assert(record ==
+	//		// view()->tabmanager()->currentWebView()->page()->current_record()); // may
+	//		// be in backend?
 
-		// Выясняется указатель на объект редактирования текста записи
-		// MetaEditor *_editor_screen = globalparameters.meta_editor();    //
-		// find_object<MetaEditor>(meta_editor_singleton_name);
-		assert(_blogger);
-// boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
-// try {
-// record_index = new RecordModel::ModelIndex([&] {return
-// _record_controller->source_model();},
-// _record_controller->source_model()->sibling(current_item), current_item);
-// } catch(std::exception &) {}
-#ifdef USE_FILE_PER_TREEITEM // if(record_index) {
-		if (_blogger->item() != current_item)
-			_blogger->bind(current_item);
-// int pos = indexOf(currentWebView());
-// Turns the reference to the table of final data   // Выясняется ссылка на
-// таблицу конечных данных
-// std::shared_ptr<TableData> table = std::make_shared<TableData>();   //
-// _source_model->table_data_internal();
+	//		// Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь
+	//		// только получить данные из таблицы
 
-// for(int i = 0; i < count(); i++) {
-// table->insert_new_record(table->work_pos(), static_cast<WebView
-// *>(widget(i))->page()->current_record());
-// }
+	//		// Выясняется указатель на объект редактирования текста записи
+	//		// MetaEditor *_editor_screen = globalparameters.meta_editor();    //
+	//		// find_object<MetaEditor>(meta_editor_singleton_name);
+	//		assert(_blogger);
+	//// boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
+	//// try {
+	//// record_index = new RecordModel::ModelIndex([&] {return
+	//// _record_controller->source_model();},
+	//// _record_controller->source_model()->sibling(current_item), current_item);
+	//// } catch(std::exception &) {}
+	//#ifdef USE_FILE_PER_TREEITEM // if(record_index) {
+	//		if (_blogger->item() != current_item)
+	//			_blogger->bind(current_item);
+	//// int pos = indexOf(currentWebView());
+	//// Turns the reference to the table of final data   // Выясняется ссылка на
+	//// таблицу конечных данных
+	//// std::shared_ptr<TableData> table = std::make_shared<TableData>();   //
+	//// _source_model->table_data_internal();
 
-// В таблице конечных данных запоминается какая запись была выбрана
-// чтобы затем при выборе этой же подветки засветка автоматически
-// установилась на последнюю рабочую запись
-// table->work_pos(pos);
-#endif // USE_FILE_PER_TREEITEM
-		// Устанавливается функция обратного вызова для записи данных
-		_blogger->save_callback(Editor::editor_save_callback); // _editentry->editor_save_callback
+	//// for(int i = 0; i < count(); i++) {
+	//// table->insert_new_record(table->work_pos(), static_cast<WebView
+	//// *>(widget(i))->page()->current_record());
+	//// }
 
-		// Сохраняется текст и картинки в окне редактирования
-		// find_object<MainWindow>("mainwindow")
-		_blogger->save_text_context();
-#ifdef USE_FILE_PER_TREEITEM
-		// Для новой выбраной записи выясняется директория и основной файл
-		if (current_item->field<id_type>().length() == 0)
-			current_item
-			    ->field<id_type>(current_item->field<dir_type>().length() > 0 ? current_item->field<dir_type>() : get_unical_id()); // "id",	// ||
-																		// current_item->field("url")
-																		// ==
-																		// web::Browser::_defaulthome
-		if (current_item->field<url_type>() == "")
-			current_item->field<dir_type>(current_item->id()); // "dir",
-		if (current_item->field<file_type>() == "")
-			current_item->field<file_type>("text.html"); // "file",
-		QString current_dir =
-		    current_item->field<dir_type>(); // table->field(pos, "dir");
-		QString current_file =
-		    current_item->field<file_type>(); // table->field(pos, "file");
-		QString full_dir = gl_paras->root_path() + "/" +
-		    QDir(appconfig->data_dir()).dirName() + "/base/" +
-		    current_dir;
-		QString full_file_name = full_dir + "/" + current_file;
-		qDebug() << " File " << full_file_name << "\n";
-		// If the window contents of the record is already selected record  // Если в
-		// окне содержимого записи уже находится выбираемая запись
-		if (_blogger->work_directory() == full_dir &&
-		    _blogger->file_name() == current_file) {
-			gl_paras->window_switcher()->recordtable_ro_record_editor();
+	//// В таблице конечных данных запоминается какая запись была выбрана
+	//// чтобы затем при выборе этой же подветки засветка автоматически
+	//// установилась на последнюю рабочую запись
+	//// table->work_pos(pos);
+	//#endif // USE_FILE_PER_TREEITEM
+	//		// Устанавливается функция обратного вызова для записи данных
+	//		_blogger->save_callback(Editor::editor_save_callback); // _editentry->editor_save_callback
 
-			return;
-		}
-		// Перед открытием редактора происходит попытка получения текста записи
-		// Этот вызов создаст файл с текстом записи, если он еще не создан (подумать,
-		// переделать)
-		// Before the opening of the editor it attempts to get the text records
-		// This call will create a text file with the record if it is not already
-		// created (think remake)
-		_blogger->save_textarea(); // table->text(pos);    // ?
+	//		// Сохраняется текст и картинки в окне редактирования
+	//		// find_object<MainWindow>("mainwindow")
+	//		_blogger->save_text_context();
+	//#ifdef USE_FILE_PER_TREEITEM
+	//		// Для новой выбраной записи выясняется директория и основной файл
+	//		if (current_item->field<id_type>().length() == 0)
+	//			current_item
+	//			    ->field<id_type>(current_item->field<dir_type>().length() > 0 ? current_item->field<dir_type>() : get_unical_id()); // "id",	// ||
+	//																		// current_item->field("url")
+	//																		// ==
+	//																		// web::Browser::_defaulthome
+	//		if (current_item->field<url_type>() == "")
+	//			current_item->field<dir_type>(current_item->id()); // "dir",
+	//		if (current_item->field<file_type>() == "")
+	//			current_item->field<file_type>("text.html"); // "file",
+	//		QString current_dir =
+	//		    current_item->field<dir_type>(); // table->field(pos, "dir");
+	//		QString current_file =
+	//		    current_item->field<file_type>(); // table->field(pos, "file");
+	//		QString full_dir = gl_paras->root_path() + "/" +
+	//		    QDir(appconfig->data_dir()).dirName() + "/base/" +
+	//		    current_dir;
+	//		QString full_file_name = full_dir + "/" + current_file;
+	//		qDebug() << " File " << full_file_name << "\n";
+	//		// If the window contents of the record is already selected record  // Если в
+	//		// окне содержимого записи уже находится выбираемая запись
+	//		if (_blogger->work_directory() == full_dir &&
+	//		    _blogger->file_name() == current_file) {
+	//			gl_paras->window_switcher()->recordtable_ro_record_editor();
 
-		// едактору задаются имя файла и директории
-		// И дается команда загрузки файла
-		_blogger->work_directory(full_dir);
-		_blogger->file_name(current_file);
+	//			return;
+	//		}
+	//		// Перед открытием редактора происходит попытка получения текста записи
+	//		// Этот вызов создаст файл с текстом записи, если он еще не создан (подумать,
+	//		// переделать)
+	//		// Before the opening of the editor it attempts to get the text records
+	//		// This call will create a text file with the record if it is not already
+	//		// created (think remake)
+	//		_blogger->save_textarea(); // table->text(pos);    // ?
 
-		// Если идет работа с зашифрованной записью
-		// И если имя директории или имя файла пусты, то это означает что
-		// запись не была расшифрована, и редактор должен просто показывать пустой
-		// текст
-		// ничего не сохранять и не считывать
-		qDebug() << "void WebPage::metaeditor_sychronize() : id "
-			 << current_item->field<id_type>(); // table->field(pos, "id");
-		qDebug() << "void WebPage::metaeditor_sychronize() : name "
-			 << current_item->field<name_type>(); // table->field(pos, "name");
-		qDebug() << "void WebPage::metaeditor_sychronize() : crypt "
-			 << current_item->field<crypt_type>(); // table->field(pos,
-							       // boost::mpl::c_str <
-							       // crypt_type > ::value);
-		if (current_item->field<crypt_type>() ==
-		    "1") // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
-			if (full_dir.length() == 0 || current_file.length() == 0)
-				_blogger->dir_file_empty_reaction(
-				    EditorWrap::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
-		// _editentry->blog_editor()->editor()->clear_all_misc_field();
-		// В редактор заносится информация, идет ли работа с зашифрованным текстом
-		_blogger->misc_field(boost::mpl::c_str<crypt_type>::value,
-		    current_item->field<crypt_type>()); // table->field(pos,
-							// boost::mpl::c_str
-							// < crypt_type >
-							// ::value)
+	//		// едактору задаются имя файла и директории
+	//		// И дается команда загрузки файла
+	//		_blogger->work_directory(full_dir);
+	//		_blogger->file_name(current_file);
 
-		// В редакторе устанавливается функция обратного вызова для чтения данных
-		_blogger->load_callback(&Editor::editor_load_callback);
+	//		// Если идет работа с зашифрованной записью
+	//		// И если имя директории или имя файла пусты, то это означает что
+	//		// запись не была расшифрована, и редактор должен просто показывать пустой
+	//		// текст
+	//		// ничего не сохранять и не считывать
+	//		qDebug() << "void WebPage::metaeditor_sychronize() : id "
+	//			 << current_item->field<id_type>(); // table->field(pos, "id");
+	//		qDebug() << "void WebPage::metaeditor_sychronize() : name "
+	//			 << current_item->field<name_type>(); // table->field(pos, "name");
+	//		qDebug() << "void WebPage::metaeditor_sychronize() : crypt "
+	//			 << current_item->field<crypt_type>(); // table->field(pos,
+	//							       // boost::mpl::c_str <
+	//							       // crypt_type > ::value);
+	//		if (current_item->field<crypt_type>() ==
+	//		    "1") // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
+	//			if (full_dir.length() == 0 || current_file.length() == 0)
+	//				_blogger->dir_file_empty_reaction(
+	//				    EditorWrap::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
+	//		// _editentry->blog_editor()->editor()->clear_all_misc_field();
+	//		// В редактор заносится информация, идет ли работа с зашифрованным текстом
+	//		_blogger->misc_field(boost::mpl::c_str<crypt_type>::value,
+	//		    current_item->field<crypt_type>()); // table->field(pos,
+	//							// boost::mpl::c_str
+	//							// < crypt_type >
+	//							// ::value)
 
-		_blogger->load_textarea();
-		// edView->set_textarea(table->get_text(index.row()));
+	//		// В редакторе устанавливается функция обратного вызова для чтения данных
+	//		_blogger->load_callback(&Editor::editor_load_callback);
 
-		// Заполняются прочие инфо-поля
-		_blogger->pin(current_item->field<pin_type>()); // table->field(pos, "pin")
+	//		_blogger->load_textarea();
+	//		// edView->set_textarea(table->get_text(index.row()));
 
-		_blogger->name(current_item->field<name_type>()); // table->field(pos, "name")
+	//		// Заполняются прочие инфо-поля
+	//		_blogger->pin(current_item->field<pin_type>()); // table->field(pos, "pin")
 
-		_blogger->author(
-		    current_item->field<author_type>()); // table->field(pos, "author")
+	//		_blogger->name(current_item->field<name_type>()); // table->field(pos, "name")
 
-		_blogger->home(current_item->field<home_type>()); // table->field(pos, "home")
+	//		_blogger->author(
+	//		    current_item->field<author_type>()); // table->field(pos, "author")
 
-		_blogger->url(current_item->field<url_type>()); // table->field(pos, "url")
+	//		_blogger->home(current_item->field<home_type>()); // table->field(pos, "home")
 
-		_blogger->tags(current_item->field<tags_type>()); // table->field(pos, "tags")
+	//		_blogger->url(current_item->field<url_type>()); // table->field(pos, "url")
 
-		auto id =
-		    id_value(current_item->field<id_type>()); // table->field(pos, "id");
-		_blogger->misc_field("id", id);
+	//		_blogger->tags(current_item->field<tags_type>()); // table->field(pos, "tags")
 
-		_blogger->misc_field(
-		    "title", current_item->field<name_type>()); // table->field(pos, "name")
-		// should each record carry it's tree path?
-		//// Set the path to the branch in which lies the record (in the form of the
-		///names of the branches)   // Устанавливается путь до ветки в которой лежит
-		///запись (в виде названий веток)
-		// QString path = qobject_cast<TableScreen *>(parent())->getTreePath();
-		//// В мобильном интерфейсе редактор должен показывать путь до записи
-		// if(appconfig->getInterfaceMode() == "mobile")
-		// meta_editor->setTreePath(path);
-		// В редакторе восстанавливается позиция курсора и прокрутки если это
-		// необходимо
-		if (appconfig->remember_cursor_at_ordinary_selection()) {
-			_blogger->cursor_position(walkhistory.cursor_position(id));
-			_blogger->scrollbar_position(walkhistory.scrollbar_position(id));
-		}
-#else
-		_blogger->misc_field<crypt_key>(current_item->field<crypt_key>()); // table->field(pos,
-										   // boost::mpl::c_str
-										   // < crypt_type >
-										   // ::value)
-		auto id = id_value(current_item->field<id_key>());                 // table->field(pos, "id");
-		_blogger->misc_field<id_key>(id);
-		_blogger->misc_field<name_key>(current_item->field<name_key>()); // table->field(pos, "name")
-		//
-		//	        auto id = _blogger->topic();
-		// В редакторе восстанавливается позиция курсора и прокрутки если это
-		// необходимо
-		if (appconfig->remember_cursor_at_ordinary_selection()) {
-			_blogger->cursor_position(walkhistory.cursor_position(static_cast<id_value>(id)));
-			_blogger->scrollbar_position(walkhistory.scrollbar_position(static_cast<id_value>(id)));
-		}
-#endif // USE_FILE_PER_TREEITEM
-		// Обновление иконки аттачей
-		if (current_item->attach_table()->size() == 0) // table->record(pos)->getAttachTablePointer()->size()
-			_blogger->to_attach()->setIcon(_blogger->icon_attach_not_exists());
-		// Если нет приаттаченных файлов
-		else
-			_blogger->to_attach()->setIcon(_blogger->icon_attach_exists()); // Есть приаттаченные файлы
+	//		auto id =
+	//		    id_value(current_item->field<id_type>()); // table->field(pos, "id");
+	//		_blogger->misc_field("id", id);
 
-		// }
-	}
+	//		_blogger->misc_field(
+	//		    "title", current_item->field<name_type>()); // table->field(pos, "name")
+	//		// should each record carry it's tree path?
+	//		//// Set the path to the branch in which lies the record (in the form of the
+	//		///names of the branches)   // Устанавливается путь до ветки в которой лежит
+	//		///запись (в виде названий веток)
+	//		// QString path = qobject_cast<TableScreen *>(parent())->getTreePath();
+	//		//// В мобильном интерфейсе редактор должен показывать путь до записи
+	//		// if(appconfig->getInterfaceMode() == "mobile")
+	//		// meta_editor->setTreePath(path);
+	//		// В редакторе восстанавливается позиция курсора и прокрутки если это
+	//		// необходимо
+	//		if (appconfig->remember_cursor_at_ordinary_selection()) {
+	//			_blogger->cursor_position(walkhistory.cursor_position(id));
+	//			_blogger->scrollbar_position(walkhistory.scrollbar_position(id));
+	//		}
+	//#else
+	//		_blogger->misc_field<crypt_key>(current_item->field<crypt_key>()); // table->field(pos,
+	//										   // boost::mpl::c_str
+	//										   // < crypt_type >
+	//										   // ::value)
+	//		auto id = id_value(current_item->field<id_key>());                 // table->field(pos, "id");
+	//		_blogger->misc_field<id_key>(id);
+	//		_blogger->misc_field<name_key>(current_item->field<name_key>()); // table->field(pos, "name")
+	//		//
+	//		//	        auto id = _blogger->topic();
+	//		// В редакторе восстанавливается позиция курсора и прокрутки если это
+	//		// необходимо
+	//		if (appconfig->remember_cursor_at_ordinary_selection()) {
+	//			_blogger->cursor_position(walkhistory.cursor_position(static_cast<id_value>(id)));
+	//			_blogger->scrollbar_position(walkhistory.scrollbar_position(static_cast<id_value>(id)));
+	//		}
+	//#endif // USE_FILE_PER_TREEITEM
+	//		// Обновление иконки аттачей
+	//		if (current_item->attach_table()->size() == 0) // table->record(pos)->getAttachTablePointer()->size()
+	//			_blogger->to_attach()->setIcon(_blogger->icon_attach_not_exists());
+	//		// Если нет приаттаченных файлов
+	//		else
+	//			_blogger->to_attach()->setIcon(_blogger->icon_attach_exists()); // Есть приаттаченные файлы
+
+	//		// }
+	//	}
 
 	web::Browser* WebPage::browser()
 	{
@@ -1028,9 +1036,10 @@ namespace web {
 		// ));
 
 		assert(result->binder());
-		auto topic = _blogger->topic();
-		if (!QStringList(result->field<tags_key>()).contains(topic)) result->topic_append(topic);
-		assert(QStringList(result->field<tags_key>()).contains(topic));
+		//		auto topic = _blogger->topic();
+		//		if (!QStringList(result->field<tags_key>()).contains(topic))
+		result->topic_append(_blogger->topic()); //topic
+							 //		assert(QStringList(result->field<tags_key>()).contains(topic));
 		RecordIndex::synchronize(result);
 		return result;
 	}
@@ -1184,18 +1193,27 @@ namespace web {
 					}); // return it_->field<url_type>() == target_url.toString();
 					    // web::Browser::_defaulthome
 			    });
-			it->topic_append(target_url.toString());
-			page = _browser_new->bind(RecordIndex::instance([&] {
-						   RecordModel* rm = nullptr;
-						   auto rctrl = _browser_new->tab_widget()->record_screen()->record_ctrl();
-						   if (rctrl)
-							   rm = rctrl->source_model();
-						   return rm;
-					   },
-						      it))
-				   ->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1))
-				   ->page();
 
+			auto new_item = _browser_new->bind(
+			    RecordIndex::instance([&] {
+				    RecordModel* rm = nullptr;
+				    auto rctrl = _browser_new->tab_widget()->record_screen()->record_ctrl();
+				    if (rctrl)
+					    rm = rctrl->source_model();
+				    return rm;
+			    },
+				it));
+
+			auto view_ = new_item->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
+			page = view_->page();
+			auto url_new = QUrl(new_item->field<name_key>());
+			auto to_br_url_ = to_be_url(url_new);
+			auto topic_new = (to_br_url_ == detail::to_qstring(Browser::_defaulthome) || to_br_url_ == QUrl()) ? purify(new_item->field<name_key>()) : purify(url_new.fileName());
+			if (topic_new == "") topic_new = purify(url_new.path());
+			if (topic_new == "") topic_new = purify(url_new.topLevelDomain());
+			if (topic_new == "") topic_new = purify(gl_para::_default_topic);
+			new_item->topic_append(topic_new);
+			_browser_new->blogger()->topic(topic_new);
 			assert(page);
 		} else if (type == WebBrowserBackgroundTab) {
 			//// should I think about always open new window in new tab
@@ -1210,13 +1228,13 @@ namespace web {
 				page = view->page();
 				auto _item = page->host();
 				if (_item) {
-					_item->topic_append(target_url.toString());
-					// auto _index = tree_view->source_model()->index(_item);
-					// if(static_cast<QModelIndex>(_index).isValid())_item->activate(std::bind(&HidableTabWidget::find,
-					// globalparameters.main_window()->vtab_record(),
-					// std::placeholders::_1));	//
-					// tree_view->index_invoke(TreeIndex::instance([&] {return
-					// tree_view->source_model();}, _item, _item->parent()));	// view,
+					_item->topic_append(_blogger->topic()); //target_url.toString()
+										// auto _index = tree_view->source_model()->index(_item);
+										// if(static_cast<QModelIndex>(_index).isValid())_item->activate(std::bind(&HidableTabWidget::find,
+										// globalparameters.main_window()->vtab_record(),
+										// std::placeholders::_1));	//
+										// tree_view->index_invoke(TreeIndex::instance([&] {return
+										// tree_view->source_model();}, _item, _item->parent()));	// view,
 				}
 				assert(page->binder() && page->binder()->integrity_external(page->host(), page));
 				assert(static_cast<QModelIndex>(tree_view->source_model()->index(page->host())).isValid());
@@ -1239,7 +1257,7 @@ namespace web {
 				// globalparameters.main_window()->vtab_record(),
 				// std::placeholders::_1))->page() : nullptr;
 				if (it)
-					it->topic_append(target_url.toString());
+					it->topic_append(_blogger->topic()); //target_url.toString()
 				page = it ? it->page() : nullptr;
 				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 			}
@@ -2353,8 +2371,8 @@ namespace web {
 #ifdef USE_EDITOR_WRAP
 			if (_page->_blogger->item() != _host)
 #endif // USE_EDITOR_WRAP
-				_page->metaeditor_sychronize();
-			assert(_page->binder()->integrity_external(_host, _page));
+				//				_page->metaeditor_sychronize();
+				assert(_page->binder()->integrity_external(_host, _page));
 		} else {
 			if (_page) {
 				view = _page->view();

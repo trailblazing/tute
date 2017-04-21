@@ -487,7 +487,7 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
 		(void)r;
 		if (r != this) { //&& !this->_destroyed_request_sent
 			close_trigger_from_others()(r);
-				 //			this->_destroyed_request_sent =
+			//			this->_destroyed_request_sent =
 			this->close();
 			assert(this->_destroy_request_sent == true);
 			//			delete this;
@@ -1471,10 +1471,17 @@ void rs_t::tools_update()
 			// // (item_selection_model->selectedRows()).size();// always crash because
 			// tabmanager inaccessible
 			bool has_selection = item_selection_model->hasSelection();
-			if (!has_selection && _tab_widget->count() > 0) {
-
-				_rctrl->select_as_current(_rctrl->index<pos_proxy>(_view->current_item()));
-				has_selection = true;
+			if (!has_selection //&& _tab_widget->count() > 0
+			    ) {
+				if (_tab_widget) {
+					if (_tab_widget->count() > 0) {
+						auto cur_it = _view->current_item();
+						if (cur_it) {
+							_rctrl->select_as_current(_rctrl->index<pos_proxy>(cur_it));
+							has_selection = true;
+						}
+					}
+				}
 			}
 			//	if(_browser){
 			//		auto tab = _browser->tabmanager();
