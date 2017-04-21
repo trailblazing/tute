@@ -260,7 +260,8 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 				if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
 			}
 			if (it)
-				if (it->page()) it->page()->metaeditor_sychronize();
+				//				if (it->page()) it->page()
+				_blogger->metaeditor_sychronize();
 		}
 		//		_view->setFocus();
 	}
@@ -1730,7 +1731,7 @@ bool rctrl_t::edit_field_context(index_proxy proxyIndex)
 		edit_field(pos_source_, detail::from_qstring<pin_key>(edit_record_dialog.getField("pin")), detail::from_qstring<name_key>(edit_record_dialog.getField("name")), detail::from_qstring<author_key>(edit_record_dialog.getField("author")), detail::from_qstring<home_key>(edit_record_dialog.getField("home")), detail::from_qstring<url_key>(edit_record_dialog.getField("url")), detail::from_qstring<tags_key>(edit_record_dialog.getField("tags")));
 		// auto editor = globalparameters.meta_editor();
 		// if(! editor->isHidden())
-		item->page()->metaeditor_sychronize();
+		//		item->page()->metaeditor_sychronize();
 		result = true;
 	}
 	return result;
@@ -2985,6 +2986,7 @@ pos_proxy rctrl_t::index<pos_proxy>(const id_value& id) const
 template <>
 pos_proxy rctrl_t::index<pos_proxy>(const boost::intrusive_ptr<i_t>& it) const
 {
+	assert(it);
 	return index<pos_proxy>(it->id());
 }
 
@@ -3021,6 +3023,7 @@ pos_source rctrl_t::index<pos_source>(const id_value& id) const
 template <>
 pos_source rctrl_t::index<pos_source>(const boost::intrusive_ptr<i_t>& it) const
 {
+	assert(it);
 	return index<pos_source>(it->id());
 }
 
@@ -3066,6 +3069,7 @@ index_proxy rctrl_t::index<index_proxy>(const id_value& id) const // Выясн�
 template <>
 index_proxy rctrl_t::index<index_proxy>(const boost::intrusive_ptr<i_t>& it) const
 {
+	assert(it);
 	return index<index_proxy>(it->id());
 }
 
@@ -3117,6 +3121,7 @@ index_source rctrl_t::index<index_source>(const id_value& id) const // Выяс�
 template <>
 index_source rctrl_t::index<index_source>(const boost::intrusive_ptr<i_t>& it) const
 {
+	assert(it);
 	// return index<index_source>(it->id());
 	return _source_model->index(it);
 }
@@ -3148,6 +3153,7 @@ id_value rctrl_t::index<id_value>(const index_source& is) const
 template <>
 id_value rctrl_t::index<id_value>(const boost::intrusive_ptr<i_t>& it) const
 {
+	assert(it);
 	return index<id_value>(index<pos_source>(it->id()));
 }
 

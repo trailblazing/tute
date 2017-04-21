@@ -1224,7 +1224,7 @@ void rv_t::on_doubleclick(const QModelIndex& index)
 		// делается это путем "повторного" выбора текущего пункта
 		if (_rctrl)
 			_rctrl->index_invoke(index_proxy(index), true); // force to refresh		// аньше было select()
-		// globalparameters.main_window()->editor_switch();
+									// globalparameters.main_window()->editor_switch();
 	}
 }
 
@@ -1422,33 +1422,35 @@ boost::intrusive_ptr<i_t> rv_t::current_item() const
 	boost::intrusive_ptr<i_t> it;
 	//	auto _rctrl = _rctrl;
 	if (_rctrl) {
-		it = _rctrl->source_model()->current_item();
-		if (it) {
-			pos_proxy pos_proxy_ = _rctrl->index<pos_proxy>(it);
-			////	pos_source	possource	=
-			///_record_controller->index<pos_source>(it);
-			////	auto		index		=
-			///static_cast<QModelIndex>(_record_controller->index<index_source>(posproxy));
-			// index_proxy proxy_curi(selectionModel()->currentIndex());
-			////	auto	source_index	=
-			///_record_controller->source_model()->current_index();
-			////	auto	proxy_index	=
-			///_record_controller->proxy_model()->mapFromSource(static_cast<QModelIndex>(source_index));
-			////	assert(proxy_curi == proxy_index);
-			//
-			QItemSelectionModel* item_selection_model = selectionModel();
-			bool has_selection = item_selection_model->hasSelection();
-
-			if (pos_proxy_ != static_cast<QModelIndex>(_rctrl->index<index_proxy>(_rctrl->source_model()->current_index())).row() || (!has_selection)) { //
-				// if(pos_proxy_ != static_cast<QModelIndex>(proxy_curi).row()){	//
-				// never equaled	// currentIndex().row()){	//
-				// selectionModel()->currentIndex().row()
+		if (_rctrl->source_model()->count() > 0) {
+			it = _rctrl->source_model()->current_item();
+			if (it) {
+				pos_proxy pos_proxy_ = _rctrl->index<pos_proxy>(it);
+				////	pos_source	possource	=
+				///_record_controller->index<pos_source>(it);
+				////	auto		index		=
+				///static_cast<QModelIndex>(_record_controller->index<index_source>(posproxy));
+				// index_proxy proxy_curi(selectionModel()->currentIndex());
+				////	auto	source_index	=
+				///_record_controller->source_model()->current_index();
+				////	auto	proxy_index	=
+				///_record_controller->proxy_model()->mapFromSource(static_cast<QModelIndex>(source_index));
+				////	assert(proxy_curi == proxy_index);
 				//
-				// const_cast<rv_t *>(this)->reset();
-				// _record_controller->proxy_model()->setSourceModel(_record_controller->source_model());
-				// const_cast<rv_t *>(this)->setModel(_record_controller->proxy_model());
+				QItemSelectionModel* item_selection_model = selectionModel();
+				bool has_selection = item_selection_model->hasSelection();
 
-				_rctrl->select_as_current(pos_proxy_);
+				if (pos_proxy_ != static_cast<QModelIndex>(_rctrl->index<index_proxy>(_rctrl->source_model()->current_index())).row() || (!has_selection)) { //
+					// if(pos_proxy_ != static_cast<QModelIndex>(proxy_curi).row()){	//
+					// never equaled	// currentIndex().row()){	//
+					// selectionModel()->currentIndex().row()
+					//
+					// const_cast<rv_t *>(this)->reset();
+					// _record_controller->proxy_model()->setSourceModel(_record_controller->source_model());
+					// const_cast<rv_t *>(this)->setModel(_record_controller->proxy_model());
+
+					_rctrl->select_as_current(pos_proxy_);
+				}
 			}
 		}
 	}

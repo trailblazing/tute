@@ -644,7 +644,7 @@ void tkm_t::save()
 				QSaveFile xmlFile(file_name_);
 				if (!xmlFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
 					qDebug() << "Cant open file " << file_name_ << " for write.";
-					exit(1);
+					return; //exit(1);
 				}
 				QTextStream out(&xmlFile);
 				out.setCodec("UTF-8");
@@ -993,8 +993,7 @@ tkm_t::new_child(boost::intrusive_ptr<TreeIndex> _modelindex, QString id, QStrin
 // Add a new highlight to the Item element  // Добавление новой подветки к Item
 // элементу
 boost::intrusive_ptr<i_t>
-tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree_level,
-    int mode)
+tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree_level, int mode)
 { // , int _pos
 	// , QString id, QString name
 
@@ -1021,9 +1020,7 @@ tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree_level,
 					});
 				if (_linker->host() != _to_be_operated)
 					_linker->host(std::forward<boost::intrusive_ptr<i_t>>(_to_be_operated)); // std::move(boost::intrusive_ptr<TreeItem>(this))
-				auto link_result = _linker->parent(
-				    _parent, pos,
-				    mode); // _linker->host_parent()->release(this->linker());
+				auto link_result = _linker->parent(_parent, pos, mode);                          // _linker->host_parent()->release(this->linker());
 				assert(link_result == _linker);
 				assert(_linker->integrity_external(_to_be_operated, _parent));
 			}
@@ -1099,9 +1096,8 @@ tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree_level,
 		//////            assert(!deleted_item->linker());
 		////        }
 		if (static_cast<QModelIndex>(_index_new_parent).isValid() || to_be_host == _root_item) {
-			beginInsertRows(_index_new_parent, pos // parent->count_direct()
-			    ,
-			    pos // (pos + 1 < parent->count_direct()) ? pos + 1 :
+			beginInsertRows(_index_new_parent, pos, // parent->count_direct()
+			    pos                                 // (pos + 1 < parent->count_direct()) ? pos + 1 :
 			    // parent->count_direct()
 			    );
 

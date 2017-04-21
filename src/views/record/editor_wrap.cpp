@@ -129,7 +129,11 @@ EditorWrap::~EditorWrap(void)
 
 void EditorWrap::setup_signals(FindScreen* _find_screen)
 {
-	connect(this, &EditorWrap::set_find_text_signal, _find_screen, &FindScreen::find_text);
+	connect(this, &EditorWrap::set_find_text_signal,
+	    [&](QString text) {
+		    //emit
+		    _find_screen->find_clicked_after_another_text_changed(text);
+	    });
 }
 
 void EditorWrap::setup_labels(void)

@@ -123,11 +123,13 @@ namespace web {
 
 		connect(lineEdit(), &QLineEdit::returnPressed, //this, &ToolbarSearch::search_now); // , [&] {std::thread(&ToolbarSearch::searchNow,
 		    [&] {
-			    real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(), [&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
-				    auto bro = search_now(real_target_url_); //search_text
-				    bro->activateWindow();
-				    return bro;
-			    });
+			    real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), false))>(lineEdit()->text(),
+				[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+					setInactiveText(real_target_url_->value());
+					auto bro = search_now(real_target_url_); //search_text
+					bro->activateWindow();
+					return bro;
+				});
 		    } // .detach();});	//
 		    );
 #ifdef USE_ADDITIONAL_BUFFER
@@ -136,16 +138,17 @@ namespace web {
 		connect(this, &ToolbarSearch::return_pressed, _findtext, &QLineEdit::returnPressed);
 #else
 		//		connect(this, &SearchLineEdit::textChanged, [&](const QString& text_) { lineEdit()->setText(text_); });
-		connect(this, &ToolbarSearch::return_pressed, [&] {
-			lineEdit()->returnPressed();
-			//			_find_screen->find_text(lineEdit()->text());
-		});
+//		connect(this, &ToolbarSearch::return_pressed, [&] {
+//			lineEdit()->returnPressed();
+//			//			_find_screen->find_text(lineEdit()->text());
+//		});
 		// При каждом изменении текста в строке запроса
-		connect(this, &ToolbarSearch::textChanged, _find_screen, &FindScreen::enable_findbutton);
+		connect(this, &ToolbarSearch::textChanged, _find_screen, &FindScreen::enable_findbutton, Qt::UniqueConnection);
 
 #endif // USE_ADDITIONAL_BUFFER
 
-		setInactiveText(tr("Google"));
+		if (inactiveText() == "") setInactiveText(SearchLineEdit::_default_tip); //tr("Google")
+
 
 		load();
 	}
@@ -176,7 +179,7 @@ namespace web {
 		settings.endGroup();
 	}
 
-	Browser* ToolbarSearch::search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_)
+	Browser* ToolbarSearch::search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_, bool new_topic)
 	{
 		auto to_be_url_ = to_be_url(non_url_search_text_->value());
 		assert(to_be_url_ == QUrl() || to_be_url_ == detail::to_qstring(web::Browser::_defaulthome));
@@ -284,10 +287,11 @@ namespace web {
 		//		QUrl url = QUrl(search_text);
 		//		url_value real_url = url_value(search_text);
 		//		auto topic = Blogger::purify_topic(_findtext->text());
-		auto browser_ = real_url_t<QString>::instance<web::Browser*>(search_text,
-		    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
-			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); // gl_paras->main_window()->browser(search_text);
-		    });
+		auto browser_ = new_topic ? real_url_t<QString>::instance<web::Browser*>(search_text,
+						[&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
+							return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); // gl_paras->main_window()->browser(search_text);
+						}) :
+					    _find_screen->browser();
 		// if(url.host().isSimpleText());
 		// bool url_isRelative = url.isRelative();
 		// bool url_isValid = url.isValid();
@@ -320,7 +324,7 @@ namespace web {
 			//			if (real_url_ != QUrl() && real_url_ != detail::to_qstring(web::Browser::_defaulthome))
 			//				deal_with_url(tree_view_, search_text, tree_index, url_value(url.toString()), browser_);
 			//			else
-			if ((result_item = gl_paras->find_screen()->find_internal_decomposed(search_text))) {
+			if ((result_item = gl_paras->find_screen()->find_internal_decomposed(search_text, new_topic))) {
 				if (result_item->count_direct() > 0) {
 					// tree_view->select_as_current(TreeIndex::instance([&] {return
 					// tree_view->source_model();}, result_item, result_item->parent()));
@@ -479,8 +483,8 @@ namespace web {
 			QString text = v.toString();
 			lineEdit()->setText(text);
 			//			auto real_url_ =
-			real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(), [&](auto real_url_) {
-				return this->search_now(real_url_);
+			real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), true))>(lineEdit()->text(), [&](auto real_url_) {
+				return this->search_now(real_url_, true);
 			});
 			// std::thread(&ToolbarSearch::searchNow, this).detach();
 		}

@@ -177,6 +177,7 @@ namespace web {
             - When there is text a clear button is displayed on the right hand
    side
  */
+	constexpr char SearchLineEdit::_default_tip[];
 
 	SearchLineEdit::SearchLineEdit(QWidget* parent, WebView* view)
 	    : super(view, parent)
@@ -184,7 +185,7 @@ namespace web {
 	{
 		connect(lineEdit(), &QLineEdit::textChanged, this, &SearchLineEdit::textChanged);
 		setLeftWidget(_searchbutton);
-		_inactivetext = tr("Search");
+		_inactivetext = SearchLineEdit::_default_tip; //tr("Search");
 
 		QSizePolicy policy = sizePolicy();
 		setSizePolicy(QSizePolicy::Preferred, policy.verticalPolicy());
