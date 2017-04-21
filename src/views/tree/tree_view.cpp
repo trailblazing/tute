@@ -3200,11 +3200,7 @@ void tv_t::paste_clipboard(
 }
 
 boost::intrusive_ptr<i_t>
-tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex // std::function<KnowModel
-    // *()> _current_model,
-    // QModelIndex
-    // _current_index
-    ,
+tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex, // std::function<KnowModel*()> _current_model, QModelIndex _current_index
     boost::intrusive_ptr<i_t> _source_item, const tv_t::substitute_condition& _substitute_condition, bool save_immediately)
 {
 	//
@@ -3452,8 +3448,7 @@ tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex // std::function<KnowModel
 		boost::intrusive_ptr<i_t> _source_item,
 		const tv_t::substitute_condition& substitute_condition_)
 	    -> boost::intrusive_ptr<i_t> {
-		    auto host =
-			_modelindex->host(); // _current_model()->item(_current_index);
+		    auto host = _modelindex->host(); // _current_model()->item(_current_index);
 
 		    assert(host); // make it automatically?
 		    return (host == _source_item) ? host : paste_sibling_impl(_modelindex, _source_item, substitute_condition_);
@@ -3571,7 +3566,7 @@ tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex // std::function<KnowModel
 				result = current_model()->item([=](boost::intrusive_ptr<const i_t> t) {
 					return t->id() == result->id();
 				});
-				assert((_source_item == result) || (_source_item->name() == result->name()));
+//				assert((_source_item == result) || (_source_item->name() == result->name()));
 				// } else if(_current_model->root_item()->id() == it->id()) {
 
 				// assert(new_branch_root == result);  // not must, if you already have

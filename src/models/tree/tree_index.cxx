@@ -554,19 +554,25 @@ boost::intrusive_ptr<i_t> TreeLevel::move()
 boost::intrusive_ptr<TreeLevel>
 TreeLevel::instance(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusive_ptr<i_t> _to_be_operated)
 {
+	boost::intrusive_ptr<TreeLevel> result(nullptr);
 	auto current_model_ = _tree_index->current_model();
 	auto tree_view_ = static_cast<tv_t*>(static_cast<QObject*>(current_model_())->parent());
 	auto host = _tree_index->host();
-	if (TreeIndex::is_ancestor_of(_to_be_operated, host)) {
-		auto host_new = TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, _to_be_operated->parent()), host)->move(); // static_cast<tkm_t *>(current_model())
-		assert(host_new == host);
-		// auto	temp	= host;
-		// host		= _to_be_merged;
-		// _to_be_merged	= temp;
-		// _tree_index	= TreeIndex::instance(_tree_index->current_model(), host,
-		// host->parent());
+	if (_to_be_operated->is_ancestor_of(host)) {
+		auto parent_ = _to_be_operated->parent();
+		if (parent_) {
+			auto host_new = TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, parent_), host)->move(); // static_cast<tkm_t *>(current_model())
+			assert(host_new == host);
+			result = TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, host), _to_be_operated); //new TreeLevel(_tree_index, _to_be_operated, tree_view_);
+		} else {
+			auto host_new = TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, _to_be_operated), host)->move(); // static_cast<tkm_t *>(current_model())
+			assert(host_new == host);
+			result = TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, _to_be_operated), host);
+		}
+	} else {
+		result = new TreeLevel(_tree_index, _to_be_operated, tree_view_);
 	}
-	return new TreeLevel(_tree_index, _to_be_operated, tree_view_);
+	return result;
 }
 
 boost::intrusive_ptr<const i_t> TreeIndex::is_ancestor_of(

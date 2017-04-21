@@ -239,6 +239,7 @@ namespace web {
 		static std::tuple<qint32, qint32, QString, QString, QSize, bool, bool, bool, bool, std::tuple<qint32, qint32, QStringList, QString>> state(const QByteArray& state_);
 		Blogger* blogger();
 		//		void test();
+
 	    public slots:
 		// void loadPage(const QString &url) = delete;
 		void slotHome();

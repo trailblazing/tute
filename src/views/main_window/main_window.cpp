@@ -2545,10 +2545,14 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusiv
 				auto bro_ = page_->browser();
 				if (bro_)
 					bro = bro_;
+				else
+					bro = browser(it);
 			}
+			assert(bro);
 
 		} else {
 			bro = browser(it);
+			assert(bro);
 		}
 	}
 	assert(bro);
@@ -2559,8 +2563,7 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusiv
 // not sure to succeeded if force is false
 template <>
 web::Browser*
-wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_ptr<real_url_t<QString>>& topic_, //const QString& topic_,
-    bool force)
+wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_ptr<real_url_t<QString>>& topic_, bool force) //const QString& topic_,
 {
 	// clean();
 	QString topic = topic_->value();

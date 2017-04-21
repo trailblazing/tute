@@ -1,6 +1,8 @@
 #ifndef _FINDSCREEN_H_
 #define _FINDSCREEN_H_
 
+#include <boost/bind.hpp>
+#include <boost/signals2.hpp>
 #include <memory>
 
 #include "libraries/global_parameters.h"
@@ -98,15 +100,18 @@ class FindScreen : public QWidget
 	QStackedWidget* lineedit_stack() { return _lineedit_stack; }
 	void lineedit_stack(QStackedWidget* lineedit_stack_) { _lineedit_stack = lineedit_stack_; }
 	void switch_stack(QStackedWidget* lineedit_stack_ = nullptr);
+	web::Browser* browser();
 	void browser(web::Browser* bro);
+	boost::signals2::signal<void(const QString& str)> find_clicked_after_another_text_changed;
     public slots:
 
 	void widget_show(void);
 	void widget_hide(void);
-	boost::intrusive_ptr<i_t> find_internal_decomposed(const QString& search_text);
-	void find_text(QString text_);
+	boost::intrusive_ptr<i_t> find_internal_decomposed(const QString& search_text, bool new_topic = false);
+//	void find_text(QString text_);
 
 	void replace_navigater(QToolBar* nv);
+
 
     protected:
 	virtual void resizeEvent(QResizeEvent* e);
@@ -127,26 +132,26 @@ class FindScreen : public QWidget
 	void if_find_in_tags(int state);
 	void if_find_in_text(int state);
 
-    signals:
+	void switch_search_content();
+	//    signals:
 
-	// Сигнал вырабатывается, когда обнаружено что в слоте setFindText()
-	// был изменен текст для поиска
-	void text_changed_from_another(const QString& str)
-#if QT_VERSION == 0x050600
-	    W_SIGNAL(text_changed_from_another, (const QString&), str) //
-#else
-	    ;
-#endif
-	    void find_clicked_after_another_text_changed(void)
-#if QT_VERSION == 0x050600
-		W_SIGNAL(find_clicked_after_another_text_changed) //
-#else
-	    ;
-#endif
+	//// Сигнал вырабатывается, когда обнаружено что в слоте setFindText()
+	//// был изменен текст для поиска
 
-	    private :
+	////#if QT_VERSION == 0x050600
+	////	void text_changed(const QString& str) W_SIGNAL(text_changed_from_another, (const QString&), str);
+	////#else
+	////	void text_changed(const QString& str);
+	////#endif
 
-	    void setup_navigate(void);
+	//#if QT_VERSION == 0x050600
+	//	void find_clicked_after_another_text_changed(const QString& str) W_SIGNAL(find_clicked_after_another_text_changed, (const QString&), str);
+	//#else
+	//	void find_clicked_after_another_text_changed(const QString& str);
+	//#endif
+
+    private:
+	void setup_navigate(void);
 	void assembly_navigate(void);
 
 	void setup_findtext_and_button(void);
@@ -168,10 +173,10 @@ class FindScreen : public QWidget
 
 	void if_find_in_field(QString fieldname, int state);
 
-	boost::intrusive_ptr<i_t> find_start(void);
+	boost::intrusive_ptr<i_t> find_start(bool new_topic = false);
 
 	boost::intrusive_ptr<i_t>&
-	find_recursive(boost::intrusive_ptr<i_t>& final_result, boost::intrusive_ptr<i_t> _session_root_item, boost::intrusive_ptr<i_t> curritem);
+	find_recursive(boost::intrusive_ptr<i_t>& final_result, boost::intrusive_ptr<i_t> _session_root_item, boost::intrusive_ptr<i_t> curritem, bool new_topic = false);
 
 	bool find_in_text_process(const QString& text);
 
@@ -182,7 +187,7 @@ class FindScreen : public QWidget
 	ts_t* _tree_screen;
 	QToolBar* _navigater;
 	////    QHBoxLayout *_navigater;
-
+	FlatToolButton* _switch_search_type;
 	QAction* _historyback;    // FlatToolButton *_history_back;
 	QAction* _historyforward; // FlatToolButton *_history_forward;
 	QAction* _historyhome;    // FlatToolButton *_history_home;

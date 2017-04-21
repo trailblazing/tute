@@ -754,7 +754,10 @@ QString SideTabWidget::title() const
 
 void SideTabWidget::topic(const QString& topic_)
 {
-	_lineedit_topic->setText(topic_);
+	if (_lineedit_topic->text() != topic_) {
+		_lineedit_topic->setText(topic_);
+		emit _lineedit_topic->returnPressed();
+	}
 }
 
 QString SideTabWidget::topic() const

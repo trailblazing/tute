@@ -62,11 +62,11 @@ namespace web {
 	class UrlLineEdit;
 	class SearchButton;
 	class WebView;
-	/*
-            Clear button on the right hand side of the search widget.
-            Hidden by default
-            "A circle with an X in it"
- */
+
+	//            Clear button on the right hand side of the search widget.
+	//            Hidden by default
+	//            "A circle with an X in it"
+
 	class ClearButton : public QAbstractButton {
 #if QT_VERSION == 0x050600
 		W_OBJECT(ClearButton)
@@ -88,7 +88,8 @@ namespace web {
 #if QT_VERSION == 0x050600
 		W_OBJECT(SearchLineEdit)
 #else
-		Q_OBJECT Q_PROPERTY(QString inactiveText READ inactiveText WRITE setInactiveText)
+		Q_OBJECT
+		Q_PROPERTY(QString inactiveText READ inactiveText WRITE setInactiveText)
 #endif
 
 	    signals:
@@ -96,7 +97,7 @@ namespace web {
 #if QT_VERSION == 0x050600
 		void textChanged(const QString& text) W_SIGNAL(textChanged, (const QString&), text);
 #else
-		    void textChanged(const QString& text);
+		void textChanged(const QString& text);
 #endif
 
 	    public:
@@ -107,6 +108,7 @@ namespace web {
 
 		QMenu* menu() const;
 		void setMenu(QMenu* menu);
+		static constexpr char _default_tip[] = "Search";
 
 	    protected:
 		void resizeEvent(QResizeEvent* event);

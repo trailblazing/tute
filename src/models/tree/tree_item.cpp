@@ -3120,7 +3120,7 @@ boost::intrusive_ptr<const i_t> i_t::is_ancestor_of(
 	boost::intrusive_ptr<const i_t> result(nullptr);
 	if (reference)
 		if (reference->path_list<id_key>().contains(field<id_key>()) && reference != this)
-			result = reference;
+			result = this; //reference;
 	return result;
 }
 
@@ -3150,6 +3150,7 @@ int i_t::distance(
 
 void i_t::topic_append(QString new_topic)
 {
+	new_topic = purify(new_topic);
 	//	auto tags_ = field<tags_key>();
 	//	if (tags_.size() > 0)
 	//		while (tags_.at(0) == ',' || tags_.at(0) == ';') tags_.remove(0, 1);
@@ -3172,128 +3173,51 @@ void i_t::field_dynamic(const QString& key_name, const QString& value_)
 {
 	//	boost::intrusive_ptr<i_t> this = this;
 
-	QMap<QString, std::function<void(const QString&)>> dynamic_funtions;
-	dynamic_funtions[boost::mpl::c_str<pin_key>::value] = [&](const QString& value_) { boost::fusion::at_key<pin_key>(this->_fields_data_map) = detail::from_qstring<pin_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<id_key>::value] = [&](const QString& value_) { boost::fusion::at_key<id_key>(this->_fields_data_map) = detail::from_qstring<id_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<name_key>::value] = [&](const QString& value_) { boost::fusion::at_key<name_key>(this->_fields_data_map) = detail::from_qstring<name_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<author_key>::value] = [&](const QString& value_) { boost::fusion::at_key<author_key>(this->_fields_data_map) = detail::from_qstring<author_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<home_key>::value] = [&](const QString& value_) { boost::fusion::at_key<home_key>(this->_fields_data_map) = detail::from_qstring<home_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<url_key>::value] = [&](const QString& value_) { boost::fusion::at_key<url_key>(this->_fields_data_map) = detail::from_qstring<url_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<tags_key>::value] = [&](const QString& value_) { boost::fusion::at_key<tags_key>(this->_fields_data_map) = detail::from_qstring<tags_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<rating_key>::value] = [&](const QString& value_) { boost::fusion::at_key<rating_key>(this->_fields_data_map) = detail::from_qstring<rating_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<ctime_key>::value] = [&](const QString& value_) { boost::fusion::at_key<ctime_key>(this->_fields_data_map) = detail::from_qstring<ctime_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<dir_key>::value] = [&](const QString& value_) { boost::fusion::at_key<dir_key>(this->_fields_data_map) = detail::from_qstring<dir_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<file_key>::value] = [&](const QString& value_) { boost::fusion::at_key<file_key>(this->_fields_data_map) = detail::from_qstring<file_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<crypt_key>::value] = [&](const QString& value_) { boost::fusion::at_key<crypt_key>(this->_fields_data_map) = detail::from_qstring<crypt_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<has_attach_key>::value] = [&](const QString& value_) { boost::fusion::at_key<has_attach_key>(this->_fields_data_map) = detail::from_qstring<has_attach_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<attach_size_key>::value] = [&](const QString& value_) { boost::fusion::at_key<attach_size_key>(this->_fields_data_map) = detail::from_qstring<attach_size_key>(value_); };
-	dynamic_funtions[boost::mpl::c_str<dynamic_name_key>::value] = [&](const QString& value_) { boost::fusion::at_key<dynamic_name_key>(this->_fields_data_map) = detail::from_qstring<dynamic_name_key>(value_); };
+	static QMap<QString, std::function<void(i_t * const, const QString&)>> dynamic_funtions{
+	    {boost::mpl::c_str<pin_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<pin_key>(this_->_fields_data_map) = detail::from_qstring<pin_key>(value_); }},
+	    {boost::mpl::c_str<id_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<id_key>(this_->_fields_data_map) = detail::from_qstring<id_key>(value_); }},
+	    {boost::mpl::c_str<name_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<name_key>(this_->_fields_data_map) = detail::from_qstring<name_key>(value_); }},
+	    {boost::mpl::c_str<author_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<author_key>(this_->_fields_data_map) = detail::from_qstring<author_key>(value_); }},
+	    {boost::mpl::c_str<home_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<home_key>(this_->_fields_data_map) = detail::from_qstring<home_key>(value_); }},
+	    {boost::mpl::c_str<url_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<url_key>(this_->_fields_data_map) = detail::from_qstring<url_key>(value_); }},
+	    {boost::mpl::c_str<tags_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<tags_key>(this_->_fields_data_map) = detail::from_qstring<tags_key>(value_); }},
+	    {boost::mpl::c_str<rating_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<rating_key>(this_->_fields_data_map) = detail::from_qstring<rating_key>(value_); }},
+	    {boost::mpl::c_str<ctime_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<ctime_key>(this_->_fields_data_map) = detail::from_qstring<ctime_key>(value_); }},
+	    {boost::mpl::c_str<dir_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<dir_key>(this_->_fields_data_map) = detail::from_qstring<dir_key>(value_); }},
+	    {boost::mpl::c_str<file_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<file_key>(this_->_fields_data_map) = detail::from_qstring<file_key>(value_); }},
+	    {boost::mpl::c_str<crypt_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<crypt_key>(this_->_fields_data_map) = detail::from_qstring<crypt_key>(value_); }},
+	    {boost::mpl::c_str<has_attach_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<has_attach_key>(this_->_fields_data_map) = detail::from_qstring<has_attach_key>(value_); }},
+	    {boost::mpl::c_str<attach_size_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<attach_size_key>(this_->_fields_data_map) = detail::from_qstring<attach_size_key>(value_); }},
+	    {boost::mpl::c_str<dynamic_name_key>::value, [](i_t* const this_, const QString& value_) { boost::fusion::at_key<dynamic_name_key>(this_->_fields_data_map) = detail::from_qstring<dynamic_name_key>(value_); }}};
 
-	//		switch (key_name.toInt()) {
-	//			case pin_key:
-	//				break;
-	//			case id_key:
-	//				break;
-	//			case name_key:
-	//				break;
-	//			case author_key:
-	//				break;
-	//			case home_key:
-	//				break;
-	//			case url_key:
-	//				break;
-	//			case tags_key:
-	//				break;
-	//			case rating_key:
-	//				break;
-	//			case ctime_key:
-	//				break;
-	//			case dir_key:
-	//				break;
-	//			case file_key:
-	//				break;
-	//			case crypt_key:
-	//				break;
-	//			case has_attach_key:
-	//				break;
-	//			case attach_size_key:
-	//				break;
-	//			case dynamic_name_key:
-	//				break;
-	//		}
-	dynamic_funtions[key_name](value_);
+
+	dynamic_funtions[key_name](this, value_);
 	//	return result;
 }
 QString i_t::field_dynamic(const QString& key_name) const
 {
 	//	boost::intrusive_ptr<i_t> this = this;
-	QString result;
-	//		boost::fusion::pair<pin_key, pin_value>,
-	//					   boost::fusion::pair<name_key, name_value>,
-	//					   boost::fusion::pair<author_key, author_value>,
-	//					   boost::fusion::pair<home_key, home_value>,
-	//					   boost::fusion::pair<url_key, url_value>,
-	//					   boost::fusion::pair<tags_key, tags_value>,
-	//					   boost::fusion::pair<id_key, id_value>,
-	//					   boost::fusion::pair<rating_key, rating_value>,
-	//					   boost::fusion::pair<ctime_key, ctime_value>,
-	//					   boost::fusion::pair<dir_key, dir_value>,
-	//					   boost::fusion::pair<file_key, file_value>,
-	//					   boost::fusion::pair<crypt_key, crypt_value>,
-	//					   boost::fusion::pair<has_attach_key, has_attach_value>,
-	//					   boost::fusion::pair<attach_size_key, attach_size_value>,
-	//					   boost::fusion::pair<dynamic_name_key, dynamic_name_value>
-	QMap<QString, std::function<QString()>> dynamic_funtions;
-	dynamic_funtions[boost::mpl::c_str<pin_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<pin_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<id_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<id_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<name_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<name_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<author_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<author_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<home_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<home_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<url_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<url_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<tags_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<tags_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<rating_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<rating_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<ctime_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<ctime_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<dir_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<dir_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<file_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<file_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<crypt_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<crypt_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<has_attach_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<has_attach_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<attach_size_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<attach_size_key>(this->_fields_data_map)); };
-	dynamic_funtions[boost::mpl::c_str<dynamic_name_key>::value] = [&] { return detail::to_qstring(boost::fusion::at_key<dynamic_name_key>(this->_fields_data_map)); };
+	//	QString result;
 
-	//		switch (key_name.toInt()) {
-	//			case pin_key:
-	//				break;
-	//			case id_key:
-	//				break;
-	//			case name_key:
-	//				break;
-	//			case author_key:
-	//				break;
-	//			case home_key:
-	//				break;
-	//			case url_key:
-	//				break;
-	//			case tags_key:
-	//				break;
-	//			case rating_key:
-	//				break;
-	//			case ctime_key:
-	//				break;
-	//			case dir_key:
-	//				break;
-	//			case file_key:
-	//				break;
-	//			case crypt_key:
-	//				break;
-	//			case has_attach_key:
-	//				break;
-	//			case attach_size_key:
-	//				break;
-	//			case dynamic_name_key:
-	//				break;
-	//		}
-	result = dynamic_funtions[key_name]();
-	return result;
+	static QMap<QString, std::function<QString(i_t const* const)>> dynamic_funtions{
+	    {boost::mpl::c_str<pin_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<pin_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<id_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<id_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<name_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<name_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<author_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<author_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<home_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<home_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<url_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<url_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<tags_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<tags_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<rating_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<rating_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<ctime_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<ctime_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<dir_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<dir_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<file_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<file_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<crypt_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<crypt_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<has_attach_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<has_attach_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<attach_size_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<attach_size_key>(this_->_fields_data_map)); }},
+	    {boost::mpl::c_str<dynamic_name_key>::value, [](i_t const* const this_) { return detail::to_qstring(boost::fusion::at_key<dynamic_name_key>(this_->_fields_data_map)); }}};
+
+
+	return dynamic_funtions[key_name](this);
 }
 
 #include "models/tree/tree_item.inl"

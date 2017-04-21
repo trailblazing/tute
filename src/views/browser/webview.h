@@ -256,7 +256,7 @@ namespace web {
 			}
 		};
 
-		void metaeditor_sychronize();
+//		void metaeditor_sychronize();
 
 		boost::intrusive_ptr<i_t> bind(boost::intrusive_ptr<i_t> host_);
 

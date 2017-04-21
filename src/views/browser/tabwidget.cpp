@@ -806,7 +806,8 @@ namespace web {
 	    , _lineeditcompleter(nullptr) // new QCompleter(_completionModel, this)
 	    , _lineedit_stack(new QStackedWidget())
 	    , _tabbar(new TabBar(this))
-	    , _profile(new web::Profile(profile_storage_name, this)) //(profile_) // globalparameters.profile()   // QWebEngineProfile::defaultProfile()
+	    , _profile(new web::Profile(_blogger->topic(), //profile_storage_name,
+		  this))                                   //(profile_) // globalparameters.profile()   // QWebEngineProfile::defaultProfile()
 	    , _fullscreenview(nullptr)
 	    , _fullscreennotification(nullptr)
 	    , _record_screen(
