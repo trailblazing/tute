@@ -125,8 +125,12 @@ namespace web {
 		    [&] {
 			    real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), false))>(lineEdit()->text(),
 				[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
-					setInactiveText(real_target_url_->value());
-					auto bro = search_now(real_target_url_); //search_text
+					auto topic_new = real_target_url_->value();
+					setInactiveText(topic_new);
+					auto topic_old = _find_screen->browser()->blogger()->topic();
+					bool is_new_topic = true;
+					if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_new_topic = false;
+					auto bro = search_now(real_target_url_, is_new_topic); //search_text
 					bro->activateWindow();
 					return bro;
 				});
@@ -138,10 +142,10 @@ namespace web {
 		connect(this, &ToolbarSearch::return_pressed, _findtext, &QLineEdit::returnPressed);
 #else
 		//		connect(this, &SearchLineEdit::textChanged, [&](const QString& text_) { lineEdit()->setText(text_); });
-//		connect(this, &ToolbarSearch::return_pressed, [&] {
-//			lineEdit()->returnPressed();
-//			//			_find_screen->find_text(lineEdit()->text());
-//		});
+		//		connect(this, &ToolbarSearch::return_pressed, [&] {
+		//			lineEdit()->returnPressed();
+		//			//			_find_screen->find_text(lineEdit()->text());
+		//		});
 		// При каждом изменении текста в строке запроса
 		connect(this, &ToolbarSearch::textChanged, _find_screen, &FindScreen::enable_findbutton, Qt::UniqueConnection);
 
@@ -179,7 +183,7 @@ namespace web {
 		settings.endGroup();
 	}
 
-	Browser* ToolbarSearch::search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_, bool new_topic)
+	Browser* ToolbarSearch::search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_, bool is_new_topic)
 	{
 		auto to_be_url_ = to_be_url(non_url_search_text_->value());
 		assert(to_be_url_ == QUrl() || to_be_url_ == detail::to_qstring(web::Browser::_defaulthome));
@@ -287,11 +291,11 @@ namespace web {
 		//		QUrl url = QUrl(search_text);
 		//		url_value real_url = url_value(search_text);
 		//		auto topic = Blogger::purify_topic(_findtext->text());
-		auto browser_ = new_topic ? real_url_t<QString>::instance<web::Browser*>(search_text,
-						[&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
-							return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); // gl_paras->main_window()->browser(search_text);
-						}) :
-					    _find_screen->browser();
+		auto browser_ = is_new_topic ? real_url_t<QString>::instance<web::Browser*>(search_text,
+						   [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
+							   return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); // gl_paras->main_window()->browser(search_text);
+						   }) :
+					       _find_screen->browser();
 		// if(url.host().isSimpleText());
 		// bool url_isRelative = url.isRelative();
 		// bool url_isValid = url.isValid();
@@ -483,8 +487,12 @@ namespace web {
 			QString text = v.toString();
 			lineEdit()->setText(text);
 			//			auto real_url_ =
-			real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), true))>(lineEdit()->text(), [&](auto real_url_) {
-				return this->search_now(real_url_, true);
+			real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), true))>(lineEdit()->text(), [&](auto real_target_url_) {
+				auto topic_new = real_target_url_->value(); //
+				auto topic_old = _find_screen->browser()->blogger()->topic();
+				bool is_new_topic = true;
+				if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_new_topic = false;
+				return this->search_now(real_target_url_, is_new_topic);
 			});
 			// std::thread(&ToolbarSearch::searchNow, this).detach();
 		}
@@ -496,23 +504,23 @@ namespace web {
 		_autosaver->changeOccurred();
 	}
 
-	void ToolbarSearch::text(const QString& text_)
-	{
-#ifdef USE_ADDITIONAL_BUFFER
-		_findtext->setText(text_);
-#else
-		lineEdit()->setText(text_);
-#endif // USE_ADDITIONAL_BUFFER
-	}
+//	void ToolbarSearch::text(const QString& text_)
+//	{
+//#ifdef USE_ADDITIONAL_BUFFER
+//		_findtext->setText(text_);
+//#else
+//		lineEdit()->setText(text_);
+//#endif // USE_ADDITIONAL_BUFFER
+//	}
 
-	QString ToolbarSearch::text() const
-	{
-#ifdef USE_ADDITIONAL_BUFFER
-		return _findtext->text();
-#else
-		return lineEdit()->text();
-#endif // USE_ADDITIONAL_BUFFER
-	}
+//	QString ToolbarSearch::text() const
+//	{
+//#ifdef USE_ADDITIONAL_BUFFER
+//		return _findtext->text();
+//#else
+//		return lineEdit()->text();
+//#endif // USE_ADDITIONAL_BUFFER
+//	}
 
 	void WorkerThread::run()
 	{

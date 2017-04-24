@@ -250,7 +250,7 @@ void FindScreen::setup_findtext_and_button(void)
 
 	// Кнопка "Поиск"
 	_find_start_button = new FlatToolButton("", this, QIcon()); // QPushButton
-	_find_start_button->setText(tr("New Topic"));
+	_find_start_button->setText(tr("Find"));
 	// _findstartbutton->setDefault(true);
 	_find_start_button->setEnabled(false);
 	_find_start_button->setFixedWidth(50);
@@ -527,14 +527,19 @@ void FindScreen::setup_signals(void)
 		    assert(count_ > 0);
 		    auto stack = static_cast<QStackedWidget*>(_stack_layout->itemAt(0)->widget());
 		    if (stack) {
-			    auto line_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
-			    if (line_edit) {
-				    //				    emit line_edit->return_pressed();
-				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), true))>(
-					line_edit->text(), //_toolbarsearch_buffer->text(),
-					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
-						return _toolbarsearch_buffer->search_now(real_target_url_, true); // FindScreen::find_clicked();
-					});
+			    auto search_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
+			    if (search_edit) {
+				    emit search_edit->lineEdit()->returnPressed();
+//				    auto line_edit = search_edit->lineEdit();
+//				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), true))>(
+//					line_edit->text(), //_toolbarsearch_buffer->text(),
+//					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+//						auto topic_new = real_target_url_->value(); //
+//						auto topic_old = _browser->blogger()->topic();
+//						bool is_new_topic = true;
+//						if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_new_topic = false;
+//						return _toolbarsearch_buffer->search_now(real_target_url_, is_new_topic); // FindScreen::find_clicked();
+//					});
 			    }
 		    }
 	    });
@@ -548,10 +553,11 @@ void FindScreen::setup_signals(void)
 		    assert(count_ > 0);
 		    auto stack = static_cast<QStackedWidget*>(_stack_layout->itemAt(0)->widget());
 		    if (stack) {
-			    auto line_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
-			    if (line_edit) {
-				    line_edit->text(str);
-				    emit line_edit->lineEdit()->returnPressed();
+			    auto search_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
+			    if (search_edit) {
+				    auto line_edit = search_edit->lineEdit();
+				    line_edit->setText(str);
+				    emit search_edit->lineEdit()->returnPressed();
 				    //				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
 				    //					line_edit->text(), //_toolbarsearch_buffer->text(),
 				    //					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
@@ -995,8 +1001,8 @@ boost::intrusive_ptr<i_t> FindScreen::find_start()
 		// find_recursive(_result_list, _session_root_item, _start_item); //
 		// candidate_root->tabledata();
 		return final_result; //
-				     // find_recursive(final_result, _session_root_item, _start_item);				//
-				     // _result_list;
+		// find_recursive(final_result, _session_root_item, _start_item);				//
+		// _result_list;
 	};
 
 	// deprecated by KnowModel::model_move_as_child_impl in this->find_recursive
@@ -1475,16 +1481,17 @@ void FindScreen::switch_search_content()
 			assert(count_ > 0);
 			auto stack = static_cast<QStackedWidget*>(_stack_layout->itemAt(0)->widget());
 			if (stack) {
-				auto line_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
-				if (line_edit) {
+				auto search_edit = static_cast<web::ToolbarSearch*>(stack->currentWidget());
+				if (search_edit) {
+					auto line_edit = search_edit->lineEdit();
 					auto url_ = _browser->tab_widget()->current_item()->field<url_key>();
 					if (line_edit->text() == detail::to_qstring(url_)) {
-						if (line_edit->inactiveText() == web::SearchLineEdit::_default_tip)
-							line_edit->text(topic);
+						if (search_edit->inactiveText() == web::SearchLineEdit::_default_tip)
+							line_edit->setText(topic);
 						else
-							line_edit->text(line_edit->inactiveText());
+							line_edit->setText(search_edit->inactiveText());
 					} else {
-						line_edit->text(detail::to_qstring(url_));
+						line_edit->setText(detail::to_qstring(url_));
 					}
 				}
 			}
