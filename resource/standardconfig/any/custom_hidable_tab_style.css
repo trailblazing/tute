@@ -50,14 +50,14 @@
     /*background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #000000, stop: 0.4 #000000, stop: 0.5 #000000, stop: 1.0 #000000);*/
     font-color: black;
     }
-    QTabBar::tab:selected, QTabBar::tab:hover{
+    QTabBar::tab:hover{
     border-color: #9B9B9B;
     border-bottom-color: white; /* #C2C7CB*/         /* same as pane color */
     /*background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #7a7a7a, stop: 0.4 #747474, stop: 0.5 #676767, stop: 1.0 #7a7a7a);*/
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #000000, stop: 0.4 #000000, stop: 0.5 #000000, stop: 1.0 #000000);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #a4a4a4, stop: 0.4 #a4a4a4, stop: 0.5 #a4a4a4, stop: 1.0 #a4a4a4);
     /*background-color: #333333;*/  /*white*/
     font-color: white
-    frontground-color: transparent;
+    /*frontground-color: transparent;*/
     }
     QTabBar::tab:!selected {
     margin-left: 0px; /* make non-selected tabs look smaller */
