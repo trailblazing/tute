@@ -693,7 +693,7 @@ void FindScreen::enable_findbutton(const QString& text)
 //}
 
 // Слот, срабатывающий при нажатии на кнопку начала поиска
-boost::intrusive_ptr<i_t> FindScreen::find_internal_decomposed(const QString& search_text, bool new_topic)
+boost::intrusive_ptr<i_t> FindScreen::find_internal_decomposed(QString const& search_text)
 {
 	boost::intrusive_ptr<i_t> result(nullptr);
 	// Поля, где нужно искать (Заголовок, текст, теги...)
@@ -715,7 +715,7 @@ boost::intrusive_ptr<i_t> FindScreen::find_internal_decomposed(const QString& se
 		// Выясняется список слов, которые нужно искать
 		_search_word_list = text_delimiter_decompose(search_text); //_toolbarsearch->text()
 		if (_search_word_list.size() != 0) {
-			result = find_start(new_topic);
+			result = find_start();
 		} else {
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("Can not start find process"));
@@ -742,7 +742,7 @@ boost::intrusive_ptr<i_t> FindScreen::find_internal_decomposed(const QString& se
 	return result;
 }
 
-boost::intrusive_ptr<i_t> FindScreen::find_start(bool new_topic)
+boost::intrusive_ptr<i_t> FindScreen::find_start()
 {
 	//// deprecated:
 	// if(globalparameters.vtab_tree()->currentWidget()->objectName() ==
@@ -987,7 +987,7 @@ boost::intrusive_ptr<i_t> FindScreen::find_start(bool new_topic)
 
 		// std::future<QList<boost::intrusive_ptr<Linker> > >
 		final_result = std::async(std::launch::async, [&] {
-				       return find_recursive(final_result, _session_root_item, _start_item, new_topic);
+				       return find_recursive(final_result, _session_root_item, _start_item);
 			       }).get();
 
 		// std::thread(&FindScreen::find_recursive, this, _result_list,
@@ -995,8 +995,8 @@ boost::intrusive_ptr<i_t> FindScreen::find_start(bool new_topic)
 		// find_recursive(_result_list, _session_root_item, _start_item); //
 		// candidate_root->tabledata();
 		return final_result; //
-		// find_recursive(final_result, _session_root_item, _start_item);				//
-		// _result_list;
+				     // find_recursive(final_result, _session_root_item, _start_item);				//
+				     // _result_list;
 	};
 
 	// deprecated by KnowModel::model_move_as_child_impl in this->find_recursive
@@ -1133,8 +1133,10 @@ boost::intrusive_ptr<i_t> FindScreen::find_start(bool new_topic)
 	return _final_result; // ->record_table();
 }
 
-boost::intrusive_ptr<i_t>& FindScreen::find_recursive(boost::intrusive_ptr<i_t>& final_result, boost::intrusive_ptr<i_t> _session_root_item, boost::intrusive_ptr<i_t> _start_item, bool new_topic)
+boost::intrusive_ptr<i_t>& FindScreen::find_recursive(boost::intrusive_ptr<i_t>& final_result, boost::intrusive_ptr<i_t> _session_root_item, boost::intrusive_ptr<i_t> _start_item //, bool new_topic
+    )
 {
+	//	(void)new_topic;
 	//	auto tree_view_ = _tree_screen->view();
 	//	auto current_model_ = [&] {return tree_view_->source_model();};
 	////    // Если была нажата отмена поиска
