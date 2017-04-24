@@ -140,8 +140,8 @@ namespace web {
 		ToolbarSearch(FindScreen* parent = 0, WebView* view_ = nullptr); // QStackedWidget *lineedits, QLineEdit *findtext,
 
 		~ToolbarSearch();
-		void text(const QString& text_);
-		QString text() const;
+//		void text(const QString& text_);
+//		QString text() const;
 
 		//		QLineEdit* findtext() { return _findtext; }
 
@@ -152,7 +152,7 @@ namespace web {
 
 	    public slots:
 		void clear();
-		web::Browser* search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_, bool new_topic = false); // return browser_ref will lead lease.h need web::Browser defined
+		web::Browser* search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_, bool is_new_topic = false); // return browser_ref will lead lease.h need web::Browser defined
 
 	    private slots:
 		void save();
