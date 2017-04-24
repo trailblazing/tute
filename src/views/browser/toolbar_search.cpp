@@ -111,9 +111,9 @@ namespace web {
 		_findtext->setVisible(false);
 #endif // USE_ADDITIONAL_BUFFER
 
-		QMenu* m = menu();
-		connect(m, &QMenu::aboutToShow, this, &ToolbarSearch::show_menu);
-		connect(m, &QMenu::triggered, this, &ToolbarSearch::triggered_menu_action);
+		QMenu* menu_ = menu();
+		connect(menu_, &QMenu::aboutToShow, this, &ToolbarSearch::show_menu);
+		connect(menu_, &QMenu::triggered, this, &ToolbarSearch::triggered_menu_action);
 
 		QCompleter* completer = new QCompleter(_stringlistmodel, this);
 		completer->setCompletionMode(QCompleter::InlineCompletion);
@@ -458,22 +458,22 @@ namespace web {
 	void ToolbarSearch::show_menu()
 	{
 		lineEdit()->selectAll();
-		QMenu* m = menu();
-		m->clear();
+		QMenu* menu_ = menu();
+		menu_->clear();
 		QStringList list = _stringlistmodel->stringList();
 		if (list.isEmpty()) {
-			m->addAction(tr("No Recent Searches"));
+			menu_->addAction(tr("No Recent Searches"));
 
 			return;
 		}
-		QAction* recent = m->addAction(tr("Recent Searches"));
+		QAction* recent = menu_->addAction(tr("Recent Searches"));
 		recent->setEnabled(false);
 		for (int i = 0; i < list.count(); ++i) {
 			QString text = list.at(i);
-			m->addAction(text)->setData(text);
+			menu_->addAction(text)->setData(text);
 		}
-		m->addSeparator();
-		m->addAction(tr("Clear Recent Searches"), this, &ToolbarSearch::clear);
+		menu_->addSeparator();
+		menu_->addAction(tr("Clear Recent Searches"), this, &ToolbarSearch::clear);
 	}
 
 	void ToolbarSearch::triggered_menu_action(QAction* action)

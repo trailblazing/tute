@@ -1303,7 +1303,7 @@ boost::intrusive_ptr<i_t>& FindScreen::find_recursive(boost::intrusive_ptr<i_t>&
 								//									tags_ +=
 								//search_topic;
 								//								candidate->field<tags_type>(tags_);
-								if (!new_topic) candidate->topic_append(_browser->blogger()->topic()); //_toolbarsearch_buffer->text()
+								candidate->topic_append(_browser->blogger()->topic()); //_toolbarsearch_buffer->text()
 
 								final_result << candidate; // result->linker();
 							}
