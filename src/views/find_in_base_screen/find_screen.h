@@ -107,8 +107,8 @@ class FindScreen : public QWidget
 
 	void widget_show(void);
 	void widget_hide(void);
-	boost::intrusive_ptr<i_t> find_internal_decomposed(const QString& search_text, bool new_topic = false);
-//	void find_text(QString text_);
+	boost::intrusive_ptr<i_t> find_internal_decomposed(QString const& search_text);
+	//	void find_text(QString text_);
 
 	void replace_navigater(QToolBar* nv);
 
@@ -173,10 +173,10 @@ class FindScreen : public QWidget
 
 	void if_find_in_field(QString fieldname, int state);
 
-	boost::intrusive_ptr<i_t> find_start(bool new_topic = false);
+	boost::intrusive_ptr<i_t> find_start();
 
 	boost::intrusive_ptr<i_t>&
-	find_recursive(boost::intrusive_ptr<i_t>& final_result, boost::intrusive_ptr<i_t> _session_root_item, boost::intrusive_ptr<i_t> curritem, bool new_topic = false);
+	find_recursive(boost::intrusive_ptr<i_t>& final_result, boost::intrusive_ptr<i_t> _session_root_item, boost::intrusive_ptr<i_t> curritem);
 
 	bool find_in_text_process(const QString& text);
 
