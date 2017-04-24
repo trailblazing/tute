@@ -324,7 +324,7 @@ namespace web {
 			//			if (real_url_ != QUrl() && real_url_ != detail::to_qstring(web::Browser::_defaulthome))
 			//				deal_with_url(tree_view_, search_text, tree_index, url_value(url.toString()), browser_);
 			//			else
-			if ((result_item = gl_paras->find_screen()->find_internal_decomposed(search_text, new_topic))) {
+			if ((result_item = gl_paras->find_screen()->find_internal_decomposed(search_text))) {
 				if (result_item->count_direct() > 0) {
 					// tree_view->select_as_current(TreeIndex::instance([&] {return
 					// tree_view->source_model();}, result_item, result_item->parent()));
