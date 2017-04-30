@@ -626,6 +626,7 @@ DISTFILES   +=          \
 #    resource/standardconfig/android/mode.ini \
 #    resource/standardconfig/meego/entrance.ini \
 #    resource/standardconfig/meego/mode.ini \
+    update.sh
 
 FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \

@@ -1259,9 +1259,9 @@ namespace web {
 				if (it)
 					it->topic_append(_blogger->topic()); //target_url.toString()
 				page = it ? it->page() : nullptr;
-				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
+				if (!page) page = this; //	assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 			}
-			assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
+			if (!page) page = this; //	assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 		} else
 #ifdef USE_POPUP_WINDOW
 		    if (type == WebBrowserTab)
@@ -1308,9 +1308,9 @@ namespace web {
 					it->topic_append(_blogger->topic());
 				page = it ? it->activate(std::bind(&wn_t::find, gl_paras->main_window(), find_binder))->page() : nullptr; // std::placeholders::_1
 
-				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
+				if (!page) page = this; //				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 			}
-			assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
+			if (!page) page = this; //			assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 		}
 #ifdef USE_POPUP_WINDOW
 		else {                                                 // type == WebDialog
@@ -1354,7 +1354,7 @@ namespace web {
 		// page->activate();
 		// });
 		// }
-		assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "" || type == WebDialog);
+		if (!page) page = this; // because of _hovered_url == "javascript:void(0)" or something else//		assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "" || type == WebDialog);
 
 		return page;
 	}
