@@ -261,7 +261,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			}
 			if (it)
 				//				if (it->page()) it->page()
-				_blogger->metaeditor_sychronize();
+				_blogger->metaeditor_sychronize(_tab_widget->browser());
 		}
 		//		_view->setFocus();
 	}

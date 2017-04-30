@@ -175,7 +175,7 @@ class Blogger : public QMainWindow
 	//	rs_t *record_screen();
 	web::Docker<Blogger>* editor_docker();
 	//	static QString purify_topic(const QString &topic);
-	void metaeditor_sychronize();
+	void metaeditor_sychronize(web::Browser* browser_);
 
     private:
 	void doUiSetup();
