@@ -198,7 +198,7 @@ namespace web {
 		WebPage(Profile* profile, boost::intrusive_ptr<i_t> item, ts_t* tree_screen,
 		    Blogger* blogger_,
 		    web::Docker<web::Browser>* browser_docker_, web::Browser* browser, web::TabWidget* tabmanager,
-		    rctrl_t *rctrl_,
+		    rctrl_t* rctrl_,
 		    WebView* parent = 0);
 
 		~WebPage();
@@ -209,7 +209,7 @@ namespace web {
 
 		rctrl_t* record_ctrl(); // {return _record_controller;}
 		WebView* activate();
-		WebView* load(boost::intrusive_ptr<i_t> item, bool checked = true);
+		WebView* load(boost::intrusive_ptr<i_t> item, bool checked = true, bool force_reload = false);
 
 		void load(const QUrl& url) = delete;
 
@@ -256,7 +256,7 @@ namespace web {
 			}
 		};
 
-//		void metaeditor_sychronize();
+		//		void metaeditor_sychronize();
 
 		boost::intrusive_ptr<i_t> bind(boost::intrusive_ptr<i_t> host_);
 
@@ -395,7 +395,7 @@ namespace web {
 		    ts_t* tree_screen,
 		    Blogger* blogger_,
 		    web::Docker<web::Browser>* entrance,
-		    Browser *browser,
+		    Browser* browser,
 		    web::TabWidget* tabmanager,
 		    rctrl_t* rctrl_);
 

@@ -375,16 +375,17 @@ namespace sd {
 		}
 		// un-default constructable object will fail
 		// semantic wrong if use detach, fail if use swap on uninitialized object.
-		intrusive_ptr& operator=(std::nullptr_t) = delete;
-		//		{
-		//			this->detach();
-		//			//			intrusive_ptr().swap(*this); //intrusive_ptr(nullptr).swap(*this); //
-		//			//			intrusive_ptr(static_cast<element_type*>(0), false).swap(*this);
-		//			//			*static_cast<::boost::intrusive_ptr<element_type>*>(this) = boost::intrusive_ptr<element_type>(static_cast<element_type*>(0), false); //->reset(static_cast<element_type*>(0), false);
-		//			//			this->_shadow = nullptr;
-		//			assert(internal_integrity());
-		//			return *this;
-		//		}
+		intrusive_ptr& operator=(std::nullptr_t) // = delete;
+		{
+			this->operator=(static_cast<element_type*>(nullptr));
+			//			this->detach();
+			//			//			intrusive_ptr().swap(*this); //intrusive_ptr(nullptr).swap(*this); //
+			//			//			intrusive_ptr(static_cast<element_type*>(0), false).swap(*this);
+			//			//			*static_cast<::boost::intrusive_ptr<element_type>*>(this) = boost::intrusive_ptr<element_type>(static_cast<element_type*>(0), false); //->reset(static_cast<element_type*>(0), false);
+			//			//			this->_shadow = nullptr;
+			assert(internal_integrity());
+			return *this;
+		}
 
 		intrusive_ptr()
 		    : boost::intrusive_ptr<element_type>(nullptr), _shadow(nullptr)
@@ -398,7 +399,7 @@ namespace sd {
 		{
 			if (_shadow && internal_integrity() //&& (!_destroy_request_connection.connected() || force)
 			    ) {
-				if (_destroy_request_connection.connected()) _destroy_request_connection.disconnect();
+				//				if (_destroy_request_connection.connected()) _destroy_request_connection.disconnect();// might trigger undefined error of object
 				_destroy_request_connection = // boost::intrusive_ptr<element_type>::get()
 				    _shadow->_destroy_request.connect(fun);
 			}
@@ -614,7 +615,7 @@ namespace sd {
 
 			if (_shadow && internal_integrity() // && (!_close_request_connection.connected() || force)
 			    ) {
-				if (_close_request_connection.connected()) _close_request_connection.disconnect();
+				//				if (_close_request_connection.connected()) _close_request_connection.disconnect();//might trigger undefined error
 				_close_request_connection = //boost::intrusive_ptr<element_type>::get()
 				    _shadow->_close_request.connect(fun);
 			}

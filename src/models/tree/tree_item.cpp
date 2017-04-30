@@ -2832,7 +2832,7 @@ web::WebView* i_t::bind()
 	return view;
 }
 
-web::WebView* i_t::activate(const std::function<web::WebView*(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal)>& find_activated)
+web::WebView* i_t::activate(const std::function<web::WebView*(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal)>& find_activated, bool force_reload)
 {
 	assert(_binder); // auto result =
 	// globalparameters.entrance()->item_bind(this);  // may be
@@ -2843,7 +2843,7 @@ web::WebView* i_t::activate(const std::function<web::WebView*(const std::functio
 		if (this != check_view->page()->host().get() || !_binder) {
 			bind();
 			v = _binder->activate();
-		} else if (!check_view->load_finished())
+		} else if (!check_view->load_finished() || force_reload)
 			v = _binder->activate();
 		else
 			v = check_view; // _binder->page()->view();

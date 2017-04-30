@@ -175,7 +175,7 @@ class Blogger : public QMainWindow
 	//	rs_t *record_screen();
 	web::Docker<Blogger>* editor_docker();
 	//	static QString purify_topic(const QString &topic);
-	void metaeditor_sychronize(web::Browser* browser_);
+	void metaeditor_sychronize();
 
     private:
 	void doUiSetup();
@@ -483,9 +483,10 @@ class Blogger : public QMainWindow
 	QStackedWidget* _main_stack;
 
 	// Ui::CategoryWidget
-	SideTabWidget* _control_tab;
+
 	TEXTEDIT_FOR_READ* _console;
 	TEXTEDIT* _editor;
+	SideTabWidget* _control_tab;
 
 	QVBoxLayout* _main_layout_with_search;
 	QHBoxLayout* _main_layout;

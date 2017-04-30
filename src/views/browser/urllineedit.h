@@ -43,6 +43,7 @@
 #define URLLINEEDIT_H
 
 #include <QtCore/QUrl>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QStyleOptionFrame>
 #include <QtWidgets/QWidget>
 
@@ -75,8 +76,8 @@ namespace web {
 
 		QLineEdit* lineEdit() const;
 
-		void setLeftWidget(QWidget* widget);
-		QWidget* leftWidget() const;
+		void left_widget(QWidget* widget);
+		QWidget* left_widget() const;
 
 		QSize sizeHint() const;
 
@@ -95,13 +96,27 @@ namespace web {
 		void updateGeometries();
 		void initStyleOption(QStyleOptionFrame* option) const; // QStyleOptionFrameV2
 
-		QWidget* _leftwidget;
+		QWidget* _left_widget;
 		QLineEdit* _lineedit;
 		ClearButton* _clearbutton;
 	};
 
 	class UrlIconLabel;
 	class WebView;
+
+	class UrlIconLabel : public QLabel {
+	    public:
+		UrlIconLabel(QWidget* parent);
+
+		WebView* _browserview;
+
+	    protected:
+		void mousePressEvent(QMouseEvent* event);
+		void mouseMoveEvent(QMouseEvent* event);
+
+	    private:
+		QPoint _dragstartpos;
+	};
 
 	class UrlLineEdit : public ExLineEdit {
 #if QT_VERSION == 0x050600
@@ -113,6 +128,9 @@ namespace web {
 	    public:
 		UrlLineEdit(WebView* view = nullptr, QWidget* parent = 0);
 		void setWebView(WebView* webView);
+
+		WebView* webview();
+		UrlIconLabel* iconlabel() const;
 
 	    protected:
 		void paintEvent(QPaintEvent* event);

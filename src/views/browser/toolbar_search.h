@@ -131,17 +131,17 @@ namespace web {
 // );
 
 
-//#if QT_VERSION == 0x050600
-//		void return_pressed() W_SIGNAL(return_pressed); //
-//#else
-//		void return_pressed();
-//#endif
+#if QT_VERSION == 0x050600
+		void return_pressed() W_SIGNAL(return_pressed); //
+#else
+		void return_pressed();
+#endif
 	    public:
 		ToolbarSearch(FindScreen* parent = 0, WebView* view_ = nullptr); // QStackedWidget *lineedits, QLineEdit *findtext,
 
 		~ToolbarSearch();
-//		void text(const QString& text_);
-//		QString text() const;
+		//		void text(const QString& text_);
+		//		QString text() const;
 
 		//		QLineEdit* findtext() { return _findtext; }
 

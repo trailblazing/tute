@@ -256,7 +256,7 @@ SuperMenu::SuperMenu(Blogger* bloger_, QWidget* parent, SysTrayIcon* sti)
 	//	pasteAction->setShortcut(QKeySequence::fromString("Ctrl+V"));//?, make system shortcut does not work
 	//	findAction->setShortcut(QKeySequence::fromString("Ctrl+F"));
 	findAgainAction->setShortcut(QKeySequence::fromString("Ctrl+G"));
-	boldAction->setShortcut(QKeySequence::fromString("Ctrl+B"));
+//	boldAction->setShortcut(QKeySequence::fromString("Ctrl+B"));
 	italicAction->setShortcut(QKeySequence::fromString("Ctrl+I"));
 	imageAction->setShortcut(QKeySequence::fromString("Ctrl+J"));
 	linkAction->setShortcut(QKeySequence::fromString("Ctrl+L"));
