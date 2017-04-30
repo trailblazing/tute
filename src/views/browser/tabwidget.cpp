@@ -906,13 +906,12 @@ namespace web {
 
 		// Actions
 		// _newtabaction = ;
-		_newtabaction->setShortcuts(QKeySequence::AddTab);
+		_newtabaction->setShortcuts(QKeySequence::AddTab //QList<QKeySequence>() << QKeySequence(Qt::ControlModifier + Qt::Key_T)
+		    );                                           //QKeySequence::AddTab
 		_newtabaction->setIconVisibleInMenu(false);
-		connect(_newtabaction, &QAction::triggered // , this
-		    ,
+		connect(_newtabaction, &QAction::triggered, // , this
 		    [&](bool make_current) {
 			    Q_UNUSED(make_current)
-
 			    auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(web::Browser::_defaulthome,
 				[&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
 					return TreeIndex::url_activate(
@@ -1124,28 +1123,30 @@ namespace web {
 	WebView* TabWidget::select_as_current(WebView* v)
 	{
 		auto index = webViewIndex(v);
-		setCurrentIndex(index);
-		auto tree_screen = gl_paras->main_window()->tree_screen();
-		auto page = v->page();
-		//		if(!v->isActiveWindow()) v->activateWindow();
-		if (page) {
-			auto it = v->page()->host();
-			if (it) {
-				if (static_cast<QModelIndex>(tree_screen->view()->source_model()->index(it)).isValid()) {
-					if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
-					auto _rctrl = _record_screen->record_ctrl();
-					if (_rctrl) {
-						auto _record_view = _rctrl->view();
-						QItemSelectionModel* item_selection_model = _record_view->selectionModel();
-						bool has_selection = item_selection_model->hasSelection();
-						if (_rctrl->view()->current_item() != it || !has_selection) _rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(index)));
-					}
-					if (page->title() != it->field<name_key>()) page->record_info_update(page->url(), page->title());
-					_main_window->synchronize_title(it->field<name_key>());
+		if (currentIndex() != index) {
+			setCurrentIndex(index);
+			auto tree_screen = gl_paras->main_window()->tree_screen();
+			auto page = v->page();
+			//		if(!v->isActiveWindow()) v->activateWindow();
+			if (page) {
+				auto it = v->page()->host();
+				if (it) {
+					if (static_cast<QModelIndex>(tree_screen->view()->source_model()->index(it)).isValid()) {
+						if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
+						auto _rctrl = _record_screen->record_ctrl();
+						if (_rctrl) {
+							auto _record_view = _rctrl->view();
+							QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+							bool has_selection = item_selection_model->hasSelection();
+							if (_rctrl->view()->current_item() != it || !has_selection) _rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(index)));
+						}
+						if (page->title() != it->field<name_key>()) page->record_info_update(page->url(), page->title());
+						_main_window->synchronize_title(it->field<name_key>());
 
-					it->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
-				} else
-					closeTab(index);
+						it->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
+					} else
+						closeTab(index);
+				}
 			}
 		}
 		return currentWebView();
@@ -1284,11 +1285,10 @@ namespace web {
 #ifdef USE_EDITOR_WRAP
 				if (_blogger->item() != _target_item)
 
-#endif // USE_EDITOR_WRAP
-					emit view_current->page()->become_current(
-					    view_current->page()->binder()); // metaeditor->bind(record);
+#endif                                                                                                             // USE_EDITOR_WRAP
+					emit view_current->page()->become_current(view_current->page()->binder()); // metaeditor->bind(record);
 				//
-				select_as_current(view_current);
+				if (currentWebView() != view_current) select_as_current(view_current);
 			}
 		};
 
@@ -1785,8 +1785,10 @@ namespace web {
 					assert(view->page()->binder()->integrity_external(result_item, view->page()));
 
 					{
+						auto find_screen = gl_paras->find_screen();
+						assert(find_screen);
 						// line edit
-						auto urlLineEdit = new ToolbarSearch(gl_paras->find_screen(), view); //UrlLineEdit(view);
+						auto urlLineEdit = new ToolbarSearch(find_screen, view); //UrlLineEdit(view);
 						QLineEdit* lineEdit = urlLineEdit->lineEdit();
 						if (!_lineeditcompleter && count() > 0) {
 							HistoryCompletionModel* completionModel = new HistoryCompletionModel(this);
@@ -1798,7 +1800,30 @@ namespace web {
 							if (listView) listView->setUniformItemSizes(true);
 						}
 						lineEdit->setCompleter(_lineeditcompleter);
-						connect(lineEdit, &QLineEdit::returnPressed, this, &TabWidget::lineEditReturnPressed);
+						connect(lineEdit, &QLineEdit::textChanged, [urlLineEdit](const QString& text) {
+
+							auto real_url_ = to_be_url(text);
+							if (real_url_ != QUrl() //&& real_url_ != detail::to_qstring(web::Browser::_defaulthome)
+							    ) {
+								auto iconlabel = urlLineEdit->iconlabel();
+								assert(iconlabel);
+								urlLineEdit->left_widget(iconlabel);
+								auto left_widget = urlLineEdit->left_widget();
+								assert(left_widget);
+								left_widget->show();
+								urlLineEdit->searchbutton()->hide();
+							} else {
+								auto searchbutton = urlLineEdit->searchbutton();
+								assert(searchbutton);
+								urlLineEdit->left_widget(searchbutton);
+								auto left_widget = urlLineEdit->left_widget();
+								assert(left_widget);
+								left_widget->show();
+								urlLineEdit->iconlabel()->hide();
+							}
+						});
+						connect(urlLineEdit, &ToolbarSearch::return_pressed, //lineEdit, &QLineEdit::returnPressed,
+						    this, &TabWidget::lineEditReturnPressed);
 						_lineedit_stack->addWidget(urlLineEdit);
 						_lineedit_stack->setSizePolicy(lineEdit->sizePolicy());
 					}
@@ -1983,15 +2008,31 @@ namespace web {
 
 	void TabWidget::lineEditReturnPressed()
 	{
-		if (QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender())) {
-			auto real_url_ = to_be_url(lineEdit->text());
+		if (ToolbarSearch* search_edit = qobject_cast<ToolbarSearch*>(sender())) { //if (QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender())) {
+			//			auto parent = lineEdit->parent();
+			//			if (parent) {
+			//				auto lineEdit = dynamic_cast<UrlLineEdit*>(parent);
+			//				if (lineEdit) {
+			auto view = search_edit->webview();
+			auto page = view->page();
+			auto it = page->host();
+			auto old_url = page->url();
+			auto text = search_edit->lineEdit()->text();
+			auto real_url_ = to_be_url(text);
 			if (real_url_ != QUrl() && real_url_ != detail::to_qstring(web::Browser::_defaulthome)) {
-				emit loadPage(lineEdit->text());
-				if (_lineedit_stack->currentWidget() == lineEdit) {
+				if (old_url == QUrl(detail::to_qstring(web::Browser::_defaulthome))) { // for Ctrl+T and QKeySequence::AddTab
+					it->field<url_key>(detail::from_qstring<url_key>(real_url_.toString()));
+					page->load(it, true, true); // force reload
+				} else {
+					emit loadPageNewTab(text);
+				}
+				if (_lineedit_stack->currentWidget() == search_edit) {
 					auto v = currentWebView();
 					if (v) v->setFocus();
 				}
 			}
+			//				}
+			//			}
 		}
 	}
 
@@ -2606,7 +2647,7 @@ namespace web {
 				if (ti) {
 					if (ti->field<id_key>() == id_value(current_tab_id)) {
 						auto v = ti->activate(std::bind(&TabWidget::find, this, std::placeholders::_1)); // std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)
-						select_as_current(v);
+						if (v != currentWebView()) select_as_current(v);
 					}
 				}
 				// }else{

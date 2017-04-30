@@ -46,7 +46,7 @@
     }
     QTabBar::tab:selected, QTabBar::tab:hover{
     /*background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 0, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa); */
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #232323, stop: 0.4 #a4a4a4, stop: 0.5 #d7d7d7, stop: 1.0 #eaeaea);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #a4a4a4, stop: 0.4 #a4a4a4, stop: 0.5 #d7d7d7, stop: 1.0 #eaeaea);
     /* background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);*/
     font-color: black;
     }
@@ -62,7 +62,7 @@
     }
     QTabBar::tab:!selected, QTabBar::tab:hover {
     margin-left: 0px; /* make non-selected tabs look smaller */
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #232323, stop: 0.4 #a4a4a4, stop: 0.5 #d7d7d7, stop: 1.0 #eaeaea);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #a4a4a4, stop: 0.4 #a4a4a4, stop: 0.5 #d7d7d7, stop: 1.0 #eaeaea);
     border-bottom-color: transparent;
     }
     QTabBar::tab:!selected {

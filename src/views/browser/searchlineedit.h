@@ -82,6 +82,21 @@ namespace web {
 		void textChanged(const QString& text);
 	};
 
+
+
+//	Search icon on the left hand side of the search widget. When a menu is set a down arrow appears
+
+	class SearchButton : public QAbstractButton {
+	    public:
+		SearchButton(QWidget* parent = 0);
+		void paintEvent(QPaintEvent* event);
+		QMenu* _menu;
+
+	    protected:
+		void mousePressEvent(QMouseEvent* event);
+	};
+
+
 	class SearchLineEdit : public UrlLineEdit //ExLineEdit
 	{
 		typedef UrlLineEdit super;
@@ -109,6 +124,7 @@ namespace web {
 		QMenu* menu() const;
 		void setMenu(QMenu* menu);
 		static constexpr char _default_tip[] = "Search";
+		SearchButton* searchbutton() const;
 
 	    protected:
 		void resizeEvent(QResizeEvent* event);

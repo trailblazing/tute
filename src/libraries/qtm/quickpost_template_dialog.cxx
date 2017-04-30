@@ -116,7 +116,7 @@ QuickpostTemplateDialog::QuickpostTemplateDialog(QStringList &titles, QStringLis
 	lwTemplates->setContextMenuPolicy(Qt::ActionsContextMenu);
 
 	insertTabIntoTemplate = new QAction(teTemplateText);
-	insertTabIntoTemplate->setShortcut(tr("Ctrl+T"));
+//	insertTabIntoTemplate->setShortcut(tr("Ctrl+T"));
 	insertTabIntoTemplate->setShortcutContext(Qt::WidgetShortcut);
 	teTemplateText->addAction(insertTabIntoTemplate);
 

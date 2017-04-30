@@ -244,31 +244,32 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
     , _central_widget([&]() -> QWidget* {_central_widget = nullptr; auto cw = new QWidget(this); return cw; }())
     , _splitter([&]() -> QSplitter* {_splitter = nullptr; auto sp = new QSplitter(Qt::Horizontal, _central_widget); return sp; }())
     , _main_stack([&]() -> QStackedWidget* {_main_stack = nullptr; auto ms = new QStackedWidget(_central_widget); return ms; }())
+    , _console([&]() -> TEXTEDIT_FOR_READ* {_console = nullptr; auto e = new TEXTEDIT_FOR_READ(_main_stack); return e; }())
+    // Set up editor widget
+    , _editor(
+#ifdef USE_WYEDIT
+
+	  [&]() -> TEXTEDIT* {
+		  _editor = nullptr;
+		  auto e = new TEXTEDIT(
+#ifdef USE_EDITOR_WRAP
+		      find_screen, this, hide_editor_tools_, _main_stack, ""
+#else
+		      _main_stack, this, _topic_editor_config, (appconfig->interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, true, true
+#endif // USE_EDITOR_WRAP
+		      );
+		  return e;
+	  }()
+
+#else
+	  [&]() -> TEXTEDIT* {_editor = nullptr; auto e = new TEXTEDIT(_main_stack); return e; }()
+#endif
+	      )
     , _control_tab([&]() -> SideTabWidget* {_control_tab = nullptr; auto st = new SideTabWidget(gl_paras->editor_docker(),
 												this,
 												_topic_editor_config, _splitter, _central_widget); st->topic(_current_topic_name); st->title(_current_topic_name); return st; }())
-    , _console([&]() -> TEXTEDIT_FOR_READ* {_console = nullptr; auto e = new TEXTEDIT_FOR_READ(_main_stack); return e; }())
-// Set up editor widget
-#ifdef USE_WYEDIT
-
-    , _editor([&]() -> TEXTEDIT* {
-	    _editor = nullptr;
-	    auto e = new TEXTEDIT(
-#ifdef USE_EDITOR_WRAP
-		find_screen, this, hide_editor_tools_, _main_stack, ""
-#else
-		_main_stack, this, _topic_editor_config, (appconfig->interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, true, true
-#endif // USE_EDITOR_WRAP
-		);
-	    return e;
-    }())
-
-#else
-    , _editor([&]() -> TEXTEDIT* {_editor = nullptr; auto e = new TEXTEDIT(_main_stack); return e; }())
-#endif
-
     , _browser([&] {
-	    _browser.detach(); // = sd::intrusive_ptr<web::Browser>(nullptr);
+	    _browser.detach(); // = nullptr; //= sd::intrusive_ptr<web::Browser>(nullptr);
 	    auto bro = sd::make_intrusive<web::Browser>(this, state_);
 	    return bro;
     }())
@@ -6240,16 +6241,17 @@ SideTabWidget* Blogger::control_tab()
 	return _control_tab;
 }
 
-void Blogger::metaeditor_sychronize(web::Browser* browser_)
+void Blogger::metaeditor_sychronize()
 {
-	if (!_browser) {
-//		_browser.detach();
-		_browser = browser_;
-	}
-	boost::intrusive_ptr<i_t> current_item = _browser->tab_widget()->current_item(); //_binder->host();
-	// boost::intrusive_ptr<Record> record =
-	// this->table_model()->table_data()->record(pos);
-	assert(current_item);
+	if (_browser) {
+		//	if (!_browser) {
+		//		//		_browser.detach();
+		//		_browser = browser_;// _browser might undefined
+		//	}
+		boost::intrusive_ptr<i_t> current_item = _browser->tab_widget()->current_item(); //_binder->host();
+		// boost::intrusive_ptr<Record> record =
+		// this->table_model()->table_data()->record(pos);
+		assert(current_item);
 //        // assert(record ==
 //        // view()->tabmanager()->currentWebView()->page()->current_record()); // may
 //        // be in backend?
@@ -6268,8 +6270,8 @@ void Blogger::metaeditor_sychronize(web::Browser* browser_)
 //// _record_controller->source_model()->sibling(current_item), current_item);
 //// } catch(std::exception &) {}
 #ifdef USE_FILE_PER_TREEITEM // if(record_index) {
-	if (_blogger->item() != current_item)
-		_blogger->bind(current_item);
+		if (_blogger->item() != current_item)
+			_blogger->bind(current_item);
 // int pos = indexOf(currentWebView());
 // Turns the reference to the table of final data   // Выясняется ссылка на
 // таблицу конечных данных
@@ -6286,145 +6288,144 @@ void Blogger::metaeditor_sychronize(web::Browser* browser_)
 // установилась на последнюю рабочую запись
 // table->work_pos(pos);
 #endif // USE_FILE_PER_TREEITEM
-	// Устанавливается функция обратного вызова для записи данных
-	this->save_callback(Editor::editor_save_callback); // _editentry->editor_save_callback
+		// Устанавливается функция обратного вызова для записи данных
+		this->save_callback(Editor::editor_save_callback); // _editentry->editor_save_callback
 
-	// Сохраняется текст и картинки в окне редактирования
-	// find_object<MainWindow>("mainwindow")
-	this->save_text_context();
+		// Сохраняется текст и картинки в окне редактирования
+		// find_object<MainWindow>("mainwindow")
+		this->save_text_context();
 #ifdef USE_FILE_PER_TREEITEM
-	// Для новой выбраной записи выясняется директория и основной файл
-	if (current_item->field<id_type>().length() == 0)
-		current_item
-		    ->field<id_type>(current_item->field<dir_type>().length() > 0 ? current_item->field<dir_type>() : get_unical_id()); // "id",	// ||
-																	// current_item->field("url")
-																	// ==
-																	// web::Browser::_defaulthome
-	if (current_item->field<url_type>() == "")
-		current_item->field<dir_type>(current_item->id()); // "dir",
-	if (current_item->field<file_type>() == "")
-		current_item->field<file_type>("text.html"); // "file",
-	QString current_dir =
-	    current_item->field<dir_type>(); // table->field(pos, "dir");
-	QString current_file =
-	    current_item->field<file_type>(); // table->field(pos, "file");
-	QString full_dir = gl_paras->root_path() + "/" +
-	    QDir(appconfig->data_dir()).dirName() + "/base/" +
-	    current_dir;
-	QString full_file_name = full_dir + "/" + current_file;
-	qDebug() << " File " << full_file_name << "\n";
-	// If the window contents of the record is already selected record  // Если в
-	// окне содержимого записи уже находится выбираемая запись
-	if (this->work_directory() == full_dir &&
-	    this->file_name() == current_file) {
-		gl_paras->window_switcher()->recordtable_ro_record_editor();
+		// Для новой выбраной записи выясняется директория и основной файл
+		if (current_item->field<id_type>().length() == 0)
+			current_item
+			    ->field<id_type>(current_item->field<dir_type>().length() > 0 ? current_item->field<dir_type>() : get_unical_id()); // "id",	// ||
+																		// current_item->field("url")
+																		// ==
+																		// web::Browser::_defaulthome
+		if (current_item->field<url_type>() == "")
+			current_item->field<dir_type>(current_item->id()); // "dir",
+		if (current_item->field<file_type>() == "")
+			current_item->field<file_type>("text.html"); // "file",
+		QString current_dir =
+		    current_item->field<dir_type>(); // table->field(pos, "dir");
+		QString current_file =
+		    current_item->field<file_type>(); // table->field(pos, "file");
+		QString full_dir = gl_paras->root_path() + "/" +
+		    QDir(appconfig->data_dir()).dirName() + "/base/" +
+		    current_dir;
+		QString full_file_name = full_dir + "/" + current_file;
+		qDebug() << " File " << full_file_name << "\n";
+		// If the window contents of the record is already selected record  // Если в
+		// окне содержимого записи уже находится выбираемая запись
+		if (this->work_directory() == full_dir &&
+		    this->file_name() == current_file) {
+			gl_paras->window_switcher()->recordtable_ro_record_editor();
 
-		return;
-	}
-	// Перед открытием редактора происходит попытка получения текста записи
-	// Этот вызов создаст файл с текстом записи, если он еще не создан (подумать,
-	// переделать)
-	// Before the opening of the editor it attempts to get the text records
-	// This call will create a text file with the record if it is not already
-	// created (think remake)
-	this->save_textarea(); // table->text(pos);    // ?
+			return;
+		}
+		// Перед открытием редактора происходит попытка получения текста записи
+		// Этот вызов создаст файл с текстом записи, если он еще не создан (подумать,
+		// переделать)
+		// Before the opening of the editor it attempts to get the text records
+		// This call will create a text file with the record if it is not already
+		// created (think remake)
+		this->save_textarea(); // table->text(pos);    // ?
 
-	// едактору задаются имя файла и директории
-	// И дается команда загрузки файла
-	this->work_directory(full_dir);
-	this->file_name(current_file);
+		// едактору задаются имя файла и директории
+		// И дается команда загрузки файла
+		this->work_directory(full_dir);
+		this->file_name(current_file);
 
-	// Если идет работа с зашифрованной записью
-	// И если имя директории или имя файла пусты, то это означает что
-	// запись не была расшифрована, и редактор должен просто показывать пустой
-	// текст
-	// ничего не сохранять и не считывать
-	qDebug() << "void WebPage::metaeditor_sychronize() : id "
-		 << current_item->field<id_type>(); // table->field(pos, "id");
-	qDebug() << "void WebPage::metaeditor_sychronize() : name "
-		 << current_item->field<name_type>(); // table->field(pos, "name");
-	qDebug() << "void WebPage::metaeditor_sychronize() : crypt "
-		 << current_item->field<crypt_type>(); // table->field(pos,
-						       // boost::mpl::c_str <
-						       // crypt_type > ::value);
-	if (current_item->field<crypt_type>() ==
-	    "1") // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
-		if (full_dir.length() == 0 || current_file.length() == 0)
-			this->dir_file_empty_reaction(
-			    EditorWrap::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
-	// _editentry->blog_editor()->editor()->clear_all_misc_field();
-	// В редактор заносится информация, идет ли работа с зашифрованным текстом
-	this->misc_field(boost::mpl::c_str<crypt_type>::value,
-	    current_item->field<crypt_type>()); // table->field(pos,
-						// boost::mpl::c_str
-						// < crypt_type >
-						// ::value)
+		// Если идет работа с зашифрованной записью
+		// И если имя директории или имя файла пусты, то это означает что
+		// запись не была расшифрована, и редактор должен просто показывать пустой
+		// текст
+		// ничего не сохранять и не считывать
+		qDebug() << "void WebPage::metaeditor_sychronize() : id "
+			 << current_item->field<id_type>(); // table->field(pos, "id");
+		qDebug() << "void WebPage::metaeditor_sychronize() : name "
+			 << current_item->field<name_type>(); // table->field(pos, "name");
+		qDebug() << "void WebPage::metaeditor_sychronize() : crypt "
+			 << current_item->field<crypt_type>(); // table->field(pos,
+							       // boost::mpl::c_str <
+							       // crypt_type > ::value);
+		if (current_item->field<crypt_type>() ==
+		    "1") // table->field(pos, boost::mpl::c_str < crypt_type > ::value)
+			if (full_dir.length() == 0 || current_file.length() == 0)
+				this->dir_file_empty_reaction(
+				    EditorWrap::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
+		// _editentry->blog_editor()->editor()->clear_all_misc_field();
+		// В редактор заносится информация, идет ли работа с зашифрованным текстом
+		this->misc_field(boost::mpl::c_str<crypt_type>::value,
+		    current_item->field<crypt_type>()); // table->field(pos,
+							// boost::mpl::c_str
+							// < crypt_type >
+							// ::value)
 
-	// В редакторе устанавливается функция обратного вызова для чтения данных
-	this->load_callback(&Editor::editor_load_callback);
+		// В редакторе устанавливается функция обратного вызова для чтения данных
+		this->load_callback(&Editor::editor_load_callback);
 
-	this->load_textarea();
-	// edView->set_textarea(table->get_text(index.row()));
+		this->load_textarea();
+		// edView->set_textarea(table->get_text(index.row()));
 
-	// Заполняются прочие инфо-поля
-	this->pin(current_item->field<pin_type>()); // table->field(pos, "pin")
+		// Заполняются прочие инфо-поля
+		this->pin(current_item->field<pin_type>()); // table->field(pos, "pin")
 
-	this->name(current_item->field<name_type>()); // table->field(pos, "name")
+		this->name(current_item->field<name_type>()); // table->field(pos, "name")
 
-	this->author(
-	    current_item->field<author_type>()); // table->field(pos, "author")
+		this->author(
+		    current_item->field<author_type>()); // table->field(pos, "author")
 
-	this->home(current_item->field<home_type>()); // table->field(pos, "home")
+		this->home(current_item->field<home_type>()); // table->field(pos, "home")
 
-	this->url(current_item->field<url_type>()); // table->field(pos, "url")
+		this->url(current_item->field<url_type>()); // table->field(pos, "url")
 
-	this->tags(current_item->field<tags_type>()); // table->field(pos, "tags")
+		this->tags(current_item->field<tags_type>()); // table->field(pos, "tags")
 
-	auto id =
-	    id_value(current_item->field<id_type>()); // table->field(pos, "id");
-	this->misc_field("id", id);
+		auto id =
+		    id_value(current_item->field<id_type>()); // table->field(pos, "id");
+		this->misc_field("id", id);
 
-	this->misc_field(
-	    "title", current_item->field<name_type>()); // table->field(pos, "name")
-	// should each record carry it's tree path?
-	//// Set the path to the branch in which lies the record (in the form of the
-	///names of the branches)   // Устанавливается путь до ветки в которой лежит
-	///запись (в виде названий веток)
-	// QString path = qobject_cast<TableScreen *>(parent())->getTreePath();
-	//// В мобильном интерфейсе редактор должен показывать путь до записи
-	// if(appconfig->getInterfaceMode() == "mobile")
-	// meta_editor->setTreePath(path);
-	// В редакторе восстанавливается позиция курсора и прокрутки если это
-	// необходимо
-	if (appconfig->remember_cursor_at_ordinary_selection()) {
-		this->cursor_position(walkhistory.cursor_position(id));
-		this->scrollbar_position(walkhistory.scrollbar_position(id));
-	}
+		this->misc_field(
+		    "title", current_item->field<name_type>()); // table->field(pos, "name")
+		// should each record carry it's tree path?
+		//// Set the path to the branch in which lies the record (in the form of the
+		///names of the branches)   // Устанавливается путь до ветки в которой лежит
+		///запись (в виде названий веток)
+		// QString path = qobject_cast<TableScreen *>(parent())->getTreePath();
+		//// В мобильном интерфейсе редактор должен показывать путь до записи
+		// if(appconfig->getInterfaceMode() == "mobile")
+		// meta_editor->setTreePath(path);
+		// В редакторе восстанавливается позиция курсора и прокрутки если это
+		// необходимо
+		if (appconfig->remember_cursor_at_ordinary_selection()) {
+			this->cursor_position(walkhistory.cursor_position(id));
+			this->scrollbar_position(walkhistory.scrollbar_position(id));
+		}
 #else
-	this->misc_field<crypt_key>(current_item->field<crypt_key>()); // table->field(pos,
-								       // boost::mpl::c_str
-								       // < crypt_type >
-								       // ::value)
-	auto id = id_value(current_item->field<id_key>());             // table->field(pos, "id");
-	this->misc_field<id_key>(id);
-	this->misc_field<name_key>(current_item->field<name_key>()); // table->field(pos, "name")
-	//
-	//	        auto id = this->topic();
-	// В редакторе восстанавливается позиция курсора и прокрутки если это
-	// необходимо
-	if (appconfig->remember_cursor_at_ordinary_selection()) {
-		this->cursor_position(walkhistory.cursor_position(static_cast<id_value>(id)));
-		this->scrollbar_position(walkhistory.scrollbar_position(static_cast<id_value>(id)));
-	}
+		this->misc_field<crypt_key>(current_item->field<crypt_key>()); // table->field(pos,
+									       // boost::mpl::c_str
+									       // < crypt_type >
+									       // ::value)
+		auto id = id_value(current_item->field<id_key>());             // table->field(pos, "id");
+		this->misc_field<id_key>(id);
+		this->misc_field<name_key>(current_item->field<name_key>()); // table->field(pos, "name")
+		//
+		//	        auto id = this->topic();
+		// В редакторе восстанавливается позиция курсора и прокрутки если это
+		// необходимо
+		if (appconfig->remember_cursor_at_ordinary_selection()) {
+			this->cursor_position(walkhistory.cursor_position(static_cast<id_value>(id)));
+			this->scrollbar_position(walkhistory.scrollbar_position(static_cast<id_value>(id)));
+		}
 #endif // USE_FILE_PER_TREEITEM
-	// Обновление иконки аттачей
-	if (current_item->attach_table()->size() == 0) // table->record(pos)->getAttachTablePointer()->size()
-		this->to_attach()->setIcon(this->icon_attach_not_exists());
-	// Если нет приаттаченных файлов
-	else
-		this->to_attach()->setIcon(this->icon_attach_exists()); // Есть приаттаченные файлы
-
-	// }
+		// Обновление иконки аттачей
+		if (current_item->attach_table()->size() == 0) // table->record(pos)->getAttachTablePointer()->size()
+			this->to_attach()->setIcon(this->icon_attach_not_exists());
+		// Если нет приаттаченных файлов
+		else
+			this->to_attach()->setIcon(this->icon_attach_exists()); // Есть приаттаченные файлы
+	}
 }
 
 #include "libraries/qtm/blogger.inl"

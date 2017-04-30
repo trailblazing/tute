@@ -187,6 +187,7 @@ class FindScreen : public QWidget
 	ts_t* _tree_screen;
 	QToolBar* _navigater;
 	////    QHBoxLayout *_navigater;
+
 	FlatToolButton* _switch_search_type;
 	QAction* _historyback;    // FlatToolButton *_history_back;
 	QAction* _historyforward; // FlatToolButton *_history_forward;
@@ -195,7 +196,7 @@ class FindScreen : public QWidget
 
 	QAction* _stop;
 	QAction* _reload;
-
+	FlatToolButton* _editor;
 	web::ChaseWidget* _chasewidget;
 
 	QHBoxLayout* _find_text_and_button_tools_area;
