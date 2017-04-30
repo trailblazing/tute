@@ -765,7 +765,7 @@ namespace web {
 			    this,
 			    _main_window); //, gl_paras->profile()
 #else
-			new web::TabWidget(_blogger, this, _main_window, gl_paras->profile());
+			new web::TabWidget(_blogger, this, _main_window); //, gl_paras->profile()
 #endif //USE_SIGNAL_CLOSE
 
 		    //			  close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::on_close_requested, t, static_cast<sd::renter* const>(this))); //close_requested.connect(t->self_close_request);//(std::bind(&web::TabWidget::self_close_request,t));
@@ -2436,8 +2436,6 @@ namespace web {
 	{
 		return _tab_widget->find(_equal);
 	}
-
-
 }
 
 //
