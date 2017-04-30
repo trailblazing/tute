@@ -834,7 +834,7 @@ namespace web {
 	} // return _entrance->activiated_registered().first;
 	  // //QtSingleApplication::instance()->mainWindow();
 
-	WebView* WebPage::load(boost::intrusive_ptr<i_t> item, bool checked)
+	WebView* WebPage::load(boost::intrusive_ptr<i_t> item, bool checked, bool force_reload)
 	{
 		// Q_UNUSED(checked)
 		assert(item);
@@ -864,12 +864,13 @@ namespace web {
 				// , std::bind(&TreeScreen::view_paste_as_child, _tree_screen,
 				// std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 				// );
-			} else
-				it = item;
+			} else {
+				if (it != item) it = item;
+			}
 		} else
 			it = bind(item);
 		if (checked)
-			it->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
+			it->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1), force_reload);
 		// }
 
 		return _view;

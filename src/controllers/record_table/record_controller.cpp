@@ -80,7 +80,7 @@ rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_fi
     , _source_model(new RecordModel(this)) // so, you need boost::intursive_ptr
     , _proxy_model(new RecordProxyModel(this))
     , _view([&] {
-	    _view.detach(); // = sd::intrusive_ptr<rv_t>(nullptr);
+	    _view.detach(); // = nullptr; // = sd::intrusive_ptr<rv_t>(nullptr);
 	    assert(record_screen_);
 	    auto r = sd::make_intrusive<rv_t>(record_screen_, this);
 	    return r;
@@ -261,7 +261,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			}
 			if (it)
 				//				if (it->page()) it->page()
-				_blogger->metaeditor_sychronize(_tab_widget->browser());
+				_blogger->metaeditor_sychronize();
 		}
 		//		_view->setFocus();
 	}

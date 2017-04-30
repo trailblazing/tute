@@ -240,7 +240,7 @@ namespace web {
 		Blogger* blogger();
 		//		void test();
 
-	    public slots:
+	public slots:
 		// void loadPage(const QString &url) = delete;
 		void slotHome();
 		void updateToolbarActionText(

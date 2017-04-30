@@ -92,19 +92,6 @@ namespace web {
 		setVisible(!text.isEmpty());
 	}
 
-	/*
-            Search icon on the left hand side of the search widget
-            When a menu is set a down arrow appears
- */
-	class SearchButton : public QAbstractButton {
-	    public:
-		SearchButton(QWidget* parent = 0);
-		void paintEvent(QPaintEvent* event);
-		QMenu* _menu;
-
-	    protected:
-		void mousePressEvent(QMouseEvent* event);
-	};
 
 	SearchButton::SearchButton(QWidget* parent)
 	    : QAbstractButton(parent)
@@ -184,7 +171,7 @@ namespace web {
 	    , _searchbutton(new SearchButton(this))
 	{
 		connect(lineEdit(), &QLineEdit::textChanged, this, &SearchLineEdit::textChanged);
-		setLeftWidget(_searchbutton);
+		left_widget(_searchbutton);
 		_inactivetext = SearchLineEdit::_default_tip; //tr("Search");
 
 		QSizePolicy policy = sizePolicy();
@@ -240,6 +227,11 @@ namespace web {
 			_searchbutton->_menu->deleteLater();
 		_searchbutton->_menu = menu;
 		updateGeometries();
+	}
+
+	SearchButton* SearchLineEdit::searchbutton() const
+	{
+		return _searchbutton;
 	}
 
 	QMenu* SearchLineEdit::menu() const

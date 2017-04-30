@@ -313,7 +313,7 @@ namespace web {
 		_centralwidget->setLayout(_layout);
 		setCentralWidget(_centralwidget);
 
-		connect(_tab_widget, &TabWidget::loadPage, // this, &Browser::loadPage
+		connect(_tab_widget, &TabWidget::loadPageNewTab, // this, &Browser::loadPage
 		    [&](const QString& search_text) {
 			    //			    assert(to_be_url(search_text) != QUrl());
 			    tv_t* tree_view = _tree_screen->view();
@@ -1340,7 +1340,7 @@ namespace web {
 
 		_viewbookmarkbar = new QAction(this);
 		update_bookmarks_toolbar_action_text(true);
-		_viewbookmarkbar->setShortcut(tr("Shift+Ctrl+B"));
+		//		_viewbookmarkbar->setShortcut(tr("Shift+Ctrl+B"));
 		connect(_viewbookmarkbar, &QAction::triggered, this, &Browser::slotViewBookmarksBar);
 		_view_menu->addAction(_viewbookmarkbar);
 
@@ -2436,6 +2436,8 @@ namespace web {
 	{
 		return _tab_widget->find(_equal);
 	}
+
+
 }
 
 //

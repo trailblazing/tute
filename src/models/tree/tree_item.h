@@ -328,7 +328,7 @@ class i_t // : public std::enable_shared_from_this<TreeItem>
 	// boost::intrusive_ptr<TreeItem> bind(web::WebPage *page);  // {_page = page;
 	// _page->record(this);}
 	web::WebView*
-	activate(const std::function<web::WebView*(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal)>& find_activated);
+	activate(const std::function<web::WebView*(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal)>& find_activated, bool force_reload = false);
 
 	// void binder(bind_helper g); // {_binder = g;}
 	// bind_helper binder() const; // {return _binder;}

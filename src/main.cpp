@@ -1039,11 +1039,11 @@ auto to_be_url(const QUrl& url_) -> QUrl
 					//				result = url;
 	}
 
-	qDebug() << "\t!url.isRelative() =\t" << !url.isRelative()                           //<< "\n"
-		 << "\t!url.topLevelDomain().isNull() =\t" << !url.topLevelDomain().isNull() //<< "\n"
-		 << "\t!url.isEmpty() =\t" << !url.isEmpty()                                 //<< "\n"
-		 << "\t!url.host().isNull() =\t" << !url.host().isNull()                     //<< "\n" // flase
-		 << "\turl.isValid() =\t" << url.isValid()                                   //<< "\n"
+	qDebug() << "\t!url.isRelative() =\t" << !url.isRelative() << "\n"
+		 << "\t!url.topLevelDomain().isNull() =\t" << !url.topLevelDomain().isNull() << "\n"
+		 << "\t!url.isEmpty() =\t" << !url.isEmpty() << "\n"
+		 << "\t!url.host().isNull() =\t" << !url.host().isNull() << "\n" // flase
+		 << "\turl.isValid() =\t" << url.isValid() << "\n"
 		 << "\t!url.scheme().isEmpty() =\t" << !url.scheme().isEmpty();
 	if (!url.isEmpty() && //&& !url.host().isNull()
 	    !url.scheme().isEmpty() &&

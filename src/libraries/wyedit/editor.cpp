@@ -482,7 +482,7 @@ void Editor::setup_buttons(void)
 
 	// Кнопка Monospace
 	_monospace = add_action(
-	    _tools_line_0, this, tr((editor_prefix + "monospace").c_str()), tr("Monospace (Ctrl+T)"), tr("Monospace (Ctrl+T)"), QIcon(":/resource/pic/edit_monospace.svg"), [&](bool) { on_monospace_clicked(); }, QKeySequence(tr("Ctrl+T")));
+	    _tools_line_0, this, tr((editor_prefix + "monospace").c_str()), tr("Monospace (Ctrl+T+T)"), tr("Monospace (Ctrl+T+T)"), QIcon(":/resource/pic/edit_monospace.svg"), [&](bool) { on_monospace_clicked(); }, QKeySequence(tr("Ctrl+T+T")));
 
 	// Кнопка Code
 	_code = add_action(
