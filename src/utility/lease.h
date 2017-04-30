@@ -466,8 +466,17 @@ namespace sd {
 		template <class U>
 		intrusive_ptr& operator=(intrusive_ptr<U> const& rhs) // = delete;
 		{
-			//			renew_connection(*this, rhs);
-			this_type(rhs).swap(*this);
+			U* ret = nullptr;
+			if (rhs.get()) {
+				ret = rhs.get();
+			}
+
+			this->operator=(ret);
+			//			{
+			//				detach();
+			//				//			renew_connection(*this, rhs);
+			//				this_type(rhs).swap(*this);
+			//			}
 			assert(internal_integrity());
 			return *this;
 		}
@@ -499,11 +508,22 @@ namespace sd {
 		{
 
 			assert(rhs.internal_integrity());
-			//                        auto px =
-			//			this->reset(); //
-			detach();
-			this_type(static_cast<intrusive_ptr&&>(rhs)).swap(*this);
+			element_type* ret = nullptr;
+			if (rhs.boost::intrusive_ptr<element_type>::get()) {
+				if (rhs._close_request_connection.connected()) rhs._close_request_connection.disconnect();
+				if (rhs._destroy_request_connection.connected()) rhs._destroy_request_connection.disconnect();
+				//			assert(internal_integrity());// might be uninitialized
+				ret = rhs.boost::intrusive_ptr<element_type>::detach();
+				//			element_type* ret = _shadow;
+			}
 
+			this->operator=(ret);
+			//			{
+			//				//                        auto px =
+			//				//			this->reset(); //
+			//				detach();
+			//				this_type(static_cast<intrusive_ptr&&>(rhs)).swap(*this);
+			//			}
 			assert(internal_integrity());
 			return *this;
 		}
@@ -512,9 +532,18 @@ namespace sd {
 
 		intrusive_ptr& operator=(intrusive_ptr const& rhs) // = delete;
 		{
+
 			assert(rhs.internal_integrity());
-			detach(); //			renew_connection(*this, rhs);
-			this_type(rhs).swap(*this);
+
+			this->operator=(rhs._shadow);
+			//			{
+			//				detach(); //			renew_connection(*this, rhs);
+			//				assert(rhs.internal_integrity());
+
+			//				this_type(rhs).swap(*this);
+			//			}
+
+
 			assert(internal_integrity());
 			return *this;
 		}
@@ -563,16 +592,18 @@ namespace sd {
 
 		element_type* detach() BOOST_NOEXCEPT
 		{
-			//			if (boost::intrusive_ptr<element_type>::get()) {
-			//				if (this->_close_request_connection.connected()) this->_close_request_connection.disconnect();
-			//				if (this->_destroy_request_connection.connected()) this->_destroy_request_connection.disconnect();
-			//			}
-			//			assert(internal_integrity());// might be uninitialized
-			auto ret = boost::intrusive_ptr<element_type>::detach();
-			//			element_type* ret = _shadow;
+			element_type* ret = nullptr;
+			if (boost::intrusive_ptr<element_type>::get()) {
+				//				if (this->_close_request_connection.connected()) this->_close_request_connection.disconnect();
+				//				if (this->_destroy_request_connection.connected()) this->_destroy_request_connection.disconnect();
+				//			assert(internal_integrity());// might be uninitialized
+				ret = boost::intrusive_ptr<element_type>::detach();
+				//			element_type* ret = _shadow;
+			}
 			_shadow = nullptr;
 			_destroyed_request_received = true;
 			assert(internal_integrity());
+
 			return ret;
 		}
 
@@ -683,12 +714,29 @@ namespace sd {
 		//		inline element_type& operator*() { return *_renter; }
 		intrusive_ptr& operator=(element_type* rhs)
 		{
-			assert(internal_integrity());
-			//			this->detach();
-			//			renew_connection(*this, this_type(rhs));
-			this_type(rhs).swap(*this);
-			//			_shadow = boost::intrusive_ptr<element_type>::get();
-			assert(_shadow == boost::intrusive_ptr<element_type>::get());
+			if (this->_shadow) {
+				this->detach(); //*?
+				assert(internal_integrity());
+
+				//				//			renew_connection(*this, this_type(rhs));
+				//				this_type(rhs).swap(*this);
+				//				//			_shadow = boost::intrusive_ptr<element_type>::get();
+			}
+			boost::intrusive_ptr<element_type>(rhs).swap(static_cast<boost::intrusive_ptr<element_type>&>(*this));
+			this->_shadow = rhs;
+			if (rhs) {
+				this->close_receive(                                                           //slot_type(
+				    std::bind(&intrusive_ptr::on_close_requested, this, std::placeholders::_1) //, //).track(&rhs)// true
+				    );
+				//                                rhs._close_request_connection = rhs_px->_close_request.connect(std::bind(&intrusive_ptr::on_close_requested, &rhs, std::placeholders::_1));
+				this->destroy_receive(                                                           //slot_type(
+				    std::bind(&intrusive_ptr::on_destroy_requested, this, std::placeholders::_1) //).track(&rhs)
+				    );
+				//                                rhs._destroy_request_connection = rhs_px->_destroy_request.connect(std::bind(&intrusive_ptr::on_destroy_requested, &rhs, std::placeholders::_1));
+				assert(_shadow == boost::intrusive_ptr<element_type>::get());
+			}
+
+
 			assert(internal_integrity());
 			return *this;
 		}

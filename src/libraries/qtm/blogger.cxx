@@ -6240,8 +6240,12 @@ SideTabWidget* Blogger::control_tab()
 	return _control_tab;
 }
 
-void Blogger::metaeditor_sychronize()
+void Blogger::metaeditor_sychronize(web::Browser* browser_)
 {
+	if (!_browser) {
+//		_browser.detach();
+		_browser = browser_;
+	}
 	boost::intrusive_ptr<i_t> current_item = _browser->tab_widget()->current_item(); //_binder->host();
 	// boost::intrusive_ptr<Record> record =
 	// this->table_model()->table_data()->record(pos);
