@@ -47,6 +47,9 @@
 #include <QtWidgets/QStyleOptionFrame>
 #include <QtWidgets/QWidget>
 
+
+#include "views/browser/chasewidget.h"
+
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>
@@ -102,7 +105,7 @@ namespace web {
 #ifdef USE_CLEAR_BUTTON
 		ClearButton* _clearbutton;
 #else
-		ChaseWidget* _chasewidget; //
+		chasewidget_ref _chasewidget; //
 #endif //USE_CLEAR_BUTTON
 		QWidget* _left_widget;
 		QWidget* _right_widget;

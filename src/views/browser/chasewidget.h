@@ -42,12 +42,18 @@
 #ifndef CHASEWIDGET_H
 #define CHASEWIDGET_H
 
-#include <QtWidgets/QWidget>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
 #include <QtCore/QSize>
 #include <QtGui/QColor>
 #include <QtGui/QPixmap>
 #include <QtWidgets/QAbstractButton>
+#include <QtWidgets/QWidget>
+
+
+#include "libraries/global_parameters.h"
+#include "utility/lease.h"
 
 #if QT_VERSION == 0x050600
 #include <QObject>
@@ -65,7 +71,9 @@ QT_END_NAMESPACE
 
 namespace web {
 	class ChaseWidget : public QAbstractButton //QWidget
-	{
+			    ,
+			    public boost::intrusive_ref_counter<ChaseWidget, boost::thread_safe_counter>,
+			    public sd::renter {
 #if QT_VERSION == 0x050600
 		W_OBJECT(ChaseWidget)
 #else

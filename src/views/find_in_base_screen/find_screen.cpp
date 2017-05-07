@@ -240,7 +240,7 @@ FindScreen::~FindScreen(void)
 }
 
 
-FlatToolButton* FindScreen::findstartbutton() { return _find_start_button; }
+FlatToolButton* FindScreen::findstartbutton() const { return _find_start_button; }
 
 //void FindScreen::historyback(QAction* hb) { _historyback = hb; }
 
@@ -254,7 +254,7 @@ FlatToolButton* FindScreen::findstartbutton() { return _find_start_button; }
 
 //void FindScreen::reload(QAction* rl) { _reload = rl; }
 #ifdef USE_CLEAR_BUTTON
-web::ChaseWidget* FindScreen::chasewidget()
+web::ChaseWidget* FindScreen::chasewidget() const
 {
 	return _chasewidget;
 }

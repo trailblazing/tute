@@ -455,9 +455,8 @@ void EditorWrap::pin(const QString& pin_)
 			RecordModel* source_model = _tab_widget->source_model();
 			auto rctrl = _tab_widget->record_screen()->record_ctrl();
 			if (rctrl) {
-				rv_t* record_view = _tab_widget->view();
-				pos_source pos_source_(
-				    _tab_widget->currentIndex()); // first_selectionpos();
+				rv_t* record_view = rctrl->view();
+				pos_source pos_source_(_tab_widget->currentIndex()); // first_selectionpos();
 				if (source_model && -1 != pos_source_) {
 					// Выясняется ссылка на таблицу конечных данных
 					// auto item = source_model->tree_item();  //->record_table();

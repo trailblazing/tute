@@ -252,7 +252,7 @@ namespace web {
 #ifndef USE_CLEAR_BUTTON
 	ChaseWidget* ExLineEdit::chasewidget() const
 	{
-		return _chasewidget;
+		return static_cast<ChaseWidget*>(_chasewidget);
 	}
 #endif // USE_CLEAR_BUTTON
 	UrlIconLabel::UrlIconLabel(QWidget* parent)

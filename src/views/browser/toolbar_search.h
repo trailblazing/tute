@@ -44,16 +44,13 @@
 
 #include <functional>
 
-#include <boost/smart_ptr/intrusive_ptr.hpp>
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
-
-#include "searchlineedit.h"
 #include <QLineEdit>
 #include <QThread>
 
 // #include "models/tree/TreeItem.h"
 // #include "models/tree/TreeModel.h"
 #include "libraries/fixed_parameters.h"
+#include "searchlineedit.h"
 #include "views/tree/tree_screen.h"
 
 #if QT_VERSION == 0x050600
