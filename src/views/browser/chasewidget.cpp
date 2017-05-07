@@ -55,96 +55,107 @@
 
 namespace web {
 #if QT_VERSION == 0x050600
-W_OBJECT_IMPL(ChaseWidget)
+	W_OBJECT_IMPL(ChaseWidget)
 #endif
 
-ChaseWidget::ChaseWidget(const QSize &size, QWidget *parent, QPixmap pixmap, bool pixmapEnabled)
-    : QWidget(parent)
-    , _segment(0)
-    , _delay(100)
-    , _step(40)
-    , _timerid(-1)
-    , _size(size.height() - 1, size.height() - 1)
-    , _animated(false)
-    , _pixmap(pixmap)
-    , _pixmapenabled(pixmapEnabled) {
-	// adjustSize();
-	resize(_size);
-}
-
-void ChaseWidget::setAnimated(bool value) {
-	if (_animated == value)
-		return;
-	_animated = value;
-	if (_timerid != -1) {
-		killTimer(_timerid);
-		_timerid = -1;
+	ChaseWidget::ChaseWidget(const QSize& size, QWidget* parent, QPixmap pixmap, bool pixmapEnabled)
+	    : QAbstractButton(parent) //QWidget(parent)
+	    , _segment(0)
+	    , _delay(100)
+	    , _step(40)
+	    , _timerid(-1)
+	    , _size(size.height() - 1, size.height() - 1)
+	    , _animated(false)
+	    , _pixmap(pixmap)
+	    , _pixmapenabled(pixmapEnabled)
+	{
+		// adjustSize();
+		resize(_size);
 	}
-	if (_animated) {
-		_segment = 0;
-		_timerid = startTimer(_delay);
-	}
-	update();
-}
 
-void ChaseWidget::paintEvent(QPaintEvent *event) {
-	Q_UNUSED(event);
-	QPainter p(this);
-	if (_pixmapenabled && !_pixmap.isNull()) {
-		p.drawPixmap(0, 0, _pixmap);
-
-		return;
-	}
-	// int w = width();    // 37
-	// int h = height();   // 27
-
-	const int extent = _size.height();  // qMin(width() - 8, height() - 8);
-	const int displ = extent / 4;
-	const int ext = extent / 4 - 1;
-
-	p.setRenderHint(QPainter::Antialiasing, true);
-	if (_animated)
-		p.setPen(Qt::gray);
-	else
-		p.setPen(QPen(palette().dark().color()));
-	p.translate(_size.height() - 7, _size.height() - 2  // 4
-	            // width() / 2, height() / 2
-	            );  // center
-	for (int segment = 0; segment < segmentCount(); ++segment) {
-		p.rotate(QApplication::isRightToLeft() ? _step : -_step);
-		if (_animated)
-			p.setBrush(colorForSegment(segment));
-		else
-			p.setBrush(palette().background());
-		p.drawEllipse(QRect(displ, -ext / 2, ext, ext));
-	}
-}
-
-QSize ChaseWidget::sizeHint() const {
-	return  // _size;   //
-	    QSize(_size.height() * 2.7, _size.height());
-}
-
-void ChaseWidget::timerEvent(QTimerEvent *event) {
-	if (event->timerId() == _timerid) {
-		++_segment;
+	void ChaseWidget::setAnimated(bool value)
+	{
+		if (_animated == value)
+			return;
+		_animated = value;
+		if (_timerid != -1) {
+			killTimer(_timerid);
+			_timerid = -1;
+		}
+		if (_animated) {
+			_segment = 0;
+			_timerid = startTimer(_delay);
+		}
 		update();
 	}
-	QWidget::timerEvent(event);
-}
 
-QColor ChaseWidget::colorForSegment(int seg) const {
-	int index = ((seg + _segment) % segmentCount());
-	int comp = qMax(0, 255 - (index * (255 / segmentCount())));
+	void ChaseWidget::paintEvent(QPaintEvent* event)
+	{
+		Q_UNUSED(event);
+		QPainter p(this);
+		if (_pixmapenabled && !_pixmap.isNull()) {
+			p.drawPixmap(0, 0, _pixmap);
 
-	return QColor(comp, comp, comp, 255);
-}
+			return;
+		}
+		// int w = width();    // 37
+		// int h = height();   // 27
 
-int ChaseWidget::segmentCount() const {
-	return 360 / _step;
-}
+		const int extent = _size.height(); // qMin(width() - 8, height() - 8);
+		const int displ = extent / 3;      //extent / 4;
+		const int ext = extent / 4 - 1;    // extent / 4 - 1;
 
-void ChaseWidget::setPixmapEnabled(bool enable) {
-	_pixmapenabled = enable;
-}
+		p.setRenderHint(QPainter::Antialiasing, true);
+		if (_animated)
+			p.setPen(Qt::gray);
+		else
+			p.setPen(QPen(palette().dark().color()));
+		p.translate(                    //_size.height() - 7, _size.height() - 2 // 4
+		    width() / 2, height() / 2); // center
+		for (int segment = 0; segment < segmentCount(); ++segment) {
+			p.rotate(QApplication::isRightToLeft() ? _step : -_step);
+			if (_animated)
+				p.setBrush(colorForSegment(segment));
+			else
+				p.setBrush(palette().background());
+			p.drawEllipse(QRect(
+			    displ,
+			    -ext / 2, //-ext / 2
+			    ext,
+			    ext));
+		}
+	}
+
+	QSize ChaseWidget::sizeHint() const
+	{
+		return // _size;   //
+		    QSize(_size.height() * 2.7, _size.height());
+	}
+
+	void ChaseWidget::timerEvent(QTimerEvent* event)
+	{
+		if (event->timerId() == _timerid) {
+			++_segment;
+			update();
+		}
+		QWidget::timerEvent(event);
+	}
+
+	QColor ChaseWidget::colorForSegment(int seg) const
+	{
+		int index = ((seg + _segment) % segmentCount());
+		int comp = qMax(0, 255 - (index * (255 / segmentCount())));
+
+		return QColor(comp, comp, comp, 255);
+	}
+
+	int ChaseWidget::segmentCount() const
+	{
+		return 360 / _step;
+	}
+
+	void ChaseWidget::setPixmapEnabled(bool enable)
+	{
+		_pixmapenabled = enable;
+	}
 }

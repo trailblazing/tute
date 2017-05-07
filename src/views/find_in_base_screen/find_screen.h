@@ -34,7 +34,7 @@ class FindTableWidget;
 // class MtComboBox;
 class FlatComboBox;
 class QStackedWidget;
-
+class wn_t;
 class rctrl_t;
 class ts_t;
 struct Linker;
@@ -65,7 +65,7 @@ class FindScreen : public QWidget
 
     public:
 	static constexpr char _find_in_base_expand[] = "findInBaseExpand"; // "find_in_base_expand";
-	FindScreen(QString object_name, ts_t* tree_screen_, QWidget* parent = 0);
+	FindScreen(QString object_name, ts_t* tree_screen_, wn_t* parent = 0);
 	virtual ~FindScreen(void);
 	// QToolBar *navigater() {return _navigater;}
 
@@ -97,12 +97,15 @@ class FindScreen : public QWidget
 	// tabmanager;         // for entrance
 
 	//	web::ToolbarSearch* toolbarsearch() const;
-	QStackedWidget* lineedit_stack() { return _lineedit_stack; }
+	//	QStackedWidget* lineedit_stack() { return _lineedit_stack; }
 	void lineedit_stack(QStackedWidget* lineedit_stack_) { _lineedit_stack = lineedit_stack_; }
 	void switch_stack(QStackedWidget* lineedit_stack_ = nullptr);
 	web::Browser* browser();
 	void browser(web::Browser* bro);
 	boost::signals2::signal<void(const QString& str)> find_clicked_after_another_text_changed;
+	wn_t* main_window() const;
+	QToolBar* navigater() const;
+	QStackedWidget* lineedit_stack() const;
     public slots:
 
 	void widget_show(void);
@@ -110,11 +113,12 @@ class FindScreen : public QWidget
 	boost::intrusive_ptr<i_t> find_internal_decomposed(QString const& search_text);
 	//	void find_text(QString text_);
 
-	void replace_navigater(QToolBar* nv);
+	void switch_navigater(QToolBar* navigater_new = nullptr);
 
 
     protected:
 	virtual void resizeEvent(QResizeEvent* e);
+
     private slots:
 
 	void enable_findbutton(const QString& text);
@@ -132,7 +136,7 @@ class FindScreen : public QWidget
 	void if_find_in_tags(int state);
 	void if_find_in_text(int state);
 
-	void switch_search_content();
+	//	void switch_search_content();
 	//    signals:
 
 	//// Сигнал вырабатывается, когда обнаружено что в слоте setFindText()
@@ -173,10 +177,10 @@ class FindScreen : public QWidget
 
 	void if_find_in_field(QString fieldname, int state);
 
-	boost::intrusive_ptr<i_t> find_start();
+	boost::intrusive_ptr<i_t> find_implement(const QString& topic);
 
 	boost::intrusive_ptr<i_t>&
-	find_recursive(boost::intrusive_ptr<i_t>& final_result, boost::intrusive_ptr<i_t> _session_root_item, boost::intrusive_ptr<i_t> curritem);
+	find_recursive(const QString& topic, boost::intrusive_ptr<i_t>& final_result, boost::intrusive_ptr<i_t> _session_root_item, boost::intrusive_ptr<i_t> curritem);
 
 	bool find_in_text_process(const QString& text);
 
@@ -184,11 +188,14 @@ class FindScreen : public QWidget
 
 	// QIcon _reloadicon;
 	// QIcon _stopicon;
+	QHBoxLayout* _find_text_and_button_tools_area;
 	ts_t* _tree_screen;
+
+	browser_ref _browser;
 	QToolBar* _navigater;
 	////    QHBoxLayout *_navigater;
 
-	FlatToolButton* _switch_search_type;
+	//	FlatToolButton* _switch_search_type;
 	QAction* _historyback;    // FlatToolButton *_history_back;
 	QAction* _historyforward; // FlatToolButton *_history_forward;
 	QAction* _historyhome;    // FlatToolButton *_history_home;
@@ -196,10 +203,8 @@ class FindScreen : public QWidget
 
 	QAction* _stop;
 	QAction* _reload;
-	FlatToolButton* _editor;
-	web::ChaseWidget* _chasewidget;
+	FlatToolButton* _editor_switch;
 
-	QHBoxLayout* _find_text_and_button_tools_area;
 
 	FlatToolButton* _find_start_button; // QPushButton
 	FlatToolButton* _tools_expand;
@@ -211,7 +216,9 @@ class FindScreen : public QWidget
 	FlatComboBox* _word_regard;
 	FlatComboBox* _how_extract;
 	FlatComboBox* _tree_search_area;
-
+#ifdef USE_CLEAR_BUTTON
+	web::ChaseWidget* _chasewidget;
+#endif // USE_CLEAR_BUTTON
 	QHBoxLayout* _where_find_line;
 	QLabel* _where_find_label;
 	QCheckBox* _find_in_pin;
@@ -229,14 +236,15 @@ class FindScreen : public QWidget
 #ifdef SHOW_PROCESS_DIALOG
 	QProgressDialog* _progress;
 #endif
-	// bool            _is_search_global = true;
-	// FindTableWidget     *_findtable;
-	// std::shared_ptr<ItemsFlat>      _selected_branch_as_pages;
+// bool            _is_search_global = true;
+// FindTableWidget     *_findtable;
+// std::shared_ptr<ItemsFlat>      _selected_branch_as_pages;
+#ifdef USE_STACK_LAYOUT
 	QVBoxLayout* _stack_layout;
-	web::ToolbarSearch* _toolbarsearch_buffer; // QLineEdit *_findtext;     //
+#endif // USE_STACK_LAYOUT
 	// QStackedWidget *_lineedits;
 	QStackedWidget* _lineedit_stack;
-
+	//	web::ToolbarSearch* _toolbarsearch_buffer; // QLineEdit *_findtext;     //
 	// Поля, где нужно искать (Заголовок, текст, теги...)
 	QMap<QString, bool> _search_area;
 
@@ -246,7 +254,7 @@ class FindScreen : public QWidget
 	int _total_progress_counter = 0;
 
 	int _cancel_flag = 0;
-	browser_ref _browser;
+
 	friend class web::ToolbarSearch;
 };
 

@@ -1884,25 +1884,22 @@ tkm_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge, const view_delete_perm
 	// il){return il->host()->id() == result->id();});
 	// }
 	if (result && result != source) {
+
 		auto old_source_parent = source->parent();
 		auto _index_origin_source = index(source);
 		auto _index_target = index(result);
 		// auto _index_origin = index(source);
 
 		beginInsertColumns(
-		    _index_target // .parent()
-		    ,
-		    0 // target->count_direct() - 1 // target->sibling_order()    // 0
-		    ,
+		    _index_target,             // .parent()
+		    0,                         // target->count_direct() - 1 // target->sibling_order()    // 0
 		    result->count_direct() - 1 // target->sibling_order()    // target->count_direct() - 1
 		    );
 
 		result = result->merge(source); // not a pure insertion, move removerows to
 		// below: _view_delete_permantent
 
-		auto r = child([=](boost::intrusive_ptr<const i_t> t) {
-			return t->id() == result->id();
-		});
+		auto r = child([=](boost::intrusive_ptr<const i_t> t) { return t->id() == result->id(); });
 		assert(r);
 		assert(static_cast<QModelIndex>(tree_index->current_model()()->index(r)).isValid());
 		// assert(item([ = ] (boost::intrusive_ptr<const TreeItem> t) {return
@@ -1935,8 +1932,7 @@ tkm_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge, const view_delete_perm
 		assert(source->count_direct() == 0);
 		if (static_cast<QModelIndex>(_index_origin_source).isValid()) {
 			auto index_ = index(source);
-			if (static_cast<QModelIndex>(index_)
-				.isValid()) { // source->parent()->field("name") !=
+			if (static_cast<QModelIndex>(index_).isValid()) { // source->parent()->field("name") !=
 					      // clipboard_items_root
 				if (source->count_direct() == 0) {
 					// beginRemoveRows(_index.parent(), _index.row(), _index.row());
@@ -1976,8 +1972,9 @@ tkm_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge, const view_delete_perm
 				    });
 			}
 		}
-	} else if (result)
-		result = result;
+	}
+	//	else if (result)
+	//		result = result;
 	return result; // keep;
 }
 

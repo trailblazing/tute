@@ -379,7 +379,7 @@ class i_t // : public std::enable_shared_from_this<TreeItem>
 	QString field_dynamic(const QString& key_name) const;
 	void field_dynamic(const QString& key_name, const QString& value_);
     public slots:
-	void topic_append(QString new_topic);
+	void topic_append(const QString &new_topic_);
 
     protected:
 	// bind_helper     _binder;

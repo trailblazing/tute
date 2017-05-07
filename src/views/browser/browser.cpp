@@ -273,8 +273,6 @@ namespace web {
 		init_main_menu();
 		// reset_find_screen_navigater();
 
-		_navigater->setObjectName(gl_para::_browser_navigater_name);
-		_navigater->setMaximumWidth(130);
 		setup_navigate();
 		// QUrl const &url,
 		// browser->setWidget(this);
@@ -286,7 +284,9 @@ namespace web {
 		setWebAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
 		setToolButtonStyle(Qt::ToolButtonFollowStyle);
+#ifdef USE_QT_DELETE_ON_CLOSE
 		setAttribute(Qt::WA_DeleteOnClose, true);
+#endif // USE_QT_DELETE_ON_CLOSE
 		// statusBar()
 		gl_paras->status_bar()->setSizeGripEnabled(true);
 		//		init_main_menu();
@@ -450,7 +450,9 @@ namespace web {
 		destroy_transfer([&](renter* const r) {
 			(void)r;
 			if (r != this) { //&& !this->_destroyed_request_sent
+#ifdef USE_QT_DELETE_ON_CLOSE
 				assert(this->testAttribute(Qt::WA_DeleteOnClose));
+#endif // USE_QT_DELETE_ON_CLOSE
 				close_trigger_from_others()(r);
 				//				save();//move to Blogger::save()
 				//				this->_destroyed_request_sent =
@@ -466,8 +468,8 @@ namespace web {
 		}); //  std::make_shared<sd::method<sd::meta_info<void>>>("", &web::Browser::close, &_closed, this)                                                       //close_requested.connect(std::bind(&Browser::close, this));
 
 
-#endif //USE_SIGNAL_CLOSE
-		if (0 == _tab_widget->count()) _find_screen->switch_stack();
+#endif          //USE_SIGNAL_CLOSE
+		//		if (0 == _tab_widget->count()) _find_screen->switch_stack();
 	}
 
 	Browser::~Browser()
@@ -517,6 +519,11 @@ namespace web {
 		//#endif // USE_SIGNAL_CLOSE
 		if (_blogger)
 			delete static_cast<Blogger*>(_blogger); //_blogger->destroy_trigger_from_others()(nullptr);
+
+
+		if (_find_screen) {
+			if (_find_screen->navigater() == _navigater) _find_screen->switch_navigater();
+		}
 	}
 
 	void Browser::run_script(const QString& style_source)
@@ -721,7 +728,13 @@ namespace web {
 	    , _tree_screen(gl_paras->tree_screen())
 	    , _find_screen(gl_paras->find_screen())
 	    , _main_window(gl_paras->main_window())
-	    , _navigater(new QToolBar(this)) // , _toolbarsearch(_find_screen->toolbarsearch())
+	    , _navigater([&] {
+		 _navigater = nullptr;
+		auto nav=new QToolBar(this);
+		nav->setObjectName(gl_para::_browser_navigater_name);
+		nav->setMaximumWidth(130);
+		return nav; }())
+	    //	    , _toolbarsearch(_find_screen->toolbarsearch())
 	    , _bookmarkstoolbar(new BookmarksToolBar(::sapp_t::bookmarksManager()->bookmarksModel(), this))
 	    , _file_menu([&]() -> QMenu* {
 			auto fm = new QMenu(tr("&File"), this);
@@ -737,7 +750,9 @@ namespace web {
 			return fm; }())
 	    , _tools_menu(_main_window->tools_menu()) //([&]() -> QMenu *{auto fm = new QMenu(tr("&Tools"), this); fm->setContentsMargins(0, 0, 0, 0); return fm;} ())
 	    , _bookmarks_menu(new BookmarksMenu())
+#ifdef USE_CLEAR_BUTTON
 	    , _chasewidget(_find_screen->chasewidget())
+#endif // USE_CLEAR_BUTTON
 	    , _history_menu(new HistoryMenu(this))
 	    , _historyhome(new QAction(tr("Home"), _navigater))       //(_find_screen->historyhome())
 	    , _historyback(new QAction(tr("Back"), _navigater))       //(_find_screen->historyback())
@@ -757,21 +772,21 @@ namespace web {
 			assert(blogger_);
 			return blogger_; }()) // new Blogger(vtab_record, this, hide_editor_tools_, new_post_topic, new_post_content)
 	    //	    , _record_screen(record_screen_)
-	    , _tab_widget([&] {
-		    //		    _tab_widget = nullptr;
-		    auto t =
-#ifdef USE_SIGNAL_CLOSE
-			sd::make_intrusive<web::TabWidget>(_blogger,
-			    this,
-			    _main_window); //, gl_paras->profile()
-#else
-			new web::TabWidget(_blogger, this, _main_window); //, gl_paras->profile()
-#endif //USE_SIGNAL_CLOSE
+	    , _tab_widget(new web::TabWidget(blogger_, const_cast<Browser*>(this), _main_window)
+		  //		  [&] {
+		  //		    //		    _tab_widget = nullptr;
+		  //		    return //auto t =
+		  //#ifdef USE_SIGNAL_CLOSE
+		  //			sd::make_intrusive<web::TabWidget>(blogger_, this, _main_window); //, gl_paras->profile()
+		  //#else
+		  //			new web::TabWidget(blogger_, this, _main_window); //, gl_paras->profile()
+		  //#endif //USE_SIGNAL_CLOSE
 
-		    //			  close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::on_close_requested, t, static_cast<sd::renter* const>(this))); //close_requested.connect(t->self_close_request);//(std::bind(&web::TabWidget::self_close_request,t));
-		    //std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::close, &_closed, this)
-		    return t;
-	    }())
+		  //		    //			  close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::on_close_requested, t, static_cast<sd::renter* const>(this))); //close_requested.connect(t->self_close_request);//(std::bind(&web::TabWidget::self_close_request,t));
+		  //		    //std::make_shared<sd::method<sd::meta_info<void>>>("", &web::TabWidget::close, &_closed, this)
+		  ////		    return std::forward<sd::intrusive_ptr<web::TabWidget>>(t);
+		  //	    }()
+		  )
 	    , _browser_docker(gl_paras->browser_docker()->prepend(this))
 	    , _configuration_full_name(_blogger->current_topic_folder_name() + "/" + gl_para::_browser_conf_filename)
 	    , _configuration([&]() -> std::unique_ptr<QSettings> {
@@ -787,6 +802,7 @@ namespace web {
 	    }())
 	{ // , dock_widget(new QDockWidget(parent,
 		// Qt::MaximizeUsingFullscreenGeometryHint))
+		//		_tab_widget = sd::make_intrusive<web::TabWidget>(blogger_, this, _main_window);
 		init();
 
 		run_script(gl_paras->style_source()); // assert(record->linkpage());
@@ -908,12 +924,12 @@ namespace web {
 				}
 			}
 		}
-		reset_main_menu();
+		synchronize_find_screen_reset_main_menu();
 		auto it = _tab_widget->current_item();
 		if (it) _main_window->synchronize_title(it->field<name_key>());
 		this->setVisible(true);
 		this->adjustSize();
-		if (0 == _tab_widget->count()) _find_screen->switch_stack();
+		//		if (0 == _tab_widget->count()) _find_screen->switch_stack();
 		QMainWindow::activateWindow();
 	}
 
@@ -1093,7 +1109,7 @@ namespace web {
 		QByteArray data = get_state(); // false
 		_configuration->setValue(QLatin1String("default_state"), data);
 		_configuration->endGroup();
-		if (0 == _tab_widget->count()) _find_screen->switch_stack();
+		//		if (0 == _tab_widget->count()) _find_screen->switch_stack();
 	}
 
 
@@ -1198,7 +1214,7 @@ namespace web {
 
 		//		init_help_menu();
 
-		reset_main_menu();
+		synchronize_find_screen_reset_main_menu();
 
 		//		auto button = _tree_screen->menus_in_button();
 		//		button->clear();
@@ -1438,11 +1454,11 @@ namespace web {
 
 		// QAction *_historyhome = new QAction(tr("Home"), this);
 
-		connect(_historyhome, &QAction::triggered // this, &Browser::slotHome
-		    ,                                     //		auto to_home = _browser->_historyhome;
-							  //		to_home->disconnect();
-							  //		QObject::connect(
-							  //		    to_home, &QAction::triggered, this,
+		connect(_historyhome, &QAction::triggered, // this, &Browser::slotHome
+							   //		auto to_home = _browser->_historyhome;
+							   //		to_home->disconnect();
+							   //		QObject::connect(
+							   //		    to_home, &QAction::triggered, this,
 		    [&](bool checked = true) -> void {
 			    Q_UNUSED(checked)
 			    auto v = _tab_widget->currentWebView();
@@ -1457,7 +1473,7 @@ namespace web {
 						    QUrl homeurl = QUrl(detail::to_qstring(home));
 						    if (homeurl.isValid() && homeurl != _page->url()) {
 							    _item->field<url_key>(url_value(detail::to_qstring(home))); // "url",
-							    _page->load(_item, true);
+							    _page->load(_item, true, true);
 						    }
 					    }
 				    }
@@ -1544,7 +1560,7 @@ namespace web {
 	//&Browser::slotAboutApplication);
 	//	}
 
-	void Browser::reset_main_menu()
+	void Browser::synchronize_find_screen_reset_main_menu()
 	{
 		//		_main_window->menuBar()->clear();
 		auto& _main_window_menu_map = _main_window->main_menu_map();
@@ -1598,7 +1614,7 @@ namespace web {
 			//		_find_screen->stop(_stop);
 			//		_find_screen->reload(_reload);
 			//		_find_screen->stopreload(_stopreload);
-			_find_screen->replace_navigater(_navigater);
+			_find_screen->switch_navigater(_navigater);
 			// auto mainwindow = _main_window;
 			// FindScreen *_find_screen = globalparameters.find_screen();
 
@@ -1637,6 +1653,8 @@ namespace web {
 			////_chasewidget = new ChaseWidget(findscreen->size(), findscreen); //this
 			////navigater->addWidget(_chasewidget);
 			_find_screen->browser(this);
+
+
 		};
 
 		//
@@ -1920,7 +1938,7 @@ namespace web {
 
 	void Browser::closeEvent(QCloseEvent* event)
 	{
-
+#ifdef CONFIRM_MULTI_CLOSE
 		if (_tab_widget) {
 			//			int count_ = _tab_widget->count();
 			if (_tab_widget->count() > 1) {
@@ -1939,6 +1957,7 @@ namespace web {
 			//				_tab_widget->closeTab(_tab_widget->count() - 1);
 			//			}
 		}
+#endif // CONFIRM_MULTI_CLOSE
 		event->accept();
 		deleteLater();
 	}
@@ -2086,23 +2105,33 @@ namespace web {
 
 	void Browser::slotLoadProgress(int progress)
 	{
-		if (progress < 100 && progress > 0) {
-			_chasewidget->setAnimated(true);
-			disconnect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);
-			if (_stopicon.isNull()) _stopicon = QIcon(
-						    ":/resource/pic/mobile_stop.svg"); // style()->standardIcon(QStyle::SP_BrowserStop);
+		auto _chasewidget =
+#ifdef USE_CLEAR_BUTTON
+		    _find_screen->
+#else
 
-			_stopreload->setIcon(_stopicon);
-			connect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);
-			_stopreload->setToolTip(tr("Stop loading the current page"));
-		} else {
-			_chasewidget->setAnimated(false);
-			disconnect(_stopreload, &QAction::triggered, _stop, &QAction::trigger); // &QAction::setChecked
+		    currentTab()->toolbarsearch()->
+#endif // USE_CLEAR_BUTTON
+		    chasewidget();
+		if (_chasewidget) {
+			if (progress < 100 && progress > 0) {
+				_chasewidget->setAnimated(true);
+				disconnect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);
+				if (_stopicon.isNull()) _stopicon = QIcon(
+							    ":/resource/pic/mobile_stop.svg"); // style()->standardIcon(QStyle::SP_BrowserStop);
 
-			_stopreload->setIcon(_reloadicon);
+				_stopreload->setIcon(_stopicon);
+				connect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);
+				_stopreload->setToolTip(tr("Stop loading the current page"));
+			} else {
+				_chasewidget->setAnimated(false);
+				disconnect(_stopreload, &QAction::triggered, _stop, &QAction::trigger); // &QAction::setChecked
 
-			connect(_stopreload, &QAction::triggered, _reload, &QAction::trigger); // &QAction::setChecked
-			_stopreload->setToolTip(tr("Reload the current page"));
+				_stopreload->setIcon(_reloadicon);
+
+				connect(_stopreload, &QAction::triggered, _reload, &QAction::trigger); // &QAction::setChecked
+				_stopreload->setToolTip(tr("Reload the current page"));
+			}
 		}
 	}
 
@@ -2279,6 +2308,10 @@ namespace web {
 				//view_found->tabmanager() != _tab_widget)
 				//view_found->tabmanager()->closeTab(view_found->tabmanager()->indexOf(view_found));
 			}
+			view = _tab_widget->find(
+			    [&](boost::intrusive_ptr<const ::Binder> b) {
+				    return url_equal(detail::to_qstring(b->host()->field<home_key>()), detail::to_qstring(Browser::_defaulthome)) || url_equal(detail::to_qstring(b->host()->field<url_key>()), detail::to_qstring(Browser::_defaulthome));
+			    });
 			//// Record *blank_url =
 			///check_register_record(QUrl(DockedWindow::_defaulthome));
 
@@ -2321,15 +2354,21 @@ namespace web {
 			////                }
 			////            }
 			// else {
+			if (!view) {
+				view = _tab_widget->newTab(record_index, make_current); // , false
+				result = view->page()->binder()->host();
+				//// auto load
+				// }
 
-			view = _tab_widget->newTab(record_index, make_current); // , false
-			result = view->page()->binder()->host();
-			//// auto load
-			// }
-
-			////            tab->setCurrentWidget(dp.second);   //
-			///tab->setCurrentIndex(tab->webViewIndex(dp.second));
-			////            dp.second->show();
+				////            tab->setCurrentWidget(dp.second);   //
+				///tab->setCurrentIndex(tab->webViewIndex(dp.second));
+				////            dp.second->show();
+			} else {
+				auto page = view->page();
+				if (page) {
+					page->bind(result);
+				}
+			}
 		} else
 			result = view->page()->host();
 		// tab->setCurrentWidget(dp.second);
@@ -2341,16 +2380,17 @@ namespace web {
 		if (_vtab_record->currentWidget() != _record_screen && make_current)
 			_vtab_record->setCurrentWidget(_record_screen);
 		assert(view);
+		assert(result);
 		assert(result->binder()->integrity_external(result, view->page()));
 
 		return result; // _mainWindows[0];
 	}
-#ifdef USE_SIGNAL_CLOSE
-	sd::intrusive_ptr<rs_t>
-#else
+	//#ifdef USE_SIGNAL_CLOSE
+	//	sd::intrusive_ptr<rs_t>
+	//#else
 	rs_t*
-#endif //USE_SIGNAL_CLOSE
-	Browser::record_screen()
+	    //#endif //USE_SIGNAL_CLOSE
+	    Browser::record_screen()
 	{
 		//		auto _record_screen = _tab_widget->record_screen();
 		return _tab_widget->record_screen();
@@ -2437,7 +2477,7 @@ namespace web {
 		return _tab_widget->find(_equal);
 	}
 
-
+	QToolBar* Browser::navigater() const { return _navigater; }
 }
 
 //

@@ -337,7 +337,7 @@ void SuperMenu::setEditActionsEnabled(bool state)
 
 void SuperMenu::newEntry()
 {
-	Blogger* c = sd::make_intrusive<Blogger>();
+	blogger_ref c(new Blogger());
 	c->setSTI(_sti);
 	c->setWindowTitle(QObject::tr((program_title_string + " - new entry [*]").c_str()));
 	if (_blogger)
@@ -369,7 +369,7 @@ void SuperMenu::choose(QString fname)
 	else
 		fn = fname;
 	if (!fn.isEmpty()) {
-		Blogger* e = sd::make_intrusive<Blogger>();
+		blogger_ref e(new Blogger());
 		if (!e->load(fn, true)) {
 			QMessageBox::warning(0, program_title_qstring, tr("Could not load the file you specified."), QMessageBox::Cancel, QMessageBox::NoButton);
 			e->deleteLater();

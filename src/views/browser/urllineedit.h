@@ -55,14 +55,15 @@
 QT_BEGIN_NAMESPACE
 class QLineEdit;
 QT_END_NAMESPACE
-
+//#define _chasewidget _left_widget
 // QT_BEGIN_NAMESPACE
+class FindScreen;
 
 namespace web {
 	class TabWidget;
 	class ClearButton;
 	class WebView;
-
+	class ChaseWidget;
 	// addressbar
 	class ExLineEdit : public QWidget {
 #if QT_VERSION == 0x050600
@@ -72,18 +73,21 @@ namespace web {
 #endif
 
 	    public:
-		ExLineEdit(QWidget* parent = 0);
+		ExLineEdit(QWidget *view = nullptr);
 
 		QLineEdit* lineEdit() const;
 
 		void left_widget(QWidget* widget);
 		QWidget* left_widget() const;
-
+		void right_widget(QWidget* widget);
+		QWidget* right_widget() const;
 		QSize sizeHint() const;
 
 		QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
-
-	    protected:
+#ifndef USE_CLEAR_BUTTON
+		ChaseWidget *chasewidget() const;
+#endif // USE_CLEAR_BUTTON
+	protected:
 		void focusInEvent(QFocusEvent* event);
 		void focusOutEvent(QFocusEvent* event);
 		void keyPressEvent(QKeyEvent* event);
@@ -95,10 +99,15 @@ namespace web {
 	    protected:
 		void updateGeometries();
 		void initStyleOption(QStyleOptionFrame* option) const; // QStyleOptionFrameV2
-
-		QWidget* _left_widget;
-		QLineEdit* _lineedit;
+#ifdef USE_CLEAR_BUTTON
 		ClearButton* _clearbutton;
+#else
+		ChaseWidget* _chasewidget; //
+#endif //USE_CLEAR_BUTTON
+		QWidget* _left_widget;
+		QWidget* _right_widget;
+		QLineEdit* _lineedit;
+		WebView* _web_view;
 	};
 
 	class UrlIconLabel;
@@ -126,7 +135,9 @@ namespace web {
 #endif
 
 	    public:
-		UrlLineEdit(WebView* view = nullptr, QWidget* parent = 0);
+		UrlLineEdit(//QWidget* find_screen_,
+		    //			    QWidget* right_widget_,
+		    QWidget* view = nullptr);
 		void setWebView(WebView* webView);
 
 		WebView* webview();
@@ -140,9 +151,13 @@ namespace web {
 		void webViewUrlChanged(const QUrl& url);
 		void webViewIconChanged();
 
+	    protected:
+//		FindScreen* _find_screen;
+//		WebView* _webview;
+
 	    private:
 		QLinearGradient generateGradient(const QColor& color) const;
-		WebView* _webview;
+
 		UrlIconLabel* _iconlabel;
 		QColor _defaultbasecolor;
 	};

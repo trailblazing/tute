@@ -220,7 +220,7 @@ class QT_QTSINGLEAPPLICATION_EXPORT sapp_t // : public BrowserApplication { //
 
 	static web::HistoryManager* historyManager();
 	static web::CookieJar* cookieJar();
-//	static web::DownloadManager* request_download_manager();
+	//	static web::DownloadManager* request_download_manager();
 	static QNetworkAccessManager* networkAccessManager();
 	static web::BookmarksManager* bookmarksManager();
 

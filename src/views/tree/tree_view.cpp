@@ -728,66 +728,69 @@ void tv_t::dropEvent(QDropEvent* event)
 			// Полные данные записи
 			boost::intrusive_ptr<i_t> tree_item_drag = clipboard_records->record(i);
 
-			auto item_on_tree =
-			    _know_root->child([&](boost::intrusive_ptr<const i_t> it) {
-				    return it->id() == tree_item_drag->id();
-			    });
+			auto item_on_tree = _know_root->child([&](boost::intrusive_ptr<const i_t> it) {
+				return it->id() == tree_item_drag->id();
+			});
 			assert(item_on_tree);
 			if (item_on_tree)
 				tree_item_drag = item_on_tree;
-			auto _record_controller = tree_item_drag->page()->record_ctrl(); // find_object<RecordController>("table_screen_controller");
-											 // // Указатель на контроллер таблицы
-											 // конечных записей
-			if (_record_controller) {
-				web::TabWidget* _tab_widget =
-				    tree_item_drag->page()->view()->tabmanager();
-				if (check_crypt(tree_item_drag)) {
-					// Удаление записи из исходной ветки, удаление должно быть вначале,
-					// чтобы сохранился ID записи
-					// В этот момент вид таблицы конечных записей показывает таблицу, из
-					// которой совершается Drag
-					// TreeItem
-					// *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
-					if (tree_item_drag->binder())
-						_tab_widget->closeTab(_tab_widget->indexOf(tree_item_drag->page()->view())); // _record_controller->remove_child(record->field("id"));
-					// Если таблица конечных записей после удаления перемещенной записи
-					// стала пустой
-					if (_record_controller->row_count() == 0) {
+			auto rctrl_ = tree_item_drag->page()->record_ctrl(); // find_object<RecordController>("table_screen_controller");
+									     // // Указатель на контроллер таблицы
+									     // конечных записей
+			if (rctrl_) {
+				auto web_view = tree_item_drag->page()->view();
+				if (web_view) {
+					web::TabWidget* _tab_widget = web_view->tabmanager();
+					if (_tab_widget) {
+						if (check_crypt(tree_item_drag)) {
+							// Удаление записи из исходной ветки, удаление должно быть вначале,
+							// чтобы сохранился ID записи
+							// В этот момент вид таблицы конечных записей показывает таблицу, из
+							// которой совершается Drag
+							// TreeItem
+							// *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
+							if (tree_item_drag->binder())
+								_tab_widget->closeTab(_tab_widget->indexOf(tree_item_drag->page()->view())); // _record_controller->remove_child(record->field("id"));
+							// Если таблица конечных записей после удаления перемещенной записи
+							// стала пустой
+							if (rctrl_->row_count() == 0) {
 // find_object<MetaEditor>(meta_editor_singleton_name)
 #ifdef USE_FILE_PER_TREEITEM
-						_record_controller->blogger()->clear_all(); // Нужно очистить
-											    // поле
-											    // редактирования
-											    // чтобы не видно
-											    // было текста
-											    // последней
-											    // удаленной записи
+								_record_controller->blogger()->clear_all(); // Нужно очистить
+													    // поле
+													    // редактирования
+													    // чтобы не видно
+													    // было текста
+													    // последней
+													    // удаленной записи
 #else
-						_record_controller->blogger()->close();
+								rctrl_->blogger()->close();
 #endif // USE_FILE_PER_TREEITEM
+							}
+							// find_object<RecordScreen>(table_screen_singleton_name)
+							rctrl_->record_screen()->tools_update();
+
+							// boost::intrusive_ptr<TreeIndex> tree_index = [&]
+							// {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new
+							// TreeIndex([&] (){return _know_root;}, tree_item_drop, 0); }
+							// catch(std::exception &e) {throw e; } return tree_index; } ();
+							// Добавление записи в базу
+							TreeLevel::instance(TreeIndex::item_require_treeindex([&]() { return _know_root; }, tree_item_drop),
+							    tree_item_drag)
+							    ->move(); // _know_root// tree_item_drop->child_insert(0, record,
+								      // ADD_NEW_RECORD_TO_END);
+
+							auto index_from = _know_root->index(tree_item_drag);
+							// Обновление исходной ветки чтобы было видно что записей убавилось
+							_know_root->update_index(index_from);
+
+							update(static_cast<QModelIndex>(index_from).parent());
+
+							// Сохранение дерева веток
+							// find_object<TreeScreen>(tree_screen_singleton_name)
+							worked++;
+						}
 					}
-					// find_object<RecordScreen>(table_screen_singleton_name)
-					_record_controller->record_screen()->tools_update();
-
-					// boost::intrusive_ptr<TreeIndex> tree_index = [&]
-					// {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new
-					// TreeIndex([&] (){return _know_root;}, tree_item_drop, 0); }
-					// catch(std::exception &e) {throw e; } return tree_index; } ();
-					// Добавление записи в базу
-					TreeLevel::instance(TreeIndex::item_require_treeindex([&]() { return _know_root; }, tree_item_drop),
-					    tree_item_drag)
-					    ->move(); // _know_root// tree_item_drop->child_insert(0, record,
-						      // ADD_NEW_RECORD_TO_END);
-
-					auto index_from = _know_root->index(tree_item_drag);
-					// Обновление исходной ветки чтобы было видно что записей убавилось
-					_know_root->update_index(index_from);
-
-					update(static_cast<QModelIndex>(index_from).parent());
-
-					// Сохранение дерева веток
-					// find_object<TreeScreen>(tree_screen_singleton_name)
-					worked++;
 				}
 			}
 		}
@@ -1672,13 +1675,18 @@ web::WebView* tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index)
 	//std::placeholders::_1));
 	//	v = _page->view();
 
-	auto browser_ = _page ? _page->browser() : gl_paras->main_window()->browser(_host, true); //_host
-	web::WebView* activated_view = browser_->currentTab();                                    // globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const
-												  // ::Binder> b) -> bool {return
-												  // url_equal((b->host()->field<home_type>()).toStdString(),
-												  // _host->field<home_type>().toStdString()) ||
-												  // url_equal((b->host()->field<url_type>()).toStdString(),
-												  // _host->field<url_type>().toStdString());});;
+	web::Browser* browser_ = nullptr;
+	if (_page) {
+		browser_ = _page->browser();
+	}
+
+	if (!browser_) browser_ = gl_paras->main_window()->browser(_host, true); //_host
+	web::WebView* activated_view = browser_->currentTab();                   // globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const
+										 // ::Binder> b) -> bool {return
+										 // url_equal((b->host()->field<home_type>()).toStdString(),
+										 // _host->field<home_type>().toStdString()) ||
+										 // url_equal((b->host()->field<url_type>()).toStdString(),
+										 // _host->field<url_type>().toStdString());});;
 	// const index_tree &_index = _know_root->index(_item);
 	if (static_cast<QModelIndex>(_index)
 		.isValid()) { // && index_current() != _index
@@ -3566,7 +3574,7 @@ tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex, // std::function<KnowMode
 				result = current_model()->item([=](boost::intrusive_ptr<const i_t> t) {
 					return t->id() == result->id();
 				});
-//				assert((_source_item == result) || (_source_item->name() == result->name()));
+				//				assert((_source_item == result) || (_source_item->name() == result->name()));
 				// } else if(_current_model->root_item()->id() == it->id()) {
 
 				// assert(new_branch_root == result);  // not must, if you already have
@@ -4226,10 +4234,9 @@ void tv_t::modify(void)
 boost::intrusive_ptr<i_t>
 tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge)
 {
-	boost::intrusive_ptr<TreeIndex> tree_index =
-	    _tree_merge->tree_index(); // const std::function<KnowModel *()>
-				       // &_current_model,
-				       // boost::intrusive_ptr<TreeItem> target
+	boost::intrusive_ptr<TreeIndex> tree_index = _tree_merge->tree_index(); // const std::function<KnowModel *()>
+										// &_current_model,
+										// boost::intrusive_ptr<TreeItem> target
 	boost::intrusive_ptr<i_t> _to_be_operated = _tree_merge->to_be_operated();
 	web::WebView* web_view = nullptr;
 	web_view = gl_paras->main_window()->find([&](boost::intrusive_ptr<const ::Binder> b) { return b->host()->id() == _to_be_operated->id() && b->host() == _to_be_operated; });
@@ -4286,7 +4293,7 @@ tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge)
 					static_cast<tkm_t*>(_current_model())->session_id(TreeIndex::item_require_treeindex(_current_model, result));
 				if (_to_be_operated_is_current_of_rocord_view)
 					if (_rctrl)
-						_rctrl->select_as_current(_rctrl->index<pos_proxy>(_to_be_operated));
+						_rctrl->select_as_current(_rctrl->index<pos_proxy>(result)); //_to_be_operated
 				know_model_save();
 
 				// find_object<MainWindow>("mainwindow")

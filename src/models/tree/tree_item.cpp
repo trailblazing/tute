@@ -1722,6 +1722,15 @@ boost::intrusive_ptr<i_t> i_t::merge(boost::intrusive_ptr<i_t> cut)
 	//			field_operation_count++;
 	//		}
 	//	}
+	auto cut_binder = cut->binder();
+	if (cut_binder) {
+		auto cut_page = cut_binder->page();
+		if (cut_page)
+			if (!_binder && cut_page) {
+				//				cut_page->binder_reset();
+				cut_page->bind(this);
+			}
+	}
 	boost::fusion::for_each(cut->_fields_data_map, merg_record(&this->_fields_data_map));
 	// if(0 != field_operation_count) {
 
@@ -2783,14 +2792,15 @@ web::WebPage* i_t::page() const
 web::WebView* i_t::bind()
 {
 	assert(_binder);
-	web::WebView* view = nullptr;
+	web::WebView* view_ = nullptr;
 	if (_binder) {
 		auto page_ = _binder->page();
+
 		auto host_ = _binder->host();
-		if (!_binder->page() || !_binder->host()) {
+		if (!page_ || !host_) {
 			if (!host_ && page_) {
 				new ::Binder(std::make_shared<web::WebPage::Binder>(this, page_)); // _binder->host(this);
-				view = page_->view();
+				view_ = page_->view();
 			} else { // if(!page_ || (!host_ && !page_))
 				auto browser_ = gl_paras->main_window()->browser<boost::intrusive_ptr<i_t>>(this);
 				auto record_index = RecordIndex::instance(
@@ -2810,7 +2820,9 @@ web::WebView* i_t::bind()
 			page_->bind(this);
 			//_binder->bind(); // boost::intrusive_ptr<TreeItem>(this)
 		} // else view = page_->view();
-		view = page_->view();
+		assert(page_);
+		view_ = page_->view();
+
 	} else {
 		auto browser_ = gl_paras->main_window()->browser<boost::intrusive_ptr<i_t>>(this);
 		auto record_index = RecordIndex::instance(
@@ -2826,10 +2838,10 @@ web::WebView* i_t::bind()
 		// if(!page_)
 		auto page_ = browser_->bind(record_index)->page();
 		new ::Binder(std::make_shared<web::WebPage::Binder>(this, page_));
-		view = page_->view();
+		view_ = page_->view();
 	}
-	assert(view);
-	return view;
+	assert(view_);
+	return view_;
 }
 
 web::WebView* i_t::activate(const std::function<web::WebView*(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal)>& find_activated, bool force_reload)
@@ -2843,7 +2855,7 @@ web::WebView* i_t::activate(const std::function<web::WebView*(const std::functio
 		if (this != check_view->page()->host().get() || !_binder) {
 			bind();
 			v = _binder->activate();
-		} else if (!check_view->load_finished() || force_reload)
+		} else if (!check_view->load_finished() || force_reload || !check_view->page()->activated())
 			v = _binder->activate();
 		else
 			v = check_view; // _binder->page()->view();
@@ -3148,8 +3160,9 @@ int i_t::distance(
 	return distance_;
 }
 
-void i_t::topic_append(QString new_topic)
+void i_t::topic_append(QString const& new_topic_)
 {
+	auto new_topic = new_topic_;
 	new_topic = purify(new_topic);
 	//	auto tags_ = field<tags_key>();
 	//	if (tags_.size() > 0)

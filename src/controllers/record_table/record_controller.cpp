@@ -68,8 +68,10 @@ extern WalkHistory walkhistory;
 W_OBJECT_IMPL(rctl_t)
 #endif
 
-rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_find_screen // ,
-    web::TabWidget* tabmanager_, rs_t* record_screen_)
+rctrl_t::rctrl_t(
+    Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_find_screen // ,
+    web::TabWidget* tabmanager_,
+    rs_t* record_screen_)
 #ifdef USE_SIGNAL_CLOSE
     : super()
     , sd::renter() //sd::renter<rctrl_t>()
@@ -79,15 +81,19 @@ rctrl_t::rctrl_t(Blogger* blogger_, // TreeScreen *_tree_screen, FindScreen *_fi
     , _tab_widget(tabmanager_)             // nullptr
     , _source_model(new RecordModel(this)) // so, you need boost::intursive_ptr
     , _proxy_model(new RecordProxyModel(this))
-    , _view([&] {
-	    _view.detach(); // = nullptr; // = sd::intrusive_ptr<rv_t>(nullptr);
-	    assert(record_screen_);
-	    auto r = sd::make_intrusive<rv_t>(record_screen_, this);
-	    return r;
-    }())
     , _record_screen(record_screen_)
     , _blogger(blogger_)
+    , _view(new rv_t(record_screen_, this), true //sd::make_intrusive<rv_t>(_view, record_screen_, this)
+	  //	  [&] {
+	  //	    _view.detach(); // = nullptr; // = sd::intrusive_ptr<rv_t>(nullptr);
+	  //	    assert(record_screen_);
+	  //	    return std::forward<sd::intrusive_ptr<rv_t>>(sd::make_intrusive<rv_t>(record_screen_, this));
+	  ////	    return std::forward<sd::intrusive_ptr<rv_t>>(r);
+	  //    }()
+	  )
 {
+	//	_view =  std::forward<sd::intrusive_ptr<rv_t>>(sd::make_intrusive<rv_t>(record_screen_, this));
+
 	//	  , _main_window(main_window_)
 	// setObjectName(screen_name + "_controller");
 
@@ -199,7 +205,8 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 	index_proxy index_proxy_ =
 	    index<index_proxy>(pos_proxy_); // Модельный индекс в Proxy модели
 	index_source index_source_ = index<index_source>(pos_proxy_);
-	pos_proxy pos_proxy_real(static_cast<QModelIndex>(index_proxy_).row());
+	auto qindex_proxy = static_cast<QModelIndex>(index_proxy_);
+	pos_proxy pos_proxy_real(qindex_proxy.row());
 	// todo: Если это условие ни разу не сработает, значит преобразование ipos -
 	// pos надо просто убрать
 	// Todo: If this condition is never going to work, then ipos transformation -
@@ -213,8 +220,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 	int tab_count = row_count();
 	if ((int)pos_proxy_real >= 0 && (int)pos_proxy_real < tab_count) {
 		if (index_source_ !=
-		    _source_model
-			->current_index()) { // if(pos_real > (rowCount - 1))return;
+		    _source_model->current_index()) { // if(pos_real > (rowCount - 1))return;
 			// Простой механизм выбора строки. Похоже, что его использовать не
 			// получится
 			_view->selectRow((int)pos_proxy_real);
@@ -222,17 +228,17 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			// auto recordSourceModel = controller->getRecordTableModel();
 			// QModelIndex selIdx = recordSourceModel->index(pos, 0);
 
-			_view->selectionModel()->select(index_proxy_, current_tree_selection_mode);
+			_view->selectionModel()->select(qindex_proxy, current_tree_selection_mode);
 			// Установка засветки на нужный индекс
 			// Set the backlight to the desired index
-			_view->selectionModel()->setCurrentIndex(index_proxy_, current_tree_current_index_mode); // selIdx   //
+			_view->selectionModel()->setCurrentIndex(qindex_proxy, current_tree_current_index_mode); // selIdx   //
 			// QItemSelectionModel::Select    //
 			// ClearAndSelect
-			_view->setCurrentIndex(index_proxy_);
-			_view->edit(index_proxy_);
+			_view->setCurrentIndex(qindex_proxy);
+			_view->edit(qindex_proxy);
 
-			_view->scrollTo(static_cast<QModelIndex>(index_proxy_)); // QAbstractItemView::PositionAtCenter
-			_view->update(static_cast<QModelIndex>(index_proxy_));
+			_view->scrollTo(qindex_proxy); // QAbstractItemView::PositionAtCenter
+			_view->update(qindex_proxy);
 			//
 			auto real_index_source_ = _source_model->current_index();
 			auto real_index_proxy_ = index<index_proxy>(real_index_source_);
@@ -245,10 +251,10 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			// processed signal line change to the selection model)
 			// Therefore, the recording must be made a virtual click to fill the final
 			// table of records
-			if (appconfig->interface_mode() == "mobile") emit _view->clicked(static_cast<QModelIndex>(index_proxy_));
+			if (appconfig->interface_mode() == "mobile") emit _view->clicked(qindex_proxy);
 			// QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
-			// emit _view->clicked(static_cast<QModelIndex>(index_proxy_));	//
+			// emit _view->clicked(qindex_proxy);	//
 			// segment error?
 
 			// this->setFocus();   // ?
@@ -286,19 +292,20 @@ boost::intrusive_ptr<i_t> rctrl_t::index_invoke(const index_proxy& index_proxy_,
 	result = source_model()->item(pos_source_);
 	// auto	ov	= result->page()->view();
 	// auto v =
-	force_update ? result->binder()->activate() : result->activate(std::bind(&web::TabWidget::find, &*_tab_widget, std::placeholders::_1));
-	QItemSelectionModel* item_selection_model = _view->selectionModel();
-	bool has_selection = item_selection_model->hasSelection();
-	if (!has_selection) {
-		select_as_current(index<pos_proxy>(index_proxy_));
-	}
+	//	force_update ? result->binder()->activate() :
+	result->activate(std::bind(&web::TabWidget::find, &*_tab_widget, std::placeholders::_1), force_update);
+	//        QItemSelectionModel* item_selection_model = _view->selectionModel();
+	//	bool has_selection = item_selection_model->hasSelection();
+	//	if (!has_selection) {
+	select_as_current(index<pos_proxy>(index_proxy_));
+	//	}
 	// assert(v == ov);
 	// assert(v->page()->host() == result);
 	// v->recovery_global_consistency();
 	_record_screen->tools_update();
 	// sychronize_metaeditor_to_record(source_pos);  // means update
 	// editor(source_pos);
-	if (((QModelIndex)source_index).isValid()) {
+	if (static_cast<QModelIndex>(source_index).isValid()) {
 		sychronize_attachtable_to_item(pos_source_);
 		// browser_update(pos_source_); // if new one, create it? no, you can't
 		// click a record which does not exist.
@@ -2409,10 +2416,10 @@ boost::intrusive_ptr<i_t> rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex>
 
 	//// _source_model->on_table_config_changed();
 	// }else
-	{
-		source_position = _source_model->position(_found_item->id());
-		v = _tab_widget->webView(static_cast<int>(source_position));
-	}
+
+	source_position = _source_model->position(_found_item->id());
+	v = _tab_widget->webView(static_cast<int>(source_position));
+
 	_found_item = v->page()->binder()->host();
 	assert(_found_item == _source_model->item(source_position));
 	assert(_found_item);
@@ -2437,7 +2444,8 @@ boost::intrusive_ptr<i_t> rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex>
 
 	index_proxy proxy_index =
 	    index<index_proxy>(index<pos_proxy>(source_position));
-	_view->dataChanged((QModelIndex)proxy_index, (QModelIndex)proxy_index);
+	auto qindex_proxy = static_cast<QModelIndex>(proxy_index);
+	_view->dataChanged(qindex_proxy, qindex_proxy);
 
 	_view->restore_column_width();
 	_view->restore_header_state();
@@ -3187,7 +3195,7 @@ boost::intrusive_ptr<i_t> rctrl_t::index<boost::intrusive_ptr<i_t>>(const id_val
 	return _source_model->item(index<pos_source>(id));
 }
 
-Blogger* rctrl_t::blogger()
+Blogger* rctrl_t::blogger() const
 {
 	return _blogger;
 }

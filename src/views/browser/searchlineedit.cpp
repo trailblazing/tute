@@ -43,13 +43,21 @@
 #include <wobjectimpl.h>
 #endif
 
-#include "searchlineedit.h"
-#include "urllineedit.h"
+
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
 #include <QtWidgets/QMenu>
+#include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QStyleOptionFrame> // #include <QtWidgets/QStyleOptionFrameV2>
+
+#include "libraries/fixed_parameters.h"
+#include "libraries/qtm/blogger.h"
+#include "searchlineedit.h"
+#include "urllineedit.h"
+#include "views/browser/chasewidget.h"
+#include "views/browser/webview.h"
+#include "views/find_in_base_screen/find_screen.h"
 
 namespace web {
 #if QT_VERSION == 0x050600
@@ -58,13 +66,15 @@ namespace web {
 
 	ClearButton::ClearButton(QWidget* parent)
 	    : QAbstractButton(parent)
+	//	    , _chasewidget(new ChaseWidget(QSize(16, 16), this))
 	{
 #ifndef QT_NO_CURSOR
 		setCursor(Qt::ArrowCursor);
-#endif // QT_NO_CURSOR
-		setToolTip(tr("Clear"));
+#endif                                                  // QT_NO_CURSOR
+		setToolTip(tr("Switch topic and URL")); //"Clear"
 		setVisible(false);
 		setFocusPolicy(Qt::NoFocus);
+		//		_chasewidget->setMaximumWidth(17);
 	}
 
 	void ClearButton::paintEvent(QPaintEvent* event)
@@ -95,7 +105,7 @@ namespace web {
 
 	SearchButton::SearchButton(QWidget* parent)
 	    : QAbstractButton(parent)
-	    , _menu(0)
+	    , _menu(new QMenu(this))
 	{
 		setObjectName(QLatin1String("SearchButton"));
 #ifndef QT_NO_CURSOR
@@ -166,16 +176,83 @@ namespace web {
  */
 	constexpr char SearchLineEdit::_default_tip[];
 
-	SearchLineEdit::SearchLineEdit(QWidget* parent, WebView* view)
-	    : super(view, parent)
-	    , _searchbutton(new SearchButton(this))
+	SearchLineEdit::SearchLineEdit(QWidget* view)
+	    : super( //find_screen_,
+		  //		    [this] {
+		  //		    _searchbutton =
+		  //		  new SearchButton(this)
+		  //			    ;
+		  //		    return _searchbutton;
+		  //	    }()
+		  //		  ,
+		  view)
+	    //	    , _find_screen(gl_paras->find_screen()) //dynamic_cast<FindScreen*>(find_screen_)
+	    , _searchbutton(new SearchButton(this)) //dynamic_cast<SearchButton*>(super::right_widget()) //
+	    , _web_view(dynamic_cast<web::WebView*>(view))
 	{
+
+
 		connect(lineEdit(), &QLineEdit::textChanged, this, &SearchLineEdit::textChanged);
-		left_widget(_searchbutton);
+
+		right_widget(_searchbutton);
 		_inactivetext = SearchLineEdit::_default_tip; //tr("Search");
 
 		QSizePolicy policy = sizePolicy();
 		setSizePolicy(QSizePolicy::Preferred, policy.verticalPolicy());
+
+		connect(
+#ifdef USE_CLEAR_BUTTON
+		    _clearbutton,
+#else
+		    _chasewidget,
+#endif // USE_CLEAR_BUTTON
+
+		    &ChaseWidget::clicked, // _lineedit, &QLineEdit::clear
+		    [&](bool checked) {
+
+			    (void)checked;
+			    if (_web_view) {
+				    auto _browser = _web_view->browser();
+				    if (_browser) {
+					    auto blogger_ = _browser->blogger();
+					    if (blogger_) {
+						    auto topic = blogger_->topic();
+						    //					int count_ = _find_screen->_stack_layout->count();
+						    //					assert(count_ > 0);
+						    //					auto stack = static_cast<QStackedWidget*>(_find_screen->_stack_layout->itemAt(0)->widget());
+						    //					if (stack) {
+						    //						auto this = static_cast<web::ToolbarSearch*>(stack->currentWidget());
+						    //						if (search_edit) {
+						    //							auto _lineedit = search_edit->lineEdit();
+						    if (_web_view) {
+							    auto page = _web_view->page();
+							    if (page) {
+								    auto url_ = page->url().toString(); //_browser->tab_widget()->current_item()->field<url_key>();
+													//					auto real_url = to_be_url(_lineedit->text());
+								    if (                                //real_url != QUrl() //
+									_lineedit->text() == url_) {
+									    //									    if (this->inactiveText() == web::SearchLineEdit::_default_tip) {
+									    this->setInactiveText(topic);
+									    //									    }
+									    _lineedit->setText(this->inactiveText());
+									    //						search_edit->left_widget(search_edit->searchbutton());
+									    //						search_edit->left_widget()->show();
+									    //						search_edit->iconlabel()->hide();
+								    } else {
+									    _lineedit->setText(url_);
+									    //						search_edit->left_widget(search_edit->iconlabel());
+									    //						search_edit->left_widget()->show();
+									    //						search_edit->searchbutton()->hide();
+								    }
+								    //						}
+								    //					}
+							    }
+						    }
+					    }
+				    }
+			    }
+
+		    });
 	}
 
 	void SearchLineEdit::paintEvent(QPaintEvent* event)

@@ -102,18 +102,26 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
     , _treepathlabel(new QLabel(this))
     , _browser(browser_)
     , _tab_widget(tabmanager_)
-    , _rctrl(
-#ifdef USE_SIGNAL_CLOSE
-	  sd::make_intrusive<rctrl_t>(blogger_, tabmanager_, sd::intrusive_ptr<rs_t>(this))
-#else
+    , _rctrl(//nullptr
+//#ifdef USE_SIGNAL_CLOSE
+//	  sd::make_intrusive<rctrl_t>(blogger_, tabmanager_, sd::intrusive_ptr<rs_t>(this))
+//#else
 	  new rctrl_t(blogger_, tabmanager_, this)
-#endif                                                              //USE_SIGNAL_CLOSE
-	      )                                                     //	    _rctrl = sd::intrusive_ptr<rctrl_t>(nullptr);
-    , _vertical_scrollarea(new VerticalScrollArea([&] {rv_t *v = nullptr; if(_rctrl) v = _rctrl->view(); return v; }(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void > > >(&RecordView::resizeEvent, _tab_widget->record_ctrl()->view())
+//#endif          //USE_SIGNAL_CLOSE
+	      ) //	    _rctrl = sd::intrusive_ptr<rctrl_t>(nullptr);
+		//    , _vertical_scrollarea(new VerticalScrollArea([&] {rv_t *v = nullptr; if(_rctrl) v = _rctrl->view(); return v; }(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void > > >(&RecordView::resizeEvent, _tab_widget->record_ctrl()->view())
     , _records_toolslayout(new QHBoxLayout())
     , _records_screenlayout(new QVBoxLayout())
     , _close_sender_id(typeid(web::Browser).name())
 { //
+//        _rctrl =
+//#ifdef USE_SIGNAL_CLOSE
+//            sd::make_intrusive<rctrl_t>(blogger_, tabmanager_, sd::intrusive_ptr<rs_t>(this));
+//#else
+//            new rctrl_t(blogger_, tabmanager_, this);
+//#endif //USE_SIGNAL_CLOSE
+
+
 	[&] {
 		auto _vtab_record = gl_paras->vtab_record();
 		bool found = false;
@@ -222,7 +230,9 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
 	// recordTableController = new RecordTableController(this);
 
 	setObjectName(record_screen_multi_instance_name);
+#ifdef USE_QT_DELETE_ON_CLOSE
 	setAttribute(Qt::WA_DeleteOnClose, true);
+#endif // USE_QT_DELETE_ON_CLOSE
 	// _table_controller->setObjectName(object_name + "_controller");
 
 	setup_actions();
@@ -546,9 +556,9 @@ rs_t::~rs_t()
 			_browser->destroy_trigger_from_others()(this);
 		//			 );
 	}
-#endif //USE_SIGNAL_CLOSE
+#endif  //USE_SIGNAL_CLOSE
 	//	delete _rctrl;
-	_vertical_scrollarea->deleteLater();
+	//	_vertical_scrollarea->deleteLater();
 }
 
 // void rs_t::save_in_new_branch(bool checked){
@@ -1346,8 +1356,8 @@ void rs_t::assembly(void)
 	_vertical_scrollarea_layout->setMargin(0);
 	_vertical_scrollarea_layout->setContentsMargins(0, 0, 0, 0);
 
-	_vertical_scrollarea->setContentsMargins(0, 0, 0, 0);
-	_vertical_scrollarea_layout->addWidget(_vertical_scrollarea);
+
+	_vertical_scrollarea_layout->addWidget(_rctrl->view()->vertical_scrollarea());
 	// _verticalscrollarea->viewport()->installEventFilter(rtview);
 
 	_records_screenlayout->addLayout(_vertical_scrollarea_layout); //

@@ -543,7 +543,7 @@ namespace web {
 
 		// WebView *find(boost::intrusive_ptr<const TreeItem> it_find)const;
 		WebView* find_nopin() const;
-		Browser* browser();
+		Browser* browser() const;
 
 		// struct coupler : public std::enable_shared_from_this<coupler> { //
 		// boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>  //
@@ -652,7 +652,7 @@ namespace web {
 		static std::tuple<qint32, qint32, QStringList, QString>
 		state(const QByteArray& state_);
 
-		rs_t* record_screen();
+		rs_t* record_screen() const;
 
 	    protected:
 		void mouseDoubleClickEvent(QMouseEvent* event);
@@ -682,7 +682,7 @@ namespace web {
 		void moveTab(int fromIndex, int toIndex);
 		// void setCurrentIndex(int index);
 	    private slots:
-		void currentChanged(int index);
+		void currentChanged(int index_);
 		void aboutToShowRecentTabsMenu();
 		void aboutToShowRecentTriggeredAction(QAction* action);
 		void downloadRequested(QWebEngineDownloadItem* download);
@@ -746,6 +746,8 @@ namespace web {
 
 		friend class Browser;
 		friend class ToolbarSearch;
+		int shrink(const size_t bar);
+		friend class WebView;
 	};
 
 	// class PopupWindow :
