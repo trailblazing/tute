@@ -56,13 +56,14 @@ namespace sd {
 	//	template <typename real_renter>
 	class renter;
 }
-class Blogger;
-class rs_t;
-class rctrl_t;
-namespace web {
-	class Browser;
-	class TabWidget;
-}
+//class Blogger;
+//class rs_t;
+//class rctrl_t;
+//namespace web {
+//	class Browser;
+//	class TabWidget;
+//	class ChaseWidget;
+//}
 namespace boost {
 	namespace sp_adl_block {
 		//		template <typename CounterPolicyT>                                                                                  //typename DerivedT,
@@ -334,14 +335,19 @@ namespace sd {
 		typedef intrusive_ptr this_type;
 		bool internal_integrity() const
 		{
-			auto px = boost::intrusive_ptr<element_type>::get();
+			auto //px_pre
+			    px = boost::intrusive_ptr<element_type>::get();
+			static_assert(std::is_base_of<renter, real_renter>::value, "miss match base type!");
+			//			auto px = static_cast<renter*>(px_pre);
 			bool conflict = false;
 			if (!px //|| px->_close_request_sent || px->_destroy_request_sent
 			    ) conflict = (_shadow != nullptr);
 			//			bool null = !px && !_shadow;
 			bool closed = !_shadow; //px && (px->_close_request_triggered || px->_destroyed_request_triggered) && !_shadow;
 
-			bool normal = px && !px->_close_request_sent && !px->_destroy_request_sent && _shadow && (_shadow == px);
+			//			auto _shadow_cast = static_cast<renter*>(_shadow);
+			bool normal = px && !px->_close_request_sent && !px->_destroy_request_sent && _shadow && (_shadow //_shadow_cast
+														     == px);
 			//			assert(( //null ||
 			//				   closed || normal) &&
 			//			    !conflict);

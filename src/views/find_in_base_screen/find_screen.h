@@ -69,7 +69,7 @@ class FindScreen : public QWidget
 	virtual ~FindScreen(void);
 	// QToolBar *navigater() {return _navigater;}
 
-	FlatToolButton* findstartbutton();
+	FlatToolButton* findstartbutton() const;
 
 	//	QAction* historyback() { return _historyback; }
 	//	QAction* historyforward() { return _historyforward; }
@@ -84,9 +84,9 @@ class FindScreen : public QWidget
 	//	void stopreload(QAction* sl);
 	//	void stop(QAction* st);
 	//	void reload(QAction* rl);
-
-	web::ChaseWidget* chasewidget();
-
+#ifdef USE_CLEAR_BUTTON
+	web::ChaseWidget* chasewidget() const;
+#endif // USE_CLEAR_BUTTON
 	// void remove_child(const QString &id);
 	// void remove_child(const int row);
 	void adjust_size();

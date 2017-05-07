@@ -996,7 +996,9 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 		// Drag and Drop // Ранее было ExtendedSelection, но такой режим не подходит
 		// для Drag and Drop
 		setSelectionMode(
-		    QAbstractItemView::ExtendedSelection); // SingleSelection  //
+		    QAbstractItemView:: //ExtendedSelection //
+		    SingleSelection     //
+		    );
 		// MultiSelection
 		// //ExtendedSelection
 
@@ -1227,8 +1229,8 @@ void rv_t::on_doubleclick(const QModelIndex& index)
 	// делается это путем "повторного" выбора текущего пункта
 	if (_rctrl)
 		_rctrl->index_invoke(index_proxy(index), true); // force to refresh		// аньше было select()
-								// globalparameters.main_window()->editor_switch();
-								//	}
+	// globalparameters.main_window()->editor_switch();
+	//	}
 }
 
 // Слот, срабатывающий после того, как был передвинут горизонтальный заголовок

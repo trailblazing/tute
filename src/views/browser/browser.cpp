@@ -2107,12 +2107,11 @@ namespace web {
 	{
 		auto _chasewidget =
 #ifdef USE_CLEAR_BUTTON
-		    _find_screen->
+		    _find_screen->chasewidget();
 #else
-
-		    currentTab()->toolbarsearch()->
+		    currentTab()->toolbarsearch()->chasewidget();
 #endif // USE_CLEAR_BUTTON
-		    chasewidget();
+
 		if (_chasewidget) {
 			if (progress < 100 && progress > 0) {
 				_chasewidget->setAnimated(true);

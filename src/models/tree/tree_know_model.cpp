@@ -583,7 +583,7 @@ void tkm_t::save()
 			qDebug() << "Cant open file " << _xml_file_path << " for read.";
 			exit(1);
 		}
-		QDomDocument doc((std::string(gl_para::_program_instance_name) + "doc").c_str());
+		QDomDocument doc(QString(gl_para::_program_instance_name) + "doc");
 		bool result = false;
 		QString errorStr;
 		int errorLine;
@@ -605,8 +605,7 @@ void tkm_t::save()
 	if (_xml_file_path == "")
 		critical_error(tr("In KnowTreeModel can't set file name for XML file"));
 	// Коструирование DOM документа для записи в файл
-	QDomDocument doc(
-	    (std::string(gl_para::_program_instance_name) + "doc").c_str());
+	QDomDocument doc(QString(gl_para::_program_instance_name) + "doc");
 
 	// Установка заголовка
 	doc.appendChild(doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""));
@@ -1933,7 +1932,7 @@ tkm_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge, const view_delete_perm
 		if (static_cast<QModelIndex>(_index_origin_source).isValid()) {
 			auto index_ = index(source);
 			if (static_cast<QModelIndex>(index_).isValid()) { // source->parent()->field("name") !=
-					      // clipboard_items_root
+									  // clipboard_items_root
 				if (source->count_direct() == 0) {
 					// beginRemoveRows(_index.parent(), _index.row(), _index.row());
 					if (source->linker()->host() && source->linker()->host_parent()) {

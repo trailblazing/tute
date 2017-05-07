@@ -102,24 +102,24 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
     , _treepathlabel(new QLabel(this))
     , _browser(browser_)
     , _tab_widget(tabmanager_)
-    , _rctrl(//nullptr
-//#ifdef USE_SIGNAL_CLOSE
-//	  sd::make_intrusive<rctrl_t>(blogger_, tabmanager_, sd::intrusive_ptr<rs_t>(this))
-//#else
+    , _rctrl( //nullptr
+	      //#ifdef USE_SIGNAL_CLOSE
+	      //	  sd::make_intrusive<rctrl_t>(blogger_, tabmanager_, sd::intrusive_ptr<rs_t>(this))
+	      //#else
 	  new rctrl_t(blogger_, tabmanager_, this)
-//#endif          //USE_SIGNAL_CLOSE
-	      ) //	    _rctrl = sd::intrusive_ptr<rctrl_t>(nullptr);
-		//    , _vertical_scrollarea(new VerticalScrollArea([&] {rv_t *v = nullptr; if(_rctrl) v = _rctrl->view(); return v; }(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void > > >(&RecordView::resizeEvent, _tab_widget->record_ctrl()->view())
+	  //#endif          //USE_SIGNAL_CLOSE
+	  ) //	    _rctrl = sd::intrusive_ptr<rctrl_t>(nullptr);
+	    //    , _vertical_scrollarea(new VerticalScrollArea([&] {rv_t *v = nullptr; if(_rctrl) v = _rctrl->view(); return v; }(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void > > >(&RecordView::resizeEvent, _tab_widget->record_ctrl()->view())
     , _records_toolslayout(new QHBoxLayout())
     , _records_screenlayout(new QVBoxLayout())
     , _close_sender_id(typeid(web::Browser).name())
-{ //
-//        _rctrl =
-//#ifdef USE_SIGNAL_CLOSE
-//            sd::make_intrusive<rctrl_t>(blogger_, tabmanager_, sd::intrusive_ptr<rs_t>(this));
-//#else
-//            new rctrl_t(blogger_, tabmanager_, this);
-//#endif //USE_SIGNAL_CLOSE
+{       //
+	//        _rctrl =
+	//#ifdef USE_SIGNAL_CLOSE
+	//            sd::make_intrusive<rctrl_t>(blogger_, tabmanager_, sd::intrusive_ptr<rs_t>(this));
+	//#else
+	//            new rctrl_t(blogger_, tabmanager_, this);
+	//#endif //USE_SIGNAL_CLOSE
 
 
 	[&] {
@@ -1121,7 +1121,7 @@ void rs_t::setup_actions(void)
 			_rctrl->source_model()->move(_rctrl->index<pos_source>(pos_proxy_), _rctrl->index<pos_source>(target));
 
 			// Установка засветки на перемещенную запись
-			_rctrl->select_as_current(pos_proxy(static_cast<int>(pos_proxy_) + 1));
+			_rctrl->select_as_current(target); //pos_proxy(static_cast<int>(pos_proxy_) + 1)
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)

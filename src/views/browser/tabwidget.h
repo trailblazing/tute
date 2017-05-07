@@ -67,12 +67,11 @@
 
 #include "libraries/disk_helper.h"
 #include "libraries/global_parameters.h"
-#include "utility/lease.h"
+//#include "utility/lease.h"
 // #include "models/tree/TreeModel.h"
 
 // #include "views/tree/KnowView.h"
 #include "models/tree/tree_know_model.h"
-
 #include "views/tree/tree_screen.h"
 
 #if QT_VERSION == 0x050600

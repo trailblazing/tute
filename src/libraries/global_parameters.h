@@ -1,7 +1,7 @@
 #ifndef __GLOBALPARAMETERS_H__
 #define __GLOBALPARAMETERS_H__
 
-#include "utility/lease.h"
+
 #include <functional>
 #include <memory>
 #include <set>
@@ -13,18 +13,6 @@
 
 // #include <QCoreApplication>
 
-#if QT_VERSION == 0x050600
-#include <QObject>
-#include <wobjectdefs.h>
-#endif
-
-
-extern const char* standardItem;
-extern const char* portableItem;
-
-// #ifndef QWEBENGINEPAGE_HITTESTCONTENT
-// #define QWEBENGINEPAGE_HITTESTCONTENT
-// #endif
 
 namespace web {
 	template <typename real_t>
@@ -33,6 +21,7 @@ namespace web {
 	class Profile;
 	class Browser;
 	class TabWidget;
+	class ChaseWidget;
 }
 
 class ts_t;
@@ -54,6 +43,25 @@ class Blogger;
 class rctrl_t;
 class rv_t;
 
+
+#include "utility/lease.h"
+
+
+#if QT_VERSION == 0x050600
+#include <QObject>
+#include <wobjectdefs.h>
+#endif
+
+
+extern const char* standardItem;
+extern const char* portableItem;
+
+// #ifndef QWEBENGINEPAGE_HITTESTCONTENT
+// #define QWEBENGINEPAGE_HITTESTCONTENT
+// #endif
+
+
+
 #ifdef USE_SIGNAL_CLOSE
 typedef sd::intrusive_ptr<Blogger> blogger_ref;
 typedef sd::intrusive_ptr<web::Browser> browser_ref;
@@ -61,6 +69,7 @@ typedef sd::intrusive_ptr<web::TabWidget> tabwidget_ref;
 typedef sd::intrusive_ptr<rs_t> rs_ref;
 typedef sd::intrusive_ptr<rctrl_t> rctrl_ref;
 typedef sd::intrusive_ptr<rv_t> rv_ref;
+typedef sd::intrusive_ptr<web::ChaseWidget> chasewidget_ref;
 
 #else
 typedef Blogger* blogger_ref;
@@ -69,6 +78,7 @@ typedef web::TabWidget* tabwidget_ref;
 typedef rs_t* rs_ref;
 typedef rctrl_t* rctrl_ref;
 typedef rv_t* rv_ref;
+typedef ChaseWidget* chasewidget_ref;
 #endif // USE_SIGNAL_CLOSE
 
 
