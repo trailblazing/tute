@@ -104,7 +104,7 @@
   <customwidget>
    <class>SearchLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>searchlineedit.h</header>
+   <header location="global">searchlineedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

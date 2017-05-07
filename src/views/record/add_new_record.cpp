@@ -37,9 +37,15 @@ W_OBJECT_IMPL(AddNewRecord)
 #if QT_VERSION < 0x050000
 AddNewRecord::AddNewRecord(QWidget* parent, Qt::WFlags f)
     : QDialog(parent, f)
+    , _blogger(new Blogger(gl_para::_default_topic, gl_para::_default_post, appconfig->hide_editor_tools() + (QStringList() << "save"
+															    << "show_text"
+															    << "attach")))
 #else
 AddNewRecord::AddNewRecord(QWidget* parent, Qt::WindowFlags f)
     : QDialog(parent, f)
+    , _blogger(new Blogger(gl_para::_default_topic, gl_para::_default_post, appconfig->hide_editor_tools() + (QStringList() << "save"
+															    << "show_text"
+															    << "attach")))
 #endif
 {
 	setupUI();
@@ -60,10 +66,10 @@ void AddNewRecord::setupUI(void)
 	// Ввод инфополей записи
 	infoField = new InfoFieldEnter();
 
-	_blogger =
-	    sd::make_intrusive<Blogger>(gl_para::_default_topic, gl_para::_default_post, appconfig->hide_editor_tools() + (QStringList() << "save"
-																	 << "show_text"
-																	 << "attach"));
+//	_blogger =
+//	    new Blogger(gl_para::_default_topic, gl_para::_default_post, appconfig->hide_editor_tools() + (QStringList() << "save"
+//															 << "show_text"
+//															 << "attach"));
 	//		(new web::Browser(gl_para::_default_post,
 	//gl_para::_default_topic
 	//				    , QByteArray()
@@ -194,7 +200,7 @@ void AddNewRecord::okClick(void)
 	// Картинки сохраняются
 	imagesDirName = DiskHelper::create_temp_directory();
 	_blogger->editor()->work_directory(imagesDirName, QString(Blogger::_default_filename) + ".html"); // recordTextEditor->work_directory(imagesDirName);
-	_blogger->editor()->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);                     // recordTextEditor->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);
+	_blogger->editor()->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);                             // recordTextEditor->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);
 
 	emit(accept());
 }

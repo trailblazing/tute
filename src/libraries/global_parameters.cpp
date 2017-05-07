@@ -73,9 +73,10 @@ constexpr char gl_para::_bookmark_menu_name[]; //  = "bookmark_menu";
 constexpr char gl_para::_default_topic[]; // = "undefined";
 constexpr char gl_para::_default_post[];  // = "Welcome to \"undefined\" topic";
 #ifdef USE_CURRENT_BROWSER_KEY_WORD
-constexpr char gl_para::_current_browser[];             // = "current_browser";
-#endif                                                  // USE_CURRENT_BROWSER_KEY_WORD
-constexpr char gl_para::_browser_navigater_name[];      // = "browser_navigater";
+constexpr char gl_para::_current_browser[];        // = "current_browser";
+#endif                                             // USE_CURRENT_BROWSER_KEY_WORD
+constexpr char gl_para::_browser_navigater_name[]; // = "browser_navigater";
+constexpr char gl_para::_browser_lineedit_stack_name[];
 constexpr char gl_para::_blog_root_dir[];               // = "blog";
 constexpr char gl_para::_custom_hidable_tab_style[];    // = "custom_hidable_tab_style.css";
 constexpr char gl_para::_custom_browser_tabbar_style[]; // = "custom_browser_tabbar_style.css";
@@ -1014,18 +1015,18 @@ void gl_para::push_record_screen(rs_t* point)
 	_table_screens.push_back(point);
 }
 
-#ifdef USE_SIGNAL_CLOSE
-std::set<sd::intrusive_ptr<rs_t>>
-#else
+//#ifdef USE_SIGNAL_CLOSE
+//std::set<sd::intrusive_ptr<rs_t>>
+//#else
 std::set<rs_t*>
-#endif //USE_SIGNAL_CLOSE
+//#endif //USE_SIGNAL_CLOSE
 gl_para::record_screens() const
 {
-#ifdef USE_SIGNAL_CLOSE
-	std::set<sd::intrusive_ptr<rs_t>>
-#else
+//#ifdef USE_SIGNAL_CLOSE
+//	std::set<sd::intrusive_ptr<rs_t>>
+//#else
 	std::set<rs_t*>
-#endif //USE_SIGNAL_CLOSE
+//#endif //USE_SIGNAL_CLOSE
 	    result;
 	for (auto& bro : _mainwindow->browsers()) {
 		auto rs = bro->tab_widget()->record_screen();

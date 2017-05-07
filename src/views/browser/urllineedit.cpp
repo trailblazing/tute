@@ -43,12 +43,6 @@
 #include <wobjectimpl.h>
 #endif
 
-#include "urllineedit.h"
-
-#include "libraries/qt_single_application5/qtsingleapplication.h"
-
-#include "searchlineedit.h"
-#include "webview.h"
 
 #include <QtCore/QEvent>
 #include <QtCore/QMimeData>
@@ -68,17 +62,36 @@
 #include <QLineEdit>
 #include <QtCore/QDebug>
 
+#include "libraries/qt_single_application5/qtsingleapplication.h"
+#include "searchlineedit.h"
+#include "urllineedit.h"
+#include "views/browser/chasewidget.h"
+#include "views/find_in_base_screen/find_screen.h"
+#include "webview.h"
+
 namespace web {
+
 #if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(ExLineEdit)
 #endif
 
-	ExLineEdit::ExLineEdit(QWidget* parent)
-	    : QWidget(parent)
-	    , _left_widget(nullptr)
-	    , _lineedit(new QLineEdit(this))
+	ExLineEdit::ExLineEdit(QWidget* view)
+	    : QWidget(view)
+#ifdef USE_CLEAR_BUTTON
 	    , _clearbutton(new ClearButton(this))
+	    , _left_widget(_clearbutton) //
+#else
+
+	    , _chasewidget(new ChaseWidget(QSize(16, 16), this)) //
+	    , _left_widget(_chasewidget)
+#endif // USE_CLEAR_BUTTON
+	    , _right_widget(nullptr)
+	    , _lineedit(new QLineEdit(this))
+	    , _web_view(dynamic_cast<web::WebView*>(view))
 	{
+#ifndef USE_CLEAR_BUTTON
+		_chasewidget->setMaximumWidth(17);
+#endif
 		setFocusPolicy(_lineedit->focusPolicy());
 		setAttribute(Qt::WA_InputMethodEnabled);
 		setSizePolicy(_lineedit->sizePolicy());
@@ -97,10 +110,12 @@ namespace web {
 		clearPalette.setBrush(QPalette::Base, QBrush(Qt::transparent));
 		_lineedit->setPalette(clearPalette);
 
-		// clearButton
-		// _clearbutton = new ClearButton(this);
-		connect(_clearbutton, &ClearButton::clicked, _lineedit, &QLineEdit::clear);
+// clearButton
+// _clearbutton = new ClearButton(this);
+#ifdef USE_CLEAR_BUTTON
 		connect(_lineedit, &QLineEdit::textChanged, _clearbutton, &ClearButton::textChanged);
+//		_right_widget = _clearbutton;
+#endif // USE_CLEAR_BUTTON
 	}
 
 	QLineEdit* ExLineEdit::lineEdit() const
@@ -117,10 +132,19 @@ namespace web {
 	{
 		return _left_widget;
 	}
+	void ExLineEdit::right_widget(QWidget* widget)
+	{
+		_right_widget = widget;
+	}
 
+	QWidget* ExLineEdit::right_widget() const
+	{
+		return _right_widget;
+	}
 	void ExLineEdit::resizeEvent(QResizeEvent* event)
 	{
 		Q_ASSERT(_left_widget);
+		assert(_right_widget);
 		updateGeometries();
 		QWidget::resizeEvent(event);
 	}
@@ -132,16 +156,17 @@ namespace web {
 		QRect rect =
 		    style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
 
-		int height = rect.height();
+		int height = rect.height(); //20
 		int width = rect.width();
 
-		int leftwidgetheight_ = _left_widget->height();
+		int leftwidgetheight_ = _left_widget->height(); //15
 		_left_widget->setGeometry(rect.x() + 2, rect.y() + (height - leftwidgetheight_) / 2, _left_widget->width(), _left_widget->height());
 
-		int clearButtonWidth = this->height();
-		_lineedit->setGeometry(_left_widget->x() + _left_widget->width(), 0, width - clearButtonWidth - _left_widget->width(), this->height());
-
-		_clearbutton->setGeometry(this->width() - clearButtonWidth, 0, clearButtonWidth, this->height());
+		int right_widget_width = this->height(); //22
+		_lineedit->setGeometry(_left_widget->x() + _left_widget->width() + 2, 0, width - right_widget_width - _left_widget->width() - 2, this->height());
+		auto this_width = this->width();
+		//		_clearbutton
+		_right_widget->setGeometry(this_width - right_widget_width, 0, right_widget_width, this->height());
 	}
 
 	void ExLineEdit::initStyleOption(
@@ -224,9 +249,12 @@ namespace web {
 	{
 		_lineedit->event(e);
 	}
-
-
-
+#ifndef USE_CLEAR_BUTTON
+	ChaseWidget* ExLineEdit::chasewidget() const
+	{
+		return _chasewidget;
+	}
+#endif // USE_CLEAR_BUTTON
 	UrlIconLabel::UrlIconLabel(QWidget* parent)
 	    : QLabel(parent)
 	    , _browserview(0)
@@ -268,27 +296,45 @@ namespace web {
 	W_OBJECT_IMPL(UrlLineEdit)
 #endif
 
-	UrlLineEdit::UrlLineEdit(WebView* view, QWidget* parent)
-	    : ExLineEdit(parent)
-	    , _webview(view)
+	UrlLineEdit::UrlLineEdit(QWidget* view)
+	    : ExLineEdit(view)
+	    //	    , _find_screen(gl_paras->find_screen()) //dynamic_cast<FindScreen*>(find_screen_)
+	    //	    , _web_view(view)
 	    , _iconlabel(new UrlIconLabel(this))
 	{
-		// icon
-		// _iconlabel = new UrlIconLabel(this);
+// icon
+// _iconlabel = new UrlIconLabel(this);
+#ifdef USE_URL_ICON
 		_iconlabel->resize(16, 16);
-		left_widget(_iconlabel);
+		left_widget(_iconlabel); // replaced with searchbutton
+#else
+
+
+		if (_web_view) {
+#ifdef USE_CLEAR_BUTTON
+			_clearbutton->resize(16, 16 //_clearbutton->height(), _clearbutton->height()
+			    );
+
+			connect(_web_view, &web::WebView::loadFinished, [&](bool) { _clearbutton->setIcon(_web_view->icon()); });
+#else
+			connect(_web_view, &web::WebView::loadFinished, [&](bool) { _chasewidget->setIcon(_web_view->icon()); });
+#endif //USE_CLEAR_BUTTON
+		}
+
+
+#endif //USE_URL_ICON
 		_defaultbasecolor = palette().color(QPalette::Base);
-		setWebView(view);
+		setWebView(dynamic_cast<web::WebView*>(view));
 	}
 
 	void UrlLineEdit::setWebView(WebView* webView)
 	{
-		// Q_ASSERT(!_webview);
-		_webview = webView;
-		_iconlabel->_browserview = webView;
-		connect(webView, &WebView::urlChanged, this, &UrlLineEdit::webViewUrlChanged);
-		connect(webView, &WebView::iconChanged, this, &UrlLineEdit::webViewIconChanged);
-		connect(webView, &WebView::loadProgress, this, [&](int i) {
+		// Q_ASSERT(!_web_view);
+		_web_view = webView;
+		_iconlabel->_browserview = _web_view;
+		connect(_web_view, &WebView::urlChanged, this, &UrlLineEdit::webViewUrlChanged);
+		connect(_web_view, &WebView::iconChanged, this, &UrlLineEdit::webViewIconChanged);
+		connect(_web_view, &WebView::loadProgress, this, [&](int i) {
 			Q_UNUSED(i);
 			update();
 		});
@@ -297,14 +343,17 @@ namespace web {
 	void UrlLineEdit::webViewUrlChanged(const QUrl& url)
 	{
 		_lineedit->setText(QString::fromUtf8(url.toEncoded()));
+		qDebug() << "_lineedit->text()=\t" << _lineedit->text();
 		_lineedit->setCursorPosition(0);
 	}
 
 	void UrlLineEdit::webViewIconChanged()
 	{
-		Q_ASSERT(_webview);
-		QPixmap pixmap = _webview->icon().pixmap(16, 16);
+		Q_ASSERT(_web_view);
+#ifdef USE_URL_ICON
+		QPixmap pixmap = _web_view->icon().pixmap(16, 16);
 		_iconlabel->setPixmap(pixmap);
+#endif // USE_URL_ICON
 	}
 
 	QLinearGradient UrlLineEdit::generateGradient(const QColor& color) const
@@ -321,10 +370,10 @@ namespace web {
 
 	void UrlLineEdit::focusOutEvent(QFocusEvent* event)
 	{
-		// if(_lineedit->text().isEmpty() && _webview){
-		// if(_webview->load_finished())
-		// if(_webview->page())_lineedit->setText(QString::fromUtf8(_webview->page()->url().toEncoded()));
-		// // _webview maybe not accessible, page() may be invalid
+		// if(_lineedit->text().isEmpty() && _web_view){
+		// if(_web_view->load_finished())
+		// if(_web_view->page())_lineedit->setText(QString::fromUtf8(_web_view->page()->url().toEncoded()));
+		// // _web_view maybe not accessible, page() may be invalid
 		// }
 		ExLineEdit::focusOutEvent(event);
 	}
@@ -332,9 +381,9 @@ namespace web {
 	void UrlLineEdit::paintEvent(QPaintEvent* event)
 	{
 		QPalette p = palette();
-		if (_webview) {
-			if (_webview->page() &&
-			    _webview->page()->url().scheme() == QLatin1String("https")) {
+		if (_web_view) {
+			if (_web_view->page() &&
+			    _web_view->page()->url().scheme() == QLatin1String("https")) {
 				QColor lightYellow(248, 248, 210);
 				p.setBrush(QPalette::Base, generateGradient(lightYellow));
 			}
@@ -348,8 +397,8 @@ namespace web {
 		initStyleOption(&panel);
 		QRect backgroundRect =
 		    style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
-		if (_webview && !hasFocus()) {
-			int progress = _webview->progress();
+		if (_web_view && !hasFocus()) {
+			int progress = _web_view->progress();
 			QColor loadingColor = QColor(116, 192, 250);
 			painter.setBrush(generateGradient(loadingColor));
 			painter.setPen(Qt::transparent);
@@ -359,7 +408,7 @@ namespace web {
 		}
 	}
 
-	WebView* UrlLineEdit::webview() { return _webview; }
+	WebView* UrlLineEdit::webview() { return _web_view; }
 
 	UrlIconLabel* UrlLineEdit::iconlabel() const
 	{

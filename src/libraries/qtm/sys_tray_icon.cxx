@@ -234,7 +234,7 @@ SysTrayIcon::SysTrayIcon(HidableTab* vtab_record, web::Docker<Blogger>* editor_d
 		noNewWindow = true;
 #ifndef Q_OS_MAC
 	if (newWindow && !noNewWindow) {
-		Blogger* c = sd::make_intrusive<Blogger>();
+		blogger_ref c(new Blogger());
 		c->setSTI(this);
 		c->setWindowTitle(tr((program_title_string + " - new entry [*]").c_str()));
 		c->show();
@@ -256,12 +256,12 @@ bool SysTrayIcon::handleArguments()
 {
 	int i;
 	bool rv = false;
-	Blogger* c;
+//	blogger_ref c;
 	QStringList failedFiles;
 	QStringList args = QApplication::arguments();
 	args.removeAll("&");
 	for (i = 1; i < args.size(); i++) {
-		c = sd::make_intrusive<Blogger>();
+		blogger_ref c (new Blogger());
 		if (!args.at(i).startsWith("--")) {
 			qDebug() << "Opening:" << args.at(i);
 			if (c->load(args.at(i), true)) {
@@ -384,7 +384,7 @@ void SysTrayIcon::setCopyTitle(bool status)
 
 void SysTrayIcon::newDoc()
 {
-	Blogger* c = sd::make_intrusive<Blogger>();
+	blogger_ref c(new Blogger());
 	c->setSTI(this);
 	c->setWindowTitle(QObject::tr((program_title_string + " - new entry [*]").c_str()));
 	c->setPostClean();
@@ -429,7 +429,7 @@ void SysTrayIcon::choose(QString fname)
 	else
 		fn = fname;
 	if (!fn.isEmpty()) {
-		Blogger* e = sd::make_intrusive<Blogger>();
+		blogger_ref e(new Blogger());
 		if (!e->load(fn, true)) {
 #ifdef Q_OS_MAC
 			QMessageBox::warning(0, program_title_string.c_str(), tr("Could not load the file you specified."), QMessageBox::Cancel, QMessageBox::NoButton);
@@ -872,7 +872,7 @@ void SysTrayIcon::doQP(QString receivedText)
 				    QString(tr("<a href=\"%1\">Insert link text here</a>")).arg(_cb_text);
 		}
 	}
-	Blogger* c = sd::make_intrusive<Blogger>(gl_para::_default_topic, newPost);
+	blogger_ref c(new Blogger(gl_para::_default_topic, newPost));
 	c->setSTI(this);
 	c->setPostClean();
 	if (activeTemplate >= 0) {

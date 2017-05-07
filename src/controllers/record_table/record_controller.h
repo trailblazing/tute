@@ -68,7 +68,7 @@ class rctrl_t : public QObject
 	typedef QObject super;
 	// typedef TreeItem::bind_helper       bind_helper;
 	// typedef TreeItem::activate_helper   active_helper;
-	rctrl_t(Blogger* blogger_, web::TabWidget* tabmanager_, rs_t *record_screen_);
+	rctrl_t(Blogger* blogger_, web::TabWidget* tabmanager_, rs_t* record_screen_);
 	virtual ~rctrl_t();
 
 	// void init(void);
@@ -154,7 +154,7 @@ class rctrl_t : public QObject
 	// RecordController *reocrd_controller()const {return
 	// const_cast<RecordController *>(this);}
 
-	Blogger *blogger();
+	Blogger* blogger() const;
 	//    signals:
 	//	void close_request(QObject*);
 	//	sd::shared_ptr<rctrl_t> renter() const;
@@ -212,9 +212,10 @@ class rctrl_t : public QObject
 	RecordModel* _source_model; // Class, advanced by QAbstractTableModel   //
 	// Класс, расширенный от QAbstractTableModel
 	RecordProxyModel* _proxy_model;
-	rv_ref _view;
+
 	rs_ref _record_screen;
 	blogger_ref _blogger;
+	rv_ref _view;
 	//	wn_t *_main_window;
 	//	bool _closed = false;
 

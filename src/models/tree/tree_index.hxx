@@ -42,7 +42,7 @@ struct TreeLevel
 	instance(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusive_ptr<i_t> _to_be_operated);
 
     private:
-	TreeLevel(boost::intrusive_ptr<TreeIndex> tree_index, boost::intrusive_ptr<i_t> to_be_merged, tv_t* tree_view);
+	TreeLevel(boost::intrusive_ptr<TreeIndex> tree_index, boost::intrusive_ptr<i_t> to_be_merged);
 	//	boost::intrusive_ptr<TreeItem>			move_impl(const int pos = 0,
 	//const int mode = add_new_record_after);
 	boost::intrusive_ptr<TreeIndex> _tree_index;

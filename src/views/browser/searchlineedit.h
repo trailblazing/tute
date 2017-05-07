@@ -57,7 +57,7 @@ class QMenu;
 QT_END_NAMESPACE
 
 // QT_BEGIN_NAMESPACE
-
+class FindScreen;
 namespace web {
 	class UrlLineEdit;
 	class SearchButton;
@@ -80,11 +80,13 @@ namespace web {
 
 	    public slots:
 		void textChanged(const QString& text);
+
+	    protected:
+		//		ChaseWidget* _chasewidget;
 	};
 
 
-
-//	Search icon on the left hand side of the search widget. When a menu is set a down arrow appears
+	//	Search icon on the left hand side of the search widget. When a menu is set a down arrow appears
 
 	class SearchButton : public QAbstractButton {
 	    public:
@@ -116,7 +118,7 @@ namespace web {
 #endif
 
 	    public:
-		SearchLineEdit(QWidget* parent = 0, WebView* view = nullptr);
+		SearchLineEdit(QWidget* view = nullptr);
 
 		QString inactiveText() const;
 		void setInactiveText(const QString& text);
@@ -133,7 +135,10 @@ namespace web {
 	    private:
 		void updateGeometries();
 
+
 		SearchButton* _searchbutton;
+		//		FindScreen* _find_screen;
+		web::WebView* _web_view;
 		QString _inactivetext;
 #if QT_VERSION == 0x050600
 		W_PROPERTY(QString, inactiveText, &SearchLineEdit::inactiveText, &SearchLineEdit::setInactiveText)

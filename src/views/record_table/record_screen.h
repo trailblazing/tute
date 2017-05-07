@@ -179,7 +179,7 @@ class rs_t : public QWidget
 	tabwidget_ref _tab_widget;
 	rctrl_ref _rctrl; //
 
-	VerticalScrollArea* _vertical_scrollarea;
+//	VerticalScrollArea* _vertical_scrollarea;
 
 	QHBoxLayout* _records_toolslayout;
 	// web::ToolbarSearch  *_recordtree_search;

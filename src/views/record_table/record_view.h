@@ -268,6 +268,7 @@ class rv_t : public QTableView
 	std::function<bool(const QString&, int)> is_field_type_column;
 
 	std::function<int()> rating_width;
+	VerticalScrollArea* vertical_scrollarea() const;
     signals:
 	void tabMoved(int from, int to);
 // void list_selection_changed(const QItemSelection &selected, const
@@ -316,7 +317,7 @@ class rv_t : public QTableView
 	QMenu* _context_menu;
 	rs_ref _record_screen;
 	rctrl_ref _rctrl;
-	VerticalScrollArea* _vertical_scroll_area = nullptr;
+
 	QVBoxLayout* _layout;
 	ViewDelegation* _delegate; // ButtonColumnDelegate	*_delegate;
 	QPoint _mouse_start_position;
@@ -329,6 +330,7 @@ class rv_t : public QTableView
 	const int _pin_width = 25;
 	const int _rating_width = 30;
 
+	VerticalScrollArea* _vertical_scrollarea = nullptr;
 	// void setup_signals(void);
 	// void assembly_context_menu(void);
 

@@ -368,44 +368,65 @@ TreeIndex::url_require_item_from_tree( //const url_value& find_url_, //
 		} else {
 			item_is_brand_new = true;
 			if (!it_in_web) {
-				// record.generator(generator);
 
-				// Имя директории, в которой расположены файлы картинок, используемые в
-				// тексте и приаттаченные файлы
-				QString directory = DiskHelper::create_temp_directory(); //
+				auto view =
+				    gl_paras->main_window()->find(
+					[&](boost::intrusive_ptr<const ::Binder> b) {
+						return url_equal(detail::to_qstring(b->host()->field<home_key>()), detail::to_qstring(web::Browser::_defaulthome)) || url_equal(detail::to_qstring(b->host()->field<url_key>()), detail::to_qstring(web::Browser::_defaulthome));
+					});
+				if (!view) {
+					// record.generator(generator);
 
-				full_fields_map data;
-				boost::fusion::at_key<id_key>(data) = get_unical_id();
-				boost::fusion::at_key<pin_key>(data) = pin_value(bool_from_check_state[Qt::Unchecked]);
-				boost::fusion::at_key<name_key>(data) = "";
-				boost::fusion::at_key<author_key>(data) = "";
-				boost::fusion::at_key<home_key>(data) = detail::to_qstring(find_url_);
-				boost::fusion::at_key<url_key>(data) = find_url_;
-				boost::fusion::at_key<tags_key>(data) = tags_value(QStringList());
-				boost::fusion::at_key<dir_key>(data) = boost::fusion::at_key<id_key>(data);
-				boost::fusion::at_key<file_key>(data) = "text.html";
+					// Имя директории, в которой расположены файлы картинок, используемые в
+					// тексте и приаттаченные файлы
+					QString directory = DiskHelper::create_temp_directory(); //
 
-				boost::intrusive_ptr<i_t> new_item = i_t::dangle_instance(data); // boost::intrusive_ptr<TreeItem>(new
-												 // TreeItem(nullptr, data));
+					full_fields_map data;
+					boost::fusion::at_key<id_key>(data) = get_unical_id();
+					boost::fusion::at_key<pin_key>(data) = pin_value(bool_from_check_state[Qt::Unchecked]);
+					boost::fusion::at_key<name_key>(data) = "";
+					boost::fusion::at_key<author_key>(data) = "";
+					boost::fusion::at_key<home_key>(data) = detail::to_qstring(find_url_);
+					boost::fusion::at_key<url_key>(data) = find_url_;
+					boost::fusion::at_key<tags_key>(data) = tags_value(QStringList());
+					boost::fusion::at_key<dir_key>(data) = boost::fusion::at_key<id_key>(data);
+					boost::fusion::at_key<file_key>(data) = "text.html";
 
-				// if(record.isLite())
-				new_item->to_fat();
-				new_item->text_to_fat("");
+					boost::intrusive_ptr<i_t> new_item = i_t::dangle_instance(data); // boost::intrusive_ptr<TreeItem>(new
+													 // TreeItem(nullptr, data));
 
-				new_item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
-
-				// Пока что принята концепция, что файлы нельзя приаттачить в момент
-				// создания записи
-				// Запись должна быть создана, потом можно аттачить файлы.
-				// Это ограничение для "ленивого" программинга, но пока так
-				// record->setAttachFiles( DiskHelper::getFilesFromDirectory(directory,
-				// "*.bin") );
-
-				// Временная директория с картинками и приаттаченными файлами удаляется
-				DiskHelper::remove_directory(directory);
-				if (new_item->is_lite())
+					// if(record.isLite())
 					new_item->to_fat();
-				_result = new_item; // assert(_item.get() == item.get());
+					new_item->text_to_fat("");
+
+					new_item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
+
+					// Пока что принята концепция, что файлы нельзя приаттачить в момент
+					// создания записи
+					// Запись должна быть создана, потом можно аттачить файлы.
+					// Это ограничение для "ленивого" программинга, но пока так
+					// record->setAttachFiles( DiskHelper::getFilesFromDirectory(directory,
+					// "*.bin") );
+
+					// Временная директория с картинками и приаттаченными файлами удаляется
+					DiskHelper::remove_directory(directory);
+					if (new_item->is_lite())
+						new_item->to_fat();
+					_result = new_item; // assert(_item.get() == item.get());
+				} else {
+					auto page = view->page();
+					if (page) {
+						auto binder = page->binder();
+						if (binder) {
+							auto host = binder->host();
+							if (host) {
+								host->field<url_key>(url_value(find_url_));
+								host->field<home_key>(home_value(find_url_));
+								_result = host;
+							}
+						}
+					}
+				}
 				assert(equal_(_result));
 			} else {
 				assert(equal_(it_in_web)); // assert(_result->url<url_type>() == url_type()(_find_url));
@@ -497,6 +518,7 @@ TreeIndex::url_bind_browser(boost::intrusive_ptr<real_url_t<url_value>> real_fin
 		    target_, _current_item);
 
 		result = record_index->bind(false);
+		assert(result);
 		if (result) {
 			assert(result->binder());
 			assert(result->page());
@@ -524,10 +546,10 @@ TreeIndex::url_activate(boost::intrusive_ptr<real_url_t<url_value>> real_find_ur
 	return result;
 }
 
-TreeLevel::TreeLevel(boost::intrusive_ptr<TreeIndex> tree_index, boost::intrusive_ptr<i_t> to_be_merged, tv_t* tree_view)
+TreeLevel::TreeLevel(boost::intrusive_ptr<TreeIndex> tree_index, boost::intrusive_ptr<i_t> to_be_merged)
     : _tree_index(tree_index)
     , _to_be_operated(to_be_merged)
-    , _tree_view(tree_view)
+    , _tree_view(static_cast<tv_t*>(static_cast<QObject*>(_tree_index->current_model()())->parent()))
 {
 }
 
@@ -556,21 +578,23 @@ TreeLevel::instance(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusiv
 {
 	boost::intrusive_ptr<TreeLevel> result(nullptr);
 	auto current_model_ = _tree_index->current_model();
-	auto tree_view_ = static_cast<tv_t*>(static_cast<QObject*>(current_model_())->parent());
+	//	auto tree_view_ = static_cast<tv_t*>(static_cast<QObject*>(current_model_())->parent());
 	auto host = _tree_index->host();
 	if (_to_be_operated->is_ancestor_of(host)) {
 		auto parent_ = _to_be_operated->parent();
 		if (parent_) {
 			auto host_new = TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, parent_), host)->move(); // static_cast<tkm_t *>(current_model())
 			assert(host_new == host);
-			result = TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, host), _to_be_operated); //new TreeLevel(_tree_index, _to_be_operated, tree_view_);
+			result = //TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, host), _to_be_operated); //
+			    new TreeLevel(TreeIndex::item_require_treeindex(current_model_, host), _to_be_operated);
 		} else {
 			auto host_new = TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, _to_be_operated), host)->move(); // static_cast<tkm_t *>(current_model())
 			assert(host_new == host);
-			result = TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, _to_be_operated), host);
+			result = // TreeLevel::instance(TreeIndex::item_require_treeindex(current_model_, _to_be_operated), host);
+			    new TreeLevel(TreeIndex::item_require_treeindex(current_model_, _to_be_operated), host);
 		}
 	} else {
-		result = new TreeLevel(_tree_index, _to_be_operated, tree_view_);
+		result = new TreeLevel(_tree_index, _to_be_operated);
 	}
 	return result;
 }

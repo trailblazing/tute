@@ -90,7 +90,7 @@ class ts_t;
 class rctrl_t;
 class EditorDock;
 class Blogger;
-
+class FindScreen;
 // QT_BEGIN_NAMESPACE
 
 // #define USE_POPUP_WINDOW
@@ -209,7 +209,7 @@ namespace web {
 
 		rctrl_t* record_ctrl(); // {return _record_controller;}
 		WebView* activate();
-		WebView* load(boost::intrusive_ptr<i_t> item, bool checked = true, bool force_reload = false);
+		WebView* load(boost::intrusive_ptr<i_t> item, bool switch_to = true, bool force_reload = false);
 
 		void load(const QUrl& url) = delete;
 
@@ -378,6 +378,7 @@ namespace web {
 
 #endif // USE_POPUP_WINDOW
 
+	class ToolbarSearch;
 	// template Q_ONJECT
 	// https://doc.qt.io/archives/qq/qq16-dynamicqobject.html
 	// browserview
@@ -400,13 +401,15 @@ namespace web {
 		    rctrl_t* rctrl_);
 
 		~WebView();
+
+		static WebView* instance(FindScreen *find_screen_, url_value const & real_url);
 		WebPage* page() const;
 
 		bool load_finished() const;
-		void page(WebPage* page);
+		void page(WebPage* page_);
 		void activateWindow();
 
-		WebView* load(boost::intrusive_ptr<i_t> it, bool checked);
+		WebView* load(boost::intrusive_ptr<i_t> it, bool switch_to = true, bool force_reload = false);
 		QUrl url() const = delete;
 		QIcon icon() const;
 
@@ -421,7 +424,11 @@ namespace web {
 
 		void current_view_global_consistency();
 
-	    protected:
+		ToolbarSearch *toolbarsearch() const;
+		void toolbarsearch(ToolbarSearch* tbs);
+
+		Browser *browser() const;
+	protected:
 		void loadUrl(const QUrl& url);
 
 		void mousePressEvent(QMouseEvent* event);
@@ -459,6 +466,7 @@ namespace web {
 
 		// void onCloseTab(int index);
 	    private:
+		ToolbarSearch* _toolbarsearch;
 		browser_ref _browser;
 		tabwidget_ref _tab_widget;
 		rctrl_ref _rctrl;

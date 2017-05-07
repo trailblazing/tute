@@ -136,11 +136,11 @@ class gl_para : public QObject {
 	void browser_docker(web::Docker<web::Browser>*& b);
 
 	void push_record_screen(rs_t* point);
-#ifdef USE_SIGNAL_CLOSE
-	std::set<sd::intrusive_ptr<rs_t>>
-#else
+//#ifdef USE_SIGNAL_CLOSE
+//	std::set<sd::intrusive_ptr<rs_t>>
+//#else
 	std::set<rs_t*>
-#endif //USE_SIGNAL_CLOSE
+//#endif //USE_SIGNAL_CLOSE
 	record_screens() const;
 
 	// void page_screen(RecordScreen *page);
@@ -216,6 +216,7 @@ class gl_para : public QObject {
 	static constexpr char _current_browser[] = "current_browser";
 #endif // USE_CURRENT_BROWSER_KEY_WORD
 	static constexpr char _browser_navigater_name[] = "browser_navigater";
+	static constexpr char _browser_lineedit_stack_name[] = "browser_lineedit_stack";
 	static constexpr char _blog_root_dir[] = "blog";
 	static constexpr char _custom_hidable_tab_style[] = "custom_hidable_tab_style.css";
 	static constexpr char _custom_browser_tabbar_style[] = "custom_browser_tabbar_style.css";

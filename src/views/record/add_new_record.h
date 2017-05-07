@@ -8,6 +8,9 @@
 #include <QPushButton>
 #include <memory>
 
+
+#include "libraries/global_parameters.h"
+
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>
@@ -46,7 +49,7 @@ class AddNewRecord : public QDialog {
 	// Ввод инфополей записи
 	InfoFieldEnter *infoField;
 
-	Blogger *_blogger;
+	blogger_ref _blogger;
 	//// Ввод текста записи
 	// Editor *recordTextEditor;
 

@@ -265,20 +265,52 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
 	  [&]() -> TEXTEDIT* {_editor = nullptr; auto e = new TEXTEDIT(_main_stack); return e; }()
 #endif
 	      )
-    , _control_tab([&]() -> SideTabWidget* {_control_tab = nullptr; auto st = new SideTabWidget(gl_paras->editor_docker(),
-												this,
-												_topic_editor_config, _splitter, _central_widget); st->topic(_current_topic_name); st->title(_current_topic_name); return st; }())
-    , _browser([&] {
-	    _browser.detach(); // = nullptr; //= sd::intrusive_ptr<web::Browser>(nullptr);
-	    auto bro = sd::make_intrusive<web::Browser>(this, state_);
-	    return bro;
-    }())
+    , _control_tab(
+	  [&]() -> SideTabWidget* {
+	  _control_tab = nullptr;
+	  auto st = new SideTabWidget(gl_paras->editor_docker(), this, _topic_editor_config, _splitter, _central_widget);
+	  st->topic(_current_topic_name);
+	  st->title(_current_topic_name);
+	  return st; }())
+    , _browser(nullptr //new web::Browser(this, state_)
+	  //	  [&] {
+	  //	    _browser.detach(); // = nullptr; //= sd::intrusive_ptr<web::Browser>(nullptr);
+	  //	    return             //auto bro =
+	  //		sd::make_intrusive<web::Browser>(this, state_);
+	  //	    //	    return bro;
+	  //    }()
+	  )
     //    , _record_screen(sd::make_intrusive<rs_t>(this, state_))
     , _editor_docker(gl_paras->editor_docker()->prepend(this, flags))
     , _super_menu([&]() -> SuperMenu* {_super_menu = nullptr; auto sm = new SuperMenu(this); return sm; }())
 {
 	//
+	//	_editor =
+	//#ifdef USE_WYEDIT
 
+	//	    [&]() -> TEXTEDIT* {
+	//		//		_editor = nullptr;
+	//		auto e = new TEXTEDIT(
+	//#ifdef USE_EDITOR_WRAP
+	//		    find_screen, this, hide_editor_tools_, _main_stack, ""
+	//#else
+	//		    _main_stack, this, _topic_editor_config, (appconfig->interface_mode() == "desktop") ? Editor::WYEDIT_DESKTOP_MODE : Editor::WYEDIT_MOBILE_MODE, hide_editor_tools_, true, true
+	//#endif // USE_EDITOR_WRAP
+	//		    );
+	//		return e;
+	//	}()
+
+	//#else
+	//	    [&]() -> TEXTEDIT* {_editor = nullptr; auto e = new TEXTEDIT(_main_stack); return e; }()
+	//#endif
+	//	    ;
+	//	_control_tab = [&]() -> SideTabWidget* {
+	////		_control_tab = nullptr;
+	//		auto st = new SideTabWidget(gl_paras->editor_docker(), this, _topic_editor_config, _splitter, _central_widget);
+	//		st->topic(_current_topic_name);
+	//		st->title(_current_topic_name);
+	//		return st; }();
+	_browser = new web::Browser(this, state_);
 	QDomElement detailElem, attribElem, nameElem, serverElem, locElem, loginElem, pwdElem;
 	// QSettings _topic_editor_config(_current_topic_config_name,
 	// QSettings::IniFormat);
@@ -554,6 +586,7 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
 
 	if (_browser) {
 		connect(this, &Blogger::topic_changed, _browser, &web::Browser::on_topic_changed);
+
 //	connect(this, &Blogger::topic_changed, _record_screen, &rs_t::on_topic_changed);
 #ifdef USE_SIGNAL_CLOSE
 //		//		close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::Browser::on_close_requested, _browser, static_cast<sd::renter* const>(this))); //self_close_request.connect(_browser->self_close_request); //(std::bind(&web::Browser::self_close_request, _browser));
@@ -570,6 +603,7 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
 ////                //		assert(result);
 #endif //USE_SIGNAL_CLOSE
 	}
+	connect(this, &Blogger::topic_changed, gl_paras->main_window(), &wn_t::on_topic_changed);
 }
 
 Blogger::~Blogger()
@@ -971,7 +1005,7 @@ bool Blogger::handleArguments()
 {
 	bool rv = true;
 	int i;
-	Blogger* create_ = nullptr;
+	Blogger* create_ = sapp_t::instance()->blogger(); //nullptr;
 	Blogger* d = nullptr;
 	QStringList failedFiles;
 	QStringList args = QApplication::arguments();
@@ -979,7 +1013,7 @@ bool Blogger::handleArguments()
 		for (i = 1; i < args.size(); i++) {
 			if (create_) // if there is a current new window
 				d = create_;
-			create_ = sd::make_intrusive<Blogger>();
+			create_ = new Blogger();
 #ifdef Q_OS_MAC
 // setNoStatusBar( c );
 #endif
@@ -3919,11 +3953,11 @@ QString Blogger::title() const
 
 void Blogger::on_topic_changed(const QString& tp)
 {
-	if (_control_tab) {
+	if (_control_tab && tp != _current_topic_name) {
 		//		QLineEdit* lineedit_topic_ = _control_tab->lineedit_topic();
 		auto topic = tp;
 		// deal with folder name change
-		auto original_topic_ = _current_topic_name;
+		const auto original_topic_ = _current_topic_name;
 		auto original_plain_text = _editor->toPlainText();
 		QString original_topic_folder = _current_topic_full_folder_name;
 		QString new_topic = purify(topic); // tr(topic.remove(QRegExp("[\"/\\\\<>\\?:\\*\\|]+")).trimmed().toStdString().c_str());
@@ -3965,8 +3999,8 @@ void Blogger::on_topic_changed(const QString& tp)
 		if (original_topic_folder != dest_topic_folder) {
 			if (original_topic_folder == gl_paras->editors_shared_full_path_name() + "/undefined") {
 				point_to_folder(dest_topic_folder);
-				if (QDir(original_topic_folder).exists())
-					if (!QDir(original_topic_folder).removeRecursively()) critical_error("Can\'t remove folder \"" + original_topic_folder + "\"");
+				//				if (QDir(original_topic_folder).exists())
+				//					if (!QDir(original_topic_folder).removeRecursively()) critical_error("Can\'t remove folder \"" + original_topic_folder + "\"");
 			} else {
 				QDir dir;
 				if (!QDir(dest_topic_folder).exists()) {
@@ -4256,7 +4290,7 @@ void Blogger::choose(QString fname)
 				}
 			}
 		} else {
-			Blogger* e = sd::make_intrusive<Blogger>();
+			blogger_ref e(new Blogger());
 			if (e->load(fn, true)) {
 #ifdef USE_SYSTRAYICON
 				e->setSTI(sti);

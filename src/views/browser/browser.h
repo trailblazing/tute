@@ -225,14 +225,14 @@ namespace web {
 		// QStatusBar *status_bar() const;
 		boost::intrusive_ptr<i_t> bind(boost::intrusive_ptr<RecordIndex> record_index, bool make_current = true);
 		web::WebView* find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)>& _equal) const;
-// boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem>
-// item);
-#ifdef USE_SIGNAL_CLOSE
-		sd::intrusive_ptr<rs_t>
-#else
+		// boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem>
+		// item);
+		//#ifdef USE_SIGNAL_CLOSE
+		//		sd::intrusive_ptr<rs_t>
+		//#else
 		rs_t*
-#endif //USE_SIGNAL_CLOSE
-		record_screen();
+		    //#endif //USE_SIGNAL_CLOSE
+		    record_screen();
 		//		web::Docker *browser_docker();
 		void init_configuration(std::unique_ptr<QSettings>&& conf);
 		void configuration_full_name(const QString& conf_name);
@@ -240,7 +240,8 @@ namespace web {
 		Blogger* blogger();
 		//		void test();
 
-	public slots:
+		QToolBar* navigater() const;
+	    public slots:
 		// void loadPage(const QString &url) = delete;
 		void slotHome();
 		void updateToolbarActionText(
@@ -254,6 +255,8 @@ namespace web {
 		void on_topic_changed(const QString& original_topic_, const QString& topic_, bool append_mode = false);
 		void init_main_menu();
 		//		void reset_find_screen_navigater();
+
+		bool restore_state(const QByteArray& state);
 
 	    protected:
 		void closeEvent(QCloseEvent* event);
@@ -329,7 +332,7 @@ namespace web {
 		void run_script(const QString& style_source);
 		void load_state();
 
-		void reset_main_menu();
+		void synchronize_find_screen_reset_main_menu();
 
 		void update_statusbar_action_text(bool visible);
 		void handle_find_text_result(bool found);
@@ -356,7 +359,9 @@ namespace web {
 		//		QMenu *_help_menu;
 		QMenu* _tools_menu;
 		BookmarksMenu* _bookmarks_menu;
+#ifdef USE_CLEAR_BUTTON
 		ChaseWidget* _chasewidget;
+#endif // USE_CLEAR_BUTTON
 		HistoryMenu* _history_menu;
 		QAction* _historyhome;
 		QAction* _historyback;
@@ -412,8 +417,7 @@ namespace web {
 		void setup_navigate();
 	    signals:
 		//		void close_request(QWidget*);
-	    protected slots:
-		bool restore_state(const QByteArray& state);
+
 
 	    protected:
 #ifndef USE_SIGNAL_CLOSE

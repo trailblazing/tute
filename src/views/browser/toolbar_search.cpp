@@ -93,33 +93,36 @@ namespace web {
    history.
         Searches are turned into urls that use Google to perform search
  */
-	ToolbarSearch::ToolbarSearch(FindScreen* parent, // QStackedWidget *lineedits, QLineEdit *findtext,
-	    WebView* view_)
-	    : SearchLineEdit(parent, view_)
+	ToolbarSearch::ToolbarSearch(WebView* view_ // QStackedWidget *lineedits, QLineEdit *findtext,
+	    )
+	    : SearchLineEdit(view_)
 	    , _autosaver(new AutoSaver(this))
 	    , _maxsavedsearches(10)
-	    , _stringlistmodel(new QStringListModel(this))
+	    , _stringlistmodel(gl_paras->main_window()->stringlistmodel() //new QStringListModel(this)
+		  )
+	    , _completer(new QCompleter(_stringlistmodel, this))
 //	    , _lineedit_stack(nullptr) // new QStackedWidget(this))  // , _lineedits(lineedits)
 #ifdef USE_ADDITIONAL_BUFFER
 	    , _findtext(new QLineEdit(this))
 #else
 #endif // USE_ADDITIONAL_BUFFER
-	    , _find_screen(parent)
+	    , _web_view(view_)
 	{ // , _findtext(findtext)
 	  // _lineedits->setVisible(false);
 #ifdef USE_ADDITIONAL_BUFFER
 		_findtext->setVisible(false);
 #endif // USE_ADDITIONAL_BUFFER
 
+		if (view_) view_->toolbarsearch(this);
 		QMenu* menu_ = menu();
 		connect(menu_, &QMenu::aboutToShow, this, &ToolbarSearch::show_menu);
 		connect(menu_, &QMenu::triggered, this, &ToolbarSearch::triggered_menu_action);
 
-		QCompleter* completer = new QCompleter(_stringlistmodel, this);
-		completer->setCompletionMode(QCompleter::InlineCompletion);
+		//		QCompleter* _completer = new QCompleter(_stringlistmodel, this);
+		_completer->setCompletionMode(QCompleter::InlineCompletion);
 
 		//		lineEdit()
-		_lineedit->setCompleter(completer);
+		_lineedit->setCompleter(_completer);
 
 		assert(_lineedit //lineEdit()
 		    );
@@ -127,17 +130,14 @@ namespace web {
 		connect( //lineEdit(), &QLineEdit::returnPressed, //this, &ToolbarSearch::search_now); // , [&] {std::thread(&ToolbarSearch::searchNow,
 		    this, &ToolbarSearch::return_pressed,
 		    [&] {
-			    real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), false))>(lineEdit()->text(),
-				[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
-					auto topic_new = real_target_url_->value();
-					setInactiveText(topic_new);
-					auto topic_old = _find_screen->browser()->blogger()->topic();
-					bool is_new_topic = true;
-					if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_new_topic = false;
-					auto bro = search_now(real_target_url_, is_new_topic); //search_text
-					bro->activateWindow();
-					return bro;
-				});
+			    real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(),
+				//				[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+				//					auto bro = search_now(real_target_url_ //, is_an_extend_topic
+				//					    );                                 //search_text
+				//					bro->activateWindow();
+				//					return bro;
+				//				}
+				std::bind(&ToolbarSearch::search_now, this, std::placeholders::_1));
 		    } // .detach();});	//
 		    );
 #ifdef USE_ADDITIONAL_BUFFER
@@ -151,7 +151,8 @@ namespace web {
 		//			//			_find_screen->find_text(lineEdit()->text());
 		//		});
 		// При каждом изменении текста в строке запроса
-		connect(this, &ToolbarSearch::textChanged, _find_screen, &FindScreen::enable_findbutton, Qt::UniqueConnection);
+		assert(gl_paras->find_screen());
+		connect(this, &ToolbarSearch::textChanged, gl_paras->find_screen(), &FindScreen::enable_findbutton, Qt::UniqueConnection);
 
 #endif // USE_ADDITIONAL_BUFFER
 
@@ -187,9 +188,17 @@ namespace web {
 		settings.endGroup();
 	}
 
-	Browser* ToolbarSearch::search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_, bool is_new_topic)
+	Browser* ToolbarSearch::search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_
+	    //					   , bool is_an_extend_topic
+	    )
 	{
-		auto to_be_url_ = to_be_url(non_url_search_text_->value());
+		auto topic_new = non_url_search_text_->value();
+		setInactiveText(topic_new);
+		auto topic_old = _web_view->browser()->blogger()->topic();
+		bool is_an_extend_topic = false;
+		if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_an_extend_topic = true;
+		if (is_an_extend_topic) _web_view->browser()->blogger()->on_topic_changed(topic_new);
+		auto to_be_url_ = to_be_url(topic_new);
 		assert(to_be_url_ == QUrl() // || to_be_url_ == detail::to_qstring(web::Browser::_defaulthome)
 		    );
 		//move to main.cpp
@@ -301,11 +310,23 @@ namespace web {
 		//		QUrl url = QUrl(search_text);
 		//		url_value real_url = url_value(search_text);
 		//		auto topic = Blogger::purify_topic(_findtext->text());
-		auto browser_ = is_new_topic ? real_url_t<QString>::instance<web::Browser*>(search_text,
-						   [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
-							   return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); // gl_paras->main_window()->browser(search_text);
-						   }) :
-					       _find_screen->browser();
+		Browser* activated_browser = nullptr;
+		auto browser_ = is_an_extend_topic ?
+		    _web_view->browser() :
+		    (activated_browser = [&] {
+			    Browser* result = nullptr;
+			    for (auto bro : gl_paras->main_window()->browsers()) {
+				    if (bro->blogger()->topic() == non_url_search_text_->value()) {
+					    result = bro;
+					    break;
+				    }
+			    }
+			    return result;
+		    }()) ?
+		    activated_browser :
+		    real_url_t<QString>::instance<web::Browser*>(search_text, [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
+			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); // gl_paras->main_window()->browser(search_text);
+		    });
 		// if(url.host().isSimpleText());
 		// bool url_isRelative = url.isRelative();
 		// bool url_isValid = url.isValid();
@@ -466,6 +487,7 @@ namespace web {
 		//			else {
 		//			}
 		//		}
+		browser_->activateWindow();
 		return browser_;
 	}
 
@@ -474,16 +496,16 @@ namespace web {
 		lineEdit()->selectAll();
 		QMenu* menu_ = menu();
 		menu_->clear();
-		QStringList list = _stringlistmodel->stringList();
-		if (list.isEmpty()) {
+		QStringList recent_list = _stringlistmodel->stringList();
+		if (recent_list.isEmpty()) {
 			menu_->addAction(tr("No Recent Searches"));
 
 			return;
 		}
 		QAction* recent = menu_->addAction(tr("Recent Searches"));
 		recent->setEnabled(false);
-		for (int i = 0; i < list.count(); ++i) {
-			QString text = list.at(i);
+		for (int i = 0; i < recent_list.count(); ++i) {
+			QString text = recent_list.at(i);
 			menu_->addAction(text)->setData(text);
 		}
 		menu_->addSeparator();
@@ -497,13 +519,22 @@ namespace web {
 			QString text = v.toString();
 			lineEdit()->setText(text);
 			//			auto real_url_ =
-			real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), true))>(lineEdit()->text(), [&](auto real_target_url_) {
-				auto topic_new = real_target_url_->value(); //
-				auto topic_old = _find_screen->browser()->blogger()->topic();
-				bool is_new_topic = true;
-				if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_new_topic = false;
-				return this->search_now(real_target_url_, is_new_topic);
-			});
+			real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(lineEdit()->text(),
+			    //                            [&](auto real_target_url_) {
+			    //                                    //                                auto topic_new = real_target_url_->value(); //
+			    //                                    //                                auto topic_old = _web_view->browser()->blogger()->topic();
+			    //                                    //                                //				auto topic_old_list = _stringlistmodel->stringList(); //_find_screen->browser()->blogger()->topic();
+			    //                                    //                                //				bool is_an_extend_topic = false;
+			    //                                    //                                //				for (int i = 0; i < topic_old_list.count(); ++i) {
+			    //                                    //                                //					QString topic_old = topic_old_list.at(i);
+			    //                                    //                                //					if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_an_extend_topic = true;
+			    //                                    //                                //				}
+			    //                                    //                                bool is_an_extend_topic = false;
+			    //                                    //                                if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_an_extend_topic = true;
+			    //                                    return this->search_now(real_target_url_ //, is_an_extend_topic
+			    //                                        );
+			    //                            }
+			    std::bind(&ToolbarSearch::search_now, this, std::placeholders::_1));
 			// std::thread(&ToolbarSearch::searchNow, this).detach();
 
 			//			left_widget(SearchLineEdit::searchbutton());

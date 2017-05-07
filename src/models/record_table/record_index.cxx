@@ -29,21 +29,19 @@
 #include "views/tree/tree_screen.h"
 
 boost::intrusive_ptr<i_t>
-RecordIndex::bind( // const std::function<RecordModel *()> &current_model_,
-		   // boost::intrusive_ptr<TreeItem>  host_,
-		   // boost::intrusive_ptr<TreeItem> sibling_item_,
+RecordIndex::bind( // const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_,
     bool make_current) noexcept
 {
 	boost::intrusive_ptr<i_t> result(nullptr);
 	auto rctrl_ = _current_model()->record_ctrl();
-
+	assert(rctrl_);
 	if (rctrl_) {
 		auto tab = rctrl_->tab_widget();
 
 		web::Browser* browser_ = nullptr;
 
 		if (tab) browser_ = tab->browser();
-
+		assert(browser_);
 		assert(_host);
 		if (_host && browser_) {
 			auto url = _host->field<url_key>();
@@ -69,6 +67,7 @@ RecordIndex::bind( // const std::function<RecordModel *()> &current_model_,
 			}
 		}
 	}
+	assert(result);
 	return result;
 }
 

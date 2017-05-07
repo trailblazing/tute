@@ -87,7 +87,7 @@ void WindowSwitcher::tree_screen_to_record_screen(void)
 			// auto	view		=
 			// globalparameters.entrance()->find([&](boost::intrusive_ptr<const
 			// Binder> b){return b == item->binder();});
-			auto _record_screen = item->page()->tabmanager()->browser()->record_screen();
+			auto _record_screen = item->page()->browser()->record_screen();
 			if (_record_screen) {
 				// item->page()->view()->record_ctrl()->tabmanager()->browser()->record_screen();
 				QWidget* object = static_cast<QWidget*>(_record_screen); // globalparameters.record_screens()[0]
@@ -133,7 +133,7 @@ void WindowSwitcher::record_to_record_screen(void)
 			if (_index.isValid()) {
 				auto item = _tree_view->source_model()->child(_index);
 				if (item != _tree_view->source_model()->root_item()) {
-					auto _record_screen = item->page()->tabmanager()->browser()->record_screen();
+					auto _record_screen = item->page()->browser()->record_screen();
 					if (_record_screen) {
 						QWidget* object = static_cast<QWidget*>(_record_screen); // temporary setting
 						// // globalparameters.record_screens()[0]
@@ -252,7 +252,7 @@ void WindowSwitcher::restore_focus_widget()
 			    gl_paras->tree_screen()->view()->source_model()->child(_index);
 			if (item !=
 			    gl_paras->tree_screen()->view()->source_model()->root_item()) {
-				auto _record_screen = item->page()->tabmanager()->browser()->record_screen();
+				auto _record_screen = item->page()->browser()->record_screen();
 				if (_record_screen) {
 					QWidget* object = static_cast<QWidget*>(_record_screen); // globalparameters.record_screens()[0]
 					object->show();

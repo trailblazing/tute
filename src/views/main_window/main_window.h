@@ -91,7 +91,7 @@ class QVBoxLayout;
 class SysTrayIcon;
 class i_t;
 struct url_value;
-template<typename>
+template <typename>
 struct real_url_t;
 
 extern std::shared_ptr<gl_para> gl_paras;
@@ -163,6 +163,8 @@ class wn_t : public QMainWindow {
 	QAction* quit_action() const;
 
 	std::set<web::Browser*> browsers() const;
+	web::Browser* dumy_browser() const;
+	QStringListModel* stringlistmodel() const;
     public slots:
 	void application_exit(void);
 	void application_fast_exit(void);
@@ -171,6 +173,7 @@ class wn_t : public QMainWindow {
 	void on_expand_edit_area(bool flag);
 	void synchronize_title(const QString& title_);
 	//	void on_tabCloseRequested(int index);
+	void on_topic_changed(const QString& original_topic_, const QString& topic_new, bool append_mode = false);
     private slots:
 	void file_new(void);
 	void file_open(void);
@@ -235,6 +238,16 @@ class wn_t : public QMainWindow {
 	QSplitter* _h_record_splitter;
 	QSplitter* _h_tree_splitter;
 	// QSplitter           *_h_splitter;
+	QStatusBar* _statusbar;
+	WindowSwitcher* _switcher;
+	SysTrayIcon* _tray_icon = nullptr;
+	QAction* _quit_action;
+	// QMenu *_tray_icon_menu;
+	// bool _treetable_hidden;       // =
+	// globalparameters.getTreeScreen()->isHidden();
+	// bool _recordtable_hidden;     // =
+	bool _enable_real_close;
+
 	std::map<std::string, QMenu*> _main_menu_map;
 	QMenu* _filemenu;
 	QMenu* _editmenu;
@@ -249,17 +262,11 @@ class wn_t : public QMainWindow {
 	HidableTab* _vtab_record;
 	web::Docker<Blogger>* _editor_docker;
 	ts_t* _tree_screen;
+	QStringListModel* _stringlistmodel;
 	FindScreen* _find_screen;
 	// web::DownloadManager	*_download;
 
-	QStatusBar* _statusbar;
-	WindowSwitcher* _switcher;
-	SysTrayIcon* _tray_icon = nullptr;
-	QAction* _quit_action;
-	// QMenu *_tray_icon_menu;
-	// bool _treetable_hidden;       // =
-	// globalparameters.getTreeScreen()->isHidden();
-	// bool _recordtable_hidden;     // =
+
 	// globalparameters.getRecordTableScreen()->isHidden();
 
     protected:
@@ -269,9 +276,9 @@ class wn_t : public QMainWindow {
 
 	// void go_walk_history(void);
 
-	bool _enable_real_close;
 
 	friend class web::Browser;
+	size_t shrink(const size_t bar);
 };
 
 template <>

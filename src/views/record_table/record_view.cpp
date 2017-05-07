@@ -903,6 +903,7 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
     , _layout(new QVBoxLayout(this))
     , _delegate(new ViewDelegation(this)) // (new ButtonColumnDelegate(this))//
     , _rating_width(_delegate->_rating_width)
+    , _vertical_scrollarea(new VerticalScrollArea(this, record_screen_))
 { // , _enable_move_section(true)
 	// ViewDelegation *delegate = new ViewDelegation(this);
 	setItemDelegate(_delegate);
@@ -1047,7 +1048,9 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 	};
 
 	setObjectName(record_view_multi_instance_name); // screen_name + "_view"
+#ifdef USE_QT_DELETE_ON_CLOSE
 	setAttribute(Qt::WA_DeleteOnClose, true);
+#endif // USE_QT_DELETE_ON_CLOSE
 	// Изначально сортировка запрещена (заголовки столбцов не будут иметь
 	// треугольнички)
 	this->setSortingEnabled(false);
@@ -1212,20 +1215,20 @@ void rv_t::on_doubleclick(const QModelIndex& index)
 	qDebug() << "In RecordTableView::editFieldContext";
 
 	// Получение индекса выделенного элемента
-	QModelIndexList selectItems = selectionModel()->selectedIndexes();
-	if (selectItems.size() > 0) {
-		// QModelIndex index = selectItems.at(0);
+	//	QModelIndexList selectItems = selectionModel()->selectedIndexes();
+	//	if (selectItems.size() > 0) {
+	// QModelIndex index = selectItems.at(0);
 
-		// globalparameters.getMetaEditor()->switch_pin();
+	// globalparameters.getMetaEditor()->switch_pin();
 
-		// controller->open_website(index); //controller->editFieldContext(index);
+	// controller->open_website(index); //controller->editFieldContext(index);
 
-		// Нужно перерисовать окно редактирования чтобы обновились инфополя
-		// делается это путем "повторного" выбора текущего пункта
-		if (_rctrl)
-			_rctrl->index_invoke(index_proxy(index), true); // force to refresh		// аньше было select()
-									// globalparameters.main_window()->editor_switch();
-	}
+	// Нужно перерисовать окно редактирования чтобы обновились инфополя
+	// делается это путем "повторного" выбора текущего пункта
+	if (_rctrl)
+		_rctrl->index_invoke(index_proxy(index), true); // force to refresh		// аньше было select()
+								// globalparameters.main_window()->editor_switch();
+								//	}
 }
 
 // Слот, срабатывающий после того, как был передвинут горизонтальный заголовок
@@ -1647,20 +1650,20 @@ void rv_t::mousePressEvent(QMouseEvent* event)
 	////call the parents function
 	// QTableView::mousePressEvent(event);
 	// }
-	//	auto _rctrl = _rctrl;
-	if (_rctrl) {
-		auto it = _rctrl->source_model()->item(_rctrl->index<pos_source>(_rctrl->index<pos_proxy>(index_proxy(next_index))));    // pos_source(pos_proxy(index.row()))
-		auto header_title = _rctrl->source_model()->headerData(next_index.column(), Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
-		auto rating_field_description = fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_key>::value)[boost::mpl::c_str<rating_key>::value];
+	//	//	auto _rctrl = _rctrl;
+	//	if (_rctrl) {
+	//		auto it = _rctrl->source_model()->item(_rctrl->index<pos_source>(_rctrl->index<pos_proxy>(index_proxy(next_index))));    // pos_source(pos_proxy(index.row()))
+	//		auto header_title = _rctrl->source_model()->headerData(next_index.column(), Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
+	//		auto rating_field_description = fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_key>::value)[boost::mpl::c_str<rating_key>::value];
 
-		if (it) {
-			auto _record_view = _rctrl->view();
-			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
-			bool has_selection = item_selection_model->hasSelection();
-			if (header_title != rating_field_description || !has_selection)
-				_rctrl->select_as_current(_rctrl->index<pos_proxy>(index_proxy(next_index)));
-		}
-	}
+	//		if (it) {
+	//			auto _record_view = _rctrl->view();
+	//			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+	//			bool has_selection = item_selection_model->hasSelection();
+	//			if (header_title != rating_field_description || !has_selection)
+	//				_rctrl->select_as_current(_rctrl->index<pos_proxy>(index_proxy(next_index)));
+	//		}
+	//	}
 	QTableView::mousePressEvent(event);
 }
 
@@ -2000,6 +2003,10 @@ void rv_t::resizeEvent(QResizeEvent* e)
 	}
 	QTableView::resizeEvent(e);
 }
+
+
+VerticalScrollArea* rv_t::vertical_scrollarea() const { return _vertical_scrollarea; }
+
 
 template <>
 pos_proxy rv_t::selection_first<pos_proxy>() const
