@@ -4194,10 +4194,10 @@ void Blogger::saveAccountsDom()
 	}
 }
 
-void Blogger::saveAll()
-{
-	sapp_t::instance()->saveAll();
-}
+//void Blogger::saveAll()
+//{
+//	sapp_t::instance()->saveSession();
+//}
 
 void Blogger::saveAs(bool exp)
 {

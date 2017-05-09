@@ -146,7 +146,7 @@ namespace web {
 
 		//		QStackedWidget* lineedit_stack() { return _lineedit_stack; }
 		//		void lineedit_stack(QStackedWidget* lineedit_stack_) { _lineedit_stack = lineedit_stack_; }
-
+		std::function<url_value(const QString&)> query_internet_decomposed;
 	    public slots:
 		void clear();
 		web::Browser* search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_); // return browser_ref will lead lease.h need web::Browser defined

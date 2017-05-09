@@ -97,7 +97,7 @@ const char* tree_screen_viewer_name = "TreeScreenViewer";
 W_OBJECT_IMPL(ts_t)
 #endif
 
-ts_t::ts_t(QString object_name, web::Docker<Blogger> *editor_docker_, // , std::shared_ptr<AppConfig> appconfig_ , QMenu *filemenu, QMenu *toolsmenu
+ts_t::ts_t(QString object_name, web::Docker<Blogger>* editor_docker_, // , std::shared_ptr<AppConfig> appconfig_ , QMenu *filemenu, QMenu *toolsmenu
     wn_t* main_window)
     : QWidget(main_window)
     , _editor_docker(editor_docker_)
@@ -2702,6 +2702,48 @@ void ts_t::resizeEvent(QResizeEvent* e)
 	// );
 }
 
+
+void ts_t::open(bool activate_browser, bool show_tree)
+{
+	auto _main_window = gl_paras->main_window();
+	auto h_tree_splitter = _main_window->h_tree_splitter();
+	auto tree_screen = _main_window->tree_screen();
+	if (tree_screen) {
+		if (show_tree) {
+			auto bar_width = tree_screen->sizeHint().width(); // vtab_tree->minimumSizeHint().width();	//
+			// tabBar()->geometry().width();
+
+			// auto h_record_sizes = h_record_splitter->sizes();
+			auto h_tree_sizes = h_tree_splitter->sizes();
+
+
+			h_tree_sizes[1] = h_tree_sizes[0] + h_tree_sizes[1] - bar_width;
+			h_tree_sizes[0] = bar_width; // 0;
+
+			if (h_tree_sizes != h_tree_splitter->sizes()) {
+				h_tree_splitter->setSizes(h_tree_sizes); //
+				emit h_tree_splitter->splitterMoved(h_tree_sizes[0], 1);
+			}
+		}
+		if (activate_browser) {
+			auto tree_view = tree_screen->view();
+			if (tree_view) {
+				auto _url = web::Browser::_defaulthome;
+				tree_view->index_invoke(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); },
+				    real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(_url,
+											      [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+												      return TreeIndex::url_require_item_from_tree(
+													  real_target_url_,
+													  std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+													  [&](boost::intrusive_ptr<const i_t> it_) -> bool {
+														  return url_equal(detail::to_string(it_->field<home_key>()), detail::to_string(real_target_url_->value())) || url_equal(detail::to_string(it_->field<url_key>()), detail::to_string(real_target_url_->value()));
+													  });
+											      })));
+			}
+		}
+	}
+}
+
 #ifdef USE_TREE_SCREEN_VIEW
 tsv_t* ts_t::viewer() const
 {
@@ -2804,6 +2846,7 @@ void AdjustingScrollArea::setWidget(tv_t* view)
 	// but that's an implementation detail that we shouldn't rely on.
 	view->viewport()->installEventFilter(this);
 }
+
 
 // TreeViewHelpWidget::TreeViewHelpWidget(TreeScreen *_tree_screen)
 // : QWidget(_tree_screen)

@@ -723,7 +723,29 @@ namespace web {
 #ifdef USE_SIGNAL_CLOSE
 	    , sd::renter() //sd::renter<Browser>()
 #endif
-	    , _state(state_)
+	    , _blogger([&] {
+			static_assert(Browser::initialize_prior_to<Blogger>::value == false, "Browser instance need a blogger was ready");
+			assert(blogger_);
+			return blogger_; }()) // new Blogger(vtab_record, this, hide_editor_tools_, new_post_topic, new_post_content)
+	    , _configuration_full_name(_blogger->current_topic_folder_name() + "/" + gl_para::_browser_conf_filename)
+	    , _configuration([&]() -> std::unique_ptr<QSettings> {
+		    auto _current_topic_folder_name = _blogger->current_topic_folder_name();
+		    if (!QDir(_current_topic_folder_name).exists())
+			    if (!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
+		    auto _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_browser_conf_filename;
+		    if (!QFile(_current_topic_config_name).exists())
+			    if (!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(
+				QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+		    if ((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
+		    return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
+	    }())
+	    , _state([&] {
+		    auto st = state_;
+		    if (st == QByteArray()) {
+			    st = DiskHelper::get_topic_from_directory(gl_paras->root_path() + "/" + gl_para::_blog_root_dir, _blogger->topic());
+		    };
+		    return st;
+	    }())
 	    , _vtab_record(gl_paras->vtab_record())
 	    , _tree_screen(gl_paras->tree_screen())
 	    , _find_screen(gl_paras->find_screen())
@@ -767,10 +789,6 @@ namespace web {
 	    , _autosaver(new AutoSaver(this))
 	    , _centralwidget(new QWidget(this))
 	    , _layout(new QVBoxLayout)
-	    , _blogger([&] {
-			static_assert(Browser::initialize_prior_to<Blogger>::value == false, "Browser instance need a blogger was ready");
-			assert(blogger_);
-			return blogger_; }()) // new Blogger(vtab_record, this, hide_editor_tools_, new_post_topic, new_post_content)
 	    //	    , _record_screen(record_screen_)
 	    , _tab_widget(new web::TabWidget(blogger_, const_cast<Browser*>(this), _main_window)
 		  //		  [&] {
@@ -788,18 +806,6 @@ namespace web {
 		  //	    }()
 		  )
 	    , _browser_docker(gl_paras->browser_docker()->prepend(this))
-	    , _configuration_full_name(_blogger->current_topic_folder_name() + "/" + gl_para::_browser_conf_filename)
-	    , _configuration([&]() -> std::unique_ptr<QSettings> {
-		    auto _current_topic_folder_name = _blogger->current_topic_folder_name();
-		    if (!QDir(_current_topic_folder_name).exists())
-			    if (!QDir::root().mkpath(_current_topic_folder_name)) critical_error("Can not create directory: \"" + _current_topic_folder_name + "\"");
-		    auto _current_topic_config_name = _current_topic_folder_name + "/" + gl_para::_browser_conf_filename;
-		    if (!QFile(_current_topic_config_name).exists())
-			    if (!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_config_name)) critical_error(
-				QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
-		    if ((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_config_name, QFile::ReadUser | QFile::WriteUser);
-		    return std::make_unique<QSettings>(_current_topic_config_name, QSettings::IniFormat);
-	    }())
 	{ // , dock_widget(new QDockWidget(parent,
 		// Qt::MaximizeUsingFullscreenGeometryHint))
 		//		_tab_widget = sd::make_intrusive<web::TabWidget>(blogger_, this, _main_window);
@@ -1097,7 +1103,7 @@ namespace web {
 			return data;
 		};
 		_tab_widget->check_topic(_blogger->topic());
-		::sapp_t::instance()->saveSession();
+		//		::sapp_t::instance()->saveSession();//recursive call
 		// std::shared_ptr<QSettings> _configuration =
 		// std::make_shared<QSettings>(gl_paras->root_path() + "/" +
 		// gl_paras->target_os() + "/" + gl_paras->_browser_conf_filename,

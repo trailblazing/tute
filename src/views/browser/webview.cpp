@@ -1084,12 +1084,12 @@ namespace web {
 
 			assert(_binder->integrity_external(result_item, this));               // _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
 			assert(result_item->binder()->integrity_external(result_item, this)); // result->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(_binder));
-#ifdef USE_SIGNAL_CLOSE                                                                       //			_rctrl->close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::WebPage::binder_reset, this));
-			_rctrl->destroy_transfer([&](sd::renter* const r) {
-				(void)r;
-				this->binder_reset();
-			}); //std::bind(&web::WebPage::binder_reset, this)
-#endif
+//#ifdef USE_SIGNAL_CLOSE                                                                       //			_rctrl->close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::WebPage::binder_reset, this));
+//			_rctrl->destroy_transfer([&](sd::renter* const r) {
+//				(void)r;
+//				this->binder_reset();// recursive call _rctrl
+//			}); //std::bind(&web::WebPage::binder_reset, this)
+//#endif
 			return result_coupler;
 		};
 		if (result->binder() && result->binder() == _binder) {

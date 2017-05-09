@@ -339,6 +339,9 @@ namespace web {
 		// void initUrl();
 	    private:
 		static const qint32 browser_magic = 0xba;
+		blogger_ref _blogger;
+		QString _configuration_full_name = "";
+		std::unique_ptr<QSettings> _configuration;
 		QByteArray _state;
 		bool _is_under_construction = true;
 		HidableTab* _vtab_record;
@@ -390,15 +393,14 @@ namespace web {
 		bool _webattributeenabled;
 		QWidget* _centralwidget;
 		QVBoxLayout* _layout;
-		blogger_ref _blogger;
+
 
 		//		sd::intrusive_ptr<rs_t> _record_screen;
 		tabwidget_ref _tab_widget;
 
 
 		web::Docker<web::Browser>* _browser_docker;
-		QString _configuration_full_name = "";
-		std::unique_ptr<QSettings> _configuration;
+
 		//		bool _closed = false;
 		friend class sapp_t; // QtSingleApplication;
 

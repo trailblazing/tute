@@ -815,7 +815,7 @@ void SysTrayIcon::doQuit()
 void SysTrayIcon::saveAll()
 {
 	//	sapp_t *instance = qobject_cast<sapp_t *>(sapp_t::instance());
-	sapp_t::instance()->saveAll();
+	sapp_t::instance()->saveSession();
 }
 
 void SysTrayIcon::doQP(QString receivedText)

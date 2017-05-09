@@ -85,6 +85,7 @@ wn_t::wn_t(
     , _style_source([&]() -> QString {
 	    gl_paras->main_window(this);
 	    gl_paras->style_source(style_source);
+	    this->setAttribute(Qt::WA_InputMethodEnabled);
 	    return style_source;
     }())
     , _v_right_splitter([&]() -> QSplitter* {
@@ -357,7 +358,8 @@ QAction* wn_t::quit_action() const
 
 wn_t::~wn_t()
 {
-	save_all_state();
+
+	sapp_t::instance()->saveSession(); //save_all_state();
 
 	_browser_docker->deleteLater();
 	_browser_docker = nullptr;
@@ -1949,7 +1951,7 @@ bool wn_t::file_save_as(void)
 // Слот - Нормальный выход из программы
 void wn_t::application_exit(void)
 {
-	save_all_state();
+	sapp_t::instance()->saveSession(); // save_all_state();
 	// Если в конфиге настроено, что нужно синхронизироваться при выходе
 	// И задана команда синхронизации
 	if (appconfig->synchro_on_exit())
@@ -1962,7 +1964,7 @@ void wn_t::application_exit(void)
 // Быстрый выход из программы, без возможности синхронизации
 void wn_t::application_fast_exit(void)
 {
-	save_all_state();
+	sapp_t::instance()->saveSession(); // save_all_state();
 
 	// Запуск выхода из программы
 	_enable_real_close = true;
@@ -2235,7 +2237,7 @@ bool wn_t::eventFilter(QObject* o, QEvent* e)
 	// QEvent::ActivationChange
 	if (e->type() == QEvent::WindowDeactivate) {
 		qDebug() << "Main window focus deactivate, save all state.";
-		save_all_state();
+		sapp_t::instance()->saveSession(); // save_all_state();
 		return true;
 	}
 	return false; // Продолжать оработку событий дальше
@@ -2772,7 +2774,7 @@ size_t wn_t::shrink(const size_t bar)
 {
 	size_t result = bar;
 	std::set<web::Browser*> browsers = wn_t::browsers();
-//	rs_t* cur_rs = nullptr;
+	//	rs_t* cur_rs = nullptr;
 	web::Browser* cur_bro = nullptr;
 	boost::intrusive_ptr<i_t> current(nullptr);
 	//	for (auto bro : browsers) {
@@ -2804,7 +2806,7 @@ size_t wn_t::shrink(const size_t bar)
 		if (_record_screen && web_view) {
 
 			if (_record_screen == gl_paras->vtab_record()->currentWidget()) {
-//				cur_rs = _record_screen;
+				//				cur_rs = _record_screen;
 				cur_bro = bro;
 				auto page = web_view->page();
 				auto _rctrl = _record_screen->record_ctrl();
