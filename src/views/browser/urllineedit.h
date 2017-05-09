@@ -76,7 +76,7 @@ namespace web {
 #endif
 
 	    public:
-		ExLineEdit(QWidget *view = nullptr);
+		ExLineEdit(QWidget* view);
 
 		QLineEdit* lineEdit() const;
 
@@ -88,9 +88,9 @@ namespace web {
 
 		QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 #ifndef USE_CLEAR_BUTTON
-		ChaseWidget *chasewidget() const;
+		ChaseWidget* chasewidget() const;
 #endif // USE_CLEAR_BUTTON
-	protected:
+	    protected:
 		void focusInEvent(QFocusEvent* event);
 		void focusOutEvent(QFocusEvent* event);
 		void keyPressEvent(QKeyEvent* event);
@@ -138,9 +138,9 @@ namespace web {
 #endif
 
 	    public:
-		UrlLineEdit(//QWidget* find_screen_,
+		UrlLineEdit( //QWidget* find_screen_,
 		    //			    QWidget* right_widget_,
-		    QWidget* view = nullptr);
+		    QWidget* view);
 		void setWebView(WebView* webView);
 
 		WebView* webview();
@@ -155,8 +155,8 @@ namespace web {
 		void webViewIconChanged();
 
 	    protected:
-//		FindScreen* _find_screen;
-//		WebView* _webview;
+		//		FindScreen* _find_screen;
+		//		WebView* _webview;
 
 	    private:
 		QLinearGradient generateGradient(const QColor& color) const;

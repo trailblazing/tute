@@ -250,7 +250,8 @@ tv_t::tv_t(QString name, ts_t* tree_screen)
 	// this->setLayout(l);
 
 	// qscrollarea->show();
-
+	auto selectionmodel = this->selectionModel();
+	assert(selectionmodel);
 	// Сигналы для обновления панели инструментов при изменении в selectionModel()
 	connect(this->selectionModel(), &QItemSelectionModel::currentChanged, this, &tv_t::on_current_changed);
 	connect(this->selectionModel(), &QItemSelectionModel::selectionChanged, this, &tv_t::on_selection_changed);
@@ -1650,10 +1651,16 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index,
 				if (p->tabmanager()->current_item() != _item) p->tabmanager()->select_as_current(v);
 				auto _rctrl = p->record_ctrl();
 				if (_rctrl) {
+#ifdef USE_HAS_SELECTION
 					auto _record_view = _rctrl->view();
 					QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 					bool has_selection = item_selection_model->hasSelection();
-					if (_rctrl->view()->current_item() != _item || !has_selection)
+#endif // USE_HAS_SELECTION
+					if (_rctrl->view()->current_item() != _item
+#ifdef USE_HAS_SELECTION
+					    || !has_selection
+#endif // USE_HAS_SELECTION
+					    )
 						_rctrl->select_as_current(_rctrl->index<pos_proxy>(_rctrl->source_model()->index(_item)));
 					//
 				}

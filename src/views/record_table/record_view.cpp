@@ -47,6 +47,13 @@ extern const char* record_view_multi_instance_name;
 extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
 extern enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode;
 
+enum QItemSelectionModel::SelectionFlag current_record_selection_mode =
+    QItemSelectionModel::SelectionFlag::ClearAndSelect; // Select//    Current       // ClearAndSelect //  |
+							// QItemSelectionModel::SelectionFlag::Rows
+enum QItemSelectionModel::SelectionFlag current_record_current_index_mode =
+    QItemSelectionModel::SelectionFlag::SelectCurrent; // Select   //
+						       // SelectCurrent
+
 #ifdef USE_STAR_RATING
 
 #if QT_VERSION == 0x050600
@@ -899,7 +906,7 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
     , rating_width([&] { return _rating_width; })
     , _context_menu(new QMenu(this))
     , _record_screen(record_screen_)
-    , _rctrl(record_ctrl_)
+    , _rctrl([&] {assert(record_ctrl_->proxy_model());this->setModel(record_ctrl_->proxy_model());return record_ctrl_; }())
     , _layout(new QVBoxLayout(this))
     , _delegate(new ViewDelegation(this)) // (new ButtonColumnDelegate(this))//
     , _rating_width(_delegate->_rating_width)
@@ -907,6 +914,7 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 { // , _enable_move_section(true)
 	// ViewDelegation *delegate = new ViewDelegation(this);
 	setItemDelegate(_delegate);
+
 	// setItemDelegateForColumn(2, delegate);
 	setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
 	// connect(this, &rv_t::clicked, this, [&](const QModelIndex
@@ -917,72 +925,75 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 	// при наличии ссылки на данный объект
 	// Причина в том, что одни и те же QAction используются в двух местах -
 	// в RecordTableScreen и здесь в контекстном меню
-	auto init = [&, this](void) -> void {                  // RecordView::
-		auto setup_signals = [&, this](void) -> void { // RecordView::
-			// Сигнал чтобы показать контекстное меню по правому клику на списке
-			// записей
-			connect(this, &rv_t::customContextMenuRequested, this, &rv_t::on_custom_context_menu_requested);
 
-			// Соединение сигнал-слот чтобы показать контекстное меню по долгому
-			// нажатию
-			connect(this, &rv_t::tap_and_hold_gesture_finished, this, &rv_t::on_custom_context_menu_requested);
+	auto setup_signals = [&, this](void) -> void { // RecordView::
+		// Сигнал чтобы показать контекстное меню по правому клику на списке
+		// записей
+		connect(this, &rv_t::customContextMenuRequested, this, &rv_t::on_custom_context_menu_requested);
 
-			// Сигнал чтобы открыть на редактирование параметры записи при двойном
-			// клике
-			// Signal to open for editing the parameters of the recording double click
-			connect(this, &rv_t::doubleClicked, this, &rv_t::on_doubleclick);
-			// connect(this, &RecordView::doubleClicked, _record_controller,
-			// &RecordController::close_context); // _tab_widget
+		// Соединение сигнал-слот чтобы показать контекстное меню по долгому
+		// нажатию
+		connect(this, &rv_t::tap_and_hold_gesture_finished, this, &rv_t::on_custom_context_menu_requested);
 
-			// if(appconfig->interface_mode() == "desktop")
-			// connect(this, &RecordView::list_selection_changed, this,
-			// &RecordView::on_selection_changed);
+		// Сигнал чтобы открыть на редактирование параметры записи при двойном
+		// клике
+		// Signal to open for editing the parameters of the recording double click
+		connect(this, &rv_t::doubleClicked, this, &rv_t::on_doubleclick);
+		// connect(this, &RecordView::doubleClicked, _record_controller,
+		// &RecordController::close_context); // _tab_widget
 
-			// Для мобильного режима должен работать сигнал clicked, так как если
-			// засветка уже стоит на строке с записью, должна открыться запись
-			// а в десктопном режиме этого не должно происходить, потому что запись
-			// уже видна на экране
-			// if(appconfig->getInterfaceMode() == "mobile")
-			connect(this, &rv_t::clicked, this, &rv_t::on_click);
+		// if(appconfig->interface_mode() == "desktop")
+		// connect(this, &RecordView::list_selection_changed, this,
+		// &RecordView::on_selection_changed);
 
-			// RecordScreen *_record_screen = qobject_cast<RecordScreen *>(parent());
+		// Для мобильного режима должен работать сигнал clicked, так как если
+		// засветка уже стоит на строке с записью, должна открыться запись
+		// а в десктопном режиме этого не должно происходить, потому что запись
+		// уже видна на экране
+		// if(appconfig->getInterfaceMode() == "mobile")
+		connect(this, &rv_t::clicked, this, &rv_t::on_click);
 
-			// Сигналы для обновления панели инструментов при изменении в
-			// selectionModel()
-			connect(this->selectionModel(), &QItemSelectionModel::currentChanged, [&](const QModelIndex& current, const QModelIndex& previous) {
-				(void)current;
-				if (previous.isValid())
-					_previous_index = previous;
-				_record_screen->tools_update();
-			});
-			connect(this->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection& selected, const QItemSelection& deselected) {
-				(void)selected;
-				(void)deselected;
-				_record_screen->tools_update();
-			});
+		// RecordScreen *_record_screen = qobject_cast<RecordScreen *>(parent());
+		auto selectionmodel_ = this->selectionModel();
+		assert(selectionmodel_);
+		// Сигналы для обновления панели инструментов при изменении в
+		// selectionModel()
+		connect(selectionmodel_, &QItemSelectionModel::currentChanged, [&](const QModelIndex& current, const QModelIndex& previous) {
+			(void)current;
+			if (previous.isValid())
+				_previous_index = previous;
+			this->_record_screen->tools_update();
+		});
+		connect(selectionmodel_, &QItemSelectionModel::selectionChanged, [&](const QItemSelection& selected, const QItemSelection& deselected) {
+			(void)selected;
+			(void)deselected;
+			this->_record_screen->tools_update();
+		});
 
-			// Сигналы для обновления панели инструментов
-			connect(this, &rv_t::activated, _record_screen, &rs_t::tools_update);
-			connect(this, &rv_t::clicked, _record_screen, &rs_t::tools_update);
-			connect(this, &rv_t::doubleClicked, _record_screen, &rs_t::tools_update);
-			connect(this, &rv_t::entered, _record_screen, &rs_t::tools_update);
-			connect(this, &rv_t::pressed, _record_screen, &rs_t::tools_update);
-			connect(QApplication::clipboard(), &QClipboard::dataChanged, _record_screen, &rs_t::tools_update);
+		// Сигналы для обновления панели инструментов
+		connect(this, &rv_t::activated, this->_record_screen, &rs_t::tools_update);
+		connect(this, &rv_t::clicked, this->_record_screen, &rs_t::tools_update);
+		connect(this, &rv_t::doubleClicked, this->_record_screen, &rs_t::tools_update);
+		connect(this, &rv_t::entered, this->_record_screen, &rs_t::tools_update);
+		connect(this, &rv_t::pressed, this->_record_screen, &rs_t::tools_update);
+		connect(QApplication::clipboard(), &QClipboard::dataChanged, this->_record_screen, &rs_t::tools_update);
 
-			connect(this->horizontalHeader(), &QHeaderView::sectionMoved, this, &rv_t::on_section_moved);
-			connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &rv_t::on_section_resized);
-			if (_rctrl)
-				connect(this->horizontalHeader(), &QHeaderView::sortIndicatorChanged, _rctrl, &rctrl_t::on_sort_requested);
+		connect(this->horizontalHeader(), &QHeaderView::sectionMoved, this, &rv_t::on_section_moved);
+		connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &rv_t::on_section_resized);
+		if (this->_rctrl)
+			connect(this->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this->_rctrl, &rctrl_t::on_sort_requested);
 
-			destroy_transfer([&](sd::renter* const r) {
-				(void)r;
-				if (r != this) { //&& !this->_destroyed_request_sent
-					close_trigger_from_others()(r);
-					this->_destroy_request_sent = true;
-					this->close();
-				}
-			});
-		};
+		destroy_transfer([&](sd::renter* const r) {
+			(void)r;
+			if (r != this) { //&& !this->_destroyed_request_sent
+				this->close_trigger_from_others()(r);
+				this->_destroy_request_sent = true;
+				this->close();
+			}
+		});
+	};
+
+	auto init = [&, this](void) -> void { // RecordView::
 
 
 		qDebug() << "RecordView::init()";
@@ -992,32 +1003,33 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 
 		setup_signals();
 
+
 		// It was previously Extended Selection, but this mode is not suitable for
 		// Drag and Drop // Ранее было ExtendedSelection, но такой режим не подходит
 		// для Drag and Drop
-		setSelectionMode(
-		    QAbstractItemView:: //ExtendedSelection //
-		    SingleSelection     //
+		this->setSelectionMode(
+		    QAbstractItemView::SingleSelection // //ExtendedSelection //// MultiSelection// //ExtendedSelection
 		    );
-		// MultiSelection
-		// //ExtendedSelection
+		auto selectionmodel_ = this->selectionModel();
+		assert(selectionmodel_);
+		this->selectionModel()->setModel(this->_rctrl->proxy_model());
+		//                setSelectionModel();
+		this->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-		setSelectionBehavior(QAbstractItemView::SelectRows);
-
-		restore_header_state();
+		this->restore_header_state();
 
 		// астягивание последней секции до размеров виджета
-		horizontalHeader()->setStretchLastSection(true);
+		this->horizontalHeader()->setStretchLastSection(true);
 
 		// Заголовки не должны выглядеть нажатыми
-		horizontalHeader()->setHighlightSections(false);
+		this->horizontalHeader()->setHighlightSections(false);
 
 // Горизонтальные заголовки делаются перемещяемыми
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
-		horizontalHeader()->setMovable(true);
+		this->horizontalHeader()->setMovable(true);
 #endif
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
-		horizontalHeader()->setSectionsMovable(true);
+		this->horizontalHeader()->setSectionsMovable(true);
 #endif
 
 		// Установка высоты строки с принудительной стилизацией (если это
@@ -1028,17 +1040,17 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 		// отображается номер строки.
 		// При задании высоты вертикального заголовка, высота применяется и для всех
 		// ячеек в строке.
-		verticalHeader()->setDefaultSectionSize(
-		    verticalHeader()->minimumSectionSize());
+		this->verticalHeader()->setDefaultSectionSize(
+		    this->verticalHeader()->minimumSectionSize());
 		int height = appconfig->ugly_qss_replace_height_for_table_view();
 		if (height != 0)
-			verticalHeader()->setDefaultSectionSize(height);
+			this->verticalHeader()->setDefaultSectionSize(height);
 		if (appconfig->interface_mode() == "mobile")
-			verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
-		setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded); // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-								     // // ScrollBarAsNeeded  //ScrollBarAlwaysOff
+			this->verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
+		this->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded); // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+									   // // ScrollBarAsNeeded  //ScrollBarAlwaysOff
 
-		restore_column_width();
+		this->restore_column_width();
 
 		//// азрешается перемещать секции заголовка таблицы
 		// _enable_move_section = true;
@@ -1046,7 +1058,7 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 		// Нужно установить правила показа контекстного самодельного меню
 		// чтобы оно могло вызываться
 		//		assembly_context_menu(gl_paras->main_window()->main_menu_map());
-		setContextMenuPolicy(Qt::CustomContextMenu);
+		this->setContextMenuPolicy(Qt::CustomContextMenu);
 	};
 
 	setObjectName(record_view_multi_instance_name); // screen_name + "_view"
@@ -1068,7 +1080,8 @@ rv_t::rv_t(rs_t* record_screen_, rctrl_t* record_ctrl_)
 	_layout->setMargin(0);
 
 	// viewport()->getContentsMargins();
-
+	auto selectionmodel_ = this->selectionModel();
+	assert(selectionmodel_);
 	init();
 }
 
@@ -1431,21 +1444,25 @@ boost::intrusive_ptr<i_t> rv_t::current_item() const
 			it = _rctrl->source_model()->current_item();
 			if (it) {
 				pos_proxy pos_proxy_ = _rctrl->index<pos_proxy>(it);
-				////	pos_source	possource	=
-				///_record_controller->index<pos_source>(it);
-				////	auto		index		=
-				///static_cast<QModelIndex>(_record_controller->index<index_source>(posproxy));
-				// index_proxy proxy_curi(selectionModel()->currentIndex());
-				////	auto	source_index	=
-				///_record_controller->source_model()->current_index();
-				////	auto	proxy_index	=
-				///_record_controller->proxy_model()->mapFromSource(static_cast<QModelIndex>(source_index));
-				////	assert(proxy_curi == proxy_index);
-				//
+////	pos_source	possource	=
+///_record_controller->index<pos_source>(it);
+////	auto		index		=
+///static_cast<QModelIndex>(_record_controller->index<index_source>(posproxy));
+// index_proxy proxy_curi(selectionModel()->currentIndex());
+////	auto	source_index	=
+///_record_controller->source_model()->current_index();
+////	auto	proxy_index	=
+///_record_controller->proxy_model()->mapFromSource(static_cast<QModelIndex>(source_index));
+////	assert(proxy_curi == proxy_index);
+#ifdef USE_HAS_SELECTION
 				QItemSelectionModel* item_selection_model = selectionModel();
 				bool has_selection = item_selection_model->hasSelection();
-
-				if (pos_proxy_ != static_cast<QModelIndex>(_rctrl->index<index_proxy>(_rctrl->source_model()->current_index())).row() || (!has_selection)) { //
+#endif // USE_HAS_SELECTION
+				if (pos_proxy_ != static_cast<QModelIndex>(_rctrl->index<index_proxy>(_rctrl->source_model()->current_index())).row()
+#ifdef USE_HAS_SELECTION
+				    || (!has_selection)
+#endif                                      // USE_HAS_SELECTION
+					) { //
 					// if(pos_proxy_ != static_cast<QModelIndex>(proxy_curi).row()){	//
 					// never equaled	// currentIndex().row()){	//
 					// selectionModel()->currentIndex().row()
@@ -1581,91 +1598,87 @@ void rv_t::mousePressEvent(QMouseEvent* event)
 	////    Qt::MouseButtons mouse_button = event->buttons();
 	// setSelectionMode(QAbstractItemView::ExtendedSelection);
 	_mouse_start_position = event->pos();
+	auto mouse_button = event->button();
 	QModelIndex next_index = indexAt(_mouse_start_position);
-	if (next_index.isValid() && !is_field_type_column(boost::mpl::c_str<rating_key>::value, next_index.column())) {
-		//////        // Если нажата левая кнопка мыши
-		//////        if(mouse_button == Qt::LeftButton){ // || mouse_button ==
-		///Qt::RightButton
+	if (next_index.isValid() //
+	    //	    && !is_field_type_column(boost::mpl::c_str<rating_key>::value, next_index.column()) //
+	    //	    && mouse_button == Qt::RightButton
+	    ) {
+		////        // Если нажата левая кнопка мыши
+		////        if(mouse_button == Qt::LeftButton){ // || mouse_button == Qt::RightButton
 
-		//////            selectionModel()->select(next_index,
-		///QItemSelectionModel::SelectCurrent);
-		////////
-		///if(_is_field_type_column(boost::mpl::c_str<rating_type>::value,
-		///next_index.column())){
-		//////////
-		///_record_controller->source_model()->setData(next_index, QVariant(true),
-		///Qt::EditRole);
-		////////                auto widget = new FlatToolButton(this);
-		////////                setIndexWidget(next_index, widget);
-		////////                connect(widget, &FlatToolButton::clicked,
-		///_record_controller, &RecordController::close_context);
-		////////            }
-		//////            emit dataChanged(next_index, next_index);
-		//////            // auto it =
-		///_record_controller->source_model()->item(next_index.row());
-		//////            // _tree_screen->tree_view()->select_as_current(it);
-		//////        }else if(mouse_button == Qt::RightButton){ // only the right
-		///mouse buton
-		//////            // _mouse_start_position = event->pos();
-		//////            ////select item at cursor position
-		//////            ////        QPersistentModelIndex
-		//////            // QModelIndex next_index = indexAt(event->pos());
-		//////            // selectionModel()->clear();
-		//////            selectionModel()->select(next_index,
-		///QItemSelectionModel::ClearAndSelect); // Select
-		//////            selectionModel()->setCurrentIndex(next_index,
-		///QItemSelectionModel::SelectCurrent);
-		//////            assert(next_index == currentIndex());
-		////// _record_controller->cursor_to_index(PosProxy(next_index.row())); //
-		//////            // emit clicked(next_index);
+		////            selectionModel()->select(next_index, QItemSelectionModel::SelectCurrent);
+		//////
+		if (mouse_button == Qt::LeftButton && is_field_type_column(boost::mpl::c_str<rating_key>::value, next_index.column())) {
+			if (_rctrl) _rctrl->source_model()->setData(next_index, QVariant(true), Qt::EditRole);
+			//////                auto widget = new FlatToolButton(this);
+			//////                setIndexWidget(next_index, widget);
+			//////                connect(widget, &FlatToolButton::clicked, _record_controller, &RecordController::close_context);
+			//////            }
+			////            emit dataChanged(next_index, next_index);
+			////            // auto it = _record_controller->source_model()->item(next_index.row());
+			////            // _tree_screen->tree_view()->select_as_current(it);
+		} else if (mouse_button == Qt::RightButton) {
+			// only the right mouse buton
+			////            // _mouse_start_position = event->pos();
+			////            ////select item at cursor position
+			////            ////        QPersistentModelIndex
+			////            // QModelIndex next_index = indexAt(event->pos());
+			////            // selectionModel()->clear();
+			////            selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect); // Select
+			////            selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
+			////            assert(next_index == currentIndex());
+			//// _record_controller->cursor_to_index(PosProxy(next_index.row())); //
+			////            // emit clicked(next_index);
 
-		//////            //// start the context menu
-		//////            // QModelIndexList select_indexes(selectedIndexes());
+			if (_rctrl) {
+				auto it = _rctrl->source_model()->item(_rctrl->index<pos_source>(_rctrl->index<pos_proxy>(index_proxy(next_index))));    // pos_source(pos_proxy(index.row()))
+				auto header_title = _rctrl->source_model()->headerData(next_index.column(), Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
+				auto rating_field_description = fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_key>::value)[boost::mpl::c_str<rating_key>::value];
 
-		//////            // if(select_indexes.size() > 0 &&
-		///select_indexes[0].isValid()) {
-		//////            // _tree_screen->_context_menu->exec(event->pos());  //
-		///QCursor::pos()
-		//////            // }
-		//////        }
+				if (it) {
+#ifdef USE_HAS_SELECTION
+					auto _record_view = _rctrl->view();
+					QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+					bool has_selection = item_selection_model->hasSelection();
+#endif // USE_HAS_SELECTION
+					if (header_title != rating_field_description
+#ifdef USE_HAS_SELECTION
+					    || !has_selection
+#endif // USE_HAS_SELECTION
+					    ) {
+						_rctrl->select_as_current(_rctrl->index<pos_proxy>(index_proxy(next_index)));
+					}
+				}
+			}
 
-		////	selectionModel()->select(next_index,
-		///QItemSelectionModel::ClearAndSelect);			// Select
-		////	selectionModel()->setCurrentIndex(next_index,
-		///QItemSelectionModel::SelectCurrent);
-		////	assert(next_index == currentIndex());
-		// _record_controller->index_invoke(index_proxy(next_index), true);			//
-		// .row()
+			////            //// start the context menu
+			////            // QModelIndexList select_indexes(selectedIndexes());
 
-		////	auto it =
-		///_record_controller->source_model()->item(_record_controller->index<pos_source>(_record_controller->index<pos_proxy>(index_proxy(next_index))));
-		///// .row()
-		////	assert(it);
-		////	auto tree_view = _tree_screen->view();
+			////            // if(select_indexes.size() > 0 &&  select_indexes[0].isValid()) {
+			////            // _tree_screen->_context_menu->exec(event->pos());  // QCursor::pos()
+			////            // }
+			////        }
+		}
+		//		//	selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect);			// Select
+		//		//	selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
+		//		//	assert(next_index == currentIndex());
+		//		_rctrl->index_invoke(index_proxy(next_index), true); // .row()
 
-		////	tree_view->select_as_current(TreeIndex::instance([&] {return
-		///tree_view->source_model();}, it, it->parent()));
-		////	assert(tree_view->current_item() == it);
-		////	assert(current_item() == it);
+		//		//	auto it = _record_controller->source_model()->item(_record_controller->index<pos_source>(_record_controller->index<pos_proxy>(index_proxy(next_index)))); // .row()
+		//		//	assert(it);
+		//		//	auto tree_view = _tree_screen->view();
+
+		//		//	tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
+		//		//	assert(tree_view->current_item() == it);
+		//		//	assert(current_item() == it);
 	}
 	// else {
 	////call the parents function
 	// QTableView::mousePressEvent(event);
 	// }
 	//	//	auto _rctrl = _rctrl;
-	//	if (_rctrl) {
-	//		auto it = _rctrl->source_model()->item(_rctrl->index<pos_source>(_rctrl->index<pos_proxy>(index_proxy(next_index))));    // pos_source(pos_proxy(index.row()))
-	//		auto header_title = _rctrl->source_model()->headerData(next_index.column(), Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
-	//		auto rating_field_description = fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_key>::value)[boost::mpl::c_str<rating_key>::value];
 
-	//		if (it) {
-	//			auto _record_view = _rctrl->view();
-	//			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
-	//			bool has_selection = item_selection_model->hasSelection();
-	//			if (header_title != rating_field_description || !has_selection)
-	//				_rctrl->select_as_current(_rctrl->index<pos_proxy>(index_proxy(next_index)));
-	//		}
-	//	}
 	QTableView::mousePressEvent(event);
 }
 

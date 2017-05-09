@@ -64,6 +64,9 @@ extern FixedParameters fixedparameters;
 extern std::shared_ptr<AppConfig> appconfig;
 extern WalkHistory walkhistory;
 
+extern enum QItemSelectionModel::SelectionFlag current_record_selection_mode;
+extern enum QItemSelectionModel::SelectionFlag current_record_current_index_mode;
+
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(rctl_t)
 #endif
@@ -77,10 +80,14 @@ rctrl_t::rctrl_t(
     , sd::renter() //sd::renter<rctrl_t>()
 #else
     : super(record_screen_)
-#endif                                     //USE_SIGNAL_CLOSE
-    , _tab_widget(tabmanager_)             // nullptr
-    , _source_model(new RecordModel(this)) // so, you need boost::intursive_ptr
-    , _proxy_model(new RecordProxyModel(this))
+#endif                         //USE_SIGNAL_CLOSE
+    , _tab_widget(tabmanager_) // nullptr
+    , _source_model(new RecordModel(this))
+    , _proxy_model([&] {
+	auto proxy = new RecordProxyModel(this);
+	proxy->setObjectName("recordProxyModel");
+	proxy->setSourceModel(_source_model);
+	return proxy; }())
     , _record_screen(record_screen_)
     , _blogger(blogger_)
     , _view(new rv_t(record_screen_, this), true //sd::make_intrusive<rv_t>(_view, record_screen_, this)
@@ -117,11 +124,11 @@ rctrl_t::rctrl_t(
 	// _source_model->setObjectName("recordSourceModel");
 
 	// recordProxyModel = new RecordTableProxyModel(this);
-	_proxy_model->setSourceModel(_source_model);
-	// _proxy_model->setObjectName("recordProxyModel");
+	assert(_proxy_model->sourceModel() == _source_model); //if (_proxy_model->sourceModel() != _source_model) _proxy_model->setSourceModel(_source_model);
+							      // _proxy_model->setObjectName("recordProxyModel");
 
 	// Модель данных задается для вида
-	_view->setModel(_proxy_model);
+	assert(_view->model() == _proxy_model); //if (_view->model() != _proxy_model) _view->setModel(_proxy_model);
 	// init();
 	// _no_view = false;
 	connect(_view, &rv_t::tabMoved, _tab_widget, &web::TabWidget::moveTab);
@@ -202,72 +209,109 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 	// }
 
 	// PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
-	index_proxy index_proxy_ =
-	    index<index_proxy>(pos_proxy_); // Модельный индекс в Proxy модели
+	index_proxy index_proxy_ = index<index_proxy>(pos_proxy_); // Модельный индекс в Proxy модели
+
 	index_source index_source_ = index<index_source>(pos_proxy_);
+	auto target_it = index<boost::intrusive_ptr<i_t>>(index_source_);
 	auto qindex_proxy = static_cast<QModelIndex>(index_proxy_);
-	pos_proxy pos_proxy_real(qindex_proxy.row());
+	auto target_pos_poxy_ = qindex_proxy.row();
+	pos_proxy target_pos_proxy(target_pos_poxy_);
 	// todo: Если это условие ни разу не сработает, значит преобразование ipos -
 	// pos надо просто убрать
 	// Todo: If this condition is never going to work, then ipos transformation -
 	// pos should simply remove
-	if (static_cast<int>(pos_proxy_real) != static_cast<int>(pos_proxy_)) {
+	if (static_cast<int>(target_pos_proxy) != static_cast<int>(pos_proxy_)) {
 		QMessageBox msg_box;
 		msg_box.setText(
 		    "In RecordView::cursor_to_index() input pos not equal model pos");
 		msg_box.exec();
 	}
 	int tab_count = row_count();
-	if ((int)pos_proxy_real >= 0 && (int)pos_proxy_real < tab_count) {
+	if (target_pos_poxy_ >= 0 && target_pos_poxy_ < tab_count) {
 		if (index_source_ !=
 		    _source_model->current_index()) { // if(pos_real > (rowCount - 1))return;
-			// Простой механизм выбора строки. Похоже, что его использовать не
-			// получится
-			_view->selectRow((int)pos_proxy_real);
+						      //			_view->scrollTo(qindex_proxy);
 
+
+			QItemSelectionModel* item_selection_model = _view->selectionModel();
 			// auto recordSourceModel = controller->getRecordTableModel();
 			// QModelIndex selIdx = recordSourceModel->index(pos, 0);
+			if (item_selection_model) {
 
-			_view->selectionModel()->select(qindex_proxy, current_tree_selection_mode);
-			// Установка засветки на нужный индекс
-			// Set the backlight to the desired index
-			_view->selectionModel()->setCurrentIndex(qindex_proxy, current_tree_current_index_mode); // selIdx   //
-			// QItemSelectionModel::Select    //
-			// ClearAndSelect
-			_view->setCurrentIndex(qindex_proxy);
-			_view->edit(qindex_proxy);
 
-			_view->scrollTo(qindex_proxy); // QAbstractItemView::PositionAtCenter
-			_view->update(qindex_proxy);
-			//
-			auto real_index_source_ = _source_model->current_index();
-			auto real_index_proxy_ = index<index_proxy>(real_index_source_);
-			assert(real_index_proxy_ == index_proxy_);
-			// В мобильной версии реакции на выбор записи нет (не обрабатывается
-			// сигнал смены строки в модели выбора)
-			// Поэтому по записи должен быть сделан виртуальный клик, чтобы
-			// заполнилась таблица конечных записей
-			// In response to the mobile version of the record is no choice (not
-			// processed signal line change to the selection model)
-			// Therefore, the recording must be made a virtual click to fill the final
-			// table of records
-			if (appconfig->interface_mode() == "mobile") emit _view->clicked(qindex_proxy);
-			// QModelIndex selIdx=recordSourceModel->index(pos, 0);
+				QModelIndex topLeft;
+				QModelIndex bottomRight;
 
-			// emit _view->clicked(qindex_proxy);	//
-			// segment error?
+				topLeft = qindex_proxy;     // _source_model->index(0, 0, QModelIndex());
+				bottomRight = qindex_proxy; // _source_model->index(5, 2, QModelIndex());
 
-			// this->setFocus();   // ?
-			pos_source pos_source_ = index<pos_source>(pos_proxy_);
-			auto it = index<boost::intrusive_ptr<i_t>>(pos_source_);
-			if (this->_view->hasFocus()) {                                                                                                // view is the curretn controller
-				if (_tab_widget->currentIndex() != static_cast<int>(pos_source_)) _tab_widget->select_as_current(it->page()->view()); // setCurrentIndex(static_cast<int>(pos_source_));
-				auto tree_screen = gl_paras->main_window()->tree_screen();
-				if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
+
+				QItemSelection selection(topLeft, bottomRight);
+				item_selection_model->select(selection, current_record_selection_mode);
+				// Установка засветки на нужный индекс
+				// Set the backlight to the desired index
+				item_selection_model->setCurrentIndex(qindex_proxy, current_record_current_index_mode); // selIdx   //
+				// QItemSelectionModel::Select    //
+				// ClearAndSelect
+				if (_view->currentIndex() != qindex_proxy) {
+					// Простой механизм выбора строки. Похоже, что его использовать не
+					// получится
+					_view->selectRow(target_pos_poxy_);
+					qindex_proxy = _view->currentIndex();
+					index_proxy_ = qindex_proxy;
+				}
+
+				if (_view->currentIndex() != qindex_proxy) {
+
+					_view->setCurrentIndex(qindex_proxy);
+					qindex_proxy = _view->currentIndex();
+					index_proxy_ = qindex_proxy;
+				}
+
+
+				if (_view->currentIndex() != qindex_proxy) {
+
+					_view->scrollTo(qindex_proxy); // QAbstractItemView::PositionAtCenter
+					qindex_proxy = _view->currentIndex();
+					index_proxy_ = qindex_proxy;
+				}
+				_view->edit(qindex_proxy);
+				_view->update(qindex_proxy);
+				//
+				auto real_index_source_ = _source_model->index(target_it); //current_index();
+				auto result_index_proxy_ = index<index_proxy>(real_index_source_);
+				assert(result_index_proxy_ == index_proxy_);
+				// В мобильной версии реакции на выбор записи нет (не обрабатывается
+				// сигнал смены строки в модели выбора)
+				// Поэтому по записи должен быть сделан виртуальный клик, чтобы
+				// заполнилась таблица конечных записей
+				// In response to the mobile version of the record is no choice (not
+				// processed signal line change to the selection model)
+				// Therefore, the recording must be made a virtual click to fill the final
+				// table of records
+				if (appconfig->interface_mode() == "mobile") emit _view->clicked(qindex_proxy);
+				// QModelIndex selIdx=recordSourceModel->index(pos, 0);
+
+				// emit _view->clicked(qindex_proxy);	//
+				// segment error?
+
+				// this->setFocus();   // ?
+				pos_source pos_source_ = index<pos_source>(pos_proxy_);
+				auto it = index<boost::intrusive_ptr<i_t>>(pos_source_);
+				if (this->_view->hasFocus()) {                                                                                                // view is the curretn controller
+					if (_tab_widget->currentIndex() != static_cast<int>(pos_source_)) _tab_widget->select_as_current(it->page()->view()); // setCurrentIndex(static_cast<int>(pos_source_));
+					auto tree_screen = gl_paras->main_window()->tree_screen();
+					if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
+				}
+				if (it) {
+					//				if (it->page()) it->page()
+					_blogger->metaeditor_sychronize();
+				}
+#ifdef USE_HAS_SELECTION
+				bool has_selection = item_selection_model->hasSelection();
+				assert(has_selection);
+#endif // USE_HAS_SELECTION
 			}
-			if (it)
-				//				if (it->page()) it->page()
-				_blogger->metaeditor_sychronize();
 		}
 		//		_view->setFocus();
 	}

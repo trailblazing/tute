@@ -118,7 +118,7 @@ namespace web {
 #endif
 
 	    public:
-		SearchLineEdit(QWidget* view = nullptr);
+		SearchLineEdit(QWidget* view);
 
 		QString inactiveText() const;
 		void setInactiveText(const QString& text);

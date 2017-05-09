@@ -4009,7 +4009,7 @@ void Blogger::on_topic_changed(const QString& tp)
 					else {
 						point_to_folder(dest_topic_folder);
 						// load(_filename);
-						assert(!QDir(original_topic_folder).exists());
+//						assert(!QDir(original_topic_folder).exists());//might opened by another browser
 					}
 				} else {
 					//					auto original_text = get_text(original_topic_folder + "/" + _default_filename + ".html");

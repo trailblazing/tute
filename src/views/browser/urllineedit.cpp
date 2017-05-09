@@ -89,6 +89,7 @@ namespace web {
 	    , _lineedit(new QLineEdit(this))
 	    , _web_view(dynamic_cast<web::WebView*>(view))
 	{
+		assert(_web_view);
 #ifndef USE_CLEAR_BUTTON
 		_chasewidget->setMaximumWidth(17);
 #endif
@@ -317,7 +318,12 @@ namespace web {
 
 			connect(_web_view, &web::WebView::loadFinished, [&](bool) { _clearbutton->setIcon(_web_view->icon()); });
 #else
-			connect(_web_view, &web::WebView::loadFinished, [&](bool) { _chasewidget->setIcon(_web_view->icon()); });
+			connect(_web_view, &web::WebView::loadFinished, [&](bool) {
+				if (_web_view)
+					_chasewidget->setIcon(_web_view->icon());
+				else
+					_chasewidget->setIcon(::sapp_t::instance()->defaultIcon());
+			});
 #endif //USE_CLEAR_BUTTON
 		}
 

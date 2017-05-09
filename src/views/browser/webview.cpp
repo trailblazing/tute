@@ -629,10 +629,16 @@ namespace web {
 			if (is_current) { // globalparameters.mainwindow()
 				if (tree_view->current_item() != it)
 					tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, it));
+#ifdef USE_HAS_SELECTION
 				auto _record_view = _rctrl->view();
 				QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 				bool has_selection = item_selection_model->hasSelection();
-				if (_rctrl->view()->current_item() != it || !has_selection)
+#endif // USE_HAS_SELECTION
+				if (_rctrl->view()->current_item() != it
+#ifdef USE_HAS_SELECTION
+				    || !has_selection
+#endif // USE_HAS_SELECTION
+				    )
 					_rctrl->select_as_current(_rctrl->index<pos_proxy>(it)); // IdType(_binder->item()->field("id"))
 			}
 			if (is_current)
@@ -929,11 +935,17 @@ namespace web {
 						QLineEdit* line_edit = _tab_widget->currentLineEdit(); // qobject_cast<QLineEdit
 												       // *>(_lineedits->currentWidget());
 						if (line_edit) line_edit->setText(_url_str);
-						// }
+// }
+#ifdef USE_HAS_SELECTION
 						auto _record_view = _rctrl->view();
 						QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 						bool has_selection = item_selection_model->hasSelection();
-						if (_rctrl->view()->current_item() != _binder->host() || !has_selection)
+#endif // USE_HAS_SELECTION
+						if (_rctrl->view()->current_item() != _binder->host()
+#ifdef USE_HAS_SELECTION
+						    || !has_selection
+#endif // USE_HAS_SELECTION
+						    )
 							_rctrl->select_as_current(_rctrl->index<pos_proxy>(_binder->host())); // if(_record_controller->view()->selection_first<IdType>()
 															      // != _binder->host()->field<id_type>()){
 															      // IdType(_binder->item()->field("id"))
@@ -998,10 +1010,16 @@ namespace web {
 			return r;
 		}();
 		if (_rctrl) {
+#ifdef USE_HAS_SELECTION
 			auto _record_view = _rctrl->view();
 			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 			bool has_selection = item_selection_model->hasSelection();
-			if (_rctrl->source_model()->current_item() != current || !has_selection) {
+#endif // USE_HAS_SELECTION
+			if (_rctrl->source_model()->current_item() != current
+#ifdef USE_HAS_SELECTION
+			    || !has_selection
+#endif // USE_HAS_SELECTION
+			    ) {
 				auto pp = _rctrl->index<pos_proxy>(current);
 				// auto	index_proxy_	= _record_controller->index<index_proxy>(pp);
 				_rctrl->select_as_current(pp);
@@ -1376,15 +1394,16 @@ namespace web {
 							return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
 						});
 				    });
+				assert(it);
 				// page = it ? it->activate(std::bind(&HidableTabWidget::find,
 				// globalparameters.main_window()->vtab_record(),
 				// std::placeholders::_1))->page() : nullptr;
 				if (it)
 					it->topic_append(_blogger->topic()); //target_url.toString()
 				page = it ? it->page() : nullptr;
-				if (!page) page = this; //	assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
+				//				if (!page) page = this; //	assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 			}
-			if (!page) page = this; //	assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
+			//			if (!page) page = this; //	assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 		} else
 #ifdef USE_POPUP_WINDOW
 		    if (type == WebBrowserTab)
@@ -1427,13 +1446,14 @@ namespace web {
 							return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
 						});
 				    });
+				assert(it);
 				if (it)
 					it->topic_append(_blogger->topic());
 				page = it ? it->activate(std::bind(&wn_t::find, gl_paras->main_window(), find_binder))->page() : nullptr; // std::placeholders::_1
 
-				if (!page) page = this; //				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
+				//				if (!page) page = this; //				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 			}
-			if (!page) page = this; //			assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
+			//			if (!page) page = this; //			assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 		}
 #ifdef USE_POPUP_WINDOW
 		else {                                                 // type == WebDialog
@@ -1820,7 +1840,7 @@ namespace web {
 	void PopupView::mouseReleaseEvent(QMouseEvent* event)
 	{
 		QWebEngineView::mouseReleaseEvent(event);
-		if (!event->isAccepted() && (_page->_pressed_buttons & Qt::MidButton)) {
+		if (!event->isAccepted() && (_page->_pressed_buttons & Qt::MiddleButton)) {
 			QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
 			if (!url.isEmpty() && url.isValid() && !url.scheme().isEmpty())
 				setUrl(url);
@@ -2088,8 +2108,9 @@ namespace web {
 		//	        QObject::disconnect(_home_connection);
 
 		//	        _home_connection
-		//	                =
-		_tab_widget->currentChanged(_tab_widget->webViewIndex(this));
+		//
+		if (_tab_widget->currentWebView() != this)
+			emit static_cast<QTabWidget*>(_tab_widget)->currentChanged(_tab_widget->webViewIndex(this));
 
 		QWebEngineView::activateWindow();
 	}
@@ -2192,9 +2213,15 @@ namespace web {
 		// globalparameters.mainwindow()
 		if (_rctrl) {
 			auto _record_view = _rctrl->view();
+#ifdef USE_HAS_SELECTION
 			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 			bool has_selection = item_selection_model->hasSelection();
-			if (_record_view->selection_first<id_value>() != _page->host()->field<id_key>() || !has_selection)
+#endif // USE_HAS_SELECTION
+			if (_record_view->selection_first<id_value>() != _page->host()->field<id_key>()
+#ifdef USE_HAS_SELECTION
+			    || !has_selection
+#endif // USE_HAS_SELECTION
+			    )
 				_rctrl->select_as_current(_rctrl->index<pos_proxy>(_page->host())); // IdType(_page->item()->field("id"))
 		}
 		// }
@@ -2342,7 +2369,7 @@ namespace web {
 	void WebView::mouseReleaseEvent(QMouseEvent* event)
 	{
 		QWebEngineView::mouseReleaseEvent(event);
-		if (!event->isAccepted() && (_page->_pressedbuttons & Qt::MidButton)) {
+		if (!event->isAccepted() && (_page->_pressedbuttons & Qt::MiddleButton)) {
 			QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
 			if (!url.isEmpty() && url.isValid() && !url.scheme().isEmpty())
 				setUrl(url);
@@ -2381,10 +2408,16 @@ namespace web {
 			if (it != _tree_view->current_item())
 				_tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_view->source_model(); }, it));
 			auto _record_view = _rctrl->view();
+#ifdef USE_HAS_SELECTION
 			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 			bool has_selection = item_selection_model->hasSelection();
+#endif // USE_HAS_SELECTION
 			if ((_record_view->current_item() != it) ||
-			    (_tab_widget->currentWebView() != this) || !has_selection)
+			    (_tab_widget->currentWebView() != this)
+#ifdef USE_HAS_SELECTION
+			    || !has_selection
+#endif // USE_HAS_SELECTION
+			    )
 				_rctrl->select_as_current(_rctrl->index<pos_proxy>(it));
 			if (_page->title() != it->field<name_key>())
 				_page->record_info_update(_page->url(), _page->title());

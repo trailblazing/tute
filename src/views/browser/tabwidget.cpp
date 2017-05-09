@@ -1152,10 +1152,19 @@ namespace web {
 						if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
 						auto _rctrl = _record_screen->record_ctrl();
 						if (_rctrl) {
+
+#ifdef USE_HAS_SELECTION
 							auto _record_view = _rctrl->view();
 							QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 							bool has_selection = item_selection_model->hasSelection();
-							if (_rctrl->view()->current_item() != it || !has_selection) _rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(index)));
+#endif // USE_HAS_SELECTION
+							if (_rctrl->view()->current_item() != it
+#ifdef USE_HAS_SELECTION
+							    || !has_selection
+#endif // USE_HAS_SELECTION
+
+							    )
+								_rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(index)));
 						}
 						if (page->title() != it->field<name_key>()) page->record_info_update(page->url(), page->title());
 						_main_window->synchronize_title(it->field<name_key>());
@@ -1258,9 +1267,15 @@ namespace web {
 					auto _rctrl = _record_screen->record_ctrl();
 					if (_rctrl) {
 						auto _record_view = _rctrl->view();
+#ifdef USE_HAS_SELECTION
 						QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 						bool has_selection = item_selection_model->hasSelection();
-						if ((_record_view->current_item() != _target_item) || (currentWebView() != _target_item->page()->view()) || !has_selection)
+#endif // USE_HAS_SELECTION
+						if ((_record_view->current_item() != _target_item) || (currentWebView() != _target_item->page()->view())
+#ifdef USE_HAS_SELECTION
+						    || !has_selection
+#endif // USE_HAS_SELECTION
+						    )
 							_rctrl->select_as_current(_rctrl->index<pos_proxy>(_target_item));
 					}
 				}
@@ -2018,7 +2033,8 @@ namespace web {
 
 				// item->activate(); // activate after initialization of browser
 				//				if (count() == 1)
-				currentChanged(currentIndex()); // default this is input the new index
+				if (currentWebView() != view)
+					emit static_cast<QTabWidget*>(this)->currentChanged(webViewIndex(view)); //currentIndex() // default this is input the new index
 			}
 
 			emit tabsChanged();
@@ -2445,7 +2461,7 @@ namespace web {
 
 	void TabWidget::mouseReleaseEvent(QMouseEvent* event)
 	{
-		if (event->button() == Qt::MidButton && !childAt(event->pos())
+		if (event->button() == Qt::MiddleButton && !childAt(event->pos())
 		    // Remove the line below when QTabWidget does not have a one pixel frame
 		    && event->pos().y() < (tabBar()->y() + tabBar()->height())) {
 			QUrl url(QApplication::clipboard()->text(QClipboard::Selection));

@@ -299,7 +299,7 @@ RecordModel::RecordModel(rctrl_t* record_ctrl_)
 	// init_source_model(_record_controller, _record_screen, _main_window,
 	// _editor_screen);
 
-	// setObjectName(screen_name + "_source_model");
+	setObjectName("recordSourceModel"); // setObjectName(screen_name + "_source_model");
 
 	// При создании модели она должна брать данные как минимум из
 	// пустой таблицы данных
@@ -321,129 +321,132 @@ RecordModel::~RecordModel()
 // Provide tabular data model
 QVariant RecordModel::data(const QModelIndex& index, int role) const
 {
+	QVariant result;
 
 	//// Если таблица данных не создана
 	// if(count() == 0)    // if(!browser_pages())    // if(!_table)
 	// return QVariant();
 	// Если таблица пустая
-	if (0 == count()) // if(_table->size() == 0)
-		return QVariant();
-	// Если индекс недопустимый, возвращается пустой объект
-	if (!index.isValid())
-		return QVariant();
-	// qDebug() << "RecordTableModel::data(), row:" << index.row() << " column "
-	// << index.column();
-	auto pos = pos_source(index.row());
-	auto it = item(pos);
-	// Если запрашивается текст строки для отрисовки или для редактирования
-	if (role == Qt::DisplayRole || role == Qt::EditRole || role == SORT_ROLE || role == Qt::UserRole) {
-		QStringList show_fields = appconfig->record_table_show_fields();
+	if (0 != count()) { // if(_table->size() == 0)
+			    //		return QVariant();
+		// Если индекс недопустимый, возвращается пустой объект
+		if (index.isValid()) {
+			//			return QVariant();
+			// qDebug() << "RecordTableModel::data(), row:" << index.row() << " column "
+			// << index.column();
+			auto pos = pos_source(index.row());
+			auto it = item(pos);
+			// Если запрашивается текст строки для отрисовки или для редактирования
+			if (role == Qt::DisplayRole || role == Qt::EditRole || role == SORT_ROLE || role == Qt::UserRole || role == Qt::CheckStateRole) {
+				QStringList show_fields = appconfig->record_table_show_fields();
 
-		// Если длина списка показываемых столбцов меньше или равна номеру
-		// запрашиваемого столбца
-		if (index.column() < show_fields.size()) {
-			QString key_name = show_fields.value(index.column());
+				// Если длина списка показываемых столбцов меньше или равна номеру
+				// запрашиваемого столбца
+				if (index.column() < show_fields.size()) {
+					QString key_name = show_fields.value(index.column());
 
-			//			auto it = item(pos_source(index.row()));
-			QString field = it->field_dynamic(key_name); //item(pos_source(index.row()))->_field_data[key_name];
-			// Некоторые данные при отрисовке в таблице преобразуются в "экранные"
-			// представления
-			// Преобразование возможно только для отображаемой в таблице информации
-			// Some data when drawing in the table are converted to "screen" representation
-			// Convert only possible to display the information in the table
-			if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<ctime_key>::value) {
-				// Преобразование временного штампа в дату и время
-				auto time = detail::to_qstring(boost::fusion::at_key<ctime_key>(it->_fields_data_map));
-				QDateTime fieldDateTime = QDateTime::fromString(time, "yyyyMMddhhmmss");
+					//			auto it = item(pos_source(index.row()));
+					QString field = it->field_dynamic(key_name); //item(pos_source(index.row()))->_field_data[key_name];
+					// Некоторые данные при отрисовке в таблице преобразуются в "экранные"
+					// представления
+					// Преобразование возможно только для отображаемой в таблице информации
+					// Some data when drawing in the table are converted to "screen" representation
+					// Convert only possible to display the information in the table
+					if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<ctime_key>::value) {
+						// Преобразование временного штампа в дату и время
+						auto time = detail::to_qstring(boost::fusion::at_key<ctime_key>(it->_fields_data_map));
+						QDateTime fieldDateTime = QDateTime::fromString(time, "yyyyMMddhhmmss");
 
-				if (appconfig->enable_custom_datetime_format() == false)
-					return fieldDateTime.toString(Qt::SystemLocaleDate);
-				else
-					return fieldDateTime.toString(appconfig->custom_datetime_format());
-			} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<name_key>::value) {
-				return "<b>" + detail::to_qstring(it->field<name_key>()) + "</b>";
-			} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<has_attach_key>::value) { // "hasAttach"// Наличие аттачей
-				if (boost::fusion::at_key<has_attach_key>(it->_fields_data_map) == has_attach_value(false))
-					return ""; //Attachey If not, an empty string is displayed. This improves readability // Если аттачей нет, выводится пустая строка. Это повышает читабельность
-				else
-					return tr("Yes");                                                              // На русский перевести как "Есть"
-			} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<attach_size_key>::value) { // "attachCount"   // Количество аттачей
-				if (boost::fusion::at_key<attach_size_key>(it->_fields_data_map) == attach_size_value(0))
-					return ""; // Если количество аттачей нуливое, выводится пустая
-						   // строка. Это повышает читабельность
-				else
-					return detail::to_qstring(boost::fusion::at_key<attach_size_key>(it->_fields_data_map));
-			} else if (role == Qt::UserRole || role == Qt::EditRole) { // just a test
+						if (appconfig->enable_custom_datetime_format() == false)
+							result = fieldDateTime.toString(Qt::SystemLocaleDate);
+						else
+							result = fieldDateTime.toString(appconfig->custom_datetime_format());
+					} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<name_key>::value) {
+						return "<b>" + detail::to_qstring(it->field<name_key>()) + "</b>";
+					} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<has_attach_key>::value) { // "hasAttach"// Наличие аттачей
+						if (boost::fusion::at_key<has_attach_key>(it->_fields_data_map) == has_attach_value(false))
+							result = ""; //Attachey If not, an empty string is displayed. This improves readability // Если аттачей нет, выводится пустая строка. Это повышает читабельность
+						else
+							result = tr("Yes");                                                            // На русский перевести как "Есть"
+					} else if (role == Qt::DisplayRole && key_name == boost::mpl::c_str<attach_size_key>::value) { // "attachCount"   // Количество аттачей
+						if (boost::fusion::at_key<attach_size_key>(it->_fields_data_map) == attach_size_value(0))
+							result = ""; // Если количество аттачей нуливое, выводится пустая
+								     // строка. Это повышает читабельность
+						else
+							result = detail::to_qstring(boost::fusion::at_key<attach_size_key>(it->_fields_data_map));
+					} else if (role == Qt::UserRole || role == Qt::EditRole) { // just a test
 #ifdef USE_STAR_RATING
-				StarRating star_rating = qvariant_cast<StarRating>(index.data());
-				// pixmap.load(":/resource/pic/butterfly-right.svg");
-				return QVariant::fromValue(star_rating); // pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
+						StarRating star_rating = qvariant_cast<StarRating>(index.data());
+						// pixmap.load(":/resource/pic/butterfly-right.svg");
+						return QVariant::fromValue(star_rating); // pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
 #endif
-				return field;
-			} else if (role == SORT_ROLE) {
-				if (key_name == boost::mpl::c_str<rating_key>::value)
-					return detail::to_qstring(boost::fusion::at_key<rating_key>(it->_fields_data_map)); //field.toULongLong();
-				return field;
-			} else
-				return field;
+						result = field;
+					} else if (role == SORT_ROLE) {
+						if (key_name == boost::mpl::c_str<rating_key>::value)
+							return detail::to_qstring(boost::fusion::at_key<rating_key>(it->_fields_data_map)); //field.toULongLong();
+						result = field;
+					} else
+						result = field;
+				}
+			}
+			if (role == RECORD_ID_ROLE)
+				result = detail::to_qstring(it->field<id_key>());
+			// Если происходит запрос ссылки на таблицу данных
+			// if(role == TABLE_DATA_ROLE) {
+			// QVariant var;
+			// var.setValue<RecordTableDataPointer>(this->getTableData());
+			// return var;
+			// }
 		}
 	}
-	if (role == RECORD_ID_ROLE)
-		return detail::to_qstring(it->field<id_key>());
-	// Если происходит запрос ссылки на таблицу данных
-	// if(role == TABLE_DATA_ROLE) {
-	// QVariant var;
-	// var.setValue<RecordTableDataPointer>(this->getTableData());
-	// return var;
-	// }
-
 	// Во всех остальных случаях
-	return QVariant();
+	return result;
 }
 
 // Save the input data at the specified index   // Сохранение вводимых данных по
 // указанному индексу
 bool RecordModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
+	bool result = false;
 	//// Если таблица данных не создана
 	// if(!browser_pages())    // if(!_table)//
 	// return false;
 	// Если таблица пустая
-	if (0 == count()) // if(_table->size() == 0)
-		return false;
-	// Если индекс недопустимый
-	if (!index.isValid())
-		return false;
-	// Если происходит редактирование
-	if (role == Qt::EditRole) {
-		// QStringList showFields=fixedParameters.recordFieldAvailableList(); //
-		// TODO: Заменить на показываемые поля
-		QStringList showFields = appconfig->record_table_show_fields();
-		// Если длина списка показываемых столбцов меньше или равна номеру
-		// запрашиваемого столбца
-		if (index.column() < showFields.size()) {
-			QString field_name = showFields.value(index.column());
+	if (0 != count()) { // if(_table->size() == 0)
+			    //		result= false;
+		// Если индекс недопустимый
+		if (index.isValid()) {
+			//		result= false;
+			// Если происходит редактирование
+			if (role == Qt::EditRole) {
+				// QStringList showFields=fixedParameters.recordFieldAvailableList(); //
+				// TODO: Заменить на показываемые поля
+				QStringList showFields = appconfig->record_table_show_fields();
+				// Если длина списка показываемых столбцов меньше или равна номеру
+				// запрашиваемого столбца
+				if (index.column() < showFields.size()) {
+					QString field_name = showFields.value(index.column());
 
-			// Новое значение ячейки записывается в строковую переменную
-			QString cell_value;
-			cell_value = value.value<QString>();
+					// Новое значение ячейки записывается в строковую переменную
+					QString cell_value;
+					cell_value = value.value<QString>();
 
-			// Изменяется поле в таблице конечных записей
-			// _table
-			item(pos_source(index.row()))->field_dynamic(field_name, cell_value);
-			if (_rctrl) {
-				rv_t* view = _rctrl->view();
-				if (view) {
-					if (view->is_field_type_column(boost::mpl::c_str<rating_key>::value, index.column())) {
-						// _record_controller->view()->edit(index);
-						// _record_controller->close_context();
-					} else
-						emit dataChanged(index, index); // Посылается сигнал что данные были изменены
+					// Изменяется поле в таблице конечных записей
+					// _table
+					item(pos_source(index.row()))->field_dynamic(field_name, cell_value);
+					if (_rctrl) {
+						rv_t* view = _rctrl->view();
+						if (view) {
+							if (view->is_field_type_column(boost::mpl::c_str<rating_key>::value, index.column())) {
+								// _record_controller->view()->edit(index);
+								// _record_controller->close_context();
+							} else
+								emit dataChanged(index, index); // Посылается сигнал что данные были изменены
+						}
+					}
+					result = true;
 				}
 			}
-			return true;
-		}
-	}
 //// Если происходит запись во всю таблицу данных
 // if(role == TABLE_DATA_ROLE){
 // this->setTableData(qVariantFromValue(value) );
@@ -456,18 +459,19 @@ bool RecordModel::setData(const QModelIndex& index, const QVariant& value, int r
 // }
 
 #ifdef USE_STAR_RATING
-	if (role == Qt::UserRole) { // just a test
-		StarRating star_rating = qvariant_cast<StarRating>(index.data());
-		// pixmap.load(":/resource/pic/butterfly-right.svg");
-		star_rating.star_count(qvariant_cast<int>(value));
+			if (role == Qt::UserRole) { // just a test
+				StarRating star_rating = qvariant_cast<StarRating>(index.data());
+				// pixmap.load(":/resource/pic/butterfly-right.svg");
+				star_rating.star_count(qvariant_cast<int>(value));
 
-		return true; // pixmap.scaled(16, 16, Qt::KeepAspectRatio,
-			     // Qt::FastTransformation);
-	}
+				return true; // pixmap.scaled(16, 16, Qt::KeepAspectRatio,
+					     // Qt::FastTransformation);
+			}
 #endif
-
+		}
+	}
 	// Во всех остальных случаях
-	return false;
+	return result;
 }
 
 // Получение заголовков столбцов и строк
@@ -658,13 +662,13 @@ web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_ite
 			auto tab = _rctrl->tab_widget();
 			if (tab)
 				view = tab->newTab(record_index); // , _item->field("name")
-								  // else{
-								  // view = _record_controller->tabmanager()->webView((int)source_insert_pos);
-								  // view->page()->binder()->host()->activate(std::bind(&web::Entrance::find,
-								  // globalparameters.entrance(), std::placeholders::_1));
-								  //// addTab()-> wrong design, demage the function TabWidget::newTab and the
-								  ///function QTabWidget::addTab
-								  // }
+			// else{
+			// view = _record_controller->tabmanager()->webView((int)source_insert_pos);
+			// view->page()->binder()->host()->activate(std::bind(&web::Entrance::find,
+			// globalparameters.entrance(), std::placeholders::_1));
+			//// addTab()-> wrong design, demage the function TabWidget::newTab and the
+			///function QTabWidget::addTab
+			// }
 		}
 		assert(view);
 		returned_position = position(id_value(_item->field<id_key>())); // pos_source(_record_controller->tabmanager()->indexOf(view));
@@ -1053,8 +1057,10 @@ index_source RecordModel::current_index() const
 	if (_rctrl) {
 		view = _rctrl->view();
 		if (view) {
-			const index_proxy index_proxy_(view->selectionModel()->currentIndex());
 			auto current = current_item();
+#ifdef USE_HAS_SELECTION
+			const index_proxy index_proxy_(view->selectionModel()->currentIndex());
+
 			if (static_cast<QModelIndex>(index_proxy_).isValid()) {
 				index_source is = _rctrl->index<index_source>(index_proxy_);
 				//			index_source (rctrl_t::*index_function)(const index_proxy&) const = &rctrl_t::index<index_source>;
@@ -1062,7 +1068,9 @@ index_source RecordModel::current_index() const
 				if (static_cast<QModelIndex>(is).isValid()) {
 					result = is;
 				}
-			} else if (current)
+			} else
+#endif // USE_HAS_SELECTION
+			    if (current)
 				result = index(current);
 		}
 	}
