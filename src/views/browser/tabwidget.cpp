@@ -2702,6 +2702,19 @@ namespace web {
 						static_cast<web::Browser*>(_browser));
 				    });
 				if (ti) {
+					if (_blogger->topic() != "" && ti->field<url_key>() == Browser::_defaulthome) {
+						auto page = ti->page();
+						if (page) {
+							auto view = page->view();
+							if (view) {
+								auto toolbar_search = view->toolbarsearch();
+								if (toolbar_search) {
+									ti->field<url_key>(toolbar_search->query_internet_decomposed(_blogger->topic()));
+									ti->field<home_key>(detail::from_qstring<home_key>(detail::to_qstring(ti->field<url_key>())));
+								}
+							}
+						}
+					}
 					if (ti->field<id_key>() == id_value(current_tab_id)) {
 						auto v = ti->activate(std::bind(&TabWidget::find, this, std::placeholders::_1)); // std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)
 						if (v != currentWebView()) select_as_current(v);

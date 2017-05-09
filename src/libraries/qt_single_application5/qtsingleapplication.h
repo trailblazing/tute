@@ -186,7 +186,7 @@ class QT_QTSINGLEAPPLICATION_EXPORT sapp_t // : public BrowserApplication { //
 	QtLocalPeer* _peer;
 	QWidget* _act_window;
 	bool _gui_enabled;
-	wn_t* _window;
+	wn_t* _main_window;
 	// private slots:
 	// void newLocalSocketConnection();
 
@@ -232,7 +232,7 @@ class QT_QTSINGLEAPPLICATION_EXPORT sapp_t // : public BrowserApplication { //
 
     public slots:
 	// BrowserWindow *newMainWindow();
-	void restoreLastSession();
+	int restoreLastSession();
 #if defined(Q_OS_OSX)
 	void lastWindowClosed();
 	void quitBrowser();
@@ -303,7 +303,7 @@ class QT_QTSINGLEAPPLICATION_EXPORT sapp_t // : public BrowserApplication { //
     public slots:
 	void set_recent_files(const QStringList&, const QStringList&);
 	void add_recent_file(const QString&, const QString&);
-	void saveAll();
+//	void saveAll();
 	void blogger(Blogger* blogger_);
 
     signals:

@@ -656,17 +656,17 @@ void sapp_t::browsers_shared_info_init()
 	auto conf_location = gl_paras->root_path() + "/" + gl_paras->target_os();
 	if (!QDir(conf_location).exists())
 		if (!QDir::root().mkpath(conf_location))
-			critical_error("void sapp_t::browser_init() can not make path " + conf_location + " for browser.ini");
-	auto brower_conf_file_name = conf_location + "/" + gl_para::_browser_conf_filename;
-	QFileInfo check_file(brower_conf_file_name);
+			critical_error("void sapp_t::browser_init() can not make path " + conf_location + " for " + gl_para::_browser_conf_filename);
+	auto global_brower_conf_full_path = conf_location + "/" + gl_para::_browser_conf_filename;
+	QFileInfo check_file(global_brower_conf_full_path);
 	if (!(check_file.exists() && check_file.isFile())) {
 		// Файл перемещается в корзину
-		if (!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, brower_conf_file_name))
+		if (!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, global_brower_conf_full_path))
 			throw std::runtime_error("Can not copy \"" + std::string(gl_para::_browser_conf_filename) + "\"");
 		// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not
 		// open browser.conf");
 		else
-			QFile::setPermissions(brower_conf_file_name, QFile::ReadUser | QFile::WriteUser);
+			QFile::setPermissions(global_brower_conf_full_path, QFile::ReadUser | QFile::WriteUser);
 		// critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve
 		// file\n" + fileNameTo);
 	}
@@ -685,7 +685,7 @@ void sapp_t::browsers_shared_info_init()
 	// langTranslator.load(langFileName);
 	installTranslator(langFileName); // &langTranslator
 
-	QSettings settings(brower_conf_file_name, QSettings::IniFormat);
+	QSettings settings(global_brower_conf_full_path, QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("sessions"));
 	_last_session = settings.value(QLatin1String("lastSession")).toByteArray();
 	settings.endGroup();
@@ -695,8 +695,31 @@ void sapp_t::browsers_shared_info_init()
 #endif
 
 	QTimer::singleShot(0, this, &sapp_t::postLaunch);
-	if (canRestoreSession())
-		restoreLastSession();
+	if (canRestoreSession()) {
+		auto topics = restoreLastSession();
+		if (0 == topics) {
+
+			auto tree_screen = _main_window->tree_screen();
+			if (tree_screen) {
+				auto tree_view = tree_screen->view();
+				if (tree_view) {
+					auto _url = web::Browser::_defaulthome;
+					tree_view->index_invoke(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); },
+					    real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(_url,
+												      [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+													      return TreeIndex::url_require_item_from_tree(
+														  real_target_url_,
+														  std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+														  [&](boost::intrusive_ptr<const i_t> it_) -> bool {
+															  return url_equal(detail::to_string(it_->field<home_key>()), detail::to_string(real_target_url_->value())) || url_equal(detail::to_string(it_->field<url_key>()), detail::to_string(real_target_url_->value()));
+														  });
+												      })
+					    //					    ->activate(std::bind(&wn_t::find, _main_window, std::placeholders::_1), true);
+					    ));
+				}
+			}
+		}
+	}
 	// }
 }
 
@@ -767,19 +790,19 @@ void sapp_t::main_window()
 	// );
 
 	// Создание объекта главного окна
-	_window = new wn_t(_profile, _style); // std::make_shared<MainWindow>(_globalparameters,
-					      // appconfig, databaseconfig);
+	_main_window = new wn_t(_profile, _style); // std::make_shared<MainWindow>(_globalparameters,
+	// appconfig, databaseconfig);
 
-	gl_paras->main_window(_window);
+	gl_paras->main_window(_main_window);
 
-	_window->setWindowTitle(program_title); // _globalparameters.application_name()
+	_main_window->setWindowTitle(program_title); // _globalparameters.application_name()
 	if (gl_paras->target_os() == "android")
-		_window->show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
+		_main_window->show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
 	else {
 		if (!appconfig->run_in_minimized_window())
-			_window->show();
+			_main_window->show();
 		else
-			_window->hide();
+			_main_window->hide();
 	}
 	// win->setObjectName("mainwindow");
 	// pMainWindow=&win; // Запоминается указатель на основное окно
@@ -788,8 +811,8 @@ void sapp_t::main_window()
 	// Эти действия нельзя делать в конструкторе главного окна,
 	// т.к. окно еще не создано
 	gl_paras->window_switcher()->disable();
-	_window->restore_find_in_base_visible();
-	_window->restore_geometry();
+	_main_window->restore_find_in_base_visible();
+	_main_window->restore_geometry();
 	//	_window->restore_tree_position();
 	// _window->restore_recordtable_position();
 	// _window->restore_editor_cursor_position();
@@ -819,7 +842,7 @@ void sapp_t::main_window()
 	// И задана команда синхронизации
 	if (appconfig->synchro_on_startup())
 		if (appconfig->synchro_command().trimmed().length() > 0)
-			_window->synchronization();
+			_main_window->synchronization();
 	// Если настроено в конфиге, сразу запрашивается пароль доступа
 	// к зашифрованным данным
 	// И если есть хоть какие-то зашифрованные данные
@@ -829,7 +852,7 @@ void sapp_t::main_window()
 				// Запрашивается пароль только в том случае, если ветка,
 				// на которую установливается курсор при старте, незашифрована
 				// Если ветка зашифрована, пароль и так будет запрошен автоматически
-				if (_window->is_tree_position_crypt() == false) {
+				if (_main_window->is_tree_position_crypt() == false) {
 					Password password;
 					password.retrievePassword();
 				}
@@ -870,7 +893,7 @@ void sapp_t::main_window()
 	// SLOT(win->commitData(QSessionManager)));
 	// Окно сплеш-скрина скрывается
 	if (appconfig->show_splash_screen())
-		splash.finish(_window);
+		splash.finish(_main_window);
 }
 
 /*!
@@ -1239,6 +1262,7 @@ void sapp_t::newLocalSocketConnection()
 
 sapp_t::~sapp_t()
 {
+
 	// if(_profile){
 	// _profile->deleteLater();_profile = nullptr;
 	// }
@@ -1254,9 +1278,9 @@ sapp_t::~sapp_t()
 	_networkaccessmanager->deleteLater();
 	// delete
 	_bookmarksmanager->deleteLater();
-	if (_window) {
-		_window->deleteLater(); // delete _window;
-		_window = nullptr;
+	if (_main_window) {
+		_main_window->deleteLater(); // delete _window;
+		_main_window = nullptr;
 	}
 	if (_profile) {
 		_profile->deleteLater();
@@ -1476,6 +1500,7 @@ void sapp_t::loadSettings()
 void sapp_t::saveSession()
 {
 	if (!_private_browsing) { //return;
+		_main_window->save_all_state();
 		// globalparameters.entrance()->clean();
 
 		std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
@@ -1494,18 +1519,19 @@ void sapp_t::saveSession()
 		//                            return bs;
 		//                    }();
 		uint count_topics = static_cast<uint>(_browsers.size());
-
-		stream << count_topics; // static_cast<uint>(_browsers.size());
-		for (auto& browser : _browsers) {
-			//			browser->save();//recursive calling
-			auto blogger_ = browser->blogger();
-			if (blogger_) {
-				auto browser_topic = blogger_->topic();
-				if (browser_topic != gl_para::_default_topic && browser_topic != "")
-					stream << browser_topic; //get_state();
+		if (count_topics > 0) {
+			stream << count_topics; // static_cast<uint>(_browsers.size());
+			for (auto& browser : _browsers) {
+				//			browser->save();//recursive calling
+				auto blogger_ = browser->blogger();
+				if (blogger_) {
+					auto browser_topic = blogger_->topic();
+					if (browser_topic != gl_para::_default_topic && browser_topic != "")
+						stream << browser_topic; //get_state();
+				}
 			}
+			settings->setValue(QLatin1String("lastSession"), data);
 		}
-		settings->setValue(QLatin1String("lastSession"), data);
 		settings->endGroup();
 	}
 }
@@ -1520,8 +1546,9 @@ bool sapp_t::privateBrowsing() const
 	return _private_browsing;
 }
 
-void sapp_t::restoreLastSession()
+int sapp_t::restoreLastSession()
 {
+	int topics = 0;
 	//	QList<QByteArray>
 	QList<QString> history_topics;
 	QBuffer buffer(&_last_session);
@@ -1550,6 +1577,8 @@ void sapp_t::restoreLastSession()
 		//		else
 		//gl_paras->main_window()->browser(gl_para::_default_topic)->restore_state(historywindows.at(i));
 	}
+	topics = history_topics.count();
+	return topics;
 }
 
 // bool sapp_t::isTheOnlyBrowser() const
@@ -1900,6 +1929,7 @@ void sapp_t::setupRecentFiles()
 		_recent_files.append(currentRF);
 		// qDebug() << "Added one recent file";
 	}
+	settings.endGroup();
 }
 
 QStringList sapp_t::titles()
@@ -2028,16 +2058,16 @@ void sapp_t::add_recent_file(const QString& title, const QString& filename)
 	emit recent_files_updated(_recent_files);
 }
 
-void sapp_t::saveAll()
-{
-	// Blogger *e;
-	// QWidgetList tlw = QApplication::topLevelWidgets();
-	// Q_FOREACH(QWidget *w, tlw){
-	// e = qobject_cast<Blogger *>(w);
-	// if(e) e->save();
-	// }
-	gl_paras->main_window()->save_all_state();
-}
+//void sapp_t::saveAll()
+//{
+//	// Blogger *e;
+//	// QWidgetList tlw = QApplication::topLevelWidgets();
+//	// Q_FOREACH(QWidget *w, tlw){
+//	// e = qobject_cast<Blogger *>(w);
+//	// if(e) e->save();
+//	// }
+//	_window->save_all_state();
+//}
 
 void sapp_t::blogger(Blogger* blogger_)
 {
@@ -2057,6 +2087,7 @@ void sapp_t::saveRecentFiles()
 	for (i = 0; i < _recent_files.size(); ++i) {
 		settings.setValue(QString("recentFile%1").arg(i), QString("filename:%1 ##title:%2").arg(_recent_files.value(i)->filename).arg(_recent_files.value(i)->title));
 	}
+	settings.endGroup();
 }
 
 void sapp_t::handleWindowChange(QWidget* oldW, QWidget* newW)

@@ -234,6 +234,7 @@ class ts_t : public QWidget { // , public know_root_holder
 	void viewer(tsv_t* v);
 #endif
 
+	static void open(bool activate_browser = false, bool show_tree = true);
     public slots:
 	// void view_paste_from_search(TreeIndex _modelindex,
 	// boost::intrusive_ptr<TreeItem> _result_item,

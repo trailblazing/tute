@@ -96,6 +96,37 @@ namespace web {
 	ToolbarSearch::ToolbarSearch(WebView* view_ // QStackedWidget *lineedits, QLineEdit *findtext,
 	    )
 	    : SearchLineEdit(view_)
+	    , query_internet_decomposed([&](const QString& search_text) -> url_value {
+		    QStringList newList = _stringlistmodel->stringList();
+		    if (newList.contains(search_text))
+			    newList.removeAt(newList.indexOf(search_text));
+		    newList.prepend(search_text);
+		    if (newList.size() >= _maxsavedsearches)
+			    newList.removeLast();
+		    if (!::sapp_t::instance()->privateBrowsing()) {
+			    _stringlistmodel->setStringList(newList);
+			    _autosaver->changeOccurred();
+		    }
+		    QUrl search_engine(QLatin1String("https://www.google.com/search"));
+		    QUrlQuery url_query;
+
+		    // url_query.addQueryItem(QLatin1String("q"), searchText);
+		    url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
+		    url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
+		    url_query.addQueryItem(
+			QLatin1String("client"),
+			QLatin1String(gl_paras->application_name().toLatin1())); // globalparameters.main_program_file().toLatin1()
+
+		    // urlQuery.addQueryItem();
+
+		    search_engine.setQuery(url_query);
+		    search_engine.setFragment("q=" + search_text);
+		    // emit search(url, std::bind(&TreeScreen::view_paste_child,
+		    // _tree_screen, std::placeholders::_1, std::placeholders::_2,
+		    // std::placeholders::_3));
+		    //                        url_value real_url =
+		    return url_value(search_engine.toString());
+	    })
 	    , _autosaver(new AutoSaver(this))
 	    , _maxsavedsearches(10)
 	    , _stringlistmodel(gl_paras->main_window()->stringlistmodel() //new QStringListModel(this)
@@ -158,7 +189,6 @@ namespace web {
 
 		if (inactiveText() == "") setInactiveText(SearchLineEdit::_default_tip); //tr("Google")
 
-
 		load();
 	}
 
@@ -187,6 +217,7 @@ namespace web {
 		_stringlistmodel->setStringList(list);
 		settings.endGroup();
 	}
+
 
 	Browser* ToolbarSearch::search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_
 	    //					   , bool is_an_extend_topic
@@ -267,39 +298,6 @@ namespace web {
 			//			SearchLineEdit::searchbutton()->hide();
 		};
 
-		auto query_internet_decomposed = [&](tv_t* tree_view_, const QString& search_text, boost::intrusive_ptr<TreeIndex> tree_index, web::Browser* browser_) {
-			QStringList newList = _stringlistmodel->stringList();
-			if (newList.contains(search_text))
-				newList.removeAt(newList.indexOf(search_text));
-			newList.prepend(search_text);
-			if (newList.size() >= _maxsavedsearches)
-				newList.removeLast();
-			if (!::sapp_t::instance()->privateBrowsing()) {
-				_stringlistmodel->setStringList(newList);
-				_autosaver->changeOccurred();
-			}
-			QUrl search_engine(QLatin1String("https://www.google.com/search"));
-			QUrlQuery url_query;
-
-			// url_query.addQueryItem(QLatin1String("q"), searchText);
-			url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
-			url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
-			url_query.addQueryItem(
-			    QLatin1String("client"),
-			    QLatin1String(gl_paras->application_name().toLatin1())); // globalparameters.main_program_file().toLatin1()
-
-			// urlQuery.addQueryItem();
-
-			search_engine.setQuery(url_query);
-			search_engine.setFragment("q=" + search_text);
-			// emit search(url, std::bind(&TreeScreen::view_paste_child,
-			// _tree_screen, std::placeholders::_1, std::placeholders::_2,
-			// std::placeholders::_3));
-			url_value real_url = url_value(search_engine.toString());
-
-			deal_with_url(tree_view_, // search_text,
-			    tree_index, real_url, browser_);
-		};
 
 		QString search_text = non_url_search_text_->value(); //text(); // lineEdit()->text();
 		boost::intrusive_ptr<i_t> result_item(nullptr);
@@ -464,10 +462,12 @@ namespace web {
 					// };
 					// startWorkInAThread();
 				} else {
-					query_internet_decomposed(tree_view_, search_text, sibling_tree_index, browser_);
+					deal_with_url(tree_view_, // search_text,
+					    sibling_tree_index, query_internet_decomposed(search_text), browser_);
 				}
 			} else {
-				query_internet_decomposed(tree_view_, search_text, sibling_tree_index, browser_);
+				deal_with_url(tree_view_, // search_text,
+				    sibling_tree_index, query_internet_decomposed(search_text), browser_);
 			}
 		}
 

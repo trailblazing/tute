@@ -331,7 +331,7 @@ class Blogger : public QMainWindow
 	void openRecentFile();
 	void save_impl(const QString& file_name_with_full_path, bool exp = false);
 	void exportEntry();
-	void saveAll();
+//	void saveAll();
 	void saveAs(bool exp = false);
 	void stopThisJob();
 	// void handleDone( bool );
