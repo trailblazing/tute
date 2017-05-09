@@ -987,7 +987,7 @@ int main(int argc, char** argv)
 	// gl_paras	= std::make_shared<gl_para>();
 	// appconfig	= std::make_shared<AppConfig>(gl_paras);
 	// databaseconfig = std::make_shared<DataBaseConfig>(gl_paras, appconfig);
-	return sapp_t(argc, argv).exec(); // , gl_paras		// , appconfig		// ,
+	return sapp_t(argc, argv).exec(); // , gl_paras // , appconfig // ,
 					  // databaseconfig
 					  // application.exec();
 }

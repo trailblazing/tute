@@ -28,6 +28,9 @@ extern const int add_new_record_to_end;
 extern const int add_new_record_before;
 extern const int add_new_record_after;
 
+extern enum QItemSelectionModel::SelectionFlag current_record_selection_mode;
+extern enum QItemSelectionModel::SelectionFlag current_record_current_index_mode;
+
 class ClipboardRecords;
 class rctrl_t;
 class rs_t;

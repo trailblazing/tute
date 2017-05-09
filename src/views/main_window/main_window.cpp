@@ -2772,177 +2772,217 @@ size_t wn_t::shrink(const size_t bar)
 {
 	size_t result = bar;
 	std::set<web::Browser*> browsers = wn_t::browsers();
+//	rs_t* cur_rs = nullptr;
+	web::Browser* cur_bro = nullptr;
+	boost::intrusive_ptr<i_t> current(nullptr);
+	//	for (auto bro : browsers) {
+	//		auto _record_screen = bro->record_screen();
+	//		auto web_view = bro->currentTab();
+	//		if (_record_screen && web_view) {
+
+	//			if (_record_screen == gl_paras->vtab_record()->currentWidget()) {
+	//				cur_rs = _record_screen;
+	//				auto page = web_view->page();
+	//				auto _rctrl = _record_screen->record_ctrl();
+	//				if (_rctrl && page) {
+	//					auto _record_view = _rctrl->view();
+	//					auto host = page->host();
+	//					if (_record_view && host) {
+	//						//						if (_record_screen == cur_rs)
+	//						current = _record_view->current_item();
+	//						if (!current) current = host;
+	//						assert(current);
+	//						break;
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
 	for (auto bro : browsers) {
 		auto _record_screen = bro->record_screen();
-		if (_record_screen) {
-			auto _rctrl = _record_screen->record_ctrl();
-			if (_rctrl) {
-				auto _record_view = _rctrl->view();
-				if (_record_view) {
-					auto current = _record_view->current_item();
-					////	    auto	_proxy_model	=
-					///_record_controller->proxy_model();
-					////	    auto _source_model = _record_controller->source_model();
-					////	    _view->setSortingEnabled(true);
-					////	    _proxy_model->setSortRole(SORT_ROLE);
-					// std::vector<web::WebView *> v_list;
-					// for(int index_ = 0; index_ < count(); index_ ++)
-					// v_list.push_back(webView(index_));
-					// std::sort(v_list.begin(), v_list.end(), [&](web::WebView *v0,
-					// web::WebView *v1){
-					// auto p0 = v0 != *v_list.end() ? v0->page() : nullptr;
-					// auto p1 = v1 != *v_list.end() ? v1->page() : nullptr;
-					// return p0 ? p1 ? p0->host()->field<rating_type>().toULongLong() >
-					// p1->host()->field<rating_type>().toULongLong() ||
-					// TreeIndex::is_ancestor_of(current, p0->host()) : true : false;
-					// });
-					////	    int t = 0;
-					////	    for(auto v : v_list){
-					////		_source_model->move(pos_source(webViewIndex(v)),
-					///pos_source(t));
-					////		t ++;
-					////	    }
-					////	    _view->reset();
-					////	    _proxy_model->setSourceModel(_source_model);
-					////	    _view->setModel(_proxy_model);
-					////	    _view->setSortingEnabled(false);
-					////	    _proxy_model->setSortRole(Qt::InitialSortOrderRole);
-					////	    _proxy_model->invalidate();
-					////
-					///_record_controller->select_as_current(_record_controller->index<pos_proxy>(_source_model->index(current)));
-					////		// Сохранение дерева веток
-					////		// find_object<TreeScreen>(tree_screen_singleton_name)
-					////	    globalparameters.tree_screen()->view()->know_model_save();
-					////	    _record_screen->tools_update();
-					//
-					//
-					//
-					// for(int i = 0; i < count(); i ++){	// for(std::vector<web::WebView
-					// *>::size_type i = 20; i < static_cast<std::vector<web::WebView
-					// *>::size_type>(count()); i ++){
-					// auto v = webView(i);	// v_list[i];
-					// if(v){
-					// auto p = v->page();
-					// if(p){
-					// auto h = p->host();
-					// if(  h
-					////		      && ! TreeIndex::is_ancestor_of(current, p->host())
-					// && (! h->is_ancestor_of(current) || h->distance(current) > 1)
-					// && count() > 30
-					////			  && h->field<pin_type>() !=
-					///_string_from_check_state[Qt::Checked]
-					// && v != currentWebView()
-					// && v != webView(0)
-					// ){
-					////		    v_list[i]->page()->deleteLater();
-					////		    v_list[i]->page(nullptr);
-					////
-					///v_list[i]->page()->setUrl(QUrl(web::Browser::_defaulthome));
-					////			auto h = p->host();
-					// closeTab(webViewIndex(v));
-					////			_browser->bind(RecordIndex::instance(record_index->current_model(),
-					///h, sibling(v)->page()->host()), false);// horrible
-					////			v = nullptr;
-					// }
-					// }
-					// }
-					// }
-					//
-					if (browsers.size() > bar) {
-						// std::vector<boost::intrusive_ptr<TreeItem> >	list;
-						std::vector<web::Browser*> list_v;
-						for (auto v : browsers) { // for(std::vector<web::WebView *>::size_type i = 20; i <
-									  // static_cast<std::vector<web::WebView
-									  // *>::size_type>(count()); i ++){
-									  //							auto v = bro->tab_widget()->webView(i); // v_list[i];
+		auto web_view = bro->currentTab();
+		if (_record_screen && web_view) {
 
-
-							//
-							bool found = false;
-							// [&] {for(auto &j : list) if(j->id() == h->id()){found =
-							// true;break;}return;} ();
-							[&] {
-								for (auto& j : list_v)
-									if (j == v) {
-										found = true;
-										break;
-									}
-								return;
-							}();
-							if (!found) {
-								// list.push_back(h);
-								list_v.push_back(v);
-							}
-							// closeTab(webViewIndex(v));
-						}
-						// std::sort(list.begin(), list.end(), [&](boost::intrusive_ptr<TreeItem>
-						// t0, boost::intrusive_ptr<TreeItem> t1){
-						////			auto _e = list.end();
-						////			auto _re = _e.base();
-						////			auto _se = _re->get();
-						// return	// &t0 != _re ? &t1 != _re ?
-						// t0	// && t0 != *list.end()
-						// ? t1	// && t1 != *list.end()
-						// ?    (current->distance(t0) != - 1 && current->distance(t0) <
-						// current->distance(t1))
-						// || (- 1 == current->distance(t1))
-						// || (t0->field<rating_type>().toInt() >
-						// t1->field<rating_type>().toInt())
-						// : true
-						// : false	//: true : false
-						// ;
+			if (_record_screen == gl_paras->vtab_record()->currentWidget()) {
+//				cur_rs = _record_screen;
+				cur_bro = bro;
+				auto page = web_view->page();
+				auto _rctrl = _record_screen->record_ctrl();
+				if (_rctrl && page) {
+					auto _record_view = _rctrl->view();
+					auto host = page->host();
+					if (_record_view && host) {
+						//						if (_record_screen == cur_rs)
+						current = _record_view->current_item();
+						if (!current) current = host;
+						assert(current);
+						break;
+						////	    auto	_proxy_model	=
+						///_record_controller->proxy_model();
+						////	    auto _source_model = _record_controller->source_model();
+						////	    _view->setSortingEnabled(true);
+						////	    _proxy_model->setSortRole(SORT_ROLE);
+						// std::vector<web::WebView *> v_list;
+						// for(int index_ = 0; index_ < count(); index_ ++)
+						// v_list.push_back(webView(index_));
+						// std::sort(v_list.begin(), v_list.end(), [&](web::WebView *v0,
+						// web::WebView *v1){
+						// auto p0 = v0 != *v_list.end() ? v0->page() : nullptr;
+						// auto p1 = v1 != *v_list.end() ? v1->page() : nullptr;
+						// return p0 ? p1 ? p0->host()->field<rating_type>().toULongLong() >
+						// p1->host()->field<rating_type>().toULongLong() ||
+						// TreeIndex::is_ancestor_of(current, p0->host()) : true : false;
 						// });
-
-						qSort(list_v.begin(), list_v.end(), [&](web::Browser* b0, web::Browser* b1) -> int {
-							// auto _e = list.end();
-							// auto _re = _e.base();
-							// auto _se = _re->get();
-							auto v0 = b0->currentTab();
-							auto v1 = b1->currentTab();
-							return // &t0 != _re ? &t1 != _re ?
-							    v0 // && t0 != *list.end()
-							    ?
-							    v1 // && t1 != *list.end()
-								?
-							    (current->distance(v0->page()->host()) != -1 && current->distance(v0->page()->host()) < current->distance(v1->page()->host())) || (-1 == current->distance(v1->page()->host())) || (v0->page()->host()->field<rating_key>() > v1->page()->host()->field<rating_key>()) :
-							    true :
-							    false // : true : false
-							    ;
-						});
-						// while(list.size() > 30) list.pop_back();
-						while (list_v.size() > bar) {
-							web::Browser* bro = list_v.back();
-							if (bro) {
-								rs_t* rs = bro->record_screen();
-								if (rs) {
-									auto v_tab = gl_paras->vtab_record();
-									auto index = v_tab->indexOf(rs);
-									if (index != -1) {
-										emit v_tab->tabBar()->tabCloseRequested(index);
-										list_v.pop_back();
-									}
-								}
-							}
-						}
-
-						//						std::set<web::Browser*> list_v_set;
-
-						//						for (auto i : list_v) list_v_set.insert(i);
-						//						for (auto v : list_v_set) { // for(std::vector<web::WebView *>::size_type i = 20; i < static_cast<std::vector<web::WebView*>::size_type>(count()); i ++){
-						//							auto p = v->page();
-						//							if (p) {
-						//								auto h = p->host();
-						//								if (h && detail::to_qstring(h->field<pin_key>()) != char_from_check_state[Qt::Checked] && v != currentWebView() && v != webView(0)) {
-
-						//									if (list_v_set.find(v) == list_v_set.end()) closeTab(webViewIndex(v));
-						//								}
-						//							}
-						//						}
-						result = list_v.size();
+						////	    int t = 0;
+						////	    for(auto v : v_list){
+						////		_source_model->move(pos_source(webViewIndex(v)),
+						///pos_source(t));
+						////		t ++;
+						////	    }
+						////	    _view->reset();
+						////	    _proxy_model->setSourceModel(_source_model);
+						////	    _view->setModel(_proxy_model);
+						////	    _view->setSortingEnabled(false);
+						////	    _proxy_model->setSortRole(Qt::InitialSortOrderRole);
+						////	    _proxy_model->invalidate();
+						////
+						///_record_controller->select_as_current(_record_controller->index<pos_proxy>(_source_model->index(current)));
+						////		// Сохранение дерева веток
+						////		// find_object<TreeScreen>(tree_screen_singleton_name)
+						////	    globalparameters.tree_screen()->view()->know_model_save();
+						////	    _record_screen->tools_update();
+						//
+						//
+						//
+						// for(int i = 0; i < count(); i ++){	// for(std::vector<web::WebView
+						// *>::size_type i = 20; i < static_cast<std::vector<web::WebView
+						// *>::size_type>(count()); i ++){
+						// auto v = webView(i);	// v_list[i];
+						// if(v){
+						// auto p = v->page();
+						// if(p){
+						// auto h = p->host();
+						// if(  h
+						////		      && ! TreeIndex::is_ancestor_of(current, p->host())
+						// && (! h->is_ancestor_of(current) || h->distance(current) > 1)
+						// && count() > 30
+						////			  && h->field<pin_type>() !=
+						///_string_from_check_state[Qt::Checked]
+						// && v != currentWebView()
+						// && v != webView(0)
+						// ){
+						////		    v_list[i]->page()->deleteLater();
+						////		    v_list[i]->page(nullptr);
+						////
+						///v_list[i]->page()->setUrl(QUrl(web::Browser::_defaulthome));
+						////			auto h = p->host();
+						// closeTab(webViewIndex(v));
+						////			_browser->bind(RecordIndex::instance(record_index->current_model(),
+						///h, sibling(v)->page()->host()), false);// horrible
+						////			v = nullptr;
+						// }
+						// }
+						// }
+						// }
+						//
 					}
 				}
 			}
 		}
+	}
+	if (browsers.size() > bar) {
+		// std::vector<boost::intrusive_ptr<TreeItem> >	list;
+		std::vector<web::Browser*> list_v;
+		for (auto v : browsers) { // for(std::vector<web::WebView *>::size_type i = 20; i <
+					  // static_cast<std::vector<web::WebView
+					  // *>::size_type>(count()); i ++){
+					  //							auto v = bro->tab_widget()->webView(i); // v_list[i];
+
+
+			//
+			bool found = false;
+			// [&] {for(auto &j : list) if(j->id() == h->id()){found =
+			// true;break;}return;} ();
+			[&] {
+				for (auto& j : list_v)
+					if (j == v) {
+						found = true;
+						break;
+					}
+				return;
+			}();
+			if (!found && v != cur_bro) {
+				// list.push_back(h);
+				list_v.push_back(v);
+			}
+			// closeTab(webViewIndex(v));
+		}
+		// std::sort(list.begin(), list.end(), [&](boost::intrusive_ptr<TreeItem>
+		// t0, boost::intrusive_ptr<TreeItem> t1){
+		////			auto _e = list.end();
+		////			auto _re = _e.base();
+		////			auto _se = _re->get();
+		// return	// &t0 != _re ? &t1 != _re ?
+		// t0	// && t0 != *list.end()
+		// ? t1	// && t1 != *list.end()
+		// ?    (current->distance(t0) != - 1 && current->distance(t0) <
+		// current->distance(t1))
+		// || (- 1 == current->distance(t1))
+		// || (t0->field<rating_type>().toInt() >
+		// t1->field<rating_type>().toInt())
+		// : true
+		// : false	//: true : false
+		// ;
+		// });
+
+		qSort(list_v.begin(), list_v.end(), [&](web::Browser* b0, web::Browser* b1) -> int {
+			// auto _e = list.end();
+			// auto _re = _e.base();
+			// auto _se = _re->get();
+			auto v0 = b0->currentTab();
+			auto v1 = b1->currentTab();
+			return // &t0 != _re ? &t1 != _re ?
+			    v0 // && t0 != *list.end()
+			    ?
+			    v1 // && t1 != *list.end()
+				?
+			    (current->distance(v0->page()->host()) != -1 && current->distance(v0->page()->host()) < current->distance(v1->page()->host())) //
+				    || (-1 == current->distance(v1->page()->host()))                                                                       //
+				    || (v0->page()->host()->field<rating_key>() > v1->page()->host()->field<rating_key>()) :
+			    true :
+			    false // : true : false
+			    ;
+		});
+		// while(list.size() > 30) list.pop_back();
+		while (list_v.size() > bar) {
+			web::Browser* bro = list_v.back();
+			if (bro) {
+				rs_t* rs = bro->record_screen();
+				if (rs) {
+					auto v_tab = gl_paras->vtab_record();
+					auto index = v_tab->indexOf(rs);
+					if (index != -1) { //&& rs != cur_rs
+						emit v_tab->tabBar()->tabCloseRequested(index);
+						list_v.pop_back();
+					}
+				}
+			}
+		}
+
+		//						std::set<web::Browser*> list_v_set;
+
+		//						for (auto i : list_v) list_v_set.insert(i);
+		//						for (auto v : list_v_set) { // for(std::vector<web::WebView *>::size_type i = 20; i < static_cast<std::vector<web::WebView*>::size_type>(count()); i ++){
+		//							auto p = v->page();
+		//							if (p) {
+		//								auto h = p->host();
+		//								if (h && detail::to_qstring(h->field<pin_key>()) != char_from_check_state[Qt::Checked] && v != currentWebView() && v != webView(0)) {
+
+		//									if (list_v_set.find(v) == list_v_set.end()) closeTab(webViewIndex(v));
+		//								}
+		//							}
+		//						}
+		result = list_v.size();
 	}
 	return result;
 }

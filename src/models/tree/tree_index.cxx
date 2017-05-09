@@ -261,6 +261,7 @@ TreeIndex::url_require_item_from_tree( //const url_value& find_url_, //
 	//	assert(to_be_url(find_url_) != QUrl());
 	//	assert(find_url_ != web::Browser::_defaulthome);
 	boost::intrusive_ptr<i_t> _result(nullptr); // =  _know_model_board->root_item();
+	assert(detail::to_qstring(find_url_) != QUrl().toString());
 	if (detail::to_qstring(find_url_) != QUrl().toString()) {
 		auto _tree_view = gl_paras->tree_screen()->view(); // static_cast<tv_t
 								   // *>(static_cast<QObject
@@ -268,10 +269,10 @@ TreeIndex::url_require_item_from_tree( //const url_value& find_url_, //
 		auto _current_model = [&] { return _tree_view->source_model(); };
 		auto _current_item = _tree_view->current_item();
 		auto _treeindex = TreeIndex::item_require_treeindex(_current_model, _current_item);
-		auto _tree_view_insert_strategy_boot =
+		auto _tree_view_insert_strategy_impl =
 		    [&](boost::intrusive_ptr<i_t> _result, // boost::intrusive_ptr<TreeIndex>_treeindex,
 			const substitute_condition& _substitute_condition,
-			const insert_strategy& _tree_view_insert_strategy_impl,
+			const insert_strategy& tree_view_insert_strategy__,
 			const bool _item_is_brand_new,
 			const url_value& _find_url,
 			const std::function<bool(boost::intrusive_ptr<i_t>)>& _check_url) -> boost::intrusive_ptr<i_t> { // KnowView::
@@ -283,7 +284,7 @@ TreeIndex::url_require_item_from_tree( //const url_value& find_url_, //
 				// TreeItem> it){return it->id() ==
 				// _result->id();})
 				assert(_check_url(_result));
-				_result = _tree_view_insert_strategy_impl(_treeindex, _result, _substitute_condition, true); // it->insert_new_item(it->current_count() - 1, _result);
+				_result = tree_view_insert_strategy__(_treeindex, _result, _substitute_condition, true); // it->insert_new_item(it->current_count() - 1, _result);
 				assert(_result);
 				assert(_check_url(_result) || _result->field<url_key>() == web::Browser::_defaulthome || _find_url == web::Browser::_defaulthome);
 				if (_result->field<url_key>() == web::Browser::_defaulthome && _find_url != web::Browser::_defaulthome)
@@ -303,9 +304,8 @@ TreeIndex::url_require_item_from_tree( //const url_value& find_url_, //
 					assert(static_cast<QModelIndex>(_tree_view->source_model()->index(_result)).isValid());
 					_tree_view->synchronized(false);
 					assert(equal_(_result));
-				} else if (
-				    _tree_view->session_root_auto() != _result->parent()) { // if(session_root_item->is_ancestor_of(_result)
-											    // && session_root_item != _result->parent())
+				} else if (_tree_view->session_root_auto() != _result->parent()) { // if(session_root_item->is_ancestor_of(_result)
+												   // && session_root_item != _result->parent())
 					_result = _tree_view->move(_treeindex, _result, _substitute_condition);
 					assert(_result != _tree_view->know_model_board()->root_item());
 					assert(_result);
@@ -442,7 +442,7 @@ TreeIndex::url_require_item_from_tree( //const url_value& find_url_, //
 		}
 		assert(_result != _tree_view->know_model_board()->root_item());
 
-		_result = _tree_view_insert_strategy_boot(
+		_result = _tree_view_insert_strategy_impl(
 		    _result, // this,
 		    [&](boost::intrusive_ptr<const Linker> il) -> bool {
 			    return url_equal(_result->field<url_key>(), il->host()->field<url_key>()) &&

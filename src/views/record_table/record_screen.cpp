@@ -109,11 +109,11 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
 	  new rctrl_t(blogger_, tabmanager_, this)
 	  //#endif          //USE_SIGNAL_CLOSE
 	  ) //	    _rctrl = sd::intrusive_ptr<rctrl_t>(nullptr);
-	    //    , _vertical_scrollarea(new VerticalScrollArea([&] {rv_t *v = nullptr; if(_rctrl) v = _rctrl->view(); return v; }(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void > > >(&RecordView::resizeEvent, _tab_widget->record_ctrl()->view())
+    //    , _vertical_scrollarea(new VerticalScrollArea([&] {rv_t *v = nullptr; if(_rctrl) v = _rctrl->view(); return v; }(), this)) // std::make_shared<sd::_interface<void (QResizeEvent *), sd::meta_info<void > > >(&RecordView::resizeEvent, _tab_widget->record_ctrl()->view())
     , _records_toolslayout(new QHBoxLayout())
     , _records_screenlayout(new QVBoxLayout())
     , _close_sender_id(typeid(web::Browser).name())
-{       //
+{ //
 	//        _rctrl =
 	//#ifdef USE_SIGNAL_CLOSE
 	//            sd::make_intrusive<rctrl_t>(blogger_, tabmanager_, sd::intrusive_ptr<rs_t>(this));
@@ -1083,16 +1083,17 @@ void rs_t::setup_actions(void)
 		if (_rctrl) {
 			//			auto _rctrl = _rctrl;
 			// Получение номера первой выделенной строки
-			pos_proxy pos_proxy_ = _rctrl->view()->selection_first<pos_proxy>();
+			pos_proxy pos_proxy_ = _rctrl->index<pos_proxy>(_rctrl->view()->current_item()); //selection_first<pos_proxy>();
 
 			// Выясняется ссылка на таблицу конечных данных
 			// auto item = _source_model->browser_pages();
-
+			pos_proxy target =
+			    static_cast<int>(pos_proxy_) > 0 ? pos_proxy(static_cast<int>(pos_proxy_) - 1) : pos_proxy(0);
 			// Перемещение текущей записи вверх
-			_rctrl->source_model()->move(_rctrl->index<pos_source>(pos_proxy_));
+			_rctrl->source_model()->move(_rctrl->index<pos_source>(pos_proxy_), _rctrl->index<pos_source>(target));
 
 			// Установка засветки на перемещенную запись
-			_rctrl->select_as_current(pos_proxy(static_cast<int>(pos_proxy_) - 1));
+			_rctrl->select_as_current(target); //pos_proxy(static_cast<int>(pos_proxy_) - 1)
 
 			// Сохранение дерева веток
 			// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1111,7 +1112,7 @@ void rs_t::setup_actions(void)
 		if (_rctrl) {
 			//			auto _rctrl = _rctrl;
 			// Получение номера первой выделенной строки
-			pos_proxy pos_proxy_ = _rctrl->view()->selection_first<pos_proxy>();
+			pos_proxy pos_proxy_ = _rctrl->index<pos_proxy>(_rctrl->view()->current_item()); // _rctrl->view()->selection_first<pos_proxy>();
 
 			// Выясняется ссылка на таблицу конечных данных
 			// auto item = _source_model->browser_pages();
@@ -1475,24 +1476,30 @@ void rs_t::tools_update()
 	if (_rctrl) {
 		rv_t* _view = _rctrl->view();
 		if (_view) {
-			QItemSelectionModel* item_selection_model = _view->selectionModel();
 
-			// int		selected_rows	= item_selection_model->selectedIndexes().size();
-			// // (item_selection_model->selectedRows()).size();// always crash because
-			// tabmanager inaccessible
-			bool has_selection = item_selection_model->hasSelection();
+			bool has_selection = false;
+// int		selected_rows	= item_selection_model->selectedIndexes().size();
+// // (item_selection_model->selectedRows()).size();// always crash because
+// tabmanager inaccessible
+#ifdef USE_HAS_SELECTION
+			QItemSelectionModel* item_selection_model = _view->selectionModel();
+			has_selection = item_selection_model->hasSelection();
 			if (!has_selection //&& _tab_widget->count() > 0
 			    ) {
-				if (_tab_widget) {
-					if (_tab_widget->count() > 0) {
-						auto cur_it = _view->current_item();
-						if (cur_it) {
-							_rctrl->select_as_current(_rctrl->index<pos_proxy>(cur_it));
-							has_selection = true;
-						}
-					}
+#endif                          // USE_HAS_SELECTION
+				//				if (_tab_widget) {
+				//					if (_tab_widget->count() > 0) {
+				auto cur_it = _view->current_item();
+				if (cur_it) {
+					_rctrl->select_as_current(_rctrl->index<pos_proxy>(cur_it));
+
+					has_selection = true;
 				}
+//					}
+//				}
+#ifdef USE_HAS_SELECTION
 			}
+#endif // USE_HAS_SELECTION
 			//	if(_browser){
 			//		auto tab = _browser->tabmanager();
 			//		if(tab){
