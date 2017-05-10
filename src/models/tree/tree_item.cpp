@@ -2789,41 +2789,10 @@ web::WebPage* i_t::page() const
 // return this;
 // }
 
-web::WebView* i_t::bind()
+web::WebView* i_t::bind(web::WebPage* check_page)
 {
 	assert(_binder);
-	web::WebView* view_ = nullptr;
-	if (_binder) {
-		auto page_ = _binder->page();
-
-		auto host_ = _binder->host();
-		if (!page_ || !host_) {
-			if (!host_ && page_) {
-				new ::Binder(std::make_shared<web::WebPage::Binder>(this, page_)); // _binder->host(this);
-				view_ = page_->view();
-			} else { // if(!page_ || (!host_ && !page_))
-				auto browser_ = gl_paras->main_window()->browser<boost::intrusive_ptr<i_t>>(this);
-				auto record_index = RecordIndex::instance(
-				    [&] {
-					    RecordModel* rm = nullptr;
-					    auto rctrl = browser_->tab_widget()->record_screen()->record_ctrl();
-					    if (rctrl) {
-						    rm = rctrl->source_model();
-					    }
-					    return rm;
-				    },
-				    this);
-				// if(!page_)
-				page_ = browser_->bind(record_index)->page();
-			}
-		} else if ((host_ && host_ != this) || (page_ && page_->binder() != _binder)) {
-			page_->bind(this);
-			//_binder->bind(); // boost::intrusive_ptr<TreeItem>(this)
-		} // else view = page_->view();
-		assert(page_);
-		view_ = page_->view();
-
-	} else {
+	auto new_page_from_this = [&] {
 		auto browser_ = gl_paras->main_window()->browser<boost::intrusive_ptr<i_t>>(this);
 		auto record_index = RecordIndex::instance(
 		    [&] {
@@ -2836,10 +2805,39 @@ web::WebView* i_t::bind()
 		    },
 		    this);
 		// if(!page_)
-		auto page_ = browser_->bind(record_index)->page();
-		new ::Binder(std::make_shared<web::WebPage::Binder>(this, page_));
-		view_ = page_->view();
+		return browser_->bind(record_index)->page();
+	};
+	web::WebView* view_ = nullptr;
+	web::WebPage* page_ = nullptr;
+	if (_binder) {
+		page_ = _binder->page();
+
+		auto host_ = _binder->host();
+		if (!page_ || !host_) {
+			if (!host_ && page_) {
+				new ::Binder(std::make_shared<web::WebPage::Binder>(this, page_)); // _binder->host(this);
+			} else {                                                                   // if(!page_ || (!host_ && !page_))
+				if (check_page) {
+					page_ = check_page->bind(this)->page();
+				} else {
+					page_ = new_page_from_this();
+				}
+			}
+		} else if ((check_page == page_) && ((host_ && host_ != this) || (page_ && page_->binder() != _binder))) {
+			page_->bind(this);
+		} else if (check_page != page_) {
+			page_ = check_page->bind(this)->page();
+		}
+	} else {
+		if (check_page) {
+			page_ = check_page->bind(this)->page();
+			//			new ::Binder(std::make_shared<web::WebPage::Binder>(this, page_));
+		} else {
+			page_ = new_page_from_this();
+		}
 	}
+	assert(page_);
+	view_ = page_->view();
 	assert(view_);
 	return view_;
 }
@@ -2852,13 +2850,20 @@ web::WebView* i_t::activate(const std::function<web::WebView*(const std::functio
 	web::WebView* v = nullptr;
 	auto check_view = find_activated([&](boost::intrusive_ptr<const ::Binder> b) -> bool { return b->host()->id() == id(); });
 	if (check_view) {
-		if (this != check_view->page()->host().get() || !_binder) {
-			bind();
-			v = _binder->activate();
-		} else if (!check_view->load_finished() || force_reload || !check_view->page()->activated())
-			v = _binder->activate();
-		else
-			v = check_view; // _binder->page()->view();
+		auto check_page = check_view->page();
+		auto bro = check_view->browser();
+		if (check_page && bro) {
+			if (this != check_view->page()->host().get() || !_binder) {
+				bind(check_page);
+				v = _binder->activate();
+			} else if (check_page != _binder->page()) {
+				bind(check_page);
+				v = _binder->activate();
+			} else if (!check_view->load_finished() || force_reload || !check_view->page()->activated())
+				v = _binder->activate();
+			else
+				v = check_view; // _binder->page()->view();
+		}
 	} else {
 		bind();
 		v = _binder->activate();

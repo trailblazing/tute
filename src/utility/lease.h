@@ -241,7 +241,7 @@ namespace sd {
 			// self_close_request_impl(this);
 			if (!_close_request_sent || !_destroy_request_sent) {
 				_destroy_request_sent = true;
-				_destroy_request(nullptr); //if (!_close_request_sent && !_closed) _close_request(this);
+				_destroy_request(this); //if (!_close_request_sent && !_closed) _close_request(this);
 							   //				_destroy_request.disconnect_all_slots();
 			}
 		}

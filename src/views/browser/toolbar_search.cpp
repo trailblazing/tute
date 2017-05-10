@@ -314,7 +314,7 @@ namespace web {
 		    (activated_browser = [&] {
 			    Browser* result = nullptr;
 			    for (auto bro : gl_paras->main_window()->browsers()) {
-				    if (bro->blogger()->topic() == non_url_search_text_->value()) {
+				    if (bro->blogger()->topic() == search_text) {
 					    result = bro;
 					    break;
 				    }

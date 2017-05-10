@@ -2157,7 +2157,7 @@ namespace web {
 		auto _rctrl = _record_screen->record_ctrl();
 		if (_rctrl) {
 			if (index_to_close >= 0 && index_to_close < count()) { // if(index < 0 || index >= count())
-				if (count() > 1) {
+				if (count() > 0) {
 					// return;
 					// bool hasFocus = false;
 					if (WebView* _view_to_close = webView(index_to_close)) {
@@ -2314,7 +2314,7 @@ namespace web {
 					// if(count() == 0)
 					if (0 == _tabbar->count()) emit lastTabClosed();
 				} else {
-					_browser->destroy_trigger_from_others()(_blogger);
+					if (_browser) _browser->destroy_trigger_from_others()(_blogger);
 				}
 			}
 		}
@@ -2619,7 +2619,12 @@ namespace web {
 			auto it = webView(i)->page()->host();
 			if (it) {
 				auto url = it->field<url_key>();
-				if (url != url_value("") && url != web::Browser::_defaulthome && (it->field<pin_key>() != pin_value(bool_from_check_state[Qt::Unchecked]) || (it->page() && it->page()->view() == currentWebView()))) tabs_url.append(detail::to_qstring(url));
+				if ((url != url_value("")                    //
+					&& url != web::Browser::_defaulthome //
+									     //					&& it->field<pin_key>() != pin_value(bool_from_check_state[Qt::Unchecked]) //
+					) ||
+				    (it->page() && it->page()->view() == currentWebView()) //
+				    ) tabs_url.append(detail::to_qstring(url));
 			}
 		}
 		stream << tabs_url;
@@ -2680,7 +2685,20 @@ namespace web {
 		stream >> current_tab_id;
 		// setCurrentIndex(current_tab_id);
 		if (open_tabs.count() == 0) {
-			open_tabs << detail::to_qstring(Browser::_defaulthome); //_find_screen need it
+			if (current_tab_id != "") {
+				auto tree_screen = gl_paras->tree_screen();
+				if (tree_screen) {
+					auto tree_view = tree_screen->view();
+					if (tree_view) {
+						auto model = tree_view->source_model();
+						if (model) {
+							auto it = model->item([&](boost::intrusive_ptr<const i_t> ti) { return ti->id() == current_tab_id; });
+							if (it) open_tabs << detail::to_qstring(it->field<url_key>());
+						}
+					}
+				}
+			} else
+				open_tabs << detail::to_qstring(Browser::_defaulthome); //_find_screen need it
 		}
 		for (int i = 0; i < open_tabs.count(); ++i) {
 			auto _url = open_tabs.at(i);
