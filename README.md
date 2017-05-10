@@ -112,8 +112,11 @@ Set QT5LIB to /path-to-qt-installation/plugins/platforms:/path-to-qt-installatio
 ```
         // On Ubuntu:
         sudo apt-get install fcitx-frontend-qt5
-        // libfcitxplatforminputcontextplugin.so should be under /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/ or somewhere
-        // Then copy it to $${PROJECT_QT_VERSION}/plugins/platforminputcontexts or modify tute.pro with:
+        // libfcitxplatforminputcontextplugin.so should be under /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/ or somewhere from:
+        locate libfcitxplatforminputcontextplugin.so
+        // Then copy it to $${PROJECT_QT_VERSION}/plugins/platforminputcontexts:
+        cp /path/to/libfcitxplatforminputcontextplugin.so /path/to/$${PROJECT_QT_VERSION}/plugins/platforminputcontexts/.
+        Or modify tute.pro with:
         LIBS            += /path/to/libfcitxplatforminputcontextplugin.so
 ```
 
