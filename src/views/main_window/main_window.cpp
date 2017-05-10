@@ -2892,6 +2892,7 @@ size_t wn_t::shrink(const size_t bar)
 			}
 		}
 	}
+	assert(current);
 	if (browsers.size() > bar) {
 		// std::vector<boost::intrusive_ptr<TreeItem> >	list;
 		std::vector<web::Browser*> list_v;

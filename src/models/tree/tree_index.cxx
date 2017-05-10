@@ -251,8 +251,8 @@ int TreeIndex::sibling_order() const
 }
 
 boost::intrusive_ptr<i_t>
-TreeIndex::url_require_item_from_tree( //const url_value& find_url_, //
-    boost::intrusive_ptr<real_url_t<url_value>> real_find_url_,
+TreeIndex::url_require_item_from_tree(                          //const url_value& find_url_, //
+    boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, // should merge to equal_url, using a fake i_t or static map
     const insert_strategy& tree_view_insert_strategy_,
     equal_url equal_)
 {

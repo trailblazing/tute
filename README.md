@@ -107,6 +107,14 @@ Set QT5LIB to /path-to-qt-installation/plugins/platforms:/path-to-qt-installatio
         Open "tute.pro" under tute in qtcreator
         "Configure" the project in qtcreator (append "-j*" with prefer progress number * to "make" options might be better)
         Build it.
+####1.6 Input methods (for non-English users)
+```
+        // On Ubuntu:
+        sudo apt-get install fcitx-frontend-qt5
+        // libfcitxplatforminputcontextplugin.so should be under /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/ or somewhere
+        // Then copy it to $${PROJECT_QT_VERSION}/plugins/platforminputcontexts or modify tute.pro with:
+        LIBS            += /path/to/libfcitxplatforminputcontextplugin.so
+```
 
 _______________________________________________________________________
 

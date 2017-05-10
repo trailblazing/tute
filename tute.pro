@@ -87,7 +87,7 @@ DEFINES += USE_SIGNAL_CLOSE
 
 # http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
 
-
+message(Qt5 directory: $$(QT5DIR))
 PROJECT_QT_VERSION      = $$(QT5DIR)
 
 #PROJECT_QT_LIBS      = $$PROJECT_QT_VERSION/lib64
@@ -118,8 +118,11 @@ INCLUDEPATH     += $$PROJECT_QT_VERSION/include
 
 
 DEPENDPATH      += . $$PROJECT_QT_LIBS
+DEPENDPATH      += $${PROJECT_QT_VERSION}/plugins/platforminputcontexts
 
 LIBS            += -L$$PROJECT_QT_LIBS -lQt5Svg -lQt5WebEngineWidgets -lQt5PrintSupport -lQt5Widgets -lQt5WebEngineCore -lQt5Quick -lQt5Gui -lQt5Xml -lQt5Qml -lQt5Network -lQt5WebChannel -lQt5Core -lQt5WebEngine -lQt5Positioning
+#LIBS            += /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/libfcitxplatforminputcontextplugin.so
+LIBS            += -L$${PROJECT_QT_VERSION}/plugins/platforminputcontexts -lfcitxplatforminputcontextplugin
 
 contains(TARGET_OS, ANY_OS) {
 DESTDIR     =   bin
@@ -623,11 +626,12 @@ DISTFILES   +=          \
     src/libraries/qtm/qtm-new.py \
     src/libraries/qtm/qtm-quickpost.py \
     src/libraries/qtm/README \
+    update.sh
 #    resource/standardconfig/android/entrance.ini \
 #    resource/standardconfig/android/mode.ini \
 #    resource/standardconfig/meego/entrance.ini \
 #    resource/standardconfig/meego/mode.ini \
-    update.sh
+
 
 FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \
