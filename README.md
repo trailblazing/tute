@@ -107,6 +107,7 @@ Set QT5LIB to /path-to-qt-installation/plugins/platforms:/path-to-qt-installatio
         Open "tute.pro" under tute in qtcreator
         "Configure" the project in qtcreator (append "-j*" with prefer progress number * to "make" options might be better)
         Build it.
+
 ####1.6 Input methods (for non-English users)
 ```
         // On Ubuntu:
