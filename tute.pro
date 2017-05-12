@@ -87,7 +87,7 @@ DEFINES += USE_SIGNAL_CLOSE
 
 # http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
 
-message(Qt5 directory: $$(QT5DIR))
+message(Qt5 directory (which sould not be empty): $$(QT5DIR))
 PROJECT_QT_VERSION      = $$(QT5DIR)
 
 #PROJECT_QT_LIBS      = $$PROJECT_QT_VERSION/lib64

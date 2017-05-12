@@ -1,28 +1,40 @@
 
-**Tute** <= **mytetra_webengine** <= **MyTetra**
+**Tute** <= **mytetra_webengine** <= **MyTetra** -- Thanks to MyTetra
 
-It's a note.
+Tute aims to provide some basic components of personal knowledge management in an free/libre, open source and decentralized way.
 
-It is a lightweight web browser. A knowledge management system equipped with an embedded web browser derived from Qt::WebEngine (Chromium-based). A lightweight browser embedded in a note management application provides an easy way to combine tabs, bookmarks and history management, as well as internal and external search together.
+Currently,
 
-It's a client. You can manage your remote service with XML-RPC.
+It has a note component working on topics.
 
-The next step, I aim to append some real-time collaborative editing functions.
+It has an embedded and customized web browser, which provides an easy way to combine tabs, bookmarks and history management (the browser currently derived from Qt::WebEngine (Chromium-based)).
 
-Should you need more functions? feel free to contact me: hughvonyoung[at]gmail.com
+Local and internet search functions come out from the note and the browser.
+
+It has a client. You can manage your remote service via XML-RPC.
+
+If someday,
+
+It can listen to some local screen capture or other content queries trigged by the user, that should not be a surprise.
+
+Same as the real-time collaborative editing functions, should it?
+
+Should you expect more novel features? feel free to contact me: hughvonyoung[at]gmail.com.
+
+Welcome to fork and give back :)
 
 Please note that Tute is distributed under the GPL v3.
 
 ##How to remote synchronize Tute
 _______________________________________________________________________
 
-Currently I choose Dropbox
+Currently I chose Dropbox
 
 Move files to Dropbox:
 ```
 	rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."
 ```
-After that, change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
+After that, change settings from contextmenu of Record View on the left side: Main Menu: Tools: Main Preferences: "Main" tag: "Root directory". Point it to the parent folder where you want "data" and "trash" to locate (E.g.: "~/dropbox/knowledge\ management/bin". Leave the "Data directory" and the "Trash directory" as "./data" and "./trash" are OK).
 
 ##How to build Tute
 _______________________________________________________________________
@@ -56,7 +68,7 @@ Let's say the directory of your current project is named "working":
 ```
 But it's not a must. Current support Qt version: 5.9.0.
 
-* Environment in ~/.profile (~/.bash_profile or ~/.bashrc)
+* Environment in ~/.profile (~/.bash_profile or ~/.bashrc)for command line building and installation
 ```
 	QT5DIR=/path-to-qt-installation/gcc_64
 
@@ -125,12 +137,16 @@ Set QT5LIB to /path-to-qt-installation/plugins/platforms:/path-to-qt-installatio
         export XMODIFIERS="@im=fcitx"
         // Or at least put this variable in your Qt-Creator::Projects settings::Build Environment:
         QT_IM_MODULE=fcitx
+        // When build from command line, make sure
+        echo $QT5DIR
+        // The output should not be empty. If it is, try to do
+        export QT5DIR=/path-to-qt-installation/gcc_64
 
 ```
 
 _______________________________________________________________________
 
-##Tute is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
+##Thanks to MyTetra: Tute is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
 _______________________________________________________________________
 
 ENG: Central source repository for MyTetra development.
