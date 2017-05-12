@@ -165,7 +165,8 @@ class wn_t : public QMainWindow {
 	std::set<web::Browser*> browsers() const;
 	web::Browser* dumy_browser() const;
 	QStringListModel* stringlistmodel() const;
-    public slots:
+	web::DownloadManager* download_screen() const;
+public slots:
 	void application_exit(void);
 	void application_fast_exit(void);
 	void commit_data(QSessionManager& manager);

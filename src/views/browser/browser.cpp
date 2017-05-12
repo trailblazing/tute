@@ -1102,7 +1102,7 @@ namespace web {
 				stream << QByteArray();
 			return data;
 		};
-		_tab_widget->check_topic(_blogger->topic());
+		_tab_widget->topic_replace_traverse(_blogger->topic());
 		//		::sapp_t::instance()->saveSession();//recursive call
 		// std::shared_ptr<QSettings> _configuration =
 		// std::make_shared<QSettings>(gl_paras->root_path() + "/" +
@@ -2440,7 +2440,7 @@ namespace web {
 		QString original_topic_folder = gl_paras->editors_shared_full_path_name() + "/" + original_topic_;
 		QString dest_topic_folder = gl_paras->editors_shared_full_path_name() + "/" + new_topic;
 
-		_tab_widget->check_topic(new_topic, original_topic_);
+		_tab_widget->topic_replace_traverse(new_topic, original_topic_);
 		//                if (_browser) {
 		if (!append_mode) {
 			auto original_config_name = original_topic_folder + "/" + gl_para::_browser_conf_filename;

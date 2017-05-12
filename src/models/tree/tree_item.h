@@ -324,7 +324,7 @@ class i_t // : public std::enable_shared_from_this<TreeItem>
 
 	web::WebPage* page() const; // const; // {return _page;}
 	boost::intrusive_ptr<i_t> host() const;
-	web::WebView* bind(web::WebPage *check_page = nullptr);
+	web::WebView* bind(web::WebPage* check_page = nullptr);
 	// boost::intrusive_ptr<TreeItem> bind(web::WebPage *page);  // {_page = page;
 	// _page->record(this);}
 	web::WebView*
@@ -379,7 +379,7 @@ class i_t // : public std::enable_shared_from_this<TreeItem>
 	QString field_dynamic(const QString& key_name) const;
 	void field_dynamic(const QString& key_name, const QString& value_);
     public slots:
-	void topic_append(const QString& new_topic_);
+	void topic_replace(const QString& new_topic, const QString& original_topic_ = "");
 
     protected:
 	// bind_helper     _binder;

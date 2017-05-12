@@ -2826,7 +2826,7 @@ web::WebView* i_t::bind(web::WebPage* check_page)
 		} else if ((check_page == page_) && ((host_ && host_ != this) || (page_ && page_->binder() != _binder))) {
 			page_->bind(this);
 		} else if (check_page != page_) {
-			page_ = check_page->bind(this)->page();
+			if (check_page) page_ = check_page->bind(this)->page();
 		}
 	} else {
 		if (check_page) {
@@ -3165,21 +3165,76 @@ int i_t::distance(
 	return distance_;
 }
 
-void i_t::topic_append(QString const& new_topic_)
+void i_t::topic_replace(QString const& new_topic, const QString& original_topic_)
 {
-	auto new_topic = new_topic_;
-	new_topic = purify(new_topic);
+	auto new_topic_ = new_topic;
+	new_topic_ = purify(new_topic_);
 	//	auto tags_ = field<tags_key>();
 	//	if (tags_.size() > 0)
 	//		while (tags_.at(0) == ',' || tags_.at(0) == ';') tags_.remove(0, 1);
-	auto tag_list = QStringList(field<tags_key>());           //tags_.split(QRegExp("[,:]+"), QString::SkipEmptyParts);
-								  //	auto new_topic = new_topic;//_toolbarsearch->text();
-								  //	if (tag_list.size() > 0) {
-	if (!tag_list.contains(new_topic)) tag_list << new_topic; //tags_ += "," + new_topic;
-								  //	} else                                                         // (tag_list.size() == 0)
-								  //		tags_ += new_topic;
-	field<tags_key>(tags_value(tag_list));                    //tags_
-	assert(QStringList(field<tags_key>()).contains(new_topic));
+	auto tags_list = QStringList(field<tags_key>()); //tags_.split(QRegExp("[,:]+"), QString::SkipEmptyParts);
+							 //	auto new_topic = new_topic;//_toolbarsearch->text();
+							 //	if (tag_list.size() > 0) {
+	QStringList result;
+#ifdef USE_QSTRINGLISTITERATOR
+
+	if (tags_list.length() > 0) {
+		if ("" != original_topic_                                                                //
+		    && (!(original_topic_.contains(new_topic_) || new_topic_.contains(original_topic_))) //
+		    && &&tags_list.contains(original_topic_)) {
+			QStringListIterator it(tags_list);
+			while (it.hasNext()) {
+				auto item = it.next();
+				if (item == original_topic_) {
+					tags_list.removeOne(original_topic_);
+				}
+			}
+		}
+
+		QStringListIterator it_(tags_list);
+		int count_found = 0;
+		int index = 0;
+		while (it_.hasNext()) {
+			auto topic = it_.next();
+			if (topic.contains(new_topic_) || new_topic_.contains(topic)) {
+				if (0 == count_found) {
+					tags_list.replace(index, new_topic_);
+				} else {
+					tags_list.removeAt(index);
+				}
+				count_found++;
+			}
+			index++;
+		}
+
+		for (auto topic : tags_list) {
+			if (!result.contains(topic)) {
+				result << topic;
+			}
+		}
+	}
+#else
+
+	if ("" != original_topic_                                                                //
+	    && (!(original_topic_.contains(new_topic_) || new_topic_.contains(original_topic_))) //
+	    && tags_list.contains(original_topic_)) tags_list.removeAll(original_topic_);
+
+	for (auto topic : tags_list) {
+		if (topic.contains(new_topic_) || new_topic_.contains(topic)) {
+			if (!result.contains(new_topic_)) {
+				result << new_topic_;
+			}
+		} else {
+			if (!result.contains(topic)) {
+				result << topic;
+			}
+		}
+	}
+	if (!result.contains(new_topic_)) result << new_topic_;
+#endif // USE_QSTRINGLISTITERATOR
+
+	field<tags_key>(tags_value(result));
+	assert(QStringList(field<tags_key>()).contains(new_topic_));
 }
 
 full_fields_map& i_t::fields_data_map()

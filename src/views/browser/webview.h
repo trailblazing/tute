@@ -425,7 +425,7 @@ namespace web {
 		void current_view_global_consistency();
 
 		ToolbarSearch *toolbarsearch() const;
-		void toolbarsearch(ToolbarSearch* tbs);
+//		void toolbarsearch(ToolbarSearch* tbs);
 
 		Browser *browser() const;
 	protected:

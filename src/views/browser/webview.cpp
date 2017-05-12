@@ -465,7 +465,7 @@ namespace web {
 			assert(_binder->integrity_external(item, this));
 			//			auto topic = _blogger->topic();
 			//			if (!QStringList(item->field<tags_key>()).contains(topic))
-			item->topic_append(_blogger->topic()); //topic
+			item->topic_replace(_blogger->topic()); //topic
 			return std::forward<boost::intrusive_ptr<::Binder>>(item->binder());
 		}();
 
@@ -1084,12 +1084,12 @@ namespace web {
 
 			assert(_binder->integrity_external(result_item, this));               // _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
 			assert(result_item->binder()->integrity_external(result_item, this)); // result->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(_binder));
-//#ifdef USE_SIGNAL_CLOSE                                                                       //			_rctrl->close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::WebPage::binder_reset, this));
-//			_rctrl->destroy_transfer([&](sd::renter* const r) {
-//				(void)r;
-//				this->binder_reset();// recursive call _rctrl
-//			}); //std::bind(&web::WebPage::binder_reset, this)
-//#endif
+											      //#ifdef USE_SIGNAL_CLOSE                                                                       //			_rctrl->close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &web::WebPage::binder_reset, this));
+											      //			_rctrl->destroy_transfer([&](sd::renter* const r) {
+											      //				(void)r;
+											      //				this->binder_reset();// recursive call _rctrl
+											      //			}); //std::bind(&web::WebPage::binder_reset, this)
+											      //#endif
 			return result_coupler;
 		};
 		if (result->binder() && result->binder() == _binder) {
@@ -1128,8 +1128,8 @@ namespace web {
 		assert(result->binder());
 		//		auto topic = _blogger->topic();
 		//		if (!QStringList(result->field<tags_key>()).contains(topic))
-		result->topic_append(_blogger->topic()); //topic
-							 //		assert(QStringList(result->field<tags_key>()).contains(topic));
+		result->topic_replace(_blogger->topic()); //topic
+							  //		assert(QStringList(result->field<tags_key>()).contains(topic));
 		RecordIndex::synchronize(result);
 		return result;
 	}
@@ -1353,7 +1353,7 @@ namespace web {
 			if (topic_new == "") topic_new = purify(url_new.path());
 			if (topic_new == "") topic_new = purify(url_new.topLevelDomain());
 			if (topic_new == "") topic_new = purify(gl_para::_default_topic);
-			new_item->topic_append(topic_new);
+			new_item->topic_replace(topic_new);
 			_browser_new->blogger()->topic(topic_new);
 			assert(page);
 		} else if (type == WebBrowserBackgroundTab) {
@@ -1369,13 +1369,13 @@ namespace web {
 				page = view->page();
 				auto _item = page->host();
 				if (_item) {
-					_item->topic_append(_blogger->topic()); //target_url.toString()
-										// auto _index = tree_view->source_model()->index(_item);
-										// if(static_cast<QModelIndex>(_index).isValid())_item->activate(std::bind(&HidableTabWidget::find,
-										// globalparameters.main_window()->vtab_record(),
-										// std::placeholders::_1));	//
-										// tree_view->index_invoke(TreeIndex::instance([&] {return
-										// tree_view->source_model();}, _item, _item->parent()));	// view,
+					_item->topic_replace(_blogger->topic()); //target_url.toString()
+										 // auto _index = tree_view->source_model()->index(_item);
+										 // if(static_cast<QModelIndex>(_index).isValid())_item->activate(std::bind(&HidableTabWidget::find,
+										 // globalparameters.main_window()->vtab_record(),
+										 // std::placeholders::_1));	//
+										 // tree_view->index_invoke(TreeIndex::instance([&] {return
+										 // tree_view->source_model();}, _item, _item->parent()));	// view,
 				}
 				assert(page->binder() && page->binder()->integrity_external(page->host(), page));
 				assert(static_cast<QModelIndex>(tree_view->source_model()->index(page->host())).isValid());
@@ -1399,7 +1399,7 @@ namespace web {
 				// globalparameters.main_window()->vtab_record(),
 				// std::placeholders::_1))->page() : nullptr;
 				if (it)
-					it->topic_append(_blogger->topic()); //target_url.toString()
+					it->topic_replace(_blogger->topic()); //target_url.toString()
 				page = it ? it->page() : nullptr;
 				//				if (!page) page = this; //	assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
 			}
@@ -1427,7 +1427,7 @@ namespace web {
 						    std::placeholders::_1)); // tree_view->index_invoke(TreeIndex::instance([&]
 									     // {return tree_view->source_model();}, _item,
 									     // _item->parent()));	// view,
-					_item->topic_append(_blogger->topic());
+					_item->topic_replace(_blogger->topic());
 				}
 				assert(page->binder() && page->binder()->integrity_external(page->host(), page));
 				assert(static_cast<QModelIndex>(tree_view->source_model()->index(page->host())).isValid());
@@ -1448,7 +1448,7 @@ namespace web {
 				    });
 				assert(it);
 				if (it)
-					it->topic_append(_blogger->topic());
+					it->topic_replace(_blogger->topic());
 				page = it ? it->activate(std::bind(&wn_t::find, gl_paras->main_window(), find_binder))->page() : nullptr; // std::placeholders::_1
 
 				//				if (!page) page = this; //				assert(page || _hovered_url == web::Browser::_defaulthome || _hovered_url == "");
@@ -1898,7 +1898,13 @@ namespace web {
 		if (success) {
 			_page->onUrlChanged(_page->url());
 			_page->onTitleChanged(_page->title());
-
+			if (_toolbarsearch) {
+				auto line_edit = _toolbarsearch->lineEdit();
+				if (line_edit) {
+					auto url_str = _page->url().toString();
+					if (line_edit->text() != url_str) line_edit->setText(url_str);
+				}
+			}
 			_load_finished = true;
 			// setFocus();
 		}
@@ -2438,7 +2444,7 @@ namespace web {
 #endif // USE_EDITOR_WRAP
 	}
 	ToolbarSearch* WebView::toolbarsearch() const { return _toolbarsearch; }
-	void WebView::toolbarsearch(ToolbarSearch* tbs) { _toolbarsearch = tbs; }
+	//	void WebView::toolbarsearch(ToolbarSearch* tbs) { _toolbarsearch = tbs; }
 
 	Browser* WebView::browser() const
 	{
