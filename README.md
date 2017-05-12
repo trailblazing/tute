@@ -1,7 +1,7 @@
 
 **Tute** <= **mytetra_webengine** <= **MyTetra** -- Thanks to MyTetra
 
-Tute aims to provide some basic components of personal knowledge management in an free/libre, open source and decentralized way.
+Tute aims to provide some basic components of personal knowledge management in a free/libre, open source and decentralized way.
 
 Currently,
 

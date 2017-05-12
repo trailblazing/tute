@@ -4422,8 +4422,9 @@ void tv_t::know_model_save(void)
 	// sychronize();
 
 	//	_know_model_board->save(); //
-	std::thread(&tkm_t::save, _know_model_board) //.join(); //.hardware_concurrency(); //
-	    .detach();                               // _know_model_board->save();
+	std::thread(&tkm_t::save, _know_model_board) //
+	    .join();                                 //.hardware_concurrency(); //
+	//	    .detach();                               // _know_model_board->save();
 }
 
 // Перечитывание дерева веток с диска
