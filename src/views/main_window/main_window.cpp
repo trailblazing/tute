@@ -2368,6 +2368,28 @@ void wn_t::on_focus_changed(QWidget* widgetFrom, QWidget* widgetTo)
 	return; // Временно ничего не делает
 }
 
+web::DownloadManager* wn_t::download_screen() const
+{
+	// int browser_size_ = 0;
+	// for(int i = 0; i < count(); i ++)
+	// if(widget(i)->objectName() ==
+	// record_screen_multi_instance_name)browser_size_ ++;
+
+	// return browser_size_;
+	web::DownloadManager* result = nullptr;
+	for (int i = 0; i < _vtab_record->count(); i++) { // for(auto i = _record_screens.begin(); i !=
+		// _record_screens.end(); i ++){
+		auto w = _vtab_record->widget(i);
+		if (w->objectName() == download_manager_singleton_name) {
+			auto downloader_ = dynamic_cast<web::DownloadManager*>(w);
+			if (downloader_) {
+				result = downloader_;
+				break;
+			}
+		}
+	}
+	return result; // _record_screens;
+}
 
 std::set<web::Browser*> wn_t::browsers() const
 {
@@ -2378,8 +2400,7 @@ std::set<web::Browser*> wn_t::browsers() const
 
 	// return browser_size_;
 	std::set<web::Browser*> result;
-	for (int i = 0; i < _vtab_record->count();
-	     i++) { // for(auto i = _record_screens.begin(); i !=
+	for (int i = 0; i < _vtab_record->count(); i++) { // for(auto i = _record_screens.begin(); i !=
 		// _record_screens.end(); i ++){
 		auto w = _vtab_record->widget(i);
 		if (w->objectName() == record_screen_multi_instance_name) {
@@ -2508,14 +2529,14 @@ wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bo
 	    [&](boost::intrusive_ptr<const Binder> b) { return b->host() == item; });
 	web::Browser* bro(dumy_browser());
 	if (!bro) {
-		QStringList item_tags_text_list;
+		QStringList tags_list;
 		if (!view) {
-			item_tags_text_list = QStringList(item->field<tags_key>());
+			tags_list = QStringList(item->field<tags_key>());
 			// Строка с метками разделяется на отдельные меки
 			//		auto tagslist = tagslist.split(QRegExp("[,;]+"), QString::SkipEmptyParts);
 			// В каждой метке убираются лишние пробелы по краям
-			for (int i = 0; i < item_tags_text_list.size(); ++i) {
-				auto topic = (item_tags_text_list[i] = item_tags_text_list.at(i).trimmed());
+			for (int i = 0; i < tags_list.size(); ++i) {
+				auto topic = (tags_list[i] = tags_list.at(i).trimmed());
 				bro = real_url_t<QString>::instance<web::Browser*>(topic,
 				    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
 					    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, false);
@@ -2525,8 +2546,8 @@ wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bo
 		} else
 			bro = view->page()->browser();
 		if (!bro) {
-			if (item_tags_text_list.size() > 0)
-				bro = real_url_t<QString>::instance<web::Browser*>(item_tags_text_list[0],
+			if (tags_list.size() > 0)
+				bro = real_url_t<QString>::instance<web::Browser*>(tags_list[0],
 				    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
 					    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, force); // browser(item_tags_text_list[0]);
 				    });
@@ -2773,7 +2794,10 @@ void wn_t::synchronize_title(const QString& title_)
 size_t wn_t::shrink(const size_t bar)
 {
 	size_t result = bar;
+	auto downloader_ = download_screen();
+	if (downloader_) _vtab_record->removeTab(_vtab_record->indexOf(downloader_));
 	std::set<web::Browser*> browsers = wn_t::browsers();
+
 	//	rs_t* cur_rs = nullptr;
 	web::Browser* cur_bro = nullptr;
 	boost::intrusive_ptr<i_t> current(nullptr);

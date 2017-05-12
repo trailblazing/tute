@@ -1537,7 +1537,7 @@ boost::intrusive_ptr<i_t>& FindScreen::find_recursive(QString const& topic, boos
 								//									tags_ +=
 								//search_topic;
 								//								candidate->field<tags_type>(tags_);
-								candidate->topic_append(topic //_browser->blogger()->topic()
+								candidate->topic_replace(topic //_browser->blogger()->topic()
 								    );                        //_toolbarsearch_buffer->text()
 
 								final_result << candidate; // result->linker();

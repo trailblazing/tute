@@ -1835,9 +1835,9 @@ namespace web {
 					auto find_screen = gl_paras->find_screen();
 					assert(find_screen);
 					// line edit
-					auto search_line_edit = view->toolbarsearch(); // new ToolbarSearch(find_screen, view); //UrlLineEdit(view);
+					auto toolbar_search = view->toolbarsearch(); // new ToolbarSearch(find_screen, view); //UrlLineEdit(view);
 
-					QLineEdit* lineEdit = search_line_edit->lineEdit();
+					QLineEdit* lineEdit = toolbar_search->lineEdit();
 					if (!_lineeditcompleter && count() > 0) {
 						HistoryCompletionModel* completionModel = new HistoryCompletionModel(this);
 						completionModel->setSourceModel(::sapp_t::historyManager()->historyFilterModel());
@@ -1875,9 +1875,9 @@ namespace web {
 					//							//							urlLineEdit->iconlabel()->hide();
 					//						}
 					//					});
-					connect(search_line_edit, &ToolbarSearch::return_pressed, //lineEdit, &QLineEdit::returnPressed,
-					    this, &TabWidget::lineEditReturnPressed);
-					_lineedit_stack->addWidget(search_line_edit);
+					connect(toolbar_search, &ToolbarSearch::return_pressed, this, &TabWidget::lineEditReturnPressed); //lineEdit, &QLineEdit::returnPressed,
+
+					_lineedit_stack->addWidget(toolbar_search);
 					_lineedit_stack->setSizePolicy(lineEdit->sizePolicy());
 					//					}
 
@@ -2544,7 +2544,7 @@ namespace web {
 	}
 
 
-	void TabWidget::check_topic(const QString& new_topic_, const QString& original_topic_)
+	void TabWidget::topic_replace_traverse(const QString& new_topic_, const QString& original_topic_)
 	{
 		for (int idx = 0; idx < this->count(); idx++) {
 			auto v = this->webView(idx);
@@ -2553,29 +2553,7 @@ namespace web {
 				if (p) {
 					auto h = p->host();
 					if (h) {
-						QStringList tags_list = h->field<tags_key>();
-						//						if (tags.length() > 0) {
-						//										QStringListIterator it(tags);
-						//										while (it.hasNext()) {
-						//											auto item = it.next();
-						//											if (item == _current_topic_name) {
-						//												tags.removeOne(_current_topic_name);
-						//											}
-						//										}
-						//										for (int i = 0; i < tags.count(); i++) {
-						//											auto item = tags.at(i);
-						//											if (item == _current_topic_name) {
-						//												if (0 == count_found)
-						//													tags.replace(i, new_topic);
-						//												else
-						//													tags.removeAt(i);
-						//												count_found++;
-						//											}
-						//										}
-						if ("" != original_topic_ && tags_list.contains(original_topic_)) tags_list.removeAll(original_topic_);
-						if (!tags_list.contains(new_topic_)) tags_list << new_topic_;
-						h->field<tags_key>(tags_value(tags_list));
-						//						}
+						h->topic_replace(new_topic_, original_topic_);
 					}
 				}
 			}

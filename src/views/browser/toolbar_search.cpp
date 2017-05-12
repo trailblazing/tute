@@ -144,7 +144,7 @@ namespace web {
 		_findtext->setVisible(false);
 #endif // USE_ADDITIONAL_BUFFER
 
-		if (view_) view_->toolbarsearch(this);
+//		if (view_) view_->toolbarsearch(this);
 		QMenu* menu_ = menu();
 		connect(menu_, &QMenu::aboutToShow, this, &ToolbarSearch::show_menu);
 		connect(menu_, &QMenu::triggered, this, &ToolbarSearch::triggered_menu_action);
@@ -226,9 +226,9 @@ namespace web {
 		auto topic_new = non_url_search_text_->value();
 		setInactiveText(topic_new);
 		auto topic_old = _web_view->browser()->blogger()->topic();
-		bool is_an_extend_topic = false;
-		if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_an_extend_topic = true;
-		if (is_an_extend_topic) _web_view->browser()->blogger()->on_topic_changed(topic_new);
+		bool is_current_extend_topic = false;
+		if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_current_extend_topic = true;
+		if (is_current_extend_topic) _web_view->browser()->blogger()->on_topic_changed(topic_new);
 		auto to_be_url_ = to_be_url(topic_new);
 		assert(to_be_url_ == QUrl() // || to_be_url_ == detail::to_qstring(web::Browser::_defaulthome)
 		    );
@@ -308,20 +308,21 @@ namespace web {
 		//		QUrl url = QUrl(search_text);
 		//		url_value real_url = url_value(search_text);
 		//		auto topic = Blogger::purify_topic(_findtext->text());
-		Browser* activated_browser = nullptr;
-		auto browser_ = is_an_extend_topic ?
+		Browser* related_browser = nullptr;
+		auto browser_ = is_current_extend_topic ?
 		    _web_view->browser() :
-		    (activated_browser = [&] {
+		    (related_browser = [&] {
 			    Browser* result = nullptr;
 			    for (auto bro : gl_paras->main_window()->browsers()) {
-				    if (bro->blogger()->topic() == search_text) {
+				    auto topic = bro->blogger()->topic();
+				    if (topic.contains(search_text) || search_text.contains(topic)) {
 					    result = bro;
 					    break;
 				    }
 			    }
 			    return result;
 		    }()) ?
-		    activated_browser :
+		    related_browser :
 		    real_url_t<QString>::instance<web::Browser*>(search_text, [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
 			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); // gl_paras->main_window()->browser(search_text);
 		    });
@@ -375,10 +376,8 @@ namespace web {
 						sibling_tree_index, result_item,
 						[&](boost::intrusive_ptr<const Linker> target,
 						    boost::intrusive_ptr<const Linker> source) -> bool {
-							return target->host()->field<url_key>() ==
-							    source->host()->field<url_key>() &&
-							    target->host()->field<name_key>() ==
-							    source->host()->field<name_key>();
+							return target->host()->field<url_key>() == source->host()->field<url_key>() //
+							    && target->host()->field<name_key>() == source->host()->field<name_key>();
 						});
 					//
 					// auto	child_items		= std::async(std::launch::async,
@@ -406,8 +405,7 @@ namespace web {
 							// result_item->child_linkers()){//	// move
 							// to search result
 							// auto it = il->host();
-							if (!_rctrl->source_model()->item(
-								[&](const id_value id) { return id == it->id(); })) {
+							if (!_rctrl->source_model()->item([&](const id_value id) { return id == it->id(); })) {
 								boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] { return _rctrl->source_model(); }, it, last); // current_item_
 								last = it;                                                                                                                // current_item_ = it;	//
 								// if(record_index){
