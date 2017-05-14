@@ -1245,7 +1245,8 @@ void sapp_t::newLocalSocketConnection()
 					std::bind(&tv_t::move, tree_view_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 					[&](boost::intrusive_ptr<const i_t> it) -> bool {
 						return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
-					});
+					},
+					browser_ref());
 				    //			    ->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
 			    });
 		}
@@ -1371,7 +1372,8 @@ void sapp_t::postLaunch()
 					std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 					[&](boost::intrusive_ptr<const i_t> it_) -> bool {
 						return url_equal(detail::to_qstring(it_->field<home_key>()), args.last()) || url_equal(detail::to_qstring(it_->field<url_key>()), args.last());
-					});
+					},
+					browser_ref());
 			    });
 		}
 		// else

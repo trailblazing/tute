@@ -2079,7 +2079,7 @@ namespace web {
 					it->field<url_key>(detail::from_qstring<url_key>(real_url_.toString()));
 					page->load(it, true, true); // force reload
 				} else {
-					emit loadPageNewTab(text);
+					emit openLinkInNewTab(text);
 				}
 				if (_lineedit_stack->currentWidget() == search_edit) {
 					auto v = currentWebView();
@@ -2695,7 +2695,7 @@ namespace web {
 						[&](boost::intrusive_ptr<const i_t> it_) -> bool {
 							return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
 						},
-						static_cast<web::Browser*>(_browser));
+						_browser);
 				    });
 				if (ti) {
 					if (_blogger->topic() != "" && ti->field<url_key>() == Browser::_defaulthome) {

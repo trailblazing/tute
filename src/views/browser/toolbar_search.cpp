@@ -144,7 +144,7 @@ namespace web {
 		_findtext->setVisible(false);
 #endif // USE_ADDITIONAL_BUFFER
 
-//		if (view_) view_->toolbarsearch(this);
+		//		if (view_) view_->toolbarsearch(this);
 		QMenu* menu_ = menu();
 		connect(menu_, &QMenu::aboutToShow, this, &ToolbarSearch::show_menu);
 		connect(menu_, &QMenu::triggered, this, &ToolbarSearch::triggered_menu_action);
@@ -269,7 +269,7 @@ namespace web {
 					real_target_url_, //std::placeholders::_1,
 					std::bind(&tv_t::move, tree_view_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 					[&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url); },
-					browser_);
+					browser_ref(browser_));
 			    });
 			//				tree_index->url_bind_browser(
 			//			    real_url_t<url_value>::instance(real_url),

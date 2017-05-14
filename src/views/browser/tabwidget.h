@@ -424,9 +424,9 @@ namespace web {
 // tab widget signals
 
 #if QT_VERSION == 0x050600
-		void loadPage(const QString& url) W_SIGNAL(loadPage, (const QString&), url); //
+		void openLinkInNewTab(const QString& url) W_SIGNAL(loadPage, (const QString&), url); //
 #else
-		void loadPageNewTab(const QString& url);
+		void openLinkInNewTab(const QString& url);
 #endif
 
 #if QT_VERSION == 0x050600

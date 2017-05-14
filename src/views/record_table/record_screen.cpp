@@ -1067,9 +1067,9 @@ void rs_t::setup_actions(void)
 			// Установка засветки на перемещенную запись
 			_rctrl->select_as_current(pos_target);
 
-			// Сохранение дерева веток
-			// find_object<TreeScreen>(tree_screen_singleton_name)
-			gl_paras->tree_screen()->view()->know_model_save();
+//			// Сохранение дерева веток
+//			// find_object<TreeScreen>(tree_screen_singleton_name)
+//			gl_paras->tree_screen()->view()->know_model_save();
 		}
 	}); // _record_controller, &RecordController::move_up
 
@@ -1095,9 +1095,9 @@ void rs_t::setup_actions(void)
 			// Установка засветки на перемещенную запись
 			_rctrl->select_as_current(target); //pos_proxy(static_cast<int>(pos_proxy_) - 1)
 
-			// Сохранение дерева веток
-			// find_object<TreeScreen>(tree_screen_singleton_name)
-			gl_paras->tree_screen()->view()->know_model_save();
+//			// Сохранение дерева веток
+//			// find_object<TreeScreen>(tree_screen_singleton_name)
+//			gl_paras->tree_screen()->view()->know_model_save();
 		}
 	}); // _record_controller, &RecordController::move_up
 	// connect(_action_move_up, &QAction::triggered, _tab_widget,
@@ -1124,9 +1124,9 @@ void rs_t::setup_actions(void)
 			// Установка засветки на перемещенную запись
 			_rctrl->select_as_current(target); //pos_proxy(static_cast<int>(pos_proxy_) + 1)
 
-			// Сохранение дерева веток
-			// find_object<TreeScreen>(tree_screen_singleton_name)
-			gl_paras->tree_screen()->view()->know_model_save();
+//			// Сохранение дерева веток
+//			// find_object<TreeScreen>(tree_screen_singleton_name)
+//			gl_paras->tree_screen()->view()->know_model_save();
 		}
 	}); // _record_controller, &RecordController::move_dn
 	// connect(_action_move_dn, &QAction::triggered, _tab_widget,

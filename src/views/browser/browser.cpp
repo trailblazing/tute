@@ -313,7 +313,7 @@ namespace web {
 		_centralwidget->setLayout(_layout);
 		setCentralWidget(_centralwidget);
 
-		connect(_tab_widget, &TabWidget::loadPageNewTab, // this, &Browser::loadPage
+		connect(_tab_widget, &TabWidget::openLinkInNewTab, // this, &Browser::loadPage
 		    [&](const QString& search_text) {
 			    //			    assert(to_be_url(search_text) != QUrl());
 			    tv_t* tree_view = _tree_screen->view();
@@ -326,7 +326,7 @@ namespace web {
 					    it,
 					    std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 					    [&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(detail::to_qstring(it_->field<home_key>()), search_text) || url_equal(detail::to_qstring(it_->field<url_key>()), search_text); },
-					    this);
+					    browser_ref(this));
 				});
 		    });
 		connect(_tab_widget, &TabWidget::setCurrentTitle, _main_window, &wn_t::synchronize_title); // this, &Browser::slotUpdateWindowTitle
@@ -489,26 +489,26 @@ namespace web {
 			//				//			_autosaver->saveIfNeccessary();
 		}
 
-		// mmove to tabmanager
-		//		{
-		//			//			HidableTab *_vtab_record = _main_window->vtab_record();
-		//			//			auto index = _vtab_record->indexOf(_record_screen);
-		//			//			if(index != -1)	emit _vtab_record->tabCloseRequested(index);
-		//			////_vtab_record->removeTab(index);
-		//			auto _record_screen = _tab_widget->record_screen();
-		//			if (_record_screen) {
-		//				_close_request.connect(std::bind(&rs_t::on_browser_close_requested, _record_screen));
-		//				_record_screen = nullptr;
-		//			}
-		//			//			if (_blogger) connect(this, &Browser::close_request, _blogger, &Blogger::on_browser_close_requested);
+// mmove to tabmanager
+//		{
+//			//			HidableTab *_vtab_record = _main_window->vtab_record();
+//			//			auto index = _vtab_record->indexOf(_record_screen);
+//			//			if(index != -1)	emit _vtab_record->tabCloseRequested(index);
+//			////_vtab_record->removeTab(index);
+//			auto _record_screen = _tab_widget->record_screen();
+//			if (_record_screen) {
+//				_close_request.connect(std::bind(&rs_t::on_browser_close_requested, _record_screen));
+//				_record_screen = nullptr;
+//			}
+//			//			if (_blogger) connect(this, &Browser::close_request, _blogger, &Blogger::on_browser_close_requested);
 
-		//			//			self_close_request(); //emit close_request(this);
-		//		}
-		//		//		_rctrl->close_request();
-		//		close_requested(this);
-		//		delete _tab_widget;
+//			//			self_close_request(); //emit close_request(this);
+//		}
+//		//		_rctrl->close_request();
+//		close_requested(this);
+//		delete _tab_widget;
 
-		//#ifdef USE_SIGNAL_CLOSE
+#ifdef USE_SIGNAL_CLOSE
 		//		if (_blogger) {
 		//			//			close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &Blogger::on_close_requested, _blogger, static_cast<sd::renter* const>(this))); // close_requested.connect(_blogger->close_requested);                         //(std::bind(&Blogger::self_close_request, _blogger));
 		//			//					destroy_transfer(
@@ -516,9 +516,20 @@ namespace web {
 		//				_blogger->destroy_trigger_from_others()(this);
 		//			//					    );
 		//		}
-		//#endif // USE_SIGNAL_CLOSE
-		if (_blogger)
+
+		if (_tab_widget) {
+			if (!_tab_widget->close_request_sent() && !_tab_widget->destroy_request_sent())
+
+				//			_browser->close_connect([&](renter* const r) {if(r != this && !this->_closed) this->_closed = this->close(); });
+				//			destroy_transfer(
+				_tab_widget->destroy_trigger_from_others()(this);
+			//				    ); //std::bind(&Browser::close_requested_from_others, _browser, static_cast<sd::renter* const>(this))
+		}
+
+		if (_blogger) {
 			delete static_cast<Blogger*>(_blogger); //_blogger->destroy_trigger_from_others()(nullptr);
+		}
+#endif // USE_SIGNAL_CLOSE
 
 
 		if (_find_screen) {
@@ -1860,7 +1871,7 @@ namespace web {
 				it,
 				std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 				[&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(detail::to_qstring(it_->field<home_key>()), file) || url_equal(detail::to_qstring(it_->field<url_key>()), file); },
-				this);
+				browser_ref(this));
 		    });
 	}
 
@@ -2056,7 +2067,7 @@ namespace web {
 				current_item,
 				std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 				[&](boost::intrusive_ptr<const i_t> it_) -> bool { return url_equal(detail::to_qstring(it_->field<home_key>()), home) || url_equal(detail::to_qstring(it_->field<url_key>()), home); },
-				this);
+				browser_ref(this));
 		    });
 		_configuration->endGroup();
 	}

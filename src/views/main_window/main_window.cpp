@@ -2499,7 +2499,8 @@ web::Browser*
 wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
 {
 	(void)force;
-	if (browsers().size() > 3) shrink(2);
+	size_t topic_number = static_cast<size_t>(appconfig->topic_number());
+	if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
 	auto state_data = web::Browser::state(state_);
 	auto topic = std::get<3>(state_data);
 	auto title = std::get<2>(state_data);
@@ -2523,7 +2524,8 @@ web::Browser*
 wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bool force)
 {
 	(void)force;
-	if (browsers().size() > 3) shrink(2);
+	size_t topic_number = static_cast<size_t>(appconfig->topic_number());
+	if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
 	boost::intrusive_ptr<i_t> item = it;
 	auto view = find(
 	    [&](boost::intrusive_ptr<const Binder> b) { return b->host() == item; });
@@ -2571,7 +2573,8 @@ web::Browser*
 wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusive_ptr<real_url_t<url_value>>& real_find_url_, bool force)
 {
 	(void)force;
-	if (browsers().size() > 3) shrink(2);
+	size_t topic_number = static_cast<size_t>(appconfig->topic_number());
+	if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
 	boost::intrusive_ptr<real_url_t<url_value>> dummy = real_find_url_;
 	(void)dummy;
 	auto real_url = real_find_url_->value();
@@ -2621,7 +2624,8 @@ template <>
 web::Browser*
 wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_ptr<real_url_t<QString>>& topic_, bool force) //const QString& topic_,
 {
-	if (browsers().size() > 3) shrink(2);
+	size_t topic_number = static_cast<size_t>(appconfig->topic_number());
+	if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
 	// clean();
 	QString topic = topic_->value();
 	if ("" == topic) topic = gl_para::_default_topic;

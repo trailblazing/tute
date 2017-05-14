@@ -242,7 +242,7 @@ namespace sd {
 			if (!_close_request_sent || !_destroy_request_sent) {
 				_destroy_request_sent = true;
 				_destroy_request(this); //if (!_close_request_sent && !_closed) _close_request(this);
-							   //				_destroy_request.disconnect_all_slots();
+							//				_destroy_request.disconnect_all_slots();
 			}
 		}
 
@@ -333,6 +333,7 @@ namespace sd {
 
 	    private:
 		typedef intrusive_ptr this_type;
+
 		bool internal_integrity() const
 		{
 			auto //px_pre

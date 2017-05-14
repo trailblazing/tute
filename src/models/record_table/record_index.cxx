@@ -41,7 +41,7 @@ RecordIndex::bind( // const std::function<RecordModel *()> &current_model_, boos
 		web::Browser* browser_ = nullptr;
 
 		if (tab) browser_ = tab->browser();
-		assert(browser_);
+		assert(browser_); //browser_ is a weak_ptr?
 		assert(_host);
 		if (_host && browser_) {
 			auto url = _host->field<url_key>();
