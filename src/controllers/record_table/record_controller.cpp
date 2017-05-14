@@ -1601,7 +1601,7 @@ web::WebView* rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_inde
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)
 
-	gl_paras->tree_screen()->view()->know_model_save();
+	//	gl_paras->tree_screen()->view()->know_model_save();
 
 	// }
 

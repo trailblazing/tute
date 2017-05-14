@@ -578,6 +578,8 @@ void tkm_t::save()
 	std::mutex m;
 	std::lock_guard<std::mutex> lock(m);
 	auto check_integrity = [&](const QString& fake_path) {
+		std::mutex m;
+		std::lock_guard<std::mutex> lock(m);
 		QFile xmlFile(fake_path); //_xml_file_path
 		if (!xmlFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
 			qDebug() << "Cant open file " << _xml_file_path << " for read.";
@@ -634,6 +636,8 @@ void tkm_t::save()
 		doc.appendChild(rootelement);
 		if (doc.hasChildNodes()) {
 			auto write_to = [&](const QString& file_name_, bool backup_ = true) {
+				std::mutex m;
+				std::lock_guard<std::mutex> lock(m);
 				// аспечатка на экран, что будет выводиться в XML файл
 				// qDebug() << "Doc document for write " << doc.toString();
 				// Перенос текущего файла дерева в корзину

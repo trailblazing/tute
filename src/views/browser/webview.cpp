@@ -1392,7 +1392,8 @@ namespace web {
 						real_target_url_, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), // std::placeholders::_1
 						[&](boost::intrusive_ptr<const i_t> it_) -> bool {
 							return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
-						});
+						},
+						browser_ref());
 				    });
 				assert(it);
 				// page = it ? it->activate(std::bind(&HidableTabWidget::find,
@@ -1444,7 +1445,8 @@ namespace web {
 						real_target_url_, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), // std::placeholders::_1
 						[&](boost::intrusive_ptr<const i_t> it_) -> bool {
 							return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
-						});
+						},
+						browser_ref());
 				    });
 				assert(it);
 				if (it)

@@ -998,7 +998,8 @@ boost::intrusive_ptr<i_t> tv_t::current_item()
 							    std::bind(&tv_t::move, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 							    [&](boost::intrusive_ptr<const i_t> it_) -> bool {
 								    return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), web::Browser::_defaulthome) || url_equal(it_->field<url_key>(), web::Browser::_defaulthome);
-							    });
+							    },
+							    browser_ref());
 					    });
 					// new_item = _know_root->root_item()->item_direct(0); //
 					// _know_root->root_item()->count_direct() - 1
@@ -2495,7 +2496,8 @@ boost::intrusive_ptr<i_t> tv_t::tree_empty_controll(void)
 			    return TreeIndex::item_require_treeindex([&]() -> tkm_t* { return _know_root; }, new i_t(it))
 				->url_bind_browser(real_target_url_, std::bind(&tv_t::move, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
 					return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), web::Browser::_defaulthome) || url_equal(it_->field<url_key>(), web::Browser::_defaulthome);
-				});
+				},
+				    browser_ref());
 		    });
 	} else
 		result = _know_model_board->root_item()->child_direct(0);
@@ -4420,11 +4422,12 @@ void tv_t::know_model_save(void)
 
 	// know_root_holder::know_root()->save();
 	// sychronize();
-
-	//	_know_model_board->save(); //
-	std::thread(&tkm_t::save, _know_model_board) //
-	    .join();                                 //.hardware_concurrency(); //
-	//	    .detach();                               // _know_model_board->save();
+	if (!_know_model_board->synchronized()) {
+		//	_know_model_board->save(); //
+		std::thread(&tkm_t::save, _know_model_board) //
+							     //		    .join();                                 //.hardware_concurrency(); //
+		    .detach();                               // _know_model_board->save();
+	}
 }
 
 // Перечитывание дерева веток с диска

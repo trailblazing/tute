@@ -313,6 +313,7 @@ TreeIndex::url_require_item_from_tree(                          //const url_valu
 					assert(equal_(_result));
 				}
 			}
+			//			if (!_tree_view->synchronized())
 			_tree_view->know_model_save();
 
 			assert(_result != _tree_view->know_model_board()->root_item());
@@ -471,7 +472,7 @@ TreeIndex::url_require_item_from_tree(                          //const url_valu
 }
 
 boost::intrusive_ptr<i_t>
-TreeIndex::url_bind_browser(boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, const insert_strategy& view_insert_strategy_, equal_url equal_url_, web::Browser* recommend_browser_)
+TreeIndex::url_bind_browser(boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, const insert_strategy& view_insert_strategy_, equal_url equal_url_, const sd::intrusive_ptr<web::Browser> &brwoser_)
 {
 	//	// boost::intrusive_ptr<TreeItem>   _host = _host;
 	//	auto find_url_ = real_find_url_->value();
@@ -492,9 +493,9 @@ TreeIndex::url_bind_browser(boost::intrusive_ptr<real_url_t<url_value>> real_fin
 		auto _equal = [&](boost::intrusive_ptr<const Binder> b) {
 			return b->host() == host_ && b == sibling_binder && host_->parent() == b->host()->parent() && b->host()->id() == host_->id();
 		};
-		view = recommend_browser_ ? recommend_browser_->find(_equal) : gl_paras->main_window()->find(_equal);
+		view = brwoser_ ? brwoser_->find(_equal) : gl_paras->main_window()->find(_equal);
 	}
-	auto host_browser_ = recommend_browser_ ? recommend_browser_ : view ? view->page()->browser() : gl_paras->main_window()->browser(real_find_url_);
+	auto host_browser_ = brwoser_ ? brwoser_ : view ? view->page()->browser() : gl_paras->main_window()->browser(real_find_url_);
 	assert(host_browser_);
 	auto _current_item = host_browser_->tab_widget()->current_item(); // _tree_view->current_item();
 
@@ -529,7 +530,7 @@ TreeIndex::url_bind_browser(boost::intrusive_ptr<real_url_t<url_value>> real_fin
 }
 
 boost::intrusive_ptr<i_t>
-TreeIndex::url_activate(boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, const std::function<tkm_t*()>& current_model_, boost::intrusive_ptr<i_t> sibling_host_, const insert_strategy& view_insert_strategy_, equal_url equal_, web::Browser* brwoser_) noexcept
+TreeIndex::url_activate(boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, const std::function<tkm_t*()>& current_model_, boost::intrusive_ptr<i_t> sibling_host_, const insert_strategy& view_insert_strategy_, equal_url equal_, sd::intrusive_ptr<web::Browser> const& brwoser_) noexcept
 {
 	//	auto find_url_ = real_find_url_->value();
 	//	assert(to_be_url(detail::to_qstring(find_url_)) != QUrl());

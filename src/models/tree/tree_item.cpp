@@ -2852,6 +2852,8 @@ web::WebView* i_t::activate(const std::function<web::WebView*(const std::functio
 	if (check_view) {
 		auto check_page = check_view->page();
 		auto bro = check_view->browser();
+		assert(check_page);
+//		assert(bro);
 		if (check_page && bro) {
 			if (this != check_view->page()->host().get() || !_binder) {
 				bind(check_page);
@@ -2863,7 +2865,12 @@ web::WebView* i_t::activate(const std::function<web::WebView*(const std::functio
 				v = _binder->activate();
 			else
 				v = check_view; // _binder->page()->view();
+		} else {                        // bro == nullptr
+			bind();
+			v = _binder->activate();
 		}
+		assert(v);
+
 	} else {
 		bind();
 		v = _binder->activate();

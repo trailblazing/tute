@@ -23,8 +23,8 @@ class AppConfig : public QObject {
 	Q_OBJECT
 #endif
 
-	public:
-	AppConfig(std::shared_ptr<gl_para> gl_paras_, QObject *pobj = 0);
+    public:
+	AppConfig(std::shared_ptr<gl_para> gl_paras_, QObject* pobj = 0);
 	~AppConfig();
 
 	// void init(const gl_para &gl_paras_);
@@ -226,9 +226,12 @@ class AppConfig : public QObject {
 	bool enable_decrypt_file_to_trash_directory(void) const;
 	void enable_decrypt_file_to_trash_directory(bool state);
 
-	private:
-	QSettings *_app_conf;
-	QString _config_file_full_name = "";  // было static
+	int topic_number() const;
+	void topic_number(int num);
+
+    private:
+	QSettings* _app_conf;
+	QString _config_file_full_name = ""; // было static
 	QString get_parameter(QString name) const;
 
 	QStringList remove_parameter_from_table(QString removeName, QStringList table);
@@ -330,4 +333,4 @@ QStringList AppConfig::parameter_table<25>(bool withEndSignature);
 template <>
 QStringList AppConfig::parameter_table<26>(bool withEndSignature);
 
-#endif  // __APPCONFIG_H__
+#endif // __APPCONFIG_H__
