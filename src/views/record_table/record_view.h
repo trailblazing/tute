@@ -299,7 +299,7 @@ class rv_t : public QTableView
 	// Вызов действий из контекстного меню или из контроллера для редактирования
 	// инфополей записи
 	void edit_field_context(void);                 // W_SLOT(edit_field_context)
-	void on_doubleclick(const QModelIndex& index); // W_SLOT(on_doubleclick)
+	void on_doubleclick(const QModelIndex& index_proxy_); // W_SLOT(on_doubleclick)
 						       //	QModelIndex previous_index() const;            // W_SLOT(previous_index)
 
 	void assembly_context_menu(const std::map<std::string, QMenu*>& main_menu_map_);

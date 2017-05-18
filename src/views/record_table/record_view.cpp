@@ -1217,33 +1217,44 @@ void rv_t::on_click(const QModelIndex& index_proxy_)
 {
 	// setSelectionMode(QAbstractItemView::SingleSelection);// ExtendedSelection
 	if (index_proxy_.isValid()) {
-		if ( //&&
-		    _previous_index != index_proxy_) _previous_index = index_proxy_;
-		if (_rctrl)
-			_rctrl->index_invoke(index_proxy(index_proxy_));
+		index_proxy ip = index_proxy(index_proxy_);
+		index_source is = _rctrl->index<index_source>(ip);
+		pos_source ps = pos_source(static_cast<QModelIndex>(is).row());
+		if (0 <= ps && ps < _rctrl->row_count()) {
+			if ( //&&
+			    _previous_index != index_proxy_) _previous_index = index_proxy_;
+			if (_rctrl)
+				_rctrl->index_invoke(index_proxy(index_proxy_));
+		}
 	}
 }
 
 // Слот, срабатывающий при нажатии кнопки редактирования записи
-void rv_t::on_doubleclick(const QModelIndex& index)
+void rv_t::on_doubleclick(const QModelIndex& index_proxy_)
 {
 	qDebug() << "In RecordTableView::editFieldContext";
+	if (index_proxy_.isValid()) {
+		index_proxy ip = index_proxy(index_proxy_);
+		index_source is = _rctrl->index<index_source>(ip);
+		pos_source ps = pos_source(static_cast<QModelIndex>(is).row());
+		if (0 <= ps && ps < _rctrl->row_count()) {
+			// Получение индекса выделенного элемента
+			//	QModelIndexList selectItems = selectionModel()->selectedIndexes();
+			//	if (selectItems.size() > 0) {
+			// QModelIndex index = selectItems.at(0);
 
-	// Получение индекса выделенного элемента
-	//	QModelIndexList selectItems = selectionModel()->selectedIndexes();
-	//	if (selectItems.size() > 0) {
-	// QModelIndex index = selectItems.at(0);
+			// globalparameters.getMetaEditor()->switch_pin();
 
-	// globalparameters.getMetaEditor()->switch_pin();
+			// controller->open_website(index); //controller->editFieldContext(index);
 
-	// controller->open_website(index); //controller->editFieldContext(index);
-
-	// Нужно перерисовать окно редактирования чтобы обновились инфополя
-	// делается это путем "повторного" выбора текущего пункта
-	if (_rctrl)
-		_rctrl->index_invoke(index_proxy(index), true); // force to refresh		// аньше было select()
-	// globalparameters.main_window()->editor_switch();
-	//	}
+			// Нужно перерисовать окно редактирования чтобы обновились инфополя
+			// делается это путем "повторного" выбора текущего пункта
+			if (_rctrl)
+				_rctrl->index_invoke(ip, true); // force to refresh		// аньше было select()
+			// globalparameters.main_window()->editor_switch();
+			//	}
+		}
+	}
 }
 
 // Слот, срабатывающий после того, как был передвинут горизонтальный заголовок
