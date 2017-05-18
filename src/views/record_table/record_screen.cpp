@@ -16,6 +16,7 @@
 #include "libraries/flat_control.h"
 #include "libraries/global_parameters.h"
 #include "libraries/qtm/blogger.h"
+#include "libraries/walk_history.h"
 #include "libraries/window_switcher.h"
 #include "main.h"
 #include "models/app_config/app_config.h"
@@ -43,6 +44,7 @@
 extern std::shared_ptr<gl_para> gl_paras;
 extern std::shared_ptr<AppConfig> appconfig;
 extern const char* tree_screen_viewer_name;
+extern WalkHistory walkhistory;
 
 // Виджет, который отображает список записей в ветке
 // c кнопками управления
@@ -1067,9 +1069,9 @@ void rs_t::setup_actions(void)
 			// Установка засветки на перемещенную запись
 			_rctrl->select_as_current(pos_target);
 
-//			// Сохранение дерева веток
-//			// find_object<TreeScreen>(tree_screen_singleton_name)
-//			gl_paras->tree_screen()->view()->know_model_save();
+			//			// Сохранение дерева веток
+			//			// find_object<TreeScreen>(tree_screen_singleton_name)
+			//			gl_paras->tree_screen()->view()->know_model_save();
 		}
 	}); // _record_controller, &RecordController::move_up
 
@@ -1095,9 +1097,9 @@ void rs_t::setup_actions(void)
 			// Установка засветки на перемещенную запись
 			_rctrl->select_as_current(target); //pos_proxy(static_cast<int>(pos_proxy_) - 1)
 
-//			// Сохранение дерева веток
-//			// find_object<TreeScreen>(tree_screen_singleton_name)
-//			gl_paras->tree_screen()->view()->know_model_save();
+			//			// Сохранение дерева веток
+			//			// find_object<TreeScreen>(tree_screen_singleton_name)
+			//			gl_paras->tree_screen()->view()->know_model_save();
 		}
 	}); // _record_controller, &RecordController::move_up
 	// connect(_action_move_up, &QAction::triggered, _tab_widget,
@@ -1124,9 +1126,9 @@ void rs_t::setup_actions(void)
 			// Установка засветки на перемещенную запись
 			_rctrl->select_as_current(target); //pos_proxy(static_cast<int>(pos_proxy_) + 1)
 
-//			// Сохранение дерева веток
-//			// find_object<TreeScreen>(tree_screen_singleton_name)
-//			gl_paras->tree_screen()->view()->know_model_save();
+			//			// Сохранение дерева веток
+			//			// find_object<TreeScreen>(tree_screen_singleton_name)
+			//			gl_paras->tree_screen()->view()->know_model_save();
 		}
 	}); // _record_controller, &RecordController::move_dn
 	// connect(_action_move_dn, &QAction::triggered, _tab_widget,
@@ -1486,7 +1488,7 @@ void rs_t::tools_update()
 			has_selection = item_selection_model->hasSelection();
 			if (!has_selection //&& _tab_widget->count() > 0
 			    ) {
-#endif                          // USE_HAS_SELECTION
+#endif // USE_HAS_SELECTION
 				//				if (_tab_widget) {
 				//					if (_tab_widget->count() > 0) {
 				auto cur_it = _view->current_item();
@@ -1647,14 +1649,21 @@ void rs_t::on_syncro_click(void)
 
 void rs_t::on_walkhistory_previous_click(void)
 {
+	bool drop_flag_status = walkhistory.drop_flag();
+	//	if (_rctrl->view()->current_item()->id() != walkhistory.record_id())
+	walkhistory.drop_flag(false);
 	// find_object<MainWindow>("mainwindow")
-	_blogger->go_walk_history_previous();
+	_blogger->walk_history_previous();
+	walkhistory.drop_flag(drop_flag_status);
 }
 
 void rs_t::on_walkhistory_next_click(void)
 {
+	bool drop_flag_status = walkhistory.drop_flag();
+	walkhistory.drop_flag(false);
 	// find_object<MainWindow>("mainwindow")
-	_blogger->go_walk_history_next();
+	_blogger->walk_history_next();
+	walkhistory.drop_flag(drop_flag_status);
 }
 
 // Возвращение к дереву разделов в мобильном интерфейсе

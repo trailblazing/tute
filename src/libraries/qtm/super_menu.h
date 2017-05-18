@@ -118,9 +118,9 @@ class SuperMenu : public QMenu // EditorContextMenu	// QMenuBar
 	QAction *highlightingAction, *showConsoleAction, *previewAction,
 	    *viewBasicsAction, *viewCatsAction, *viewExcerptAction, *viewWPTagsAction,
 	    *viewTechTagsAction, *viewPingsAction;
-#ifndef Q_WS_MAC
-	QAction* viewToolbarAction;
-#endif
+//#ifndef Q_WS_MAC
+//	QAction* viewToolbarAction;
+//#endif
 
 	// Category menu actions
 	QAction *refreshCatsAction, *updateCatsAction, *addCatAction;
@@ -184,6 +184,7 @@ class SuperMenu : public QMenu // EditorContextMenu	// QMenuBar
 	void handleLastWindowClosed();
 	// void doPreview( bool );
 	void handleConsole(bool);
+
 
     protected:
 	virtual void showEvent(QShowEvent*);

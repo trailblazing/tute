@@ -3218,7 +3218,9 @@ void tv_t::paste_clipboard(
 
 boost::intrusive_ptr<i_t>
 tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex, // std::function<KnowModel*()> _current_model, QModelIndex _current_index
-    boost::intrusive_ptr<i_t> _source_item, const tv_t::substitute_condition& _substitute_condition, bool save_immediately)
+    boost::intrusive_ptr<i_t> _source_item,
+    const tv_t::substitute_condition& _substitute_condition,
+    bool save_immediately)
 {
 	//
 	auto paste_sibling_impl =
@@ -3229,8 +3231,7 @@ tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex, // std::function<KnowMode
 		    boost::intrusive_ptr<i_t> result(nullptr);
 		    auto current_model = _modelindex->current_model();
 		    // auto host_parent_index = _modelindex->host_parent_index();
-		    auto host =
-			_modelindex->host(); // _current_model()->item(_current_index);
+		    auto host = _modelindex->host(); // _current_model()->item(_current_index);
 
 		    assert(host); // make it automatically?
 
@@ -3310,8 +3311,7 @@ tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex, // std::function<KnowMode
 			    // assert(_know_model_board->item_by_id(check->id()));
 
 			    // if(current_parent_valid) {
-			    _alternative_items =
-				current_parent->children_direct(substitute_condition_);
+			    _alternative_items = current_parent->children_direct(substitute_condition_);
 			    // auto _alternative_item_has_no_child_first = [&]
 			    // {boost::intrusive_ptr<TreeItem> result; for(auto i :
 			    // _alternative_items) {if(i->count_direct() == 0) {result = i;
@@ -3429,8 +3429,7 @@ tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex, // std::function<KnowMode
 			    //// Сохранение дерева веток
 			    // know_model_save();
 
-			    select_as_current(
-				TreeIndex::item_require_treeindex(current_model, result));
+			    select_as_current(TreeIndex::item_require_treeindex(current_model, result));
 			    assert(
 				(_source_item == result) ||
 				substitute_condition_(
@@ -3543,9 +3542,7 @@ tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex, // std::function<KnowMode
 				// } catch(std::exception &e) {throw e; } return tree_index; } ();
 				// Вставка новых данных в модель дерева записей
 				result =
-				    TreeLevel::instance(
-					TreeIndex::item_require_treeindex(current_model, host), _source_item)
-					->move();
+				    TreeLevel::instance(TreeIndex::item_require_treeindex(current_model, host), _source_item)->move();
 				assert(result);
 				assert(result != _know_model_board->root_item());
 				// Установка курсора на только что созданную позицию
@@ -3565,8 +3562,7 @@ tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex, // std::function<KnowMode
 				// return il == result->linker() && il->host() == result &&
 				// result->parent() == il->host_parent();
 				// })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-				select_as_current(
-				    TreeIndex::item_require_treeindex(current_model, result)); // setto
+				select_as_current(TreeIndex::item_require_treeindex(current_model, result)); // setto
 				// selectionModel()->select(setto, current_tree_selection_mode);
 				// selectionModel()->setCurrentIndex(setto,
 				// current_tree_current_index_mode);   // ClearAndSelect
@@ -3762,8 +3758,11 @@ tv_t::delete_permanent(const std::function<tkm_t*()>& _current_model, QList<boos
 					// find_object<MainWindow>("mainwindow")
 					auto rs =
 					    dynamic_cast<rs_t*>(gl_paras->vtab_record()->currentWidget());
-					if (rs)
-						rs->blogger()->save_text_context();
+					if (rs) {
+						auto blogger = rs->blogger();
+						if (blogger)
+							blogger->save_text_context();
+					}
 					// Сортировка списка индексов по вложенности методом пузырька
 					// Индексы с длинным путем перемещаются в начало списка
 					for (int i = 0; i < items_candidate.size(); i++)
@@ -3997,8 +3996,11 @@ QModelIndexList tv_t::copy(void)
 	// Сохраняется текст в окне редактирования
 	// find_object<MainWindow>("mainwindow")
 	auto rs = dynamic_cast<rs_t*>(gl_paras->vtab_record()->currentWidget());
-	if (rs)
-		rs->blogger()->save_text_context();
+	if (rs) {
+		auto blogger = rs->blogger();
+		if (blogger)
+			blogger->save_text_context();
+	}
 	// Получение списка индексов QModelIndex выделенных элементов
 	// QModelIndexList _origin_index_list = selectionModel()->selectedIndexes();
 	QModelIndexList _selectitems =

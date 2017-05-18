@@ -166,7 +166,8 @@ class wn_t : public QMainWindow {
 	web::Browser* dumy_browser() const;
 	QStringListModel* stringlistmodel() const;
 	web::DownloadManager* download_screen() const;
-public slots:
+
+    public slots:
 	void application_exit(void);
 	void application_fast_exit(void);
 	void commit_data(QSessionManager& manager);
@@ -239,9 +240,14 @@ public slots:
 	QSplitter* _h_record_splitter;
 	QSplitter* _h_tree_splitter;
 	// QSplitter           *_h_splitter;
+	HidableTab* _vtab_record;
+	web::Docker<web::Browser>* _browser_docker;
+	web::Docker<Blogger>* _editor_docker;
+	ts_t* _tree_screen;
+	FindScreen* _find_screen;
 	QStatusBar* _statusbar;
 	WindowSwitcher* _switcher;
-	SysTrayIcon* _tray_icon = nullptr;
+
 	QAction* _quit_action;
 	// QMenu *_tray_icon_menu;
 	// bool _treetable_hidden;       // =
@@ -259,12 +265,9 @@ public slots:
 	QMenu* _toolsmenu;
 	QMenu* _helpmenu;
 
-	web::Docker<web::Browser>* _browser_docker;
-	HidableTab* _vtab_record;
-	web::Docker<Blogger>* _editor_docker;
-	ts_t* _tree_screen;
+
 	QStringListModel* _stringlistmodel;
-	FindScreen* _find_screen;
+	SysTrayIcon* _tray_icon = nullptr;
 	// web::DownloadManager	*_download;
 
 

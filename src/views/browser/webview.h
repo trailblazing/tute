@@ -422,7 +422,7 @@ namespace web {
 
 		web::TabWidget* tabmanager() const;
 
-		void current_view_global_consistency();
+		bool current_view_global_consistency();
 
 		ToolbarSearch *toolbarsearch() const;
 //		void toolbarsearch(ToolbarSearch* tbs);

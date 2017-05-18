@@ -1920,11 +1920,15 @@ namespace web {
 
 	WebView::~WebView()
 	{
-		//	        if(_page){
-		//	                // delete _page;
-		//	                // _page = nullptr; //
-		//	                // emit _page->close_requested();
-		//	                _page->deleteLater();
+		//		//	        if(_page){
+		//		//	                // delete _page;
+		//		//	                // _page = nullptr; //
+		//		//	                // emit _page->close_requested();
+		//		//	                _page->deleteLater();
+		//		//		}
+		//		if (_toolbarsearch) {
+		//			_toolbarsearch->deleteLater();
+		//			_toolbarsearch = nullptr;
 		//		}
 	}
 
@@ -2117,8 +2121,10 @@ namespace web {
 
 		//	        _home_connection
 		//
-		if (_tab_widget->currentWebView() != this)
-			emit static_cast<QTabWidget*>(_tab_widget)->currentChanged(_tab_widget->webViewIndex(this));
+		if (_tab_widget->currentWebView() != this) {
+			_tab_widget->select_as_current(this);
+			//emit static_cast<QTabWidget*>(_tab_widget)->currentChanged(_tab_widget->webViewIndex(this));
+		}
 
 		QWebEngineView::activateWindow();
 	}
@@ -2397,8 +2403,9 @@ namespace web {
 		return v;
 	}
 
-	void WebView::current_view_global_consistency()
+	bool WebView::current_view_global_consistency()
 	{
+		bool result = false;
 		auto _record_screen = _browser->record_screen();
 		wn_t* _main_window = gl_paras->main_window();
 		// HidableTabWidget	*_vtab_tree	= _mainwindow->vtab_tree();
@@ -2440,10 +2447,13 @@ namespace web {
 
 			//			if (_record_screen && _vtab_record->currentWidget() != _record_screen)
 			//				_vtab_record->setCurrentWidget(_record_screen);
+			result = true;
 		}
 #ifdef USE_EDITOR_WRAP
 		_page->_blogger->name(_page->title());
 #endif // USE_EDITOR_WRAP
+
+		return result;
 	}
 	ToolbarSearch* WebView::toolbarsearch() const { return _toolbarsearch; }
 	//	void WebView::toolbarsearch(ToolbarSearch* tbs) { _toolbarsearch = tbs; }

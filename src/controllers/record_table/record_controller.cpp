@@ -212,7 +212,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 	index_proxy index_proxy_ = index<index_proxy>(pos_proxy_); // Модельный индекс в Proxy модели
 
 	index_source index_source_ = index<index_source>(pos_proxy_);
-	auto target_it = index<boost::intrusive_ptr<i_t>>(index_source_);
+	auto target = index<boost::intrusive_ptr<i_t>>(index_source_);
 	auto qindex_proxy = static_cast<QModelIndex>(index_proxy_);
 	auto target_pos_poxy_ = qindex_proxy.row();
 	pos_proxy target_pos_proxy(target_pos_poxy_);
@@ -278,7 +278,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 				_view->edit(qindex_proxy);
 				_view->update(qindex_proxy);
 				//
-				auto real_index_source_ = _source_model->index(target_it); //current_index();
+				auto real_index_source_ = _source_model->index(target); //current_index();
 				auto result_index_proxy_ = index<index_proxy>(real_index_source_);
 				assert(result_index_proxy_ == index_proxy_);
 				// В мобильной версии реакции на выбор записи нет (не обрабатывается
@@ -298,6 +298,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 				// this->setFocus();   // ?
 				pos_source pos_source_ = index<pos_source>(pos_proxy_);
 				auto it = index<boost::intrusive_ptr<i_t>>(pos_source_);
+				assert(it == target);
 				if (this->_view->hasFocus()) {                                                                                                // view is the curretn controller
 					if (_tab_widget->currentIndex() != static_cast<int>(pos_source_)) _tab_widget->select_as_current(it->page()->view()); // setCurrentIndex(static_cast<int>(pos_source_));
 					auto tree_screen = gl_paras->main_window()->tree_screen();
@@ -305,7 +306,9 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 				}
 				if (it) {
 					//				if (it->page()) it->page()
-					_blogger->metaeditor_sychronize();
+//					boost::intrusive_ptr<i_t> browser_current = _tab_widget->current_item();
+//					assert(browser_current == it); // ?failure
+					_blogger->history_sychronize(it);
 				}
 #ifdef USE_HAS_SELECTION
 				bool has_selection = item_selection_model->hasSelection();

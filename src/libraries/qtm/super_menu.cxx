@@ -94,7 +94,8 @@ SuperMenu::SuperMenu(Blogger* bloger_, QWidget* parent, SysTrayIcon* sti)
 	recentFiles = _app->recentFiles();
 	updateRecentFileMenu();
 	openRecent->setMenu(recentFilesMenu);
-	connect(_app, SIGNAL(recent_files_updated(QList<app::RecentFile>)), this, SLOT(set_recent_files(QList<app::RecentFile>)));
+	void (sapp_t::*_set_recent_files)(const QList<std::shared_ptr<app::RecentFile>>& rfs) = &sapp_t::recent_files_updated;
+	connect(_app, _set_recent_files, this, &SuperMenu::set_recent_files);
 
 	// File menu actions
 	saveAction = fileMenu->addAction(tr("&Save"));
@@ -185,10 +186,10 @@ SuperMenu::SuperMenu(Blogger* bloger_, QWidget* parent, SysTrayIcon* sti)
 	highlightingAction = viewMenu->addAction(tr("HTML High&lighting"));
 	highlightingAction->setCheckable(true);
 	viewMenu->addSeparator();
-#ifndef Q_OS_MAC
-	viewToolbarAction = viewMenu->addAction(tr("&Toolbar"));
-	viewToolbarAction->setCheckable(true);
-#endif
+//#ifndef Q_OS_MAC
+//	viewToolbarAction = viewMenu->addAction(tr("&Toolbar"));
+//	viewToolbarAction->setCheckable(true);
+//#endif
 	showConsoleAction = viewMenu->addAction(tr("&Console"));
 	showConsoleAction->setCheckable(true);
 	previewAction = viewMenu->addAction(tr("Entry in p&review"));
@@ -256,7 +257,7 @@ SuperMenu::SuperMenu(Blogger* bloger_, QWidget* parent, SysTrayIcon* sti)
 	//	pasteAction->setShortcut(QKeySequence::fromString("Ctrl+V"));//?, make system shortcut does not work
 	//	findAction->setShortcut(QKeySequence::fromString("Ctrl+F"));
 	findAgainAction->setShortcut(QKeySequence::fromString("Ctrl+G"));
-//	boldAction->setShortcut(QKeySequence::fromString("Ctrl+B"));
+	//	boldAction->setShortcut(QKeySequence::fromString("Ctrl+B"));
 	italicAction->setShortcut(QKeySequence::fromString("Ctrl+I"));
 	imageAction->setShortcut(QKeySequence::fromString("Ctrl+J"));
 	linkAction->setShortcut(QKeySequence::fromString("Ctrl+L"));
@@ -871,7 +872,7 @@ void SuperMenu::blogger_changed(Blogger* bloger_)
 		// Assign file menu actions
 		connect(saveAction, SIGNAL(triggered(bool)), bloger_, SLOT(save()));
 		connect(saveAsAction, SIGNAL(triggered(bool)), bloger_, SLOT(saveAs()));
-		connect(saveAllAction, SIGNAL(triggered(bool)), bloger_, SLOT(saveAll()));
+		connect(saveAllAction, &QAction::triggered, [&](bool) { sapp_t::instance()->saveSession(); });
 		connect(exportAction, SIGNAL(triggered(bool)), bloger_, SLOT(exportEntry()));
 		connect(uploadAction, SIGNAL(triggered(bool)), bloger_, SLOT(uploadFile()));
 		connect(refreshBlogListAction, SIGNAL(triggered(bool)), bloger_, SLOT(refreshBlogList()));
@@ -953,9 +954,9 @@ void SuperMenu::blogger_changed(Blogger* bloger_)
 
 		// Assign view menu actions
 		connect(highlightingAction, SIGNAL(triggered(bool)), bloger_, SLOT(setHighlighting(bool)));
-#ifndef Q_OS_MAC
-		CON_TRIG(viewToolbarAction, SLOT(setToolBarVisible(bool)));
-#endif
+//#ifndef Q_OS_MAC
+//		CON_TRIG(viewToolbarAction, SLOT(setToolBarVisible(bool)));
+//#endif
 		connect(showConsoleAction, SIGNAL(triggered(bool)), bloger_, SLOT(handleConsole(bool)));
 		/* connect( showConsoleAction, SIGNAL( triggered( bool ) ),
                                 this, SLOT( setConsoleActionTitle( bool ) ) );
@@ -998,8 +999,10 @@ void SuperMenu::blogger_changed(Blogger* bloger_)
 void SuperMenu::handleConsole(bool isChecked)
 {
 	if (_blogger)
-		_blogger->handleConsole(isChecked);
+	    _blogger->handleConsole(isChecked);
 }
+
+
 
 void SuperMenu::setConsoleActionTitle(bool consoleShown)
 {

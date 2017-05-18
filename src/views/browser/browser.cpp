@@ -762,11 +762,12 @@ namespace web {
 	    , _find_screen(gl_paras->find_screen())
 	    , _main_window(gl_paras->main_window())
 	    , _navigater([&] {
-		 _navigater = nullptr;
-		auto nav=new QToolBar(this);
-		nav->setObjectName(gl_para::_browser_navigater_name);
-		nav->setMaximumWidth(130);
-		return nav; }())
+		    _navigater = nullptr;
+		    auto nav = new QToolBar(this);
+		    nav->setObjectName(gl_para::_browser_navigater_name);
+		    nav->setMaximumWidth(130);
+		    return nav;
+	    }())
 	    //	    , _toolbarsearch(_find_screen->toolbarsearch())
 	    , _bookmarkstoolbar(new BookmarksToolBar(::sapp_t::bookmarksManager()->bookmarksModel(), this))
 	    , _file_menu([&]() -> QMenu* {
@@ -930,9 +931,9 @@ namespace web {
 				}
 			}
 		}
-		if (!_tab_widget->find([&](boost::intrusive_ptr<const ::Binder> b) {
-			    return b->host()->id() == _tree_screen->view()->current_item()->id();
-		    })) {
+		// update tree current
+		auto current_tree_id = _tree_screen->view()->current_item()->id();
+		if (!_tab_widget->find([&](boost::intrusive_ptr<const ::Binder> b) { return b->host()->id() == current_tree_id; })) {
 			auto _rctrl = _tab_widget->record_screen()->record_ctrl();
 			if (_rctrl) {
 				auto it = _rctrl->view()->current_item();
@@ -1292,10 +1293,10 @@ namespace web {
 		//// connect(quit, &QAction::triggered, _main_window,
 		///&MainWindow::application_exit);
 		//// filemenu->addAction(quit);
-		auto append_quit_menu = [&]() {
-			_file_menu->addAction(_main_window->quit_action());
-		};
-		append_quit_menu();
+		//		auto append_quit_menu = [&]() {
+		_file_menu->addAction(_main_window->quit_action());
+		//		};
+		//		append_quit_menu();
 		//// _tree_screen->buttonmenu()->addMenu(filemenu);
 	}
 
@@ -2288,8 +2289,9 @@ namespace web {
 		// boost::intrusive_ptr<TreeItem> result(nullptr);
 		// boost::intrusive_ptr<TreeItem> tab_brother =
 		// record_index->target_sibling();
-		boost::intrusive_ptr<i_t> result = record_index->host();
-		if (result->is_lite()) result->to_fat();
+		boost::intrusive_ptr<i_t> result(nullptr);
+		boost::intrusive_ptr<i_t> target = record_index->host();
+		if (target->is_lite()) target->to_fat();
 		// clean();
 		// assert(_it->is_registered_to_browser() || _it->field("url") ==
 		// web::Browser::_defaulthome);
@@ -2303,7 +2305,7 @@ namespace web {
 		// {
 		// for(auto &i : _mainWindows) {
 		auto url_euql = [&](boost::intrusive_ptr<const ::Binder> b) {
-			return url_equal(detail::to_qstring(b->host()->field<home_key>()), detail::to_qstring(result->field<home_key>())) && b->host()->id() == result->id() && b == result->binder();
+			return url_equal(detail::to_qstring(b->host()->field<home_key>()), detail::to_qstring(target->field<home_key>())) && b->host()->id() == target->id() && b == target->binder();
 		};
 		view = _tab_widget->find(url_euql); // if _item->field("url") ==
 		// web::Browser::_defaulthome , force
@@ -2317,13 +2319,19 @@ namespace web {
 		////            break;
 		// } else
 		if (!view) {
-			{
-				//				auto view_found =
-				//gl_paras->main_window()->find(url_euql);
-				//				if(view_found &&
-				//view_found->tabmanager() != _tab_widget)
-				//view_found->tabmanager()->closeTab(view_found->tabmanager()->indexOf(view_found));
+			//			{
+			auto view_found =
+			    gl_paras->main_window()->find(url_euql);
+			if (view_found) {
+				auto new_tab = view_found->tabmanager();
+				if (new_tab) {
+					if (new_tab != _tab_widget) {
+						//						view_found->close();
+						new_tab->closeTab(new_tab->indexOf(view_found));
+					}
+				}
 			}
+			//			}
 			view = _tab_widget->find(
 			    [&](boost::intrusive_ptr<const ::Binder> b) {
 				    return url_equal(detail::to_qstring(b->host()->field<home_key>()), detail::to_qstring(Browser::_defaulthome)) || url_equal(detail::to_qstring(b->host()->field<url_key>()), detail::to_qstring(Browser::_defaulthome));
@@ -2372,21 +2380,39 @@ namespace web {
 			// else {
 			if (!view) {
 				view = _tab_widget->newTab(record_index, make_current); // , false
-				result = view->page()->binder()->host();
+				auto page = view->page();
+				if (page) {
+					result = page->binder()->host();
+					if (result != target) result = page->bind(target);
+				}
 				//// auto load
 				// }
 
 				////            tab->setCurrentWidget(dp.second);   //
 				///tab->setCurrentIndex(tab->webViewIndex(dp.second));
 				////            dp.second->show();
+				assert(view);
+				assert(target == result);
+				assert(target->binder()->integrity_external(target, view->page()));
 			} else {
 				auto page = view->page();
 				if (page) {
-					page->bind(result);
+					result = page->bind(target);
 				}
+				assert(view);
+				assert(target == result);
+				assert(target->binder()->integrity_external(target, view->page()));
 			}
-		} else
-			result = view->page()->host();
+		} else {
+			auto page = view->page();
+			if (page) {
+				result = page->binder()->host();
+				if (result != target) result = page->bind(target);
+			}
+			assert(view);
+			assert(target == result);
+			assert(target->binder()->integrity_external(target, view->page()));
+		}
 		// tab->setCurrentWidget(dp.second);
 		// dp.second->show();
 		// assert(dp.first);
@@ -2396,10 +2422,10 @@ namespace web {
 		if (_vtab_record->currentWidget() != _record_screen && make_current)
 			_vtab_record->setCurrentWidget(_record_screen);
 		assert(view);
-		assert(result);
-		assert(result->binder()->integrity_external(result, view->page()));
+		assert(target == result);
+		assert(target->binder()->integrity_external(target, view->page()));
 
-		return result; // _mainWindows[0];
+		return target; // _mainWindows[0];
 	}
 	//#ifdef USE_SIGNAL_CLOSE
 	//	sd::intrusive_ptr<rs_t>

@@ -70,11 +70,11 @@ struct TreeIndex
 	boost::intrusive_ptr<i_t> host() const;
 	int sibling_order() const;
 	//	static boost::intrusive_ptr<TreeIndex> instance(const std::function<km_t*()> &current_model, boost::intrusive_ptr<TreeItem> host_parent, int sibling_order = 0);
-	boost::intrusive_ptr<i_t> url_bind_browser(boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, const insert_strategy& _view_insert_strategy, equal_url _equal, sd::intrusive_ptr<web::Browser> const& brwoser_); // boost::intrusive_ptr<TreeItem>   tab_brother,
+	boost::intrusive_ptr<i_t> url_bind_browser(boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, const insert_strategy& _view_insert_strategy, const equal_url _equal, sd::intrusive_ptr<web::Browser> const& brwoser_); // boost::intrusive_ptr<TreeItem>   tab_brother,
 
 	static boost::intrusive_ptr<TreeIndex> item_require_treeindex(const std::function<tkm_t*()>& current_model_, boost::intrusive_ptr<i_t> host_);
-	static boost::intrusive_ptr<i_t> url_require_item_from_tree(boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, const insert_strategy& tree_view_insert_strategy_, equal_url equal_);
-	static boost::intrusive_ptr<i_t> url_activate(boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, const std::function<tkm_t*()>& current_model_, boost::intrusive_ptr<i_t> sibling_host_, const insert_strategy& view_insert_strategy_, equal_url equal_, sd::intrusive_ptr<web::Browser> const& brwoser_) noexcept;
+	static boost::intrusive_ptr<i_t> url_require_item_from_tree(boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, const insert_strategy& tree_view_insert_strategy_, const equal_url equal_);
+	static boost::intrusive_ptr<i_t> url_activate(boost::intrusive_ptr<real_url_t<url_value>> real_find_url_, const std::function<tkm_t*()>& current_model_, boost::intrusive_ptr<i_t> sibling_host_, const insert_strategy& view_insert_strategy_, const equal_url equal_, sd::intrusive_ptr<web::Browser> const& brwoser_) noexcept;
 	//    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<RecordModel::ModelIndex> modelindex, const KnowView::paste_strategy &_view_paste_strategy, equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();});
 	static boost::intrusive_ptr<const i_t> is_ancestor_of(boost::intrusive_ptr<const i_t> target, boost::intrusive_ptr<const i_t> reference);
 
