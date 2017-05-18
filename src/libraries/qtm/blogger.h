@@ -175,7 +175,7 @@ class Blogger : public QMainWindow
 	//	rs_t *record_screen();
 	web::Docker<Blogger>* editor_docker();
 	//	static QString purify_topic(const QString &topic);
-	void metaeditor_sychronize();
+	void history_sychronize(boost::intrusive_ptr<i_t> current_item);
 
     private:
 	void doUiSetup();
@@ -447,8 +447,9 @@ class Blogger : public QMainWindow
 	void doPreview(bool, bool markdownFailed = false);
 	void handleConsole(bool);
 	void clearConsole();
-	// void setToolBarVisible(bool);
-
+//#ifndef Q_OS_MAC
+//	void setToolBarVisible(bool);
+//#endif
 	void file_print_preview();
 	void file_print();
 	void file_print_pdf();
@@ -456,6 +457,7 @@ class Blogger : public QMainWindow
 
 	//	void on_record_screen_close_requested();
 	//	void on_browser_close_requested();
+
 
     protected:
 	QTextBrowser* _preview_window;
@@ -674,9 +676,9 @@ class Blogger : public QMainWindow
 	void save_text_context();
 	void save_editor_cursor_position();
 	void save_editor_scrollbar_position();
-	void go_walk_history();
-	void go_walk_history_next();
-	void go_walk_history_previous();
+	void walk_history_global();
+	void walk_history_next();
+	void walk_history_previous();
 	void restore_editor_cursor_position();
 	void restore_editor_scrollbar_position();
 	//	QString find_file_name_in_current_folder(const QString

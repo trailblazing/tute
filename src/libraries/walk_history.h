@@ -33,40 +33,49 @@ class WalkHistory : public QObject {
 	Q_OBJECT
 #endif
 
-	public:
+    public:
 	WalkHistory(void);
 	~WalkHistory(void);
 
 	void clear(void);
 
 	template <int direction>
-	void add(const id_value &_record_id, int _cursor_position,
-	         int _scrollbar_position);  // , int mode = WALK_HISTORY_GO_NONE
+	void add(const id_value& _record_id, int _cursor_position, int _scrollbar_position); // , int mode = WALK_HISTORY_GO_NONE
 
 	// QString tree_root_id();
-	id_value record_id() const;
-	int cursor_position(const id_value &id);
-	int scrollbar_position(const id_value &id);
-	void remove_history_data(const id_value &id);
-	void set_drop(bool flag);
+	id_value record_at_iterator() const;
+	int cursor_position(const id_value& id);
+	int scrollbar_position(const id_value& id);
+	void remove_history_data(const id_value& id);
+	void drop_flag(bool flag);
 
-	protected:
-	bool _drop_flag;
+	bool drop_flag() const;
+
+	void append(const id_value& _record_id);
+
+    protected:
+	bool _drop_flag = false;
 
 	void print(void);
 
-	// Эти методы видимо ненужны, подумать
-	void switch_to_previous(void);
-	void switch_to_next(void);
+	//	// Эти методы видимо ненужны, подумать
+	//	void switch_to_previous(void);
+	//	void switch_to_next(void);
 
-	void check_id(const id_value &id);
+	void clear_invalid_from_tree(const id_value& id);
 
-	// Указатель в списке истории посещения записей
-	// Обычно указывает на последнюю в списке запись
-	int _history_point;
+	// The pointer in the list of records visited history, usually indicates the last entry in the list.
+	// But if there is a movement backward-forward in the history, it is accordingly shifted
+	int _history_iterator = -1;
+
+	// Pointer to the point in the history in which the movement began
+	// If the user has moved back, and then forward, then when the "_history_iterator" reaches this point,
+	// the "_history_iterator" pointer immediately moves to the last record, and "_leave_mark_point" becomes unused
+	// (set to -1)
+	int _leave_mark_point = -1;
 
 	// Список идентификаторов посещаемых записей
-	QStringList history_id;
+	QStringList _history_ids;
 
 	// Для каждого идентификатора запоминается позиция курсора и прокрутки
 	QMap<id_value, WALK_HISTORY_DATA> _data;
@@ -75,10 +84,10 @@ class WalkHistory : public QObject {
 };
 
 template <>
-void WalkHistory::add<WALK_HISTORY_GO_NONE>(const id_value &_record_id, int _cursor_position, int _scrollbar_position);
+void WalkHistory::add<WALK_HISTORY_GO_NONE>(const id_value& _record_id, int _cursor_position, int _scrollbar_position);
 template <>
-void WalkHistory::add<WALK_HISTORY_GO_PREVIOUS>(const id_value &_record_id, int _cursor_position, int _scrollbar_position);
+void WalkHistory::add<WALK_HISTORY_GO_PREVIOUS>(const id_value& _record_id, int _cursor_position, int _scrollbar_position);
 template <>
-void WalkHistory::add<WALK_HISTORY_GO_NEXT>(const id_value &_record_id, int _cursor_position, int _scrollbar_position);
+void WalkHistory::add<WALK_HISTORY_GO_NEXT>(const id_value& _record_id, int _cursor_position, int _scrollbar_position);
 
-#endif  // _WALKHISTORY_H_
+#endif // _WALKHISTORY_H_

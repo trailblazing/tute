@@ -2853,7 +2853,7 @@ web::WebView* i_t::activate(const std::function<web::WebView*(const std::functio
 		auto check_page = check_view->page();
 		auto bro = check_view->browser();
 		assert(check_page);
-//		assert(bro);
+		//		assert(bro);
 		if (check_page && bro) {
 			if (this != check_view->page()->host().get() || !_binder) {
 				bind(check_page);
@@ -2876,7 +2876,7 @@ web::WebView* i_t::activate(const std::function<web::WebView*(const std::functio
 		v = _binder->activate();
 	}
 	assert(v);
-	v->current_view_global_consistency();
+	assert(v->current_view_global_consistency());
 
 	return v;
 }

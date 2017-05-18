@@ -7,7 +7,7 @@ Currently,
 
 It has a note component working on topics.
 
-It has an embedded and customized web browser, which provides an easy way to combine tabs, bookmarks and history management (the browser currently derived from Qt::WebEngine (Chromium-based)).
+It has an embedded and customized web browser, which provides an easy way to combine tabs, bookmarks and history management together (the browser currently derived from Qt::WebEngine (Chromium-based)).
 
 Local and internet search functions come out from the note and the browser.
 

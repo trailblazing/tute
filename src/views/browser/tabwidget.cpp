@@ -1141,15 +1141,34 @@ namespace web {
 	{
 		auto index = webViewIndex(v);
 		if (currentIndex() != index) {
-			setCurrentIndex(index);
-			auto tree_screen = gl_paras->main_window()->tree_screen();
+			emit static_cast<QTabWidget*>(this)->currentChanged(index); //setCurrentIndex(index);
+
 			auto page = v->page();
 			//		if(!v->isActiveWindow()) v->activateWindow();
 			if (page) {
-				auto it = v->page()->host();
-				if (it) {
-					if (static_cast<QModelIndex>(tree_screen->view()->source_model()->index(it)).isValid()) {
-						if (tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_screen->view()->source_model(); }, it));
+				auto _target_item = v->page()->host();
+				if (_target_item) {
+					assert(currentWebView() != _target_item->page()->view());
+					_target_item->add_rating();
+					auto _tree_view = _tree_screen->view();
+					QModelIndex index_on_tree = _tree_view->source_model()->index(_target_item);
+					if (!index_on_tree.isValid()) {
+						if (!static_cast<QModelIndex>(_tree_view->know_model_board()->index(_target_item)).isValid()) {
+							auto _url = QUrl(_target_item->field<url_key>()); //
+							_target_item = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(_target_item->field<url_key>(),
+							    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+								    return TreeIndex::url_require_item_from_tree(real_target_url_, //real_url_t<url_value>::instance(_target_item->field<url_key>()),
+									std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
+										return url_equal(detail::to_string(it_->field<home_key>()), _url.toString().toStdString()) || url_equal(detail::to_string(it_->field<url_key>()), _url.toString().toStdString());
+									});
+							    });
+						}
+						_tree_view->cursor_focus(_target_item);
+						index_on_tree = _tree_view->source_model()->index(_target_item);
+						assert(index_on_tree.isValid());
+					}
+					if (index_on_tree.isValid()) { // static_cast<QModelIndex>(_tree_screen->view()->source_model()->index(_target_item)).isValid()
+						if (_tree_screen->view()->current_item() != _target_item) _tree_screen->view()->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_screen->view()->source_model(); }, _target_item));
 						auto _rctrl = _record_screen->record_ctrl();
 						if (_rctrl) {
 
@@ -1158,20 +1177,66 @@ namespace web {
 							QItemSelectionModel* item_selection_model = _record_view->selectionModel();
 							bool has_selection = item_selection_model->hasSelection();
 #endif // USE_HAS_SELECTION
-							if (_rctrl->view()->current_item() != it
+							if (_rctrl->view()->current_item() != _target_item
 #ifdef USE_HAS_SELECTION
 							    || !has_selection
 #endif // USE_HAS_SELECTION
 
 							    )
-								_rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(index)));
+								_rctrl->select_as_current(_rctrl->index<pos_proxy>(_target_item)); // pos_source(index)
 						}
-						if (page->title() != it->field<name_key>()) page->record_info_update(page->url(), page->title());
-						_main_window->synchronize_title(it->field<name_key>());
+						if (page->title() != _target_item->field<name_key>()) page->record_info_update(page->url(), page->title());
+						_main_window->synchronize_title(_target_item->field<name_key>());
 
-						it->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1));
-					} else
+						if (!v->current_view_global_consistency()) _target_item->activate(std::bind(&TabWidget::find, this, std::placeholders::_1));
+					}
+#ifdef USE_PREVIOUS_INDEX
+					else {
+						auto tree_current = _tree_view->current_item();
+						auto rctrl = _record_screen->record_ctrl();
+						if (rctrl) {
+							auto _index_on_record_table = rctrl->source_model()->index(tree_current);
+							if (((QModelIndex)_index_on_record_table).isValid()) {
+								auto pos_source_ = rctrl->index<pos_source>(_index_on_record_table);
+								if (currentIndex() != pos_source_) setCurrentIndex(pos_source_); //currentChanged(pos_source_);
+							} else {
+								auto index_tree_current = _tree_view->current_index();
+								if (index_tree_current.isValid()) {
+									_tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_view->source_model(); }, //tree_current->parent(),
+									    tree_current));                                                                                         //
+								} else {
+									auto tree_previous = _tree_view->previous_index();
+									auto _tree_it_previous =
+									    _tree_view->source_model()->item(tree_previous);
+									if (tree_previous.isValid()) {
+										_tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_view->source_model(); }, //_tree_it_previous->parent(),
+										    _tree_it_previous));                                                                                    // _tree_view->index_invoke(tree_previous);
+									}
+								}
+							}
+						}
+					}
+
+#else
+					else {
 						closeTab(index);
+					}
+#endif
+					auto _main_nwindow = gl_paras->main_window();
+					if (!_main_nwindow->windowTitle().contains(v->page()->title())) {
+						//						auto page = view_current->page();
+						//						auto _target_item = page->host();
+						//						if (page && _target_item) {
+						if (page->title() != _target_item->field<name_key>()) page->record_info_update(page->url(), page->title());
+						_main_window->setWindowTitle(tr(QString(QString("%1 - ") + program_title).toStdString().c_str()).arg(_target_item ? detail::to_string(_target_item->field<name_key>()).c_str() : ""));
+						//						}
+					}
+					assert(_blogger);
+#ifdef USE_EDITOR_WRAP
+					if (_blogger->item() != _target_item)
+
+#endif                                                                                     // USE_EDITOR_WRAP
+						emit page->become_current(page->binder()); // metaeditor->bind(record);
 				}
 			}
 		}
@@ -1231,100 +1296,99 @@ namespace web {
 	{ // switch tab
 
 		const int index = index_;
-		auto synchronize = [&](WebView* view_current) {
-			view_current->setFocus();
+		//		auto synchronize = [&](WebView* view_current) { // move to  TabWidget::select_as_current
 
-			// auto controller = webView->recordtablecontroller();
-			auto _target_item = view_current->page()->host();
-			if (_target_item) { // controller != nullptr &&
-				// QModelIndex proxyindex =
-				// controller->convertIdToProxyIndex(record->getField("id"));
-				// int position = controller->convertProxyIndexToPos(proxyindex);
-				// RecordTableView *recordtableview = controller->getView();
-				// if(recordtableview)recordtableview->setSelectionToPos(position); //
-				// work
-				view_current->setFocus();
-				_target_item->add_rating();
-				auto _tree_view = _tree_screen->view();
-				QModelIndex index_on_tree = _tree_view->source_model()->index(_target_item);
-				if (!index_on_tree.isValid()) {
-					if (!static_cast<QModelIndex>(_tree_view->know_model_board()->index(_target_item)).isValid()) {
-						auto _url = QUrl(_target_item->field<url_key>()); //
-						_target_item = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(_target_item->field<url_key>(),
-						    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
-							    return TreeIndex::url_require_item_from_tree(real_target_url_, //real_url_t<url_value>::instance(_target_item->field<url_key>()),
-								std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-									return url_equal(detail::to_string(it_->field<home_key>()), _url.toString().toStdString()) || url_equal(detail::to_string(it_->field<url_key>()), _url.toString().toStdString());
-								});
-						    });
-					}
-					_tree_view->cursor_focus(_target_item);
-					index_on_tree = _tree_view->source_model()->index(_target_item);
-					assert(index_on_tree.isValid());
-				}
-				if (index_on_tree.isValid()) {
-					if (_target_item != _tree_view->current_item()) _tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_view->source_model(); }, _target_item));
-					auto _rctrl = _record_screen->record_ctrl();
-					if (_rctrl) {
-						auto _record_view = _rctrl->view();
-#ifdef USE_HAS_SELECTION
-						QItemSelectionModel* item_selection_model = _record_view->selectionModel();
-						bool has_selection = item_selection_model->hasSelection();
-#endif // USE_HAS_SELECTION
-						if ((_record_view->current_item() != _target_item) || (currentWebView() != _target_item->page()->view())
-#ifdef USE_HAS_SELECTION
-						    || !has_selection
-#endif // USE_HAS_SELECTION
-						    )
-							_rctrl->select_as_current(_rctrl->index<pos_proxy>(_target_item));
-					}
-				}
-				// else{
-				// auto _tree_it_current = _tree_view->current_item();
-				// auto _index_tree_it_on_record_table =
-				// _record_controller->source_model()->index(_tree_it_current);
-				// if(((QModelIndex)_index_tree_it_on_record_table).isValid()){
-				// auto pos_source =
-				// _record_controller->index<PosSource>(_index_tree_it_on_record_table);
-				// currentChanged(pos_source);
-				// }else{
-				// auto index_tree_current = _tree_view->current_index();
-				// if(index_tree_current.isValid()){
-				// _tree_view->select_as_current(TreeIndex::instance([&] {return
-				// _tree_view->source_model(); }, _tree_it_current->parent(),
-				// _tree_it_current));	//
-				// }else{
-				// auto tree_previous = _tree_view->previous_index();
-				// auto _tree_it_previous =
-				// _tree_view->source_model()->item(tree_previous);
-				// if(tree_previous.isValid()){
-				// _tree_view->select_as_current(TreeIndex::instance([&] {return
-				// _tree_view->source_model(); }, _tree_it_previous->parent(),
-				// _tree_it_previous));	// _tree_view->index_invoke(tree_previous);
-				// }
-				// }
-				// }
-				// }
-				auto _main_nwindow = gl_paras->main_window();
-				if (!_main_nwindow->windowTitle().contains(
-					view_current->page()->title())) {
-					auto page = view_current->page();
-					auto it = page->host();
-					if (page && it) {
-						if (page->title() != it->field<name_key>()) page->record_info_update(page->url(), page->title());
-						_main_window->setWindowTitle(tr(QString(QString("%1 - ") + program_title).toStdString().c_str()).arg(it ? detail::to_string(it->field<name_key>()).c_str() : ""));
-					}
-				}
-				assert(_blogger);
-#ifdef USE_EDITOR_WRAP
-				if (_blogger->item() != _target_item)
+		//			view_current->setFocus();
 
-#endif                                                                                                             // USE_EDITOR_WRAP
-					emit view_current->page()->become_current(view_current->page()->binder()); // metaeditor->bind(record);
-				//
-				if (currentWebView() != view_current) select_as_current(view_current);
-			}
-		};
+		//			// auto rctrl = webView->rctrl();
+		//			auto _target_item = view_current->page()->host();
+		//			if (_target_item) { // controller != nullptr &&
+		//				// QModelIndex proxyindex =
+		//				// controller->convertIdToProxyIndex(record->getField("id"));
+		//				// int position = controller->convertProxyIndexToPos(proxyindex);
+		//				// RecordTableView *recordtableview = controller->getView();
+		//				// if(recordtableview)recordtableview->setSelectionToPos(position); //
+		//				// work
+		//				view_current->setFocus();
+		//				_target_item->add_rating();
+		//				auto _tree_view = _tree_screen->view();
+		//				QModelIndex index_on_tree = _tree_view->source_model()->index(_target_item);
+		//				if (!index_on_tree.isValid()) {
+		//					if (!static_cast<QModelIndex>(_tree_view->know_model_board()->index(_target_item)).isValid()) {
+		//						auto _url = QUrl(_target_item->field<url_key>()); //
+		//						_target_item = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(_target_item->field<url_key>(),
+		//						    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+		//							    return TreeIndex::url_require_item_from_tree(real_target_url_, //real_url_t<url_value>::instance(_target_item->field<url_key>()),
+		//								std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
+		//									return url_equal(detail::to_string(it_->field<home_key>()), _url.toString().toStdString()) || url_equal(detail::to_string(it_->field<url_key>()), _url.toString().toStdString());
+		//								});
+		//						    });
+		//					}
+		//					_tree_view->cursor_focus(_target_item);
+		//					index_on_tree = _tree_view->source_model()->index(_target_item);
+		//					assert(index_on_tree.isValid());
+		//				}
+		//				if (index_on_tree.isValid()) {
+		//					if (_target_item != _tree_view->current_item()) _tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_view->source_model(); }, _target_item));
+		//					auto rctrl = _record_screen->record_ctrl();
+		//					if (rctrl) {
+		//						auto _record_view = rctrl->view();
+		//#ifdef USE_HAS_SELECTION
+		//						QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+		//						bool has_selection = item_selection_model->hasSelection();
+		//#endif // USE_HAS_SELECTION
+		//						if ((_record_view->current_item() != _target_item) || (currentWebView() != _target_item->page()->view())
+		//#ifdef USE_HAS_SELECTION
+		//						    || !has_selection
+		//#endif // USE_HAS_SELECTION
+		//						    )
+		//							rctrl->select_as_current(rctrl->index<pos_proxy>(_target_item));
+		//					}
+		//				} else {
+		//					auto tree_current = _tree_view->current_item();
+		//					auto rctrl = _record_screen->record_ctrl();
+		//					if (rctrl) {
+		//						auto _index_on_record_table = rctrl->source_model()->index(tree_current);
+		//						if (((QModelIndex)_index_on_record_table).isValid()) {
+		//							auto pos_source_ = rctrl->index<pos_source>(_index_on_record_table);
+		//							if (currentIndex() != pos_source_) setCurrentIndex(pos_source_); //currentChanged(pos_source_);
+		//						} else {
+		//							auto index_tree_current = _tree_view->current_index();
+		//							if (index_tree_current.isValid()) {
+		//								_tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_view->source_model(); }, //tree_current->parent(),
+		//								    tree_current));                                                                                         //
+		//							} else {
+		//								auto tree_previous = _tree_view->previous_index();
+		//								auto _tree_it_previous =
+		//								    _tree_view->source_model()->item(tree_previous);
+		//								if (tree_previous.isValid()) {
+		//									_tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return _tree_view->source_model(); }, //_tree_it_previous->parent(),
+		//									    _tree_it_previous));                                                                                    // _tree_view->index_invoke(tree_previous);
+		//								}
+		//							}
+		//						}
+		//					}
+		//				}
+		//				auto _main_nwindow = gl_paras->main_window();
+		//				if (!_main_nwindow->windowTitle().contains(
+		//					view_current->page()->title())) {
+		//					auto page = view_current->page();
+		//					auto it = page->host();
+		//					if (page && it) {
+		//						if (page->title() != it->field<name_key>()) page->record_info_update(page->url(), page->title());
+		//						_main_window->setWindowTitle(tr(QString(QString("%1 - ") + program_title).toStdString().c_str()).arg(it ? detail::to_string(it->field<name_key>()).c_str() : ""));
+		//					}
+		//				}
+		//				assert(_blogger);
+		//#ifdef USE_EDITOR_WRAP
+		//				if (_blogger->item() != _target_item)
+
+		//#endif                                                                                                             // USE_EDITOR_WRAP
+		//					emit view_current->page()->become_current(view_current->page()->binder()); // metaeditor->bind(record);
+		//														   //
+		//			}
+		//			if (currentWebView() != view_current) select_as_current(view_current);
+		//		};
 
 		WebView* view_current = this->webView(index);
 		if (view_current) { // return;
@@ -1345,42 +1409,7 @@ namespace web {
 				disconnect(view_previous->page()->profile(), &Profile::downloadRequested, this, &TabWidget::downloadRequested);
 				disconnect(static_cast<QWebEnginePage*>(view_previous->page()), &QWebEnginePage::fullScreenRequested, this, &TabWidget::fullScreenRequested);
 
-				// auto it_current = view_current->page()->host();
-
-				// if(it_current) {
-
-				// auto _tree_view = _tree_screen->tree_view();
-				// QModelIndex _i = _tree_view->source_model()->index(it_current);
-
-				// if(_i.isValid() && _tree_view->current_index() != _i) {
-				////
-				///_tree_view->selectionModel()->setCurrentIndex(_i,
-				///QItemSelectionModel::SelectionFlag::Current);
-				////                        _tree_view->selectionModel()->select(_i,
-				///current_tree_selection_mode);  //
-				// auto parent = it_current->parent();
-				////                        boost::intrusive_ptr<TreeIndex> tree_index;
-				////                        try {tree_index = new TreeIndex([&] {return
-				///_tree_view->source_model(); }, parent, parent->sibling_order([&]
-				///(boost::intrusive_ptr<const Linker> il) {
-				////                                return il == it_current->linker() &&
-				///il->host() == it_current && it_current->parent() == il->host_parent();
-				////                            })); } catch(std::exception &e) {throw e;
-				///}
-
-				// _tree_view->select_as_current(TreeIndex::instance([&] {return
-				// _tree_view->source_model(); }, parent, it_current));
-
-				////                    // globalparameters.mainwindow()
-				////
-				///if(_record_controller->view()->selection_first_id() !=
-				///_record->field("id")) {
-				//// _record_controller->select_id(_record->field("id"));
-				////                    }
-				// }
-				// }
-
-				synchronize(view_current);
+				//				select_as_current(view_current);
 			}
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
 			connect(webView, &WebView::statusBarMessage, this, &TabWidget::showStatusBarMessage);
@@ -2033,8 +2062,10 @@ namespace web {
 
 				// item->activate(); // activate after initialization of browser
 				//				if (count() == 1)
-				if (currentWebView() != view)
-					emit static_cast<QTabWidget*>(this)->currentChanged(webViewIndex(view)); //currentIndex() // default this is input the new index
+				if (currentWebView() != view) {
+					select_as_current(view);
+					//					emit static_cast<QTabWidget*>(this)->currentChanged(webViewIndex(view)); //currentIndex() // default this is input the new index
+				}
 			}
 
 			emit tabsChanged();
@@ -2187,6 +2218,7 @@ namespace web {
 						}
 						QWidget* lineEdit = _lineedit_stack->widget(index_to_close);
 						if (lineEdit) {
+							disconnect(lineEdit);
 							_lineedit_stack->removeWidget(lineEdit);
 							lineEdit->deleteLater(); // delete lineEdit;
 						}
@@ -2216,7 +2248,9 @@ namespace web {
 
 						removeTab(index_to_close);
 						// if(sychronize_to_record_view)
+						_view_to_close->disconnect();
 						_view_to_close->on_close_requested();
+						_view_to_close->close();
 						_view_to_close->deleteLater();
 						_rctrl->remove(it->id());
 						//				{// lead double deconstruct
@@ -2682,7 +2716,8 @@ namespace web {
 			auto _url = open_tabs.at(i);
 			url_value real_url = url_value(_url);
 			// Record *_record = request_record(_url);
-
+			auto url_result = to_be_url(real_url);
+			//			if (url_result != QUrl() && url_result.toString() != detail::to_qstring(Browser::_defaulthome)) {
 			auto tree_view = _tree_screen->view();
 
 			boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, tree_view->current_item());
@@ -2741,6 +2776,7 @@ namespace web {
 				// }
 				// }
 			}
+			//			}
 		}
 
 		return true;

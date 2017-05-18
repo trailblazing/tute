@@ -2729,16 +2729,18 @@ void ts_t::open(bool activate_browser, bool show_tree)
 			auto tree_view = tree_screen->view();
 			if (tree_view) {
 				auto _url = web::Browser::_defaulthome;
-				tree_view->index_invoke(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); },
-				    real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(_url,
-											      [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
-												      return TreeIndex::url_require_item_from_tree(
-													  real_target_url_,
-													  std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-													  [&](boost::intrusive_ptr<const i_t> it_) -> bool {
-														  return url_equal(detail::to_string(it_->field<home_key>()), detail::to_string(real_target_url_->value())) || url_equal(detail::to_string(it_->field<url_key>()), detail::to_string(real_target_url_->value()));
-													  });
-											      })));
+				tree_view->index_invoke(
+				    TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); },
+					real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(
+									  _url,
+									  [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+										  return TreeIndex::url_require_item_from_tree(
+										      real_target_url_,
+										      std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+										      [&](boost::intrusive_ptr<const i_t> it_) -> bool {
+											      return url_equal(detail::to_string(it_->field<home_key>()), detail::to_string(real_target_url_->value())) || url_equal(detail::to_string(it_->field<url_key>()), detail::to_string(real_target_url_->value()));
+										      });
+									  })));
 			}
 		}
 	}

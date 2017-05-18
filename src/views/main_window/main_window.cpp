@@ -113,6 +113,37 @@ wn_t::wn_t(
 	    gl_paras->h_tree_splitter(hls);
 	    return hls;
     }()) // Qt::Vertical
+    , _vtab_record([&]() -> HidableTab* {
+	    _vtab_record = nullptr;
+	    auto vr = new HidableTab(
+		this, _h_record_splitter, std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_record_splitter_sizelist", "collapsed", this);
+	    gl_paras->vtab_record(vr);
+	    return vr;
+    }())
+    , _browser_docker([&]() -> web::Docker<web::Browser>* {
+	    _browser_docker = nullptr;
+	    auto bd = new web::Docker<web::Browser>(browser_docker_singleton_name, this, Qt::Widget);
+	    gl_paras->browser_docker(bd);
+	    return bd;
+    }()) // Qt::MaximizeUsingFullscreenGeometryHint
+    , _editor_docker([&]() -> web::Docker<Blogger>* {
+	    _editor_docker = nullptr;
+	    auto ed = new web::Docker<Blogger>(editor_docker_singleton_name, this, Qt::Widget);
+	    gl_paras->editor_docker(ed);
+	    return ed;
+    }())
+    , _tree_screen([&]() -> ts_t* {
+	    _tree_screen = nullptr;
+	    auto ts = new ts_t(tree_screen_singleton_name, _editor_docker, this);
+	    gl_paras->tree_screen(ts);
+	    return ts;
+    }()) // _vtabwidget
+    , _find_screen([&]() -> FindScreen* {
+	    _find_screen = nullptr;
+	    auto fs = new FindScreen(find_screen_singleton_name, _tree_screen, this);
+	    gl_paras->find_screen(fs);
+	    return fs;
+    }())
     , _statusbar([&] {
 	    auto st = new QStatusBar(this);
 	    gl_paras->status_bar(st);
@@ -122,11 +153,6 @@ wn_t::wn_t(
 	    auto sw = new WindowSwitcher(windowswitcher_singleton_name, this);
 	    gl_paras->window_switcher(sw);
 	    return sw;
-    }())
-    , _tray_icon([&] {
-	    auto ti = new SysTrayIcon(_vtab_record, _editor_docker, this, _profile, _style_source, true);
-	    gl_paras->tray_icon(ti);
-	    return ti;
     }())
     , _quit_action([&]() -> QAction* {
 	    auto q = new QAction(tr("&Quit"), this);
@@ -176,39 +202,12 @@ wn_t::wn_t(
 	    fm->setContentsMargins(0, 0, 0, 0);
 	    return fm;
     }()) //_main_menu_map[gl_para::_help_menu_name] = fm;
-    , _browser_docker([&]() -> web::Docker<web::Browser>* {
-	    _browser_docker = nullptr;
-	    auto bd = new web::Docker<web::Browser>(browser_docker_singleton_name, this, Qt::Widget);
-	    gl_paras->browser_docker(bd);
-	    return bd;
-    }()) // Qt::MaximizeUsingFullscreenGeometryHint
-    , _vtab_record([&]() -> HidableTab* {
-	    _vtab_record = nullptr;
-	    auto vr = new HidableTab(
-		this, _h_record_splitter, std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_record_splitter_sizelist", "collapsed", this);
-	    gl_paras->vtab_record(vr);
-	    return vr;
-    }())
-    , _editor_docker([&]() -> web::Docker<Blogger>* {
-	    _editor_docker = nullptr;
-	    auto ed = new web::Docker<Blogger>(editor_docker_singleton_name, this, Qt::Widget);
-	    gl_paras->editor_docker(ed);
-	    return ed;
-    }())
-    , _tree_screen([&]() -> ts_t* {
-	    _tree_screen = nullptr;
-	    auto ts = new ts_t(tree_screen_singleton_name, _editor_docker, this);
-	    gl_paras->tree_screen(ts);
-	    return ts;
-    }()) // _vtabwidget
     , _stringlistmodel(new QStringListModel(this))
-    , _find_screen([&]() -> FindScreen* {
-	    _find_screen = nullptr;
-	    auto fs = new FindScreen(find_screen_singleton_name, _tree_screen, this);
-	    gl_paras->find_screen(fs);
-	    return fs;
+    , _tray_icon([&] {
+	    auto ti = new SysTrayIcon(_vtab_record, _editor_docker, this, _profile, _style_source, true);
+	    gl_paras->tray_icon(ti);
+	    return ti;
     }())
-
 // , _download(new web::DownloadManager(download_manager_singleton_name,
 // _vtab_record))
 {
@@ -1264,21 +1263,52 @@ void wn_t::assembly(void)
 
 void wn_t::save_all_state(void)
 {
+	Blogger* currrent_blogger = nullptr;
 	// Сохранение данных в поле редактирования
 	for (int i = 0; i < _vtab_record->count(); i++) {
 		auto wd = _vtab_record->widget(i);
 		auto rs = dynamic_cast<rs_t*>(wd);
 		if (rs) {
 			auto blogger_ = rs->blogger();
+			if (rs == _vtab_record->currentWidget()) currrent_blogger = blogger_;
 			if (blogger_ && !blogger_->close_request_sent() && !blogger_->destroy_request_sent()) {
-				blogger_->save_text_context();
+				blogger_->save_text_context(); // auto bro = rs->browser(); if (bro && !bro->close_request_sent() && !bro->destroy_request_sent()) bro->save();
 				blogger_->save_editor_cursor_position();
 				blogger_->save_editor_scrollbar_position();
-
-				auto bro = rs->browser();
-				if (bro && !bro->close_request_sent() && !bro->destroy_request_sent()) bro->save();
 			}
 		}
+	}
+	if (currrent_blogger) {
+		auto id = currrent_blogger->misc_field<id_key>(); // static_cast<id_value>(_control_tab->topic());//
+		if (detail::to_string(id) == "") {
+			auto bro = currrent_blogger->browser();
+			if (bro) {
+				auto v = bro->currentTab();
+				if (v) {
+					auto p = v->page();
+					if (p) {
+						auto h = p->host();
+						if (h) {
+							currrent_blogger->misc_field<id_key>(h->id());
+							id = currrent_blogger->misc_field<id_key>();
+						}
+					}
+				}
+			}
+		}
+		assert(detail::to_string(id) != "");
+		//		if (detail::to_string(id) == "") {
+		//			id = currrent_blogger->browser()->currentTab()->page()->host()->id();
+		//			currrent_blogger->misc_field<id_key>(id);
+		//			qDebug() << "Blogger::current id : " << id << " _control_tab->topic() : " << currrent_blogger->control_tab()->topic();
+		//		}
+		auto drop_flag_status = walkhistory.drop_flag();
+		walkhistory.drop_flag(true);
+		walkhistory.add<WALK_HISTORY_GO_NONE>(
+		    id,                                      //static_cast<id_value>(_control_tab->topic()), // id
+		    currrent_blogger->cursor_position(),     // _editor_screen->cursor_position()
+		    currrent_blogger->scrollbar_position()); // _editor_screen->scrollbar_position());
+		walkhistory.drop_flag(drop_flag_status);
 	}
 	// Сохраняются данные сеанса работы
 	save_geometry();
@@ -1531,15 +1561,25 @@ void wn_t::save_tree_position(void)
 	//// Получение QModelIndex выделенного в дереве элемента
 	// const QModelIndex index = _tree_screen->tree_view()->current_index();
 	auto current_item = _tree_screen->view()->current_item();
-	if (current_item)
-		appconfig->tree_position(_current_source_model()->root_item()->id(), current_item->path_list<id_key>()); // _tree_screen->know_model_board()->root_item()->id()
-	else if (item) {                                                                                                 // if(index.isValid()) {
+	auto root_id = _current_source_model()->root_item()->id();
+	auto conf = appconfig->tree_position();
+	if (current_item) {
+
+		auto current_id = current_item->path_list<id_key>();
+
+		if (conf.first != root_id || conf.second != current_id)
+			appconfig->tree_position(root_id, current_id); // _tree_screen->know_model_board()->root_item()->id()
+	} else if (item) {
+
+		auto current_id = item->path_list<id_key>(); // if(index.isValid()) {
+
 		////    if(index.isValid()) {   // this line is to be remove
 		//// Получаем указатель вида TreeItem
 		// auto item = _current_source_model()->item(index);
 
 		// Сохраняем путь к элементу item
-		appconfig->tree_position(_current_source_model()->root_item()->id(), item->path_list<id_key>()); // _tree_screen->know_model_board()->root_item()->id()
+		if (conf.first != root_id || conf.second != current_id)
+			appconfig->tree_position(root_id, current_id); // _tree_screen->know_model_board()->root_item()->id()
 
 		// }
 	}
@@ -1564,16 +1604,14 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
 		auto it = know_model_board()->item([&](boost::intrusive_ptr<const i_t> it) {
 			return it->id() == current_root_id;
 		});
-		_tree_screen->view()->intercept(
-		    it); // TreeIndex::instance(know_model_board, it, it->parent())
+		_tree_screen->view()->intercept(it); // TreeIndex::instance(know_model_board, it, it->parent())
 	}
 	// if(!_tree_screen->know_model_board()->item(current_item_absolute_path))
 	// // on know_root semantic
 	// return;
 
 	// Получаем указатель на элемент вида TreeItem, используя путь
-	auto it = know_model_board()->item(
-	    current_item_absolute_path); // on know_root semantic
+	auto it = know_model_board()->item(current_item_absolute_path); // on know_root semantic
 
 	auto _tree_view = _tree_screen->view();
 	if (it) {
@@ -1605,8 +1643,7 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
 			// })); } catch(std::exception &e) {throw e; }
 
 			_tree_view->select_as_current(tree_index);
-			_tree_view->source_model()->session_id(
-			    tree_index); // TreeIndex(source_model, it)
+			_tree_view->source_model()->session_id(tree_index); // TreeIndex(source_model, it)
 		} else {
 			boost::intrusive_ptr<i_t> r(nullptr);
 			if (it->count_direct() == 0)
@@ -1619,8 +1656,7 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
 			// }, it, 0); } catch(std::exception &e) {throw e; }
 
 			_tree_view->select_as_current(tree_index);
-			_tree_view->source_model()->session_id(
-			    tree_index); // TreeIndex(source_model, it)
+			_tree_view->source_model()->session_id(tree_index); // TreeIndex(source_model, it)
 		}
 	}
 }
@@ -2149,8 +2185,9 @@ void wn_t::synchronization(void)
 	cons.setCommand(command);
 	cons.run();
 
+	bool drop_flag_status = walkhistory.drop_flag();
 	// Блокируется история
-	walkhistory.set_drop(true);
+	walkhistory.drop_flag(true);
 
 	// Заново считываются данные в дерево
 	_tree_screen->view()->know_model_reload();
@@ -2160,13 +2197,13 @@ void wn_t::synchronization(void)
 		auto wd = _vtab_record->widget(i);
 		auto rs = dynamic_cast<rs_t*>(wd);
 		if (rs) {
-			auto ew = rs->blogger();
-			ew->restore_editor_cursor_position();
-			ew->restore_editor_scrollbar_position();
+			auto blogger_ = rs->blogger();
+			blogger_->restore_editor_cursor_position();
+			blogger_->restore_editor_scrollbar_position();
 		}
 	}
 	// азблокируется история посещений элементов
-	walkhistory.set_drop(false);
+	walkhistory.drop_flag(drop_flag_status);
 }
 
 // void wn_t::create_tray_icon(void){
