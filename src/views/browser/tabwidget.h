@@ -697,8 +697,10 @@ namespace web {
 		WebView* view_no_pinned();
 		void topic_replace_traverse(const QString& new_topic_, const QString& original_topic_ = "");
 
-	    private:
+	    public:
 		static const qint32 TabWidgetMagic = 0xaa;
+
+	    private:
 		ts_t* _tree_screen;
 		blogger_ref _blogger;
 		web::Docker<web::Browser>* _browser_docker;
