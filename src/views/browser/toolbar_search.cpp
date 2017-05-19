@@ -321,8 +321,8 @@ namespace web {
 			    return result;
 		    }()) ?
 		    related_browser :
-		    real_url_t<url_value>::instance<web::Browser*>(gl_paras->main_window()->query_internet(search_text), [&](boost::intrusive_ptr<real_url_t<url_value>> topic_query_url) {
-			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<url_value>>>(topic_query_url); // gl_paras->main_window()->browser(search_text);
+		    real_url_t<QString>::instance<web::Browser*>(search_text, [&](boost::intrusive_ptr<real_url_t<QString>> topic_query_url) {
+			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_query_url); // gl_paras->main_window()->browser(search_text);
 		    });
 		// if(url.host().isSimpleText());
 		// bool url_isRelative = url.isRelative();

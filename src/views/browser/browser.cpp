@@ -976,16 +976,18 @@ namespace web {
 		stream >> marker;
 		stream >> v;
 		if (marker != Browser::browser_magic || v != version) return false;
-		QString title;
+
 		QString topic;
+		QString title;
 		QSize size;
 		bool showMenuBar;
 		bool showToolbar;
 		bool showBookmarksBar;
 		bool showStatusbar;
 		QByteArray tabState;
-		stream >> title;
+
 		stream >> topic;
+		stream >> title;
 		stream >> size;
 		stream >> showMenuBar;
 		stream >> showToolbar;
@@ -1150,18 +1152,19 @@ namespace web {
 			std::get<1>(result) = v;
 			//		if(marker != browser_magic || v != version) return false;
 			if (marker == browser_magic && v == version) {
-				QString title;
 				QString topic;
+				QString title;
 				QSize size;
 				bool showMenuBar;
 				bool showToolbar;
 				bool showBookmarksBar;
 				bool showStatusbar;
 				QByteArray tab_state;
-				stream >> title;
-				std::get<2>(result) = title;
+
 				stream >> topic;
 				std::get<3>(result) = topic;
+				stream >> title;
+				std::get<2>(result) = title;
 				stream >> size;
 				std::get<4>(result) = size;
 				stream >> showMenuBar;
@@ -2133,8 +2136,7 @@ namespace web {
 			if (progress < 100 && progress > 0) {
 				_chasewidget->setAnimated(true);
 				disconnect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);
-				if (_stopicon.isNull()) _stopicon = QIcon(
-							    ":/resource/pic/mobile_stop.svg"); // style()->standardIcon(QStyle::SP_BrowserStop);
+				if (_stopicon.isNull()) _stopicon = QIcon(":/resource/pic/mobile_stop.svg"); // style()->standardIcon(QStyle::SP_BrowserStop);
 
 				_stopreload->setIcon(_stopicon);
 				connect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);

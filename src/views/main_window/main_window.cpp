@@ -2608,10 +2608,14 @@ wn_t::browser<QStringList>(const QStringList& tags_list_,
 			});
 			if (bro) break;
 		}
-		if (!bro) bro = (new Blogger(tags_list[0]))->browser();
+		if (!bro) bro = real_url_t<QString>::instance<web::Browser*>(tags_list[0], [&](boost::intrusive_ptr<real_url_t<QString>> topic) {
+				  return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic);
+			  });
 	}
 	if (!bro && force) {
-		bro = (new Blogger(gl_para::_default_topic))->browser();
+		bro = real_url_t<QString>::instance<web::Browser*>(gl_para::_default_topic, [&](boost::intrusive_ptr<real_url_t<QString>> topic) {
+			return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic);
+		});
 	}
 
 	assert(bro);
@@ -2707,12 +2711,13 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusiv
 				int version = 2;
 				QByteArray data;
 				QDataStream stream(&data, QIODevice::WriteOnly);
-				auto topic = gl_para::_default_topic;
+				QString topic = gl_para::_default_topic;
 				stream << qint32(web::Browser::browser_magic);
 				stream << qint32(version);
+
 				stream << topic;
 				stream << detail::to_qstring(it->field<name_key>());
-				stream << 1;
+				stream << _browser_docker->size();
 				stream << true;  // menuBar()->isVisible();
 				stream << true;  //!_find_screen->isHidden();
 				stream << false; //!_bookmarkstoolbar->isHidden();
@@ -2816,8 +2821,8 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_
 		bro = (new Blogger(checked_topic))->browser();
 	}
 
-	assert(bro || !force);	//	assert(bro);
-	return bro; // qobject_cast<DockedWindow *>(widget()); //
+	assert(bro || !force); //	assert(bro);
+	return bro;            // qobject_cast<DockedWindow *>(widget()); //
 }
 
 
