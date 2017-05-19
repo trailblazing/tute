@@ -1648,7 +1648,7 @@ namespace web {
 			// navigater->addAction(_historyforward);
 
 			// _stopreload = new QAction(navigater); //this
-
+			_stopicon = QIcon(":/resource/pic/mobile_stop.svg");     // style()->standardIcon(QStyle::SP_BrowserStop);
 			_reloadicon = QIcon(":/resource/pic/mobile_reload.svg"); // style()->standardIcon(QStyle::SP_BrowserReload);
 			_stopreload->setIcon(_reloadicon);
 
@@ -2136,7 +2136,7 @@ namespace web {
 			if (progress < 100 && progress > 0) {
 				_chasewidget->setAnimated(true);
 				disconnect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);
-				if (_stopicon.isNull()) _stopicon = QIcon(":/resource/pic/mobile_stop.svg"); // style()->standardIcon(QStyle::SP_BrowserStop);
+//				if (_stopicon.isNull()) _stopicon = QIcon(":/resource/pic/mobile_stop.svg"); // style()->standardIcon(QStyle::SP_BrowserStop);
 
 				_stopreload->setIcon(_stopicon);
 				connect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);
