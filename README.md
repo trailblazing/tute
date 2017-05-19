@@ -44,7 +44,7 @@ _______________________________________________________________________
 Let's say the directory of your current project is named "working":
 ```
 	working
-            |____verdigris (created by or synchronized with git) (does not needed for Qt 5.7 and after)
+            |____verdigris (created by or synchronized with git) (does not needed from Qt 5.7 and later versions)
 	    |       |____src
 	    |
 	    |____knowledge management (name is whatever)
@@ -56,7 +56,7 @@ Let's say the directory of your current project is named "working":
 ```
 	git clone https://github.com/woboq/verdigris.git
 ```
-####1.3 Download and install Qt packages
+####1.3 Download and install Qt packages (May 18, 2017: qt-unified-linux-x64-2.0.5-2-online.run)
 ```
         wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run
         chmod a+x ./qt-unified-linux-x64-online.run
@@ -68,7 +68,7 @@ Let's say the directory of your current project is named "working":
 ```
 But it's not a must. Current support Qt version: 5.9.0.
 
-* Environment in ~/.profile (~/.bash_profile or ~/.bashrc)for command line building and installation
+* Environment in ~/.profile (~/.bash_profile or ~/.bashrc)for command line build and installation
 ```
 	QT5DIR=/path-to-qt-installation/gcc_64
 
@@ -95,7 +95,7 @@ But it's not a must. Current support Qt version: 5.9.0.
 	export QT5DIR QT5INC QT5LIB PATH
 ```
 * Do not recommend to mix it up with system installation of Qt
-* If you compile and debug the project by qt-creator, environment variable could be overrided by qt-creeator. So you can skip the shell settings and just check them in qt-creator's Projects mode => Build Environment settings as following:
+* If you compile and debug the project by qt-creator, environment variable could be overrided by qt-creeator. So you can skip the shell settings and just check them in qt-creator's "Projects" mode => "Build Environment" settings as following:
 ```
 Set PATH to /path-to-qt-installation/bin:/path-to-qt-installation/plugins/platforms:/path-to-qt-installation/lib:/path-to-qt-installation/include:/path-to-compiler-installation/bin:/path-to-compiler-installation/include:/path-to-compiler-installation/lib:...
 Set QT5DIR to /path-to-qt-installation
@@ -122,24 +122,24 @@ Set QT5LIB to /path-to-qt-installation/plugins/platforms:/path-to-qt-installatio
 
 ####1.6 Input methods (for non-English users)
 ```
-        // Suppose we chose Fcitx:
-        // On Ubuntu:
+                // Suppose we chose Fcitx:
+                // On Ubuntu:
         sudo apt-get install fcitx-frontend-qt5
-        // libfcitxplatforminputcontextplugin.so should be under /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/ or somewhere from:
+                // libfcitxplatforminputcontextplugin.so should be under /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/ or somewhere from:
         locate libfcitxplatforminputcontextplugin.so
-        // Then copy it to $${PROJECT_QT_VERSION}/plugins/platforminputcontexts:
+                // Then copy it to $${PROJECT_QT_VERSION}/plugins/platforminputcontexts:
         cp /path/to/libfcitxplatforminputcontextplugin.so /path/to/$${PROJECT_QT_VERSION}/plugins/platforminputcontexts/.
-        // Or modify tute.pro with:
+                // Or modify tute.pro with:
         LIBS            += /path/to/libfcitxplatforminputcontextplugin.so
-        // Then put following lines in your ~/.bashrc
+                // Then put following lines in your ~/.bashrc
         export GTK_IM_MODULE=fcitx
         export QT_IM_MODULE=fcitx
         export XMODIFIERS="@im=fcitx"
-        // Or at least put this variable in your Qt-Creator::Projects settings::Build Environment:
+                // Or at least put this variable in your Qt-Creator::Projects settings::Build Environment:
         QT_IM_MODULE=fcitx
-        // When build from command line, make sure
+                // When build from command line, make sure
         echo $QT5DIR
-        // The output should not be empty. If it is, try to do
+                // The output should not be empty. If it is, try to do
         export QT5DIR=/path-to-qt-installation/gcc_64
 
 ```

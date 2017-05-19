@@ -2740,7 +2740,7 @@ namespace web {
 							if (view) {
 								auto toolbar_search = view->toolbarsearch();
 								if (toolbar_search) {
-									ti->field<url_key>(toolbar_search->query_internet_decomposed(_blogger->topic()));
+									ti->field<url_key>(_main_window->query_internet(_blogger->topic()));
 									ti->field<home_key>(detail::from_qstring<home_key>(detail::to_qstring(ti->field<url_key>())));
 								}
 							}

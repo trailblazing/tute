@@ -1568,8 +1568,8 @@ int sapp_t::restoreLastSession()
 	for (int i = 0; i < history_topics.count(); ++i) {
 		//		auto tuple_ = web::Browser::state(historywindows.at(i));
 		real_url_t<QString>::instance<web::Browser*>(history_topics.at(i).simplified(),
-		    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
-			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); //gl_paras->main_window()->browser(history_topics.at(i));
+		    [&](boost::intrusive_ptr<real_url_t<QString>> topic_query_url_) {
+			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_query_url_); //gl_paras->main_window()->browser(history_topics.at(i));
 		    });
 
 		//		if(  0 == i

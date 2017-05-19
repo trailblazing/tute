@@ -88,49 +88,49 @@ namespace web {
 #if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(ToolbarSearch)
 #endif
-	/*
-        ToolbarSearch is a very basic search widget that also contains a small
-   history.
-        Searches are turned into urls that use Google to perform search
- */
+
+	int ToolbarSearch::_maxsavedsearches = 10;
+
+	//        ToolbarSearch is a very basic search widget that also contains a small history.
+	//        Searches are turned into urls that use Google to perform search
+
 	ToolbarSearch::ToolbarSearch(WebView* view_ // QStackedWidget *lineedits, QLineEdit *findtext,
 	    )
 	    : SearchLineEdit(view_)
-	    , query_internet_decomposed([&](const QString& search_text) -> url_value {
-		    QStringList newList = _stringlistmodel->stringList();
-		    if (newList.contains(search_text))
-			    newList.removeAt(newList.indexOf(search_text));
-		    newList.prepend(search_text);
-		    if (newList.size() >= _maxsavedsearches)
-			    newList.removeLast();
-		    if (!::sapp_t::instance()->privateBrowsing()) {
-			    _stringlistmodel->setStringList(newList);
-			    _autosaver->changeOccurred();
-		    }
-		    QUrl search_engine(QLatin1String("https://www.google.com/search"));
-		    QUrlQuery url_query;
+//	    , query_internet([&](const QString& search_text) -> url_value {
+//		    QStringList newList = _stringlistmodel->stringList();
+//		    if (newList.contains(search_text))
+//			    newList.removeAt(newList.indexOf(search_text));
+//		    newList.prepend(search_text);
+//		    if (newList.size() >= ToolbarSearch::_maxsavedsearches)
+//			    newList.removeLast();
+//		    if (!::sapp_t::instance()->privateBrowsing()) {
+//			    _stringlistmodel->setStringList(newList);
+//			    _autosaver->changeOccurred();
+//		    }
+//		    QUrl search_engine(QLatin1String("https://www.google.com/search"));
+//		    QUrlQuery url_query;
 
-		    // url_query.addQueryItem(QLatin1String("q"), searchText);
-		    url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
-		    url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
-		    url_query.addQueryItem(
-			QLatin1String("client"),
-			QLatin1String(gl_paras->application_name().toLatin1())); // globalparameters.main_program_file().toLatin1()
+//		    // url_query.addQueryItem(QLatin1String("q"), searchText);
+//		    url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
+//		    url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
+//		    url_query.addQueryItem(
+//			QLatin1String("client"),
+//			QLatin1String(gl_paras->application_name().toLatin1())); // globalparameters.main_program_file().toLatin1()
 
-		    // urlQuery.addQueryItem();
+//		    // urlQuery.addQueryItem();
 
-		    search_engine.setQuery(url_query);
-		    search_engine.setFragment("q=" + search_text);
-		    // emit search(url, std::bind(&TreeScreen::view_paste_child,
-		    // _tree_screen, std::placeholders::_1, std::placeholders::_2,
-		    // std::placeholders::_3));
-		    //                        url_value real_url =
-		    return url_value(search_engine.toString());
-	    })
-	    , _autosaver(new AutoSaver(this))
-	    , _maxsavedsearches(10)
-	    , _stringlistmodel(gl_paras->main_window()->stringlistmodel() //new QStringListModel(this)
-		  )
+//		    search_engine.setQuery(url_query);
+//		    search_engine.setFragment("q=" + search_text);
+//		    // emit search(url, std::bind(&TreeScreen::view_paste_child,
+//		    // _tree_screen, std::placeholders::_1, std::placeholders::_2,
+//		    // std::placeholders::_3));
+//		    //                        url_value real_url =
+//		    return url_value(search_engine.toString());
+//	    })
+	    , _autosaver(gl_paras->main_window()->autosaver()) // new AutoSaver(this)
+	    //	    , _maxsavedsearches(10)
+	    , _stringlistmodel(gl_paras->main_window()->stringlistmodel()) //new QStringListModel(this)
 	    , _completer(new QCompleter(_stringlistmodel, this))
 //	    , _lineedit_stack(nullptr) // new QStackedWidget(this))  // , _lineedits(lineedits)
 #ifdef USE_ADDITIONAL_BUFFER
@@ -202,7 +202,7 @@ namespace web {
 		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
 		settings.beginGroup(QLatin1String("toolbarsearch"));
 		settings.setValue(QLatin1String("recentSearches"), _stringlistmodel->stringList());
-		settings.setValue(QLatin1String("maximumSaved"), _maxsavedsearches);
+		settings.setValue(QLatin1String("maximumSaved"), ToolbarSearch::_maxsavedsearches);
 		settings.endGroup();
 	}
 
@@ -210,10 +210,8 @@ namespace web {
 	{
 		QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
 		settings.beginGroup(QLatin1String("toolbarsearch"));
-		QStringList list =
-		    settings.value(QLatin1String("recentSearches")).toStringList();
-		_maxsavedsearches =
-		    settings.value(QLatin1String("maximumSaved"), _maxsavedsearches).toInt();
+		QStringList list = settings.value(QLatin1String("recentSearches")).toStringList();
+		ToolbarSearch::_maxsavedsearches = settings.value(QLatin1String("maximumSaved"), ToolbarSearch::_maxsavedsearches).toInt();
 		_stringlistmodel->setStringList(list);
 		settings.endGroup();
 	}
@@ -323,8 +321,8 @@ namespace web {
 			    return result;
 		    }()) ?
 		    related_browser :
-		    real_url_t<QString>::instance<web::Browser*>(search_text, [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
-			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_); // gl_paras->main_window()->browser(search_text);
+		    real_url_t<url_value>::instance<web::Browser*>(gl_paras->main_window()->query_internet(search_text), [&](boost::intrusive_ptr<real_url_t<url_value>> topic_query_url) {
+			    return gl_paras->main_window()->browser<boost::intrusive_ptr<real_url_t<url_value>>>(topic_query_url); // gl_paras->main_window()->browser(search_text);
 		    });
 		// if(url.host().isSimpleText());
 		// bool url_isRelative = url.isRelative();
@@ -461,11 +459,11 @@ namespace web {
 					// startWorkInAThread();
 				} else {
 					deal_with_url(tree_view_, // search_text,
-					    sibling_tree_index, query_internet_decomposed(search_text), browser_);
+					    sibling_tree_index, gl_paras->main_window()->query_internet(search_text), browser_);
 				}
 			} else {
 				deal_with_url(tree_view_, // search_text,
-				    sibling_tree_index, query_internet_decomposed(search_text), browser_);
+				    sibling_tree_index, gl_paras->main_window()->query_internet(search_text), browser_);
 			}
 		}
 
@@ -564,6 +562,7 @@ namespace web {
 	//		return lineEdit()->text();
 	//#endif // USE_ADDITIONAL_BUFFER
 	//	}
+
 
 	void WorkerThread::run()
 	{

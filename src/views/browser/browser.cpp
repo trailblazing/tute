@@ -1136,8 +1136,7 @@ namespace web {
 		//		assert(_find_screen);
 		// QToolBar *navigater = findscreen->navigater();
 		// assert(navigater);
-		std::tuple<qint32, qint32, QString, QString, QSize, bool, bool, bool, bool, std::tuple<qint32, qint32, QStringList, QString>>
-		    result;
+		std::tuple<qint32, qint32, QString, QString, QSize, bool, bool, bool, bool, std::tuple<qint32, qint32, QStringList, QString>> result;
 		int version = 2;
 		QByteArray sd = state_;
 		QDataStream stream(&sd, QIODevice::ReadOnly);
@@ -1158,7 +1157,7 @@ namespace web {
 				bool showToolbar;
 				bool showBookmarksBar;
 				bool showStatusbar;
-				QByteArray tabState;
+				QByteArray tab_state;
 				stream >> title;
 				std::get<2>(result) = title;
 				stream >> topic;
@@ -1173,9 +1172,9 @@ namespace web {
 				std::get<7>(result) = showBookmarksBar;
 				stream >> showStatusbar;
 				std::get<8>(result) = showStatusbar;
-				stream >> tabState;
+				stream >> tab_state;
 
-				std::get<9>(result) = TabWidget::state(tabState);
+				std::get<9>(result) = TabWidget::state(tab_state);
 			}
 		}
 		return result;

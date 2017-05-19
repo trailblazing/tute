@@ -337,8 +337,10 @@ namespace web {
 		void update_statusbar_action_text(bool visible);
 		void handle_find_text_result(bool found);
 		// void initUrl();
-	    private:
+	    public:
 		static const qint32 browser_magic = 0xba;
+
+	    private:
 		blogger_ref _blogger;
 		QString _configuration_full_name = "";
 		std::unique_ptr<QSettings> _configuration;

@@ -72,6 +72,7 @@ namespace web {
 	class HistoryMenu;
 	class BookmarksMenu;
 	class Profile;
+	class AutoSaver;
 }
 
 class ts_t;
@@ -164,9 +165,11 @@ class wn_t : public QMainWindow {
 
 	std::set<web::Browser*> browsers() const;
 	web::Browser* dumy_browser() const;
+	web::AutoSaver* autosaver() const;
 	QStringListModel* stringlistmodel() const;
 	web::DownloadManager* download_screen() const;
 
+	url_value query_internet(const QString& search_text);
     public slots:
 	void application_exit(void);
 	void application_fast_exit(void);
@@ -265,7 +268,7 @@ class wn_t : public QMainWindow {
 	QMenu* _toolsmenu;
 	QMenu* _helpmenu;
 
-
+	web::AutoSaver* _autosaver;
 	QStringListModel* _stringlistmodel;
 	SysTrayIcon* _tray_icon = nullptr;
 	// web::DownloadManager	*_download;
@@ -287,18 +290,31 @@ class wn_t : public QMainWindow {
 
 template <>
 web::Browser*
-wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bool force);
+wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it,
+    bool force);
+
+template <>
+web::Browser*
+wn_t::browser<QStringList           //boost::intrusive_ptr<i_t>
+    >(const QStringList& tags_list, //const boost::intrusive_ptr<i_t>& it,
+    bool force);
+
 //template <>
 //web::Browser*
 //wn_t::browser<QUrl>(const QUrl& url_, bool force);
+
 template <>
 web::Browser*
 wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusive_ptr<real_url_t<url_value>>& real_find_url_, bool force);
+
 template <>
 web::Browser*
 wn_t::browser<QByteArray>(const QByteArray& state_, bool force);
+
+
 template <>
 web::Browser*
 wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_ptr<real_url_t<QString>>& topic_, bool force);
+
 
 #endif

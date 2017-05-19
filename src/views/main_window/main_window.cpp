@@ -32,6 +32,7 @@
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_know_model.h"
 #include "views/app_config/app_config_dialog.h"
+#include "views/browser/autosaver.h"
 #include "views/browser/bookmarks.h"
 #include "views/browser/browser.h"
 #include "views/browser/docker.h"
@@ -202,6 +203,7 @@ wn_t::wn_t(
 	    fm->setContentsMargins(0, 0, 0, 0);
 	    return fm;
     }()) //_main_menu_map[gl_para::_help_menu_name] = fm;
+    , _autosaver(new web::AutoSaver(this))
     , _stringlistmodel(new QStringListModel(this))
     , _tray_icon([&] {
 	    auto ti = new SysTrayIcon(_vtab_record, _editor_docker, this, _profile, _style_source, true);
@@ -359,7 +361,7 @@ wn_t::~wn_t()
 {
 
 	sapp_t::instance()->saveSession(); //save_all_state();
-
+	_autosaver->saveIfNeccessary();
 	_browser_docker->deleteLater();
 	_browser_docker = nullptr;
 	// delete
@@ -2530,6 +2532,38 @@ web::WebView* wn_t::find(const std::function<bool(boost::intrusive_ptr<const ::B
 //	    });
 //}
 
+
+url_value wn_t::query_internet(const QString& search_text)
+{
+	QStringList newList = _stringlistmodel->stringList();
+	if (newList.contains(search_text))
+		newList.removeAt(newList.indexOf(search_text));
+	newList.prepend(search_text);
+	if (newList.size() >= web::ToolbarSearch::_maxsavedsearches)
+		newList.removeLast();
+	if (!::sapp_t::instance()->privateBrowsing()) {
+		_stringlistmodel->setStringList(newList);
+		_autosaver->changeOccurred();
+	}
+	QUrl search_engine(QLatin1String("https://www.google.com/search"));
+	QUrlQuery url_query;
+
+	// url_query.addQueryItem(QLatin1String("q"), searchText);
+	url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
+	url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
+	url_query.addQueryItem(
+	    QLatin1String("client"),
+	    QLatin1String(gl_paras->application_name().toLatin1())); // globalparameters.main_program_file().toLatin1()
+
+	// urlQuery.addQueryItem();
+
+	search_engine.setQuery(url_query);
+	search_engine.setFragment("q=" + search_text);
+	// emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	//                        url_value real_url =
+	return url_value(search_engine.toString());
+}
+
 // not sure to succeeded if force is false
 template <>
 web::Browser*
@@ -2541,16 +2575,14 @@ wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
 	auto state_data = web::Browser::state(state_);
 	auto topic = std::get<3>(state_data);
 	auto title = std::get<2>(state_data);
-	web::Browser* bro(dumy_browser());
-	if (!bro) {
-		auto real_topic = (topic != gl_para::_default_topic) ? topic : (title != gl_para::_default_topic) ? title : gl_para::_default_topic;
-		//	bs = browser<QString>(topic, false);
-		//	if (!bs)
+	web::Browser* bro = nullptr; //(dumy_browser());
 
-		bro = (new Blogger(real_topic, gl_para::_default_post, appconfig->hide_editor_tools(), state_))->browser();
-	} else {
-		bro->restore_state(state_);
-	}
+	auto real_topic = (topic != gl_para::_default_topic) ? topic : (title != gl_para::_default_topic) ? title : gl_para::_default_topic;
+	//	bro = browser<QString>(topic, false);
+	//	if (!bro)
+
+	bro = (new Blogger(real_topic, gl_para::_default_post, appconfig->hide_editor_tools(), state_))->browser();
+
 	assert(bro);
 	return bro;
 }
@@ -2558,47 +2590,62 @@ wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
 // not sure to succeeded if force is false
 template <>
 web::Browser*
-wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it, bool force)
+wn_t::browser<QStringList>(const QStringList& tags_list_,
+    bool force)
 {
 	(void)force;
 	size_t topic_number = static_cast<size_t>(appconfig->topic_number());
 	if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
+
+	auto tags_list = tags_list_; // QStringList(item->field<tags_key>());
+	web::Browser* bro = nullptr; //(dumy_browser());
+
+	if (tags_list.size() > 0) {
+		for (int i = 0; i < tags_list.size(); ++i) {
+			auto item_topic = (tags_list[i] = tags_list.at(i).trimmed());
+			bro = real_url_t<QString>::instance<web::Browser*>(item_topic, [&](boost::intrusive_ptr<real_url_t<QString>> topic) {
+				return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic);
+			});
+			if (bro) break;
+		}
+		if (!bro) bro = (new Blogger(tags_list[0]))->browser();
+	}
+	if (!bro && force) {
+		bro = (new Blogger(gl_para::_default_topic))->browser();
+	}
+
+	assert(bro);
+	return bro;
+}
+
+
+template <>
+web::Browser*
+wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it,
+    bool force)
+{
+	(void)force;
+	size_t topic_number = static_cast<size_t>(appconfig->topic_number());
+	if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
+
 	boost::intrusive_ptr<i_t> item = it;
+
+	auto tags_list = QStringList(item->field<tags_key>());
+
 	auto view = find(
 	    [&](boost::intrusive_ptr<const Binder> b) { return b->host() == item; });
-	web::Browser* bro(dumy_browser());
-	if (!bro) {
-		QStringList tags_list;
-		if (!view) {
-			tags_list = QStringList(item->field<tags_key>());
-			// Строка с метками разделяется на отдельные меки
-			//		auto tagslist = tagslist.split(QRegExp("[,;]+"), QString::SkipEmptyParts);
-			// В каждой метке убираются лишние пробелы по краям
-			for (int i = 0; i < tags_list.size(); ++i) {
-				auto topic = (tags_list[i] = tags_list.at(i).trimmed());
-				bro = real_url_t<QString>::instance<web::Browser*>(topic,
-				    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
-					    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, false);
-				    });
-				if (bro) break;
-			}
-		} else
-			bro = view->page()->browser();
-		if (!bro) {
-			if (tags_list.size() > 0)
-				bro = real_url_t<QString>::instance<web::Browser*>(tags_list[0],
-				    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
-					    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, force); // browser(item_tags_text_list[0]);
-				    });
-			else
-				bro = real_url_t<QString>::instance<web::Browser*>(detail::to_qstring(item->field<name_key>()),
-				    [&](boost::intrusive_ptr<real_url_t<QString>> topic_) {
-					    return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic_, force); // browser(detail::to_qstring(item->field<name_key>()));
-				    });
-		}
-	} else {
-		auto ri = RecordIndex::instance([&] { return bro->tab_widget()->record_screen()->record_ctrl()->source_model(); }, it, bro->tab_widget()->current_item());
-		bro->bind(ri, true);
+	if (item->field<url_key>() == url_value("")) {
+		item->field<url_key>(web::Browser::_defaulthome);
+	}
+	web::Browser* bro = nullptr; //(dumy_browser());
+	if (view) {
+		bro = view->browser();
+	} else if (tags_list.size() > 0) {
+		bro = browser(tags_list);
+	} else if (item->field<url_key>() != url_value("")) {
+		bro = real_url_t<url_value>::instance<web::Browser*>(item->field<url_key>(), [&](boost::intrusive_ptr<real_url_t<url_value>> url_) {
+			return browser<boost::intrusive_ptr<real_url_t<url_value>>>(url_);
+		});
 	}
 	assert(bro);
 	return bro;
@@ -2615,42 +2662,69 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusiv
 	boost::intrusive_ptr<real_url_t<url_value>> dummy = real_find_url_;
 	(void)dummy;
 	auto real_url = real_find_url_->value();
-	//	//	auto url_str = detail::to_string(real_url);
-	//	QUrl qurl = QUrl(detail::to_qstring(real_url));
-	//	if (to_be_url(qurl) == QUrl() //qurl.isEmpty() && !qurl.isValid()
-	//	    ) real_url = web::Browser::_defaulthome;
-	//	assert(to_be_url(real_url) != QUrl());
-	//	assert(real_url != web::Browser::_defaulthome);
-	auto it = TreeIndex::url_require_item_from_tree(
+	if (real_url == url_value("")) {
+		real_url = web::Browser::_defaulthome;
+	}
+
+	auto item = TreeIndex::url_require_item_from_tree(
 	    real_find_url_, std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it) -> bool {
 		    return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
 	    });
-	web::Browser* bro(dumy_browser());
-	if (!bro) {
-		if (it) {
-			auto binder_ = it->binder();
-			if (binder_) {
-				auto page_ = binder_->page();
-				if (page_) {
-					auto bro_ = page_->browser();
-					if (bro_)
-						bro = bro_;
-					else
-						bro = browser(it);
-				}
-				assert(bro);
+	web::Browser* bro = nullptr; //(dumy_browser());
 
-			} else {
-				bro = browser(it);
-				assert(bro);
-			}
+	if (item) {
+		auto tags_list = QStringList(item->field<tags_key>());
+
+		auto view = find(
+		    [&](boost::intrusive_ptr<const Binder> b) { return b->host() == item; });
+		if (item->field<url_key>() == url_value("")) {
+			item->field<url_key>(real_url);
 		}
-	} else {
-		auto v = bro->tab_widget()->currentWebView();
-		assert(v);
-		if (v)
-			v->load(it, true, true);
+
+		if (view) {
+			bro = view->browser();
+		} else if (tags_list.size() > 0) {
+			bro = browser(tags_list);
+		} else if (item->field<url_key>() != url_value("")) {
+
+			auto tab_sate = [&](boost::intrusive_ptr<i_t> it) {
+				int version = 1;
+				QByteArray data;
+				QDataStream stream(&data, QIODevice::WriteOnly);
+
+				stream << qint32(web::TabWidget::TabWidgetMagic);
+				stream << qint32(version);
+
+				QStringList tabs_url;
+				tabs_url.append(detail::to_qstring(item->field<url_key>()));
+
+				stream << tabs_url;
+				stream << it->field<id_key>(); // currentIndex();
+
+				return data;
+			};
+			auto bro_state = [&](boost::intrusive_ptr<i_t> it) {
+				int version = 2;
+				QByteArray data;
+				QDataStream stream(&data, QIODevice::WriteOnly);
+				auto topic = gl_para::_default_topic;
+				stream << qint32(web::Browser::browser_magic);
+				stream << qint32(version);
+				stream << topic;
+				stream << detail::to_qstring(it->field<name_key>());
+				stream << 1;
+				stream << true;  // menuBar()->isVisible();
+				stream << true;  //!_find_screen->isHidden();
+				stream << false; //!_bookmarkstoolbar->isHidden();
+				stream << true;  //!gl_paras->status_bar()->isHidden();
+				stream << tab_sate(it);
+				return data;
+			};
+			auto state_ = bro_state(item);
+			bro = (new Blogger(gl_para::_default_topic, gl_para::_default_post, appconfig->hide_editor_tools(), state_))->browser();
+		}
 	}
+
 	assert(bro);
 	return bro;
 }
@@ -2668,88 +2742,84 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_
 	if ("" == topic) topic = gl_para::_default_topic;
 
 	// std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
-	web::Browser* bro(dumy_browser());
-	if (!bro) {
+	web::Browser* bro = nullptr; //(dumy_browser());
+//	if (!bro) {
 #ifdef USE_CURRENT_BROWSER_KEY_WORD
-		assert(!((topic == gl_para::_current_browser) && (force)));
-		//	auto try_real_url = to_be_url(topic);
+	assert(!((topic == gl_para::_current_browser) && (force)));
+	//	auto try_real_url = to_be_url(topic);
 
-		//	if (try_real_url != QUrl() && try_real_url != detail::to_qstring(web::Browser::_defaulthome)) {
-		//		browser_ = static_cast<web::ToolbarSearch*>(_find_screen->lineedit_stack()->currentWidget())->search_now(topic);
-		//	} else
-		if (topic == gl_para::_current_browser) {
-			auto rs = _vtab_record->currentWidget();
-			if (rs)
-				browser_ = dynamic_cast<rs_t*>(rs)->browser();
-			else {
-				//			int count_browser = 0;
-				for (int i = 0; i < _vtab_record->count();
-				     i++) { // for(auto i : _record_screens){
-					auto rs = _vtab_record->widget(i);
-					if (rs->objectName() == record_screen_multi_instance_name) {
-						// auto	rs		= dynamic_cast<rs_t *>(w);
-						auto bro_ = dynamic_cast<rs_t*>(rs)->browser();
-						if (bro_) {
-							if (rs == _vtab_record->currentWidget()) { //_vtab_record->currentWidget()){  //
-								//browser_->isVisible() ||
-								//browser_->isActiveWindow()
-								browser_ = bro_; // .data();
-
-								break;
-							}
-						}
-						//					count_browser++;
-					}
-				}
-			}
-		} else {
-#else
-		int count_browser = 0;
-		for (int i = 0; i < _vtab_record->count();
-		     i++) { // for(auto i : _record_screens){
-			auto rs = _vtab_record->widget(i);
-			if (rs->objectName() == record_screen_multi_instance_name) {
-				// auto	rs		= dynamic_cast<rs_t *>(w);
-				auto bro_ = dynamic_cast<rs_t*>(rs)->browser();
-				if (bro_) {
-					auto blogger_ = bro_->blogger();
-					if (blogger_) {
-						if (blogger_->topic() == topic) { //|| topic ==
-							//gl_para::_what_ever_topic//_vtab_record->currentWidget()){
-							//// browser_->isVisible() || browser_->isActiveWindow()
-							bro = bro_; // .data();
+	//	if (try_real_url != QUrl() && try_real_url != detail::to_qstring(web::Browser::_defaulthome)) {
+	//		browser_ = static_cast<web::ToolbarSearch*>(_find_screen->lineedit_stack()->currentWidget())->search_now(topic);
+	//	} else
+	if (topic == gl_para::_current_browser) {
+		auto rs = _vtab_record->currentWidget();
+		if (rs)
+			browser_ = dynamic_cast<rs_t*>(rs)->browser();
+		else {
+			//			int count_browser = 0;
+			for (int i = 0; i < _vtab_record->count();
+			     i++) { // for(auto i : _record_screens){
+				auto rs = _vtab_record->widget(i);
+				if (rs->objectName() == record_screen_multi_instance_name) {
+					// auto	rs		= dynamic_cast<rs_t *>(w);
+					auto bro_ = dynamic_cast<rs_t*>(rs)->browser();
+					if (bro_) {
+						if (rs == _vtab_record->currentWidget()) { //_vtab_record->currentWidget()){  //
+							//browser_->isVisible() ||
+							//browser_->isActiveWindow()
+							browser_ = bro_; // .data();
 
 							break;
 						}
 					}
+					//					count_browser++;
 				}
-				count_browser++;
 			}
 		}
+	} else {
+#else
+	int count_browser = 0;
+	for (int i = 0; i < _vtab_record->count(); i++) { // for(auto i : _record_screens){
+		auto rs = _vtab_record->widget(i);
+		if (rs->objectName() == record_screen_multi_instance_name) {
+			// auto	rs		= dynamic_cast<rs_t *>(w);
+			auto bro_ = dynamic_cast<rs_t*>(rs)->browser();
+			if (bro_) {
+				auto blogger_ = bro_->blogger();
+				if (blogger_) {
+					if (blogger_->topic() == topic) { //|| topic ==
+						//gl_para::_what_ever_topic//_vtab_record->currentWidget()){
+						//// browser_->isVisible() || browser_->isActiveWindow()
+						bro = bro_; // .data();
+
+						break;
+					}
+				}
+			}
+			count_browser++;
+		}
+	}
 #endif // USE_CURRENT_BROWSER_KEY_WORD
 #ifdef USE_CURRENT_BROWSER_KEY_WORD
-		}
+	}
 #endif // USE_CURRENT_BROWSER_KEY_WORD
 
-		if (!bro) {
-			auto state = DiskHelper::get_topic_from_directory(gl_paras->root_path() + "/" + gl_para::_blog_root_dir, topic);
-			if (state != QByteArray())
-				bro = browser<QByteArray>(state);
-		}
-		if (!bro && force) {
-			auto checked_topic = topic;
-			//		if(topic == gl_para::_what_ever_topic) checked_topic =
-			//gl_para::_default_topic;
-			bro = (new Blogger(checked_topic))->browser();
-		}
-	} else {
-		bro->blogger()->topic(topic);
+	if (!bro) {
+		auto state = DiskHelper::get_topic_from_directory(gl_paras->root_path() + "/" + gl_para::_blog_root_dir, topic);
+		if (state != QByteArray())
+			bro = browser<QByteArray>(state);
 	}
-	assert(bro || !force);
-	//	assert(bro);
+	if (!bro && force) {
+		auto checked_topic = topic;
+		//		if(topic == gl_para::_what_ever_topic) checked_topic =
+		//gl_para::_default_topic;
+		bro = (new Blogger(checked_topic))->browser();
+	}
 
+	assert(bro || !force);	//	assert(bro);
 	return bro; // qobject_cast<DockedWindow *>(widget()); //
 }
+
 
 std::map<std::string, QMenu*>& wn_t::main_menu_map()
 {
@@ -3055,6 +3125,7 @@ size_t wn_t::shrink(const size_t bar)
 	return result;
 }
 
+web::AutoSaver* wn_t::autosaver() const { return _autosaver; }
 QStringListModel* wn_t::stringlistmodel() const { return _stringlistmodel; }
 
 void wn_t::on_topic_changed(const QString& original_topic_, const QString& topic_new, bool append_mode)
