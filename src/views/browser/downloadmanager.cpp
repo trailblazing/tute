@@ -107,19 +107,19 @@ namespace web {
 				    settings.value(QLatin1String("downloadDirectory")).toString();
 				settings.endGroup();
 
-				auto path = _download->path();
-				auto file_path = path.mid(0, path.lastIndexOf('/') + 1);
+				auto default_full_path = _download->path();
+				auto file_dir = default_full_path.mid(0, default_full_path.lastIndexOf('/')); //  + 1
 				// auto	difference	= url_difference(file_path.toStdString(),
 				// download_directory.toStdString());
-				if (!url_equal(file_path.toStdString(), download_directory.toStdString())) { // if(! (difference ==
-													     // "" || difference ==
-													     // "/")){
-					auto file_name = path.mid(path.lastIndexOf('/'));
-					*file_name.begin() != '/' ? file_name.prepend('/') : "";
+				if (!url_equal(file_dir.toStdString(), download_directory.toStdString())) { // if(! (difference ==
+													    // "" || difference ==
+													    // "/")){
+					auto file_name = default_full_path.mid(default_full_path.lastIndexOf('/') + 1);
+					//					*file_name.begin() != '/' ? file_name.prepend('/') : "";
 					*download_directory.rbegin() != '/' ? "" : download_directory.remove(download_directory.size() - 1, 1); // *download_directory.rbegin() !=
 																		// '/' ? download_directory += '/' :
 																		// "";
-					auto new_path = download_directory + file_name;
+					auto new_path = download_directory + "/" + file_name;
 					_download->setPath(new_path);
 					assert(_download->path() == new_path);
 				}
@@ -188,11 +188,16 @@ namespace web {
 		// _default_filename);
 		// }
 		// if(prompt_for_filename)
-		if (_default_filename.isEmpty())
+		if (_default_filename.isEmpty()) {
 			_default_filename =
 			    QFileInfo(defaultLocation, _file.fileName()).absoluteFilePath();
-		_new_filename =
-		    QFileDialog::getSaveFileName(this, tr("Save File"), _default_filename);
+#if QT_VERSION == 0x050800
+			if (_new_filename.isEmpty()) _new_filename = QFileInfo(download_directory, _file.fileName()).absoluteFilePath();
+#else
+			if (_new_filename.isEmpty()) _new_filename = QFileDialog::getSaveFileName(this, tr("Save File"), _default_filename); // sucks on Qt5.8?
+#endif // QT_VERSION == 0x050800
+		}
+
 		if (_new_filename.isEmpty()) {
 			if (_download)
 				_download->cancel();
@@ -449,19 +454,18 @@ namespace web {
 				    settings.value(QLatin1String("downloadDirectory")).toString();
 				settings.endGroup();
 
-				auto path = download->path();
-				auto file_path = path.mid(0, path.lastIndexOf('/') + 1);
+				auto default_full_path = download->path();
+				auto file_dir = default_full_path.mid(0, default_full_path.lastIndexOf('/')); //+ 1
 				// auto	difference	= url_difference(file_path.toStdString(),
 				// download_directory.toStdString());
-				if (!url_equal(file_path.toStdString(),
-					download_directory.toStdString())) { // if(! (difference ==
-									     // "" || difference ==
-									     // "/")){
-					auto file_name = path.mid(path.lastIndexOf('/'));
-					*file_name.begin() != '/' ? file_name.prepend('/') : "";
+				if (!url_equal(file_dir.toStdString(), download_directory.toStdString())) { // if(! (difference ==
+													    // "" || difference ==
+													    // "/")){
+					auto file_name = default_full_path.mid(default_full_path.lastIndexOf('/') + 1);
+					//					*file_name.begin() != '/' ? file_name.prepend('/') : "";
 					*download_directory.rbegin() != '/' ? "" : download_directory.remove(download_directory.size() - 1, 1); // *download_directory.rbegin() != '/'
 																		// ? download_directory += '/' : "";
-					auto new_path = download_directory + file_name;
+					auto new_path = download_directory + "/" + file_name;
 					download->setPath(new_path);
 					assert(download->path() == new_path);
 				}
