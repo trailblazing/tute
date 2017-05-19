@@ -316,6 +316,28 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
 	if (detail::to_string(id) == "") {
 
 		auto v = _browser->currentTab();
+		if (!v) {
+			auto real_url = gl_paras->main_window()->query_internet(_current_topic_name);
+			auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
+			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+				    return TreeIndex::url_require_item_from_tree(
+					real_target_url_, std::bind(&tv_t::move, gl_paras->tree_screen()->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+					[&](boost::intrusive_ptr<const i_t> it) -> bool {
+						return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);
+					});
+			    });
+			auto ri = RecordIndex::instance([&] {
+				RecordModel* rm = nullptr;
+				auto rctrl = _browser->tab_widget()->record_screen()->record_ctrl();
+				if (rctrl) {
+					rm = rctrl->source_model();
+				}
+				return rm;
+			},
+			    it);
+			it = _browser->bind(ri);
+			v = it->activate(std::bind(&web::Browser::find, _browser, std::placeholders::_1)); //it->page()->view();
+		}
 		if (v) {
 			auto p = v->page();
 			if (p) {
