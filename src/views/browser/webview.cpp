@@ -597,6 +597,7 @@ namespace web {
 				host_->field<url_key>(real_url); // "url",
 				if (host_->field<home_key>() == web::Browser::_defaulthome && real_url != web::Browser::_defaulthome)
 					host_->field<home_key>(home_value(url_str));
+				_loadingurl = url;
 				data_changed = true;
 #ifdef USE_EDITOR_WRAP
 				if (is_current) {
@@ -887,152 +888,152 @@ namespace web {
 		return _view;
 	}
 
-	WebView* WebPage::activate()
+	WebView* WebPage::activate(bool force_reload)
 	{
 		QString _url_str = _binder->host()->field<url_key>();
 		QUrl _url = QUrl(_url_str);
-		if (_view                  // && _loadingurl.isValid()     // && url().isValid()    // &&	           // url().toString() != _url_str	    // && _url_str != web::Browser::_defaulthome		// url() may be	    // nothing
-		    && _url != _loadingurl // lead loading stop
-		    ) {
-			// triggerAction(QWebEnginePage::Stop);
-			QWebEnginePage::setUrl(_url);
-			QWebEnginePage::load(_url);
-		}
-		if (_binder->host()) { // ->_active_request
-			// if(_record_binder->bounded_item()->_open_link_in_new_window == 1) { }
-			assert(_browser);
-			if (!_browser->isActiveWindow() || !_browser->isVisible()) {
-				if (_view) {
-					if (!_view->isTopLevel()) _view->raise();
-					if (!_view->isActiveWindow()) _view->activateWindow();
-				}
-				if (!_browser->isTopLevel()) _browser->raise();
-				if (!_browser->isActiveWindow()) _browser->activateWindow();
-			}
-			auto _vtab_record = gl_paras->vtab_record();
-			auto _record_screen = _browser->record_screen();
-			if (_record_screen) {
-				if (_vtab_record->currentWidget() != _record_screen)
-					_vtab_record->setCurrentWidget(_record_screen);
-			}
+		if (_view                   // && _loadingurl.isValid()     // && url().isValid()    // &&	           // url().toString() != _url_str	    // && _url_str != web::Browser::_defaulthome		// url() may be	    // nothing
+		    && (_url != _loadingurl // lead loading stop
+			   || !_activated)) {
+			if (!_view->_load_finished || force_reload) {
+				// triggerAction(QWebEnginePage::Stop);
+				QWebEnginePage::setUrl(_url);
+				QWebEnginePage::load(_url);
 
-			// if(_url_str != web::Browser::_defaulthome){	// && _loadingurl.isValid()
-			// // && _loadingurl == _url
-			if (_view) {
-				auto record_view = _rctrl->view();
-				if (record_view) {
-					if (record_view->current_item() != _binder->host() || _tab_widget->currentWebView() != _view || !_activated) {
-						_tab_widget->setCurrentWidget(_view);
-						_view->show();
-						// if(checked) // globalparameters.mainwindow()
-						_view->setFocus(); // make upate validate
-						_binder->host()->add_rating();
-						// assert(_lineedits);
 
-						// if(_lineedits) {
-						QLineEdit* line_edit = _tab_widget->currentLineEdit(); // qobject_cast<QLineEdit
-												       // *>(_lineedits->currentWidget());
-						if (line_edit) line_edit->setText(_url_str);
-// }
-#ifdef USE_HAS_SELECTION
-						auto _record_view = _rctrl->view();
-						QItemSelectionModel* item_selection_model = _record_view->selectionModel();
-						bool has_selection = item_selection_model->hasSelection();
-#endif // USE_HAS_SELECTION
-						if (_rctrl->view()->current_item() != _binder->host()
-#ifdef USE_HAS_SELECTION
-						    || !has_selection
-#endif // USE_HAS_SELECTION
-						    )
-							_rctrl->select_as_current(_rctrl->index<pos_proxy>(_binder->host())); // if(_record_controller->view()->selection_first<IdType>()
-															      // != _binder->host()->field<id_type>()){
-															      // IdType(_binder->item()->field("id"))
-					}
-				}
-			}
-			auto it = _binder->host();
-			auto tree_view = _tree_screen->view();
-			if (it != tree_view->current_item()) tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, it));
-		}
-		if (_view) {
-			_browser->adjustSize();
-			if (_view == _tab_widget->currentWebView()) {
-				_tab_widget->adjustSize();
-				_view->adjustSize();
-			}
-			_view->current_view_global_consistency();
-		}
+				auto target_ = _binder->host();
 
-		auto target_ = _binder->host();
-		auto tree_view_ = _tree_screen->view();
-		QList<boost::intrusive_ptr<i_t>> items_similar;
-		assert(target_);
-		if (target_)
-			items_similar = tree_view_->source_model()->children(
-			    [&](boost::intrusive_ptr<const i_t> it_) {
-				    return url_equal(it_->field<url_key>(), target_->field<url_key>()) || it_->id() == target_->id() || (detail::to_string(it_->field<home_key>()) != "" && detail::to_string(target_->field<home_key>()) != "" && detail::to_string(it_->field<home_key>()) != detail::to_string(web::Browser::_defaulthome) && detail::to_string(target_->field<home_key>()) != detail::to_string(web::Browser::_defaulthome) && url_equal(detail::to_string(it_->field<home_key>()), detail::to_string(target_->field<home_key>()))); // || it_ == target_; // || (it_->field<home_type>() != "" && ti->field<home_type>() != "" && url_equal(it_->field<home_type>().toStdString(), ti->field<home_type>().toStdString()))
-			    });
-
-		if (target_ && items_similar.size() > 1) {
-			QList<boost::intrusive_ptr<i_t>> others_same;
-			for (auto it_ : items_similar) {
-				if (it_ != target_)
-					if (!others_same.contains(it_))
-						others_same << it_;
-			}
-			for (auto _it : others_same) {
-				if (_it->binder()) {
-					if (_it->binder()->page()) {
-						if (_it->binder()->page()->view() == _tab_widget->currentWebView()) {
-							if (_rctrl)
-								_rctrl->select_as_current(_rctrl->index<pos_proxy>(target_)); // if(_record_controller->source_model()->current_item() != _it)
-															      // _record_controller->select_as_current(_record_controller->index<pos_proxy>(_it));
+				assert(target_);
+				if (target_) { // ->_active_request
+					// if(_record_binder->bounded_item()->_open_link_in_new_window == 1) { }
+					assert(_browser);
+					if (!_browser->isActiveWindow() || !_browser->isVisible()) {
+						if (_view) {
+							if (!_view->isTopLevel()) _view->raise();
+							if (!_view->isActiveWindow()) _view->activateWindow();
 						}
-						auto it_ = TreeLevel::instance(TreeIndex::item_require_treeindex([&] { return tree_view_->source_model(); }, target_), _it)->merge(); // TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
-
-						// std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
+						if (!_browser->isTopLevel()) _browser->raise();
+						if (!_browser->isActiveWindow()) _browser->activateWindow();
 					}
+					auto _vtab_record = gl_paras->vtab_record();
+					auto _record_screen = _browser->record_screen();
+					if (_record_screen) {
+						if (_vtab_record->currentWidget() != _record_screen)
+							_vtab_record->setCurrentWidget(_record_screen);
+					}
+
+					if (_view) {
+						if (_rctrl) {
+							auto record_view = _rctrl->view();
+							if (record_view) {
+								if (record_view->current_item() != target_ || _tab_widget->currentWebView() != _view || !_activated) {
+									_tab_widget->setCurrentWidget(_view);
+									_view->show();
+									// if(checked) // globalparameters.mainwindow()
+
+									//						_view->setFocus(); // make upate validate
+
+									target_->add_rating();
+									// assert(_lineedits);
+
+									// if(_lineedits) {
+									QLineEdit* line_edit = _tab_widget->currentLineEdit(); // qobject_cast<QLineEdit
+															       // *>(_lineedits->currentWidget());
+									if (line_edit) line_edit->setText(_url_str);
+
+									// }
+									auto current = [&] {
+										boost::intrusive_ptr<i_t> r;
+										auto v = _tab_widget->currentWebView();
+										if (v) {
+											auto p = v->page();
+											if (p) {
+												auto b = p->binder();
+												if (b)
+													r = b->host();
+											}
+										}
+										return r;
+									}();
+									assert(target_ == current);
+
+#ifdef USE_HAS_SELECTION
+									auto _record_view = _rctrl->view();
+									QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+									bool has_selection = item_selection_model->hasSelection();
+#endif // USE_HAS_SELECTION
+									if (_rctrl->source_model()->current_item() != current
+#ifdef USE_HAS_SELECTION
+									    || !has_selection
+#endif // USE_HAS_SELECTION
+									    ) {
+										auto pp = _rctrl->index<pos_proxy>(current);
+										// auto	index_proxy_	= _record_controller->index<index_proxy>(pp);
+										_rctrl->select_as_current(pp);
+										// auto v = _record_controller->view();
+										// if(v){
+										// v->setCurrentIndex(index_proxy_);
+										// v->setFocus();
+										// v->edit(index_proxy_);
+										// }
+										_view->current_view_global_consistency();
+									}
+								}
+							}
+						}
+
+						_browser->adjustSize();
+						if (_view == _tab_widget->currentWebView()) {
+							_tab_widget->adjustSize();
+							_view->adjustSize();
+						}
+						_view->current_view_global_consistency();
+					}
+					auto tree_view_ = _tree_screen->view();
+					QList<boost::intrusive_ptr<i_t>> items_similar;
+					auto target_home = detail::to_string(target_->field<home_key>());
+					auto browser_home = detail::to_string(web::Browser::_defaulthome);
+					items_similar = tree_view_->source_model()->children(
+					    [&](boost::intrusive_ptr<const i_t> it_) {
+
+						    auto item_home = detail::to_string(it_->field<home_key>());
+
+						    return (url_equal(it_->field<url_key>(), target_->field<url_key>()) //
+							       || it_->id() == target_->id()                            //
+							       || (item_home != ""                                      //
+								      && target_home != ""                              //
+								      && item_home != browser_home                      //
+								      && target_home != browser_home                    //
+								      && url_equal(item_home, target_home)))            //
+							&& it_ != target_;                                              // || it_ == target_; // || (it_->field<home_type>() != "" && ti->field<home_type>() != "" && url_equal(it_->field<home_type>().toStdString(), ti->field<home_type>().toStdString()))
+					    });
+
+					if (items_similar.size() > 0) { //1
+						//				QList<boost::intrusive_ptr<i_t>> others_same;
+						//				for (auto it_ : items_similar) {
+						//					if (it_ != target_)
+						//						if (!others_same.contains(it_))
+						//							others_same << it_;
+						//				}
+						for (auto _it : items_similar) { //others_same
+							if (_it->binder()) {
+								if (_it->binder()->page()) {
+									target_ = TreeLevel::instance(TreeIndex::item_require_treeindex([&] { return tree_view_->source_model(); }, target_), _it)->merge(); // TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
+																									     // std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
+								}
+							}
+						}
+					}
+					//                        auto target_ = _binder->host();
+					auto tree_view = _tree_screen->view();
+					if (target_ != tree_view->current_item()) tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, target_));
 				}
 			}
 		}
+
 		// recovery_global_consistency();
 		// target_ = _page->binder()->host();
-		auto current = [&] {
-			boost::intrusive_ptr<i_t> r;
-			auto v = _tab_widget->currentWebView();
-			if (v) {
-				auto p = v->page();
-				if (p) {
-					auto b = p->binder();
-					if (b)
-						r = b->host();
-				}
-			}
-			return r;
-		}();
-		if (_rctrl) {
-#ifdef USE_HAS_SELECTION
-			auto _record_view = _rctrl->view();
-			QItemSelectionModel* item_selection_model = _record_view->selectionModel();
-			bool has_selection = item_selection_model->hasSelection();
-#endif // USE_HAS_SELECTION
-			if (_rctrl->source_model()->current_item() != current
-#ifdef USE_HAS_SELECTION
-			    || !has_selection
-#endif // USE_HAS_SELECTION
-			    ) {
-				auto pp = _rctrl->index<pos_proxy>(current);
-				// auto	index_proxy_	= _record_controller->index<index_proxy>(pp);
-				_rctrl->select_as_current(pp);
-				// auto v = _record_controller->view();
-				// if(v){
-				// v->setCurrentIndex(index_proxy_);
-				// v->setFocus();
-				// v->edit(index_proxy_);
-				// }
-				_view->current_view_global_consistency();
-			}
-		}
+
 
 		_activated = true;
 		return _view;
@@ -2537,7 +2538,7 @@ namespace web {
 		// _bounded_item->record_binder().reset();
 	}
 
-	WebView* WebPage::Binder::activator()
+	WebView* WebPage::Binder::activator(bool force_reload)
 	{ // boost::intrusive_ptr<TreeItem> item
 		// assert(_item_link->binder());
 		// assert(_item_link->binder() == _page_link->binder());
@@ -2557,7 +2558,7 @@ namespace web {
 		////            view->show();
 		////        }
 
-		return _page->activate(); // view;
+		return _page->activate(force_reload); // view;
 	}
 
 	boost::intrusive_ptr<i_t> WebPage::host() const

@@ -4421,14 +4421,41 @@ void tv_t::know_model_save(void)
 {
 	// if(!_know_branch->synchronized())
 	// know_root_holder::know_root()->synchronize(_know_branch->root_item());
+	auto check_load_finished = [&] {
+		bool load_finished = true;
+		auto main_win = gl_paras->main_window();
+		if (main_win) {
+			auto browsers = main_win->browsers();
+			for (auto& bro : browsers) {
+				auto tab = bro->tab_widget();
+				if (tab) {
+					if (tab->count() > 0) {
+						for (int index = 0; index < tab->count(); index++) {
+							auto view = tab->webView(index);
+							if (view) {
+								if (!view->load_finished()) {
+									load_finished = false;
+									break;
+								}
+							}
+						}
+					}
+				}
+				if (load_finished == false) break;
+			}
+		}
+		return load_finished;
+	};
 
 	// know_root_holder::know_root()->save();
 	// sychronize();
-	if (!_know_model_board->synchronized()) {
-		//	_know_model_board->save(); //
-		std::thread(&tkm_t::save, _know_model_board) //
-							     //		    .join();                                 //.hardware_concurrency(); //
-		    .detach();                               // _know_model_board->save();
+	if (check_load_finished()) {
+		if (!_know_model_board->synchronized()) {
+			//	_know_model_board->save(); //
+			std::thread(&tkm_t::save, _know_model_board) //
+								     //		    .join();                                 //.hardware_concurrency(); //
+			    .detach();                               // _know_model_board->save();
+		}
 	}
 }
 

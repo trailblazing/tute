@@ -31,7 +31,7 @@ struct Binder
 	typedef _interface<web::WebPage*() const> page_get;
 	typedef _interface<web::WebView*()> bind_set; // , boost::intrusive_ptr<TreeItem>
 						      // (TreeItem::*)(web::WebPage *)
-	typedef _interface<web::WebView*()> activate_interface;
+	typedef _interface<web::WebView*(bool)> activate_interface;
 	typedef _interface<QString()> binder_type_interface;
 
 	typedef std::shared_ptr<item_get> item_helper;
@@ -109,7 +109,7 @@ struct Binder
 
 	web::WebView* bind();
 
-	web::WebView* activate();
+	web::WebView* activate(bool force_reload = false);
 
 	bool integrity_internal() const;
 

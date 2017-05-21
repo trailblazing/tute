@@ -445,7 +445,7 @@ boost::intrusive_ptr<i_t> rctrl_t::index_invoke(const index_proxy& index_proxy_,
 			// browser_update(pos_source_); // if new one, create it? no, you can't
 			// click a record which does not exist.
 		}
-		gl_paras->window_switcher()->record_screen_to_editor_docker();
+		if (gl_paras->editor_docker()->isVisible()) gl_paras->window_switcher()->record_screen_to_editor_docker();
 	}
 	return result;
 }

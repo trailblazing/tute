@@ -664,6 +664,7 @@ void tkm_t::save()
 			write_to(_xml_file_path);
 		}
 	}
+	synchronized(true);
 }
 
 //// Генерирование полного DOM дерева хранимых данных
@@ -2629,7 +2630,7 @@ QList<boost::intrusive_ptr<i_t>> tkm_t::children(
 	std::function<QList<boost::intrusive_ptr<i_t>>(
 	    boost::intrusive_ptr<i_t>,
 	    int)> // , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
-	    item_by_equal_recurse = [&](boost::intrusive_ptr<i_t> it_, int mode)
+	    item_by_equal_recursive = [&](boost::intrusive_ptr<i_t> it_, int mode)
 	    -> QList<boost::intrusive_ptr<i_t>> { // boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem>
 						  // item, QString name, int mode);
 		    // , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
@@ -2646,17 +2647,17 @@ QList<boost::intrusive_ptr<i_t>> tkm_t::children(
 			    // return _index_list;
 		    } else {
 			    for (int i = 0; i < it_->count_direct(); i++)
-				    item_by_equal_recurse(it_->child_direct(i), 1);
+				    item_by_equal_recursive(it_->child_direct(i), 1);
 			    // return _index_list;
 		    }
 		    return _items_list;
 	    };
 
 	// Инициализация поиска
-	item_by_equal_recurse(_root_item, 0);
+	item_by_equal_recursive(_root_item, 0);
 
 	// Запуск поиска и возврат результата
-	return item_by_equal_recurse(_root_item, 1);
+	return item_by_equal_recursive(_root_item, 1);
 }
 
 QModelIndexList tkm_t::indexes(
@@ -2665,7 +2666,7 @@ QModelIndexList tkm_t::indexes(
 	std::function<QModelIndexList(
 	    boost::intrusive_ptr<i_t>,
 	    int)> // , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
-	    item_by_equal_recurse = [&](
+	    item_by_equal_recursive = [&](
 		boost::intrusive_ptr<const i_t> it_,
 		int mode) { // boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem>
 			    // item, QString name, int mode);
@@ -2683,17 +2684,17 @@ QModelIndexList tkm_t::indexes(
 			    // return _index_list;
 		    } else {
 			    for (int i = 0; i < it_->count_direct(); i++)
-				    item_by_equal_recurse(it_->child_direct(i), 1);
+				    item_by_equal_recursive(it_->child_direct(i), 1);
 			    // return _index_list;
 		    }
 		    return _index_list;
 	    };
 
 	// Инициализация поиска
-	item_by_equal_recurse(_root_item, 0);
+	item_by_equal_recursive(_root_item, 0);
 
 	// Запуск поиска и возврат результата
-	return item_by_equal_recurse(_root_item, 1);
+	return item_by_equal_recursive(_root_item, 1);
 }
 
 boost::intrusive_ptr<i_t>
