@@ -41,7 +41,7 @@ struct RecordIndex
 	//std::function<RecordModel *()> &current_model_,
 	//boost::intrusive_ptr<TreeItem>  host_, const index_source &sibling_index);
 	static boost::intrusive_ptr<i_t>
-	synchronize(boost::intrusive_ptr<i_t> host_) noexcept;
+	select_as_current(boost::intrusive_ptr<i_t> host_) noexcept;
 	boost::intrusive_ptr<i_t> bind(bool make_current = true) noexcept;
 
 	private:

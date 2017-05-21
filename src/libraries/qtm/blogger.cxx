@@ -343,7 +343,7 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
 			if (p) {
 				auto h = p->host();
 				if (h) {
-					this->history_sychronize(h); //misc_field<id_key>(h->id());
+					this->select_as_current(h); //misc_field<id_key>(h->id());
 					id = this->misc_field<id_key>();
 				}
 			}
@@ -6359,7 +6359,7 @@ SideTabWidget* Blogger::control_tab()
 	return _control_tab;
 }
 
-void Blogger::history_sychronize(boost::intrusive_ptr<i_t> current_item)
+void Blogger::select_as_current(boost::intrusive_ptr<i_t> current_item)
 {
 	//	if (_browser) {
 	//		//	if (!_browser) {

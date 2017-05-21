@@ -72,7 +72,7 @@ QT_END_NAMESPACE
 namespace web {
 	class ChaseWidget : public QAbstractButton //QWidget
 			    ,
-			    public boost::intrusive_ref_counter<ChaseWidget, boost::thread_safe_counter>,
+//			    public boost::intrusive_ref_counter<ChaseWidget, boost::thread_safe_counter>,
 			    public sd::renter {
 #if QT_VERSION == 0x050600
 		W_OBJECT(ChaseWidget)

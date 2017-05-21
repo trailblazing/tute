@@ -134,11 +134,9 @@ namespace web {
 	{
 		if (_download) {
 			if (_download->state() == QWebEngineDownloadItem::DownloadRequested) {
-				connect(_download, &QWebEngineDownloadItem::downloadProgress, this,
-				    &DownloadWidget::downloadProgress); // _download.get() //
-									// _download.data()
-				connect(_download, &QWebEngineDownloadItem::finished, this,
-				    &DownloadWidget::finished); // _download.get() // _download.data()
+				connect(_download, &QWebEngineDownloadItem::downloadProgress, this, &DownloadWidget::downloadProgress); // _download.get() //
+																	// _download.data()
+				connect(_download, &QWebEngineDownloadItem::finished, this, &DownloadWidget::finished);                 // _download.get() // _download.data()
 				// }
 				// if(_download->state() == QWebEngineDownloadItem::DownloadRequested ){
 				// reset info
@@ -216,9 +214,7 @@ namespace web {
 				download_state == QWebEngineDownloadItem::DownloadInProgress))
 				_download->setPath(_file.absoluteFilePath());
 			fileNameLabel->setText(_file.fileName());
-			auto _new_path =
-			    QFileInfo(_new_filename)
-				.absolutePath(); // _new_filename.truncate(_new_filename.lastIndexOf('/'));
+			auto _new_path = QFileInfo(_new_filename).absolutePath(); // _new_filename.truncate(_new_filename.lastIndexOf('/'));
 
 			settings.setValue(QLatin1String("downloadDirectory"), _new_path);
 		}
@@ -324,10 +320,11 @@ namespace web {
 
 	bool DownloadWidget::downloadedSuccessfully() const
 	{
-		bool completed =
-		    _download && _download->isFinished() &&
-		    _download->state() == QWebEngineDownloadItem::DownloadCompleted;
-
+		bool completed = false;
+		if (_download) {
+			if (_download->isFinished() &&
+			    _download->state() == QWebEngineDownloadItem::DownloadCompleted) completed = true;
+		}
 		return completed || !stopButton->isVisible();
 	}
 

@@ -1493,10 +1493,12 @@ void rs_t::tools_update()
 				//					if (_tab_widget->count() > 0) {
 				auto cur_it = _view->current_item();
 				if (cur_it) {
-					_rctrl->select_as_current(_rctrl->index<pos_proxy>(cur_it));
-
+					if (cur_it != _rctrl->tab_widget()->current_item()) {
+						_rctrl->select_as_current(_rctrl->index<pos_proxy>(cur_it));
+					}
 					has_selection = true;
 				}
+
 //					}
 //				}
 #ifdef USE_HAS_SELECTION

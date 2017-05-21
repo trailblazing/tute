@@ -39,9 +39,13 @@
 **
 ****************************************************************************/
 
+
+//#include <mutex>
+
 #if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
 #endif
+
 
 #include <QtCore/QSettings>
 
@@ -2125,27 +2129,47 @@ namespace web {
 
 	void Browser::slotLoadProgress(int progress)
 	{
+
 		auto _chasewidget =
 #ifdef USE_CLEAR_BUTTON
 		    _find_screen->chasewidget();
 #else
-		    currentTab()->toolbarsearch()->chasewidget();
+		    [&] {
+			    ChaseWidget* cw = nullptr;
+			    auto v = currentTab();
+			    if (v) {
+				    auto s = v->toolbarsearch();
+				    if (s)
+					    cw = s->chasewidget();
+			    }
+			    return cw;
+		    }();
 #endif // USE_CLEAR_BUTTON
 
 		if (_chasewidget) {
+			//			std::mutex m;
+			//			std::lock_guard<std::mutex> lock(m);
 			if (progress < 100 && progress > 0) {
 				_chasewidget->setAnimated(true);
 				disconnect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);
-//				if (_stopicon.isNull()) _stopicon = QIcon(":/resource/pic/mobile_stop.svg"); // style()->standardIcon(QStyle::SP_BrowserStop);
+				if (_stopicon.isNull()) _stopicon = QIcon(":/resource/pic/mobile_stop.svg"); // style()->standardIcon(QStyle::SP_BrowserStop);
+													     //				try {
+				_stopreload->setIcon(_stopicon);                                             // crashs? -- recursive calling select_as_current
+													     //				} catch (std::exception& e) {
+													     //					(void)e;
+													     //				}
 
-				_stopreload->setIcon(_stopicon);
 				connect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);
 				_stopreload->setToolTip(tr("Stop loading the current page"));
 			} else {
 				_chasewidget->setAnimated(false);
 				disconnect(_stopreload, &QAction::triggered, _stop, &QAction::trigger); // &QAction::setChecked
-
-				_stopreload->setIcon(_reloadicon);
+				if (_reloadicon.isNull()) _reloadicon = QIcon(":/resource/pic/mobile_reload.svg");
+				//				try {
+				_stopreload->setIcon(_reloadicon); // crashs? -- recursive calling select_as_current
+								   //				} catch (std::exception& e) {
+								   //					(void)e;
+								   //				}
 
 				connect(_stopreload, &QAction::triggered, _reload, &QAction::trigger); // &QAction::setChecked
 				_stopreload->setToolTip(tr("Reload the current page"));

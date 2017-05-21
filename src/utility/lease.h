@@ -169,6 +169,7 @@ namespace sd {
 	//					 std::forward<_Args>(__args)...);
 	//      }
 
+	// Could we use some compiler extesion to provide this base to traditional code base?
 	//	template <typename real_renter>
 	class renter;
 
@@ -176,7 +177,7 @@ namespace sd {
 	struct intrusive_ptr;
 
 	//	template <typename real_renter>
-	class renter //: public boost::intrusive_ref_counter<renter, boost::thread_safe_counter>//boost::intrusive_ref_counter<real_renter, boost::thread_safe_counter>
+	class renter : public boost::intrusive_ref_counter<renter, boost::thread_safe_counter> //boost::intrusive_ref_counter<real_renter, boost::thread_safe_counter>
 	{
 	    public:
 		typedef typename boost::signals2::signal<void(renter* const)> signal_type;
@@ -278,7 +279,7 @@ namespace sd {
 		//			}
 		//		}
 		//		real_renter* _renter_inside;
-		boost::signals2::signal<void(renter* const)> _close_request;
+		boost::signals2::signal<void(renter* const)> _close_request; // http://stackoverflow.com/questions/14758088/how-are-atomic-operations-implemented-at-a-hardware-level
 		//		boost::signals2::scoped_connection _close_request_connection;
 
 		//		template <typename r, template <typename> class br>
@@ -324,9 +325,10 @@ namespace sd {
 	template <class T, class U>
 	void renew_connection(intrusive_ptr<T>& left, intrusive_ptr<U>& right);
 
-	template <typename real_renter>                                                               //, template <typename> class renter_t
-	struct intrusive_ptr : protected boost::intrusive_ptr<real_renter>, protected receiver_status // public std::shared_ptr<real_renter> //std::enable_shared_from_this<shared_ptr<real_renter>> // : public borrower
-	{
+	template <typename real_renter>                                     //, template <typename> class renter_t
+	struct intrusive_ptr :                                              // think about std::shared_ptr
+			       protected boost::intrusive_ptr<real_renter>, // public std::shared_ptr<real_renter> //std::enable_shared_from_this<shared_ptr<real_renter>> // : public borrower
+			       protected receiver_status {
 	    public:
 		typedef real_renter element_type;
 		typedef typename renter::slot_type slot_type;
@@ -1244,6 +1246,11 @@ namespace sd {
 	}
 
 	// namespace boost
+
+	//	template<typename real_renter>
+	//	class borrowed_ptr: public std::shared_ptr<real_renter>{
+
+	//	};
 }
 
 #endif // LEASE_H

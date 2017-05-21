@@ -506,7 +506,7 @@ void EditorWrap::pin(const QString& pin_)
 						if (_binder) {
 							auto host = _binder->host();
 							if (host) {
-								RecordIndex::synchronize(host);
+								rctrl->select_as_current(rctrl->index<pos_proxy>(host));
 								auto source_model = [&]() {
 									return _tree_screen->view()->source_model();
 								};

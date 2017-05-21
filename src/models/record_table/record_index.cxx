@@ -36,11 +36,11 @@ RecordIndex::bind( // const std::function<RecordModel *()> &current_model_, boos
 	auto rctrl_ = _current_model()->record_ctrl();
 	assert(rctrl_);
 	if (rctrl_) {
-		auto tab = rctrl_->tab_widget();
+		auto tab_widget = rctrl_->tab_widget();
 
 		web::Browser* browser_ = nullptr;
 
-		if (tab) browser_ = tab->browser();
+		if (tab_widget) browser_ = tab_widget->browser();
 		assert(browser_); //browser_ is a weak_ptr?
 		assert(_host);
 		if (_host && browser_) {
@@ -182,29 +182,51 @@ boost::intrusive_ptr<i_t> RecordIndex::host() const
 	return _host;
 }
 
-boost::intrusive_ptr<i_t> RecordIndex::synchronize(
+boost::intrusive_ptr<i_t> RecordIndex::select_as_current(
     boost::intrusive_ptr<i_t> host_) noexcept
 { // const
 	// std::function<RecordModel
 	// *()> &current_model_,
 	boost::intrusive_ptr<i_t> _found_item(nullptr);
 	if (host_) {
-		auto v = gl_paras->main_window()->find(
-		    [&](boost::intrusive_ptr<const ::Binder> b) {
-			    return url_equal(detail::to_string(b->host()->field<home_key>()), detail::to_string(host_->field<home_key>()));
-		    });
+		//		auto rctrl = _current_model()->record_ctrl();
+		//		assert(rctrl);
+		//		if (rctrl) {
+		//			auto tab_widget = rctrl->tab_widget();
+
+		//			web::Browser* browser_ = nullptr;
+		//			if (tab_widget) browser_ = tab_widget->browser();
+		//			assert(browser_); //browser_ is a weak_ptr?
+		//			assert(host_);
+		//			if (host_ && tab_widget) {  // browser_
+		auto v = gl_paras->main_window()
+			     ->find(
+				 [&](boost::intrusive_ptr<const ::Binder> b) {
+					 return url_equal(detail::to_string(b->host()->field<home_key>()), detail::to_string(host_->field<home_key>()));
+				 });
 		if (v) {
 			auto rctrl = v->tabmanager()->record_screen()->record_ctrl();
 			if (rctrl) {
-				auto current_model_ = [&] { return rctrl->source_model(); };
-				auto alternative_item = v->page()->host();
-				auto url = detail::to_string(alternative_item->field<url_key>()); // host_->field<url_type>();
-				if (url != "") {                                                  // && url != web::Browser::_defaulthome
-					// rctrl_t *rctrl = current_model_()->reocrd_controller();
-					_found_item = rctrl->synchronize(RecordIndex::instance(current_model_, alternative_item, nullptr)); // host_
+				//				auto current_model_ = [&] { return rctrl->source_model(); };
+				_found_item = v->page()->host();
+				if (_found_item == host_) {
+					auto pos_proxy_ = rctrl->index<pos_proxy>(_found_item);
+					if (static_cast<int>(pos_proxy_) != -1) {
+						auto url = detail::to_string(_found_item->field<url_key>()); // host_->field<url_type>();
+						if (url != "") {                                             // && url != web::Browser::_defaulthome
+							// rctrl_t *rctrl = current_model_()->rctrl();
+							auto record_current = rctrl->view()->current_item();
+							if (_found_item != record_current) {
+								_found_item = rctrl->select_as_current(pos_proxy_ //RecordIndex::instance(current_model_, alternative_item, nullptr)
+								    );                                            // host_
+							}
+						}
+					}
 				}
 			}
 		}
+		//			}
+		//		}
 	}
 	return _found_item; // _record;
 }

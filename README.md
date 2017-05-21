@@ -15,7 +15,7 @@ It has a client. You can manage your remote service via XML-RPC.
 
 If someday,
 
-It can listen to some local screen capture or other content queries trigged by the user, that should not be a surprise.
+It can listen to some local screen capture or other content queries triggered by the user, that should not be a surprise.
 
 Same as the real-time collaborative editing functions, should it?
 
