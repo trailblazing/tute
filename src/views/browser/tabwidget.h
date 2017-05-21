@@ -409,7 +409,7 @@ namespace web {
 	class TabWidget : public QTabWidget
 #ifdef USE_SIGNAL_CLOSE
 			  ,
-			  public boost::intrusive_ref_counter<TabWidget, boost::thread_safe_counter>,
+//			  public boost::intrusive_ref_counter<TabWidget, boost::thread_safe_counter>,
 			  public sd::renter //<TabWidget>
 #endif                                      //USE_SIGNAL_CLOSE
 

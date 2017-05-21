@@ -607,7 +607,7 @@ namespace web {
 			}
 			if (data_changed) { // && is_current, without is_current will lead current
 					    // view lost editing focus
-				RecordIndex::synchronize(_binder->host());
+					    //				RecordIndex::select_as_current(_binder->host());
 				auto source_model = [&]() {
 					return _tree_screen->view()->source_model();
 				};
@@ -915,9 +915,7 @@ namespace web {
 				if (_vtab_record->currentWidget() != _record_screen)
 					_vtab_record->setCurrentWidget(_record_screen);
 			}
-			auto it = _binder->host();
-			auto tree_view = _tree_screen->view();
-			if (it != tree_view->current_item()) tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, it));
+
 			// if(_url_str != web::Browser::_defaulthome){	// && _loadingurl.isValid()
 			// // && _loadingurl == _url
 			if (_view) {
@@ -952,6 +950,9 @@ namespace web {
 					}
 				}
 			}
+			auto it = _binder->host();
+			auto tree_view = _tree_screen->view();
+			if (it != tree_view->current_item()) tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, it));
 		}
 		if (_view) {
 			_browser->adjustSize();
@@ -1130,7 +1131,7 @@ namespace web {
 		//		if (!QStringList(result->field<tags_key>()).contains(topic))
 		result->topic_replace(_blogger->topic()); //topic
 							  //		assert(QStringList(result->field<tags_key>()).contains(topic));
-		RecordIndex::synchronize(result);
+							  //		RecordIndex::select_as_current(result);
 		return result;
 	}
 

@@ -55,7 +55,7 @@ struct id_value;
 class rctrl_t : public QObject
 #ifdef USE_SIGNAL_CLOSE
 		,
-		public boost::intrusive_ref_counter<rctrl_t, boost::thread_safe_counter>,
+//		public boost::intrusive_ref_counter<rctrl_t, boost::thread_safe_counter>,
 		public sd::renter //<rctrl_t>
 #endif                            //USE_SIGNAL_CLOSE
 {
@@ -198,7 +198,7 @@ class rctrl_t : public QObject
 	// Печать таблицы конечных записей
 	void on_print_click(void);
 
-	void select_as_current(pos_proxy pos_proxy_); // , const int mode = add_new_record_after
+	boost::intrusive_ptr<i_t> select_as_current(pos_proxy pos_proxy_); // , const int mode = add_new_record_after
 	// void cursor_to_index(boost::intrusive_ptr<TreeItem> it);
 	void on_sort_requested(int logicalIndex, Qt::SortOrder order);
 
@@ -223,8 +223,10 @@ class rctrl_t : public QObject
 	// record_index_, bool make_current = true);	// , const int mode =
 	// add_new_record_after	// add_new_record_after
 	web::WebView* addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true); // , const int mode = add_new_record_after
+#ifdef USE_RECORD_INDEX_SELECTION
 	boost::intrusive_ptr<i_t>
-	synchronize(boost::intrusive_ptr<RecordIndex> record_index_);
+	select_as_current(boost::intrusive_ptr<RecordIndex> record_index_);
+#endif // USE_RECORD_INDEX_SELECTION
 	void edit_field(pos_source pos, const pin_value& pin, const name_value& name, const author_value& author, const home_value& home, const url_value& url, const tags_value& tags);
 
 	// Methods of removing records transferred to public access, because through

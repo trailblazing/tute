@@ -125,7 +125,7 @@ namespace web {
 class Blogger : public QMainWindow
 #ifdef USE_SIGNAL_CLOSE
 		,
-		public boost::intrusive_ref_counter<Blogger, boost::thread_safe_counter>,
+//		public boost::intrusive_ref_counter<Blogger, boost::thread_safe_counter>,
 		public sd::renter //<Blogger>
 #endif                            //USE_SIGNAL_CLOSE
 {                                 // QWidget
@@ -175,7 +175,7 @@ class Blogger : public QMainWindow
 	//	rs_t *record_screen();
 	web::Docker<Blogger>* editor_docker();
 	//	static QString purify_topic(const QString &topic);
-	void history_sychronize(boost::intrusive_ptr<i_t> current_item);
+	void select_as_current(boost::intrusive_ptr<i_t> current_item);
 
     private:
 	void doUiSetup();

@@ -226,7 +226,7 @@ Q_DECLARE_METATYPE(QStyleOptionButton)
 class rv_t : public QTableView
 #ifdef USE_SIGNAL_CLOSE
 	     ,
-	     public boost::intrusive_ref_counter<rctrl_t, boost::thread_safe_counter>,
+//	     public boost::intrusive_ref_counter<rctrl_t, boost::thread_safe_counter>,
 	     public sd::renter
 #endif // USE_SIGNAL_CLOSE
 {

@@ -1554,7 +1554,7 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index,
 	// auto	ctrl			= v->tabmanager()->record_ctrl();
 	// auto	alternative_item	= v->page()->host();
 	// if(ctrl)
-	RecordIndex::synchronize(_item); // alternative_item
+	RecordIndex::select_as_current(_item); // alternative_item
 	// }
 	//
 	// _item->binder() ? _item->binder()->page() ?
@@ -1643,31 +1643,31 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index,
 	// qDebug() << "index to root item";
 	// throw std::exception();
 	// }
-	if (_item) {
-		// auto vr = globalparameters.main_window()->vtab_record();
-		auto v = gl_paras->main_window()->find([&](boost::intrusive_ptr<const Binder> b) { return b->host() == _item; });
-		if (v) {
-			auto p = v->page();
-			if (p) {
-				if (p->tabmanager()->current_item() != _item) p->tabmanager()->select_as_current(v);
-				auto _rctrl = p->record_ctrl();
-				if (_rctrl) {
-#ifdef USE_HAS_SELECTION
-					auto _record_view = _rctrl->view();
-					QItemSelectionModel* item_selection_model = _record_view->selectionModel();
-					bool has_selection = item_selection_model->hasSelection();
-#endif // USE_HAS_SELECTION
-					if (_rctrl->view()->current_item() != _item
-#ifdef USE_HAS_SELECTION
-					    || !has_selection
-#endif // USE_HAS_SELECTION
-					    )
-						_rctrl->select_as_current(_rctrl->index<pos_proxy>(_rctrl->source_model()->index(_item)));
-					//
-				}
-			}
-		}
-	}
+	//	if (_item) {
+	//		// auto vr = globalparameters.main_window()->vtab_record();
+	//		auto v = gl_paras->main_window()->find([&](boost::intrusive_ptr<const Binder> b) { return b->host() == _item; });
+	//		if (v) {
+	//			auto p = v->page();
+	//			if (p) {
+	//				if (p->tabmanager()->current_item() != _item) p->tabmanager()->select_as_current(v);
+	//				auto _rctrl = p->record_ctrl();
+	//				if (_rctrl) {
+	//#ifdef USE_HAS_SELECTION
+	//					auto _record_view = _rctrl->view();
+	//					QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+	//					bool has_selection = item_selection_model->hasSelection();
+	//#endif // USE_HAS_SELECTION
+	//					if (_rctrl->view()->current_item() != _item
+	//#ifdef USE_HAS_SELECTION
+	//					    || !has_selection
+	//#endif // USE_HAS_SELECTION
+	//					    )
+	//						_rctrl->select_as_current(_rctrl->index<pos_proxy>(_rctrl->source_model()->index(_item)));
+	//					//
+	//				}
+	//			}
+	//		}
+	//	}
 	return _result;
 }
 

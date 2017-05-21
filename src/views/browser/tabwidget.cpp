@@ -2057,8 +2057,8 @@ namespace web {
 				// _record_controller->cursor_to_index(_record_controller->index<PosProxy>(result));
 				// _tree_view->select_and_current(_record_binder->bounded_item());
 
-				// if(!_record_controller->source_model()->find(item))
-				RecordIndex::synchronize(result_item); // _record_controller->addnew_item_fat(result);
+				if (!_rctrl->source_model()->item([&](const id_value id) { return id == result_item->id(); }))
+					_rctrl->addnew_item(record_index, make_current); // _record_controller->addnew_item_fat(result);
 
 				// item->activate(); // activate after initialization of browser
 				//				if (count() == 1)

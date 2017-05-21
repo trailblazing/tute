@@ -1029,9 +1029,9 @@ boost::intrusive_ptr<i_t> RecordModel::current_item() const
 
 
 	if (_rctrl) {
-		auto tab = _rctrl->tab_widget();
-		if (tab) {
-			auto v = tab->currentWebView();
+		auto tab_widget = _rctrl->tab_widget();
+		if (tab_widget) {
+			auto v = tab_widget->currentWebView();
 			auto page = v ? v->page() : nullptr;
 			if (page) {
 				auto binder = page->binder();

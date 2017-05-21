@@ -131,7 +131,7 @@ namespace web {
 	class Browser : public QMainWindow
 #ifdef USE_SIGNAL_CLOSE
 			,
-			public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>,
+//			public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>,
 			public sd::renter //<Browser>
 #endif                                    //USE_SIGNAL_CLOSE
 

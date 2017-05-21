@@ -64,7 +64,7 @@ namespace web {
 class rs_t : public QWidget
 #ifdef USE_SIGNAL_CLOSE
 	     ,
-	     public boost::intrusive_ref_counter<rs_t, boost::thread_safe_counter>,
+//	     public boost::intrusive_ref_counter<rs_t, boost::thread_safe_counter>,
 	     public sd::renter //<rs_t>
 #endif                         //USE_SIGNAL_CLOSE
 {

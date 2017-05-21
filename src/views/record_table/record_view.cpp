@@ -1251,8 +1251,8 @@ void rv_t::on_doubleclick(const QModelIndex& index_proxy_)
 			// делается это путем "повторного" выбора текущего пункта
 			if (_rctrl)
 				_rctrl->index_invoke(ip, true); // force to refresh		// аньше было select()
-			// globalparameters.main_window()->editor_switch();
-			//	}
+								// globalparameters.main_window()->editor_switch();
+								//	}
 		}
 	}
 }
@@ -1956,6 +1956,7 @@ void rv_t::resizeEvent(QResizeEvent* e)
 		rating_width = [&] { return _rating_width + scroll_sapce_width; };
 		_delegate->_x_offset =
 		    _is_vertival_scroll_bar_visibale ? (_delegate->_rating_width - 2 * _scroll_bar_width / 3) : (_delegate->_rating_width);
+
 		int suggest_others_width =
 		    row_number_width + _pin_width + rating_width() +
 		    (_scroll_bar_width - scroll_sapce_width); // _vertical_scroll_bar_width

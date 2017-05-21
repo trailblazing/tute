@@ -186,9 +186,79 @@ rv_t* rctrl_t::view(void) const
 	return _view;
 }
 
+
+#ifdef USE_RECORD_INDEX_SELECTION
+// merged into boost::intrusive_ptr<i_t> rctrl_t::select_as_current(pos_proxy pos_proxy_)
+// record url may be empty or web::Browser::_defaulthome
+boost::intrusive_ptr<i_t> rctrl_t::select_as_current(boost::intrusive_ptr<RecordIndex> record_index_)
+{
+	boost::intrusive_ptr<i_t> it = record_index_->host();
+	boost::intrusive_ptr<i_t> _found_item =
+	    _source_model->item([&](const id_value id) { return id == it->id(); });
+	web::WebView* web_view = nullptr;
+	pos_source pos_source_(-1);
+	// if(! _found_item){
+	//////    assert(record_controller);
+	//// auto browser_pages = this->_source_model->browser_pages();
+	//// assert(browser_pages);
+	//// if(!_item) {
+	//// Record record;
+	//// if(record.isLite())record.switchToFat();
+	//// assert(!item->is_lite());
+	// if(it->is_lite())it->to_fat();
+	//// item->is_registered_to_record_controller_and_tab_widget(true);
+	// v		= this->addnew_item_fat(record_index_, add_new_record_after);
+	// source_position = _tab_widget->webViewIndex(v);	//
+	// recordTableController->autoAddNewAfterContext();
+	// assert(source_position != - 1);
+
+	//// _source_model->on_table_config_changed();
+	// }else
+
+	pos_source_ = _source_model->position(_found_item->id());
+	web_view = _tab_widget->webView(static_cast<int>(pos_source_));
+	_found_item = web_view->page()->binder()->host();
+	assert(_found_item == _source_model->item(pos_source_));
+	assert(_found_item);
+
+	pos_source pos = _source_model->position(_found_item->id());
+
+	assert(pos == pos_source_); // maybe duplicated
+	// _item = _source_model->item(source_position);
+
+	assert(_found_item.get() == it.get());
+	// assert(_item_.get() == item.get());
+	// assert(record == _record);
+	assert(url_equal(_found_item->field<url_key>(), it->field<url_key>()));
+	// }
+	// assert(_record);
+	if (_found_item->is_lite()) _found_item->to_fat();
+	// }
+	// if(_view->current_item() != _item) {
+	// auto current_item = _view->current_item();
+	//
+	// _source_model->on_table_config_changed();
+
+	index_proxy index_proxy_ =
+	    index<index_proxy>(index<pos_proxy>(pos_source_));
+	auto qindex_proxy = static_cast<QModelIndex>(index_proxy_);
+	_view->dataChanged(qindex_proxy, qindex_proxy);
+
+	_view->restore_column_width();
+	_view->restore_header_state();
+
+	if (_found_item != _view->current_item()) select_as_current(index<pos_proxy>(_found_item));
+	//// }item
+
+	return _found_item; // _record;
+}
+#endif // USE_RECORD_INDEX_SELECTION
+
+
 // Установка засветки в нужную строку на экране
-void rctrl_t::select_as_current(pos_proxy pos_proxy_)
+boost::intrusive_ptr<i_t> rctrl_t::select_as_current(pos_proxy pos_proxy_)
 { // , const int mode
+	boost::intrusive_ptr<i_t> _found_item;
 	if (pos_proxy_ != -1) {
 		////    IdType id;
 		////    PosSource pos_source_ = _source_model->position(id);
@@ -213,7 +283,8 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 		index_proxy index_proxy_ = index<index_proxy>(pos_proxy_); // Модельный индекс в Proxy модели
 
 		index_source index_source_ = index<index_source>(pos_proxy_);
-		auto target = index<boost::intrusive_ptr<i_t>>(index_source_);
+		_found_item = index<boost::intrusive_ptr<i_t>>(index_source_);
+		if (_found_item->is_lite()) _found_item->to_fat();
 		auto qindex_proxy = static_cast<QModelIndex>(index_proxy_);
 		auto target_pos_poxy_ = qindex_proxy.row();
 		if (target_pos_poxy_ != -1) {
@@ -280,7 +351,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 						_view->edit(qindex_proxy);
 						_view->update(qindex_proxy);
 						//
-						auto real_index_source_ = _source_model->index(target); //current_index();
+						auto real_index_source_ = _source_model->index(_found_item); //current_index();
 						auto result_index_proxy_ = index<index_proxy>(real_index_source_);
 						assert(result_index_proxy_ == index_proxy_);
 						// В мобильной версии реакции на выбор записи нет (не обрабатывается
@@ -300,7 +371,14 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 						// this->setFocus();   // ?
 						pos_source pos_source_ = index<pos_source>(pos_proxy_);
 						auto it = index<boost::intrusive_ptr<i_t>>(pos_source_);
-						assert(it == target);
+						assert(it == _found_item);
+
+						//						web::WebView* web_view = _tab_widget->webView(static_cast<int>(pos_source_));
+						//						if (web_view) {
+						//							auto it_web = web_view->page()->binder()->host();
+						//							assert(it_web == _found_item);
+						//						}
+
 						if (this->_view->hasFocus()) {                                                                                                // view is the curretn controller
 							if (_tab_widget->currentIndex() != static_cast<int>(pos_source_)) _tab_widget->select_as_current(it->page()->view()); // setCurrentIndex(static_cast<int>(pos_source_));
 							auto tree_screen = gl_paras->main_window()->tree_screen();
@@ -310,12 +388,16 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 							//				if (it->page()) it->page()
 							//					boost::intrusive_ptr<i_t> browser_current = _tab_widget->current_item();
 							//					assert(browser_current == it); // ?failure
-							_blogger->history_sychronize(it);
+							_blogger->select_as_current(it);
 						}
 #ifdef USE_HAS_SELECTION
 						bool has_selection = item_selection_model->hasSelection();
 						assert(has_selection);
 #endif // USE_HAS_SELECTION
+						_view->dataChanged(qindex_proxy, qindex_proxy);
+
+						_view->restore_column_width();
+						_view->restore_header_state();
 					}
 				}
 				//		_view->setFocus();
@@ -323,6 +405,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_)
 			//	_record_screen->tools_update();
 		}
 	}
+	return _found_item;
 }
 
 // Принимает индекс Proxy модели
@@ -2426,6 +2509,7 @@ void rctrl_t::on_recordtable_configchange(void)
 	_source_model->on_table_config_changed();
 	_view->restore_column_width();
 	_view->restore_header_state();
+	_view->repaint();
 }
 
 void rctrl_t::on_print_click(void)
@@ -2443,70 +2527,6 @@ void rctrl_t::on_print_click(void)
 	print_dialog.exec();
 }
 
-// record url may be empty or web::Browser::_defaulthome
-boost::intrusive_ptr<i_t> rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_)
-{
-	boost::intrusive_ptr<i_t> it = record_index_->host();
-	boost::intrusive_ptr<i_t> _found_item =
-	    _source_model->item([&](const id_value id) { return id == it->id(); });
-	web::WebView* v = nullptr;
-	pos_source source_position(-1);
-	// if(! _found_item){
-	//////    assert(record_controller);
-	//// auto browser_pages = this->_source_model->browser_pages();
-	//// assert(browser_pages);
-	//// if(!_item) {
-	//// Record record;
-	//// if(record.isLite())record.switchToFat();
-	//// assert(!item->is_lite());
-	// if(it->is_lite())it->to_fat();
-	//// item->is_registered_to_record_controller_and_tab_widget(true);
-	// v		= this->addnew_item_fat(record_index_, add_new_record_after);
-	// source_position = _tab_widget->webViewIndex(v);	//
-	// recordTableController->autoAddNewAfterContext();
-	// assert(source_position != - 1);
-
-	//// _source_model->on_table_config_changed();
-	// }else
-
-	source_position = _source_model->position(_found_item->id());
-	v = _tab_widget->webView(static_cast<int>(source_position));
-
-	_found_item = v->page()->binder()->host();
-	assert(_found_item == _source_model->item(source_position));
-	assert(_found_item);
-
-	pos_source pos = _source_model->position(_found_item->id());
-
-	assert(pos == source_position); // maybe duplicated
-	// _item = _source_model->item(source_position);
-
-	assert(_found_item.get() == it.get());
-	// assert(_item_.get() == item.get());
-	// assert(record == _record);
-	assert(url_equal(_found_item->field<url_key>(), it->field<url_key>()));
-	// }
-	// assert(_record);
-	if (_found_item->is_lite()) _found_item->to_fat();
-	// }
-	// if(_view->current_item() != _item) {
-	// auto current_item = _view->current_item();
-	//
-	// _source_model->on_table_config_changed();
-
-	index_proxy proxy_index =
-	    index<index_proxy>(index<pos_proxy>(source_position));
-	auto qindex_proxy = static_cast<QModelIndex>(proxy_index);
-	_view->dataChanged(qindex_proxy, qindex_proxy);
-
-	_view->restore_column_width();
-	_view->restore_header_state();
-
-	select_as_current(index<pos_proxy>(_found_item));
-	//// }item
-
-	return _found_item; // _record;
-}
 
 // Record *register_record(const QUrl &_url
 // , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>,
