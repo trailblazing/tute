@@ -89,11 +89,13 @@ void WindowSwitcher::tree_screen_to_record_screen(void)
 			// Binder> b){return b == item->binder();});
 			auto _record_screen = item->page()->browser()->record_screen();
 			if (_record_screen) {
-				// item->page()->view()->record_ctrl()->tabmanager()->browser()->record_screen();
-				QWidget* object = static_cast<QWidget*>(_record_screen); // globalparameters.record_screens()[0]
-				// temporary setting
-				object->show();
-				appconfig->focus_widget(object->objectName());
+				//				// item->page()->view()->record_ctrl()->tabmanager()->browser()->record_screen();
+				//				QWidget* object = static_cast<QWidget*>(_record_screen); // globalparameters.record_screens()[0]
+				//				// temporary setting
+				//				object
+				_record_screen->show();
+				appconfig->focus_widget( //object
+				    _record_screen->objectName());
 
 				gl_paras->vtab_record()->setCurrentWidget(_record_screen); // globalparameters.record_screens()[0]
 											   // temporary setting
@@ -135,12 +137,14 @@ void WindowSwitcher::record_to_record_screen(void)
 				if (item != _tree_view->source_model()->root_item()) {
 					auto _record_screen = item->page()->browser()->record_screen();
 					if (_record_screen) {
-						QWidget* object = static_cast<QWidget*>(_record_screen); // temporary setting
-						// // globalparameters.record_screens()[0]
-						object->show();
+						//						QWidget* object = static_cast<QWidget*>(_record_screen); // temporary setting
+						//						// // globalparameters.record_screens()[0]
+						//						object
+						_record_screen->show();
 						gl_paras->vtab_record()->setCurrentWidget(_record_screen); // temporary setting		//
 													   // globalparameters.record_screens()[0]
-						appconfig->focus_widget(object->objectName());
+						appconfig->focus_widget(                                   //object
+						    _record_screen->objectName());
 					}
 				}
 			}
@@ -164,9 +168,11 @@ void WindowSwitcher::record_screen_to_editor_docker(void)
 		i->hide();
 	// globalParameters.getFindScreen()->hide();
 
-	QWidget* object = static_cast<QWidget*>(gl_paras->editor_docker());
-	object->show();
-	appconfig->focus_widget(object->objectName());
+	//	QWidget* object = static_cast<QWidget*>(gl_paras->editor_docker());
+	//	object
+	gl_paras->editor_docker()->show();
+	appconfig->focus_widget( //object
+	    gl_paras->editor_docker()->objectName());
 }
 
 void WindowSwitcher::record_screen_to_find_in_base(void)
@@ -185,9 +191,11 @@ void WindowSwitcher::record_screen_to_tree_screen(void)
 		i->hide();
 	// globalParameters.getFindScreen()->hide();
 
-	QWidget* object = static_cast<QWidget*>(gl_paras->tree_screen());
-	object->show();
-	appconfig->focus_widget(object->objectName());
+	//	QWidget* object = static_cast<QWidget*>(gl_paras->tree_screen());
+	//	object
+	gl_paras->tree_screen()->show();
+	appconfig->focus_widget( //object
+	    gl_paras->tree_screen()->objectName());
 }
 
 // Закрытие окна FindInBase с переходом на окно, откуда оно было открыто

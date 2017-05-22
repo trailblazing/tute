@@ -1136,7 +1136,7 @@ namespace sd {
 			{
 			}
 
-			static return_type transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, Arg... arg)
+			static return_type transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, Arg&&... arg)
 			{
 				return (*pointer_out<object_type>(_object).*pointer_out<closure_t>(_functor)->_func)(std::forward<Arg>(arg)...);
 			}

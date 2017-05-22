@@ -208,7 +208,7 @@ namespace web {
 		WebView* view(); // {assert(_view); return _view;}
 
 		rctrl_t* record_ctrl(); // {return _record_controller;}
-		WebView* activate();
+		WebView* activate(bool force_reload = false);
 		WebView* load(boost::intrusive_ptr<i_t> item, bool switch_to = true, bool force_reload = false);
 
 		void load(const QUrl& url) = delete;
@@ -249,7 +249,7 @@ namespace web {
 
 			WebView*
 			bind(); // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
-			WebView* activator();
+			WebView* activator(bool force_reload = false);
 			static QString binder_type()
 			{
 				return "page_binder";
@@ -402,7 +402,7 @@ namespace web {
 
 		~WebView();
 
-		static WebView* instance(FindScreen *find_screen_, url_value const & real_url);
+		static WebView* instance(FindScreen* find_screen_, url_value const& real_url);
 		WebPage* page() const;
 
 		bool load_finished() const;
@@ -424,11 +424,12 @@ namespace web {
 
 		bool current_view_global_consistency();
 
-		ToolbarSearch *toolbarsearch() const;
-//		void toolbarsearch(ToolbarSearch* tbs);
+		ToolbarSearch* toolbarsearch() const;
+		//		void toolbarsearch(ToolbarSearch* tbs);
 
-		Browser *browser() const;
-	protected:
+		Browser* browser() const;
+
+	    protected:
 		void loadUrl(const QUrl& url);
 
 		void mousePressEvent(QMouseEvent* event);

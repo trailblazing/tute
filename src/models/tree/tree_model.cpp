@@ -618,7 +618,7 @@ boost::intrusive_ptr<i_t> tm_t::item(
 	std::function<boost::intrusive_ptr<i_t>(
 	    boost::intrusive_ptr<i_t>,
 	    const std::function<bool(boost::intrusive_ptr<const i_t>)>&, int)>
-	    item_recurse // boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem>
+	    item_recursive // boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem>
 			 // item, QString name, int mode);
 	    = [&](boost::intrusive_ptr<i_t> _it, const std::function<bool(boost::intrusive_ptr<const i_t>)>& _equal, int mode) {
 		      static boost::intrusive_ptr<i_t> found_item;
@@ -632,7 +632,7 @@ boost::intrusive_ptr<i_t> tm_t::item(
 			      } else {
 				      for (auto il : _it->child_linkers()) {
 					      if (!found_item)
-						      item_recurse(il->host(), _equal, 1);
+						      item_recursive(il->host(), _equal, 1);
 					      else
 						      break;
 				      }
@@ -644,10 +644,10 @@ boost::intrusive_ptr<i_t> tm_t::item(
 	      };
 
 	// Инициализация поиска
-	item_recurse(_root_item, _equal, 0); // QUrl()
+	item_recursive(_root_item, _equal, 0); // QUrl()
 
 	// Запуск поиска и возврат результата
-	return item_recurse(_root_item, _equal, 1); // _find_url
+	return item_recursive(_root_item, _equal, 1); // _find_url
 }
 
 // boost::intrusive_ptr<TreeItem> TreeModel::find_recursive(const QUrl

@@ -2857,23 +2857,23 @@ web::WebView* i_t::activate(const std::function<web::WebView*(const std::functio
 		if (check_page && bro) {
 			if (this != check_view->page()->host().get() || !_binder) {
 				bind(check_page);
-				v = _binder->activate();
+				v = _binder->activate(force_reload);
 			} else if (check_page != _binder->page()) {
 				bind(check_page);
-				v = _binder->activate();
+				v = _binder->activate(force_reload);
 			} else if (!check_view->load_finished() || force_reload || !check_view->page()->activated())
-				v = _binder->activate();
+				v = _binder->activate(force_reload);
 			else
 				v = check_view; // _binder->page()->view();
 		} else {                        // bro == nullptr
 			bind();
-			v = _binder->activate();
+			v = _binder->activate(force_reload);
 		}
 		assert(v);
 
 	} else {
 		bind();
-		v = _binder->activate();
+		v = _binder->activate(force_reload);
 	}
 	assert(v);
 	assert(v->current_view_global_consistency());
