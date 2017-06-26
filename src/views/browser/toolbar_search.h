@@ -82,46 +82,46 @@ template <typename>
 struct real_url_t;
 
 namespace web {
-	class ChaseWidget;
+    class ChaseWidget;
 }
 
 // QT_BEGIN_NAMESPACE
 
 namespace web {
-	class AutoSaver;
+    class AutoSaver;
 
-	class WorkerThread : public QThread {
-		Q_OBJECT
+    class WorkerThread : public QThread {
+        Q_OBJECT
 
-		void run() Q_DECL_OVERRIDE;
-		// {
-		////		    QString result;
-		// auto e = _child_linkers.last();
-		// _child_linkers.pop_back();
-		// emit resultReady();
-		// }
-	    signals:
-		void result_ready();
+        void run() Q_DECL_OVERRIDE;
+        // {
+        ////		    QString result;
+        // auto e = _child_linkers.last();
+        // _child_linkers.pop_back();
+        // emit resultReady();
+        // }
+    signals:
+        void result_ready();
 
-	    private:
-		QList<boost::intrusive_ptr<i_t>>& _child_items;
+    private:
+        QList<boost::intrusive_ptr<i_t>>& _child_items;
 
-	    public:
-		WorkerThread(QWidget* p, QList<boost::intrusive_ptr<i_t>>& l)
-		    : QThread(p)
-		    , _child_items(l)
-		{
-		}
-	};
+    public:
+        WorkerThread(QWidget* p, QList<boost::intrusive_ptr<i_t>>& l)
+            : QThread(p)
+            , _child_items(l)
+        {
+        }
+    };
 
-	class ToolbarSearch : public SearchLineEdit {
+    class ToolbarSearch : public SearchLineEdit {
 #if QT_VERSION == 0x050600
-		W_OBJECT(ToolbarSearch)
+        W_OBJECT(ToolbarSearch)
 #else
-		Q_OBJECT
+        Q_OBJECT
 #endif
 
-	    signals:
+    signals:
 // void search(boost::intrusive_ptr<TreeItem>, const QUrl &url
 // , const TreeScreen::paste_strategy &_view_paste_strategy
 // , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return it ? QUrl(it->field("url")).fragment() == _url.fragment() : false;}
@@ -129,52 +129,55 @@ namespace web {
 
 
 #if QT_VERSION == 0x050600
-		void return_pressed() W_SIGNAL(return_pressed); //
+        void return_pressed() W_SIGNAL(return_pressed); //
 #else
-		void return_pressed();
+        void return_pressed();
 #endif
-	    public:
-		ToolbarSearch(WebView* view_ = nullptr); // QStackedWidget *lineedits, QLineEdit *findtext,
+    public:
+        ToolbarSearch(WebView* view_ = nullptr); // QStackedWidget *lineedits, QLineEdit *findtext,
 
-		~ToolbarSearch();
-		//		void text(const QString& text_);
-		//		QString text() const;
+        ~ToolbarSearch();
+//		void text(const QString& text_);
+//		QString text() const;
 
-		//		QLineEdit* findtext() { return _findtext; }
+//		QLineEdit* findtext() { return _findtext; }
 
-		// void findtext(QLineEdit *findtext) {_findtext = findtext;}
+// void findtext(QLineEdit *findtext) {_findtext = findtext;}
 
-		//		QStackedWidget* lineedit_stack() { return _lineedit_stack; }
-		//		void lineedit_stack(QStackedWidget* lineedit_stack_) { _lineedit_stack = lineedit_stack_; }
+//		QStackedWidget* lineedit_stack() { return _lineedit_stack; }
+//		void lineedit_stack(QStackedWidget* lineedit_stack_) { _lineedit_stack = lineedit_stack_; }
 //		std::function<url_value(const QString&)> query_internet;
+#ifndef QT_NO_COMPLETER
+        void setCompleter(QCompleter* completer);
+#endif // QT_NO_COMPLETER
 
-	    public slots:
-		void clear();
-		web::Browser* search_now(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_); // return browser_ref will lead lease.h need web::Browser defined
+    public slots:
+        void clear();
+        web::Browser* search_non_url(boost::intrusive_ptr<real_url_t<QString>> non_url_search_text_); // return browser_ref will lead lease.h need web::Browser defined
 
-	    private slots:
-		void save();
-		void show_menu();
-		void triggered_menu_action(QAction* action);
+    private slots:
+        void save();
+        void show_menu();
+        void triggered_menu_action(QAction* action);
 
-	    public:
-		static int _maxsavedsearches;
+    public:
+        static int _maxsavedsearches;
 
-	    private:
-		void load();
+    private:
+        void load();
 
-		AutoSaver* _autosaver;
+        AutoSaver* _autosaver;
 
-		QStringListModel* _stringlistmodel;
-		QCompleter* _completer;
+        QStringListModel* _stringlistmodel;
+        QCompleter* _completer;
 //		QStackedWidget* _lineedit_stack;
 #ifdef USE_ADDITIONAL_BUFFER
-		QLineEdit* _findtext;
-#endif // USE_ADDITIONAL_BUFFER
-		// TabManager           *_tab_widget;
-		// web::ChaseWidget *_chasewidget;
-		web::WebView* _web_view;
-	};
+        QLineEdit* _findtext;
+#endif  // USE_ADDITIONAL_BUFFER
+        // TabManager           *_tab_widget;
+        // web::ChaseWidget *_chasewidget;
+        //		web::WebView* _web_view;
+    };
 }
 
 // QT_END_NAMESPACE

@@ -166,7 +166,9 @@ class wn_t : public QMainWindow {
 	std::set<web::Browser*> browsers() const;
 	web::Browser* dumy_browser() const;
 	web::AutoSaver* autosaver() const;
+#ifdef USE_STRINGLIST_MODEL
 	QStringListModel* stringlistmodel() const;
+#endif // USE_STRINGLIST_MODEL
 	web::DownloadManager* download_screen() const;
 
 	url_value query_internet(const QString& search_text);
@@ -178,7 +180,9 @@ class wn_t : public QMainWindow {
 	void on_expand_edit_area(bool flag);
 	void synchronize_title(const QString& title_);
 	//	void on_tabCloseRequested(int index);
+#ifdef USE_STRINGLIST_MODEL
 	void on_topic_changed(const QString& original_topic_, const QString& topic_new, bool append_mode = false);
+#endif // USE_STRINGLIST_MODEL
     private slots:
 	void file_new(void);
 	void file_open(void);
@@ -187,7 +191,7 @@ class wn_t : public QMainWindow {
 	// void file_print(void);
 	// void file_print_preview(void);
 	// void file_print_pdf(void);
-	void tools_find(void);
+	void find_bar_switch(void);
 	void tools_preferences(void);
 	// void editor_switch(void);
 
@@ -269,7 +273,9 @@ class wn_t : public QMainWindow {
 	QMenu* _helpmenu;
 
 	web::AutoSaver* _autosaver;
+#ifdef USE_STRINGLIST_MODEL
 	QStringListModel* _stringlistmodel;
+#endif // USE_STRINGLIST_MODEL
 	SysTrayIcon* _tray_icon = nullptr;
 	// web::DownloadManager	*_download;
 

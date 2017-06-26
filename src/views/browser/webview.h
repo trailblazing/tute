@@ -479,6 +479,7 @@ namespace web {
 		QIcon _icon;
 		QNetworkReply* _icon_reply;
 		bool _load_finished = false;
+        boost::signals2::signal<void(bool)> _load_finished_signal;
 		//		QMetaObject::Connection _home_connection; // for disconnect
 		friend class TabWidget;
 		friend class WebPage;
