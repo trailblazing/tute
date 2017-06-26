@@ -138,7 +138,7 @@ namespace web {
 
 		SearchButton* _searchbutton;
 		//		FindScreen* _find_screen;
-		web::WebView* _web_view;
+//		web::WebView* _web_view;
 		QString _inactivetext;
 #if QT_VERSION == 0x050600
 		W_PROPERTY(QString, inactiveText, &SearchLineEdit::inactiveText, &SearchLineEdit::setInactiveText)

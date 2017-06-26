@@ -99,7 +99,7 @@ class FindScreen : public QWidget
 	//	web::ToolbarSearch* toolbarsearch() const;
 	//	QStackedWidget* lineedit_stack() { return _lineedit_stack; }
 	void lineedit_stack(QStackedWidget* lineedit_stack_) { _lineedit_stack = lineedit_stack_; }
-	void switch_stack(QStackedWidget* lineedit_stack_ = nullptr);
+    void switch_stack(QStackedWidget* new_lineedit_stack_ = nullptr);
 	web::Browser* browser();
 	void browser(web::Browser* bro);
 	boost::signals2::signal<void(const QString& str)> find_clicked_after_another_text_changed;
@@ -188,7 +188,7 @@ class FindScreen : public QWidget
 
 	// QIcon _reloadicon;
 	// QIcon _stopicon;
-	QHBoxLayout* _find_text_and_button_tools_area;
+    QHBoxLayout* _find_input_area;
 	ts_t* _tree_screen;
 
 	browser_ref _browser;

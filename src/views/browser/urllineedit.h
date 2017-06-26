@@ -78,10 +78,10 @@ namespace web {
 	    public:
 		ExLineEdit(QWidget* view);
 
-		QLineEdit* lineEdit() const;
+        QLineEdit* lineEdit() const;
 
-		void left_widget(QWidget* widget);
-		QWidget* left_widget() const;
+//		void left_widget(QWidget* widget);
+//		QWidget* left_widget() const;
 		void right_widget(QWidget* widget);
 		QWidget* right_widget() const;
 		QSize sizeHint() const;
@@ -90,6 +90,7 @@ namespace web {
 #ifndef USE_CLEAR_BUTTON
 		ChaseWidget* chasewidget() const;
 #endif // USE_CLEAR_BUTTON
+
 	    protected:
 		void focusInEvent(QFocusEvent* event);
 		void focusOutEvent(QFocusEvent* event);
