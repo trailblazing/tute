@@ -1542,19 +1542,17 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index,
     // //find_object<TreeScreen>(tree_screen_singleton_name);
     assert(_tree_screen);
 
-    // auto _item = _know_root->item(_parent_index);
-
-    // auto v =
-    // globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const
-    // ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(),
-    // _item->field<home_type>().toStdString());});
-    // if(v){
-    // auto	ctrl			= v->tabmanager()->record_ctrl();
-    // auto	alternative_item	= v->page()->host();
-    // if(ctrl)
-    RecordIndex::select_as_current(_item); // alternative_item
-    // }
-    //
+    //    // auto v =
+    //    // globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const
+    //    // ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(),
+    //    // _item->field<home_type>().toStdString());});
+    //    // if(v){
+    //    // auto	ctrl			= v->tabmanager()->record_ctrl();
+    //    // auto	alternative_item	= v->page()->host();
+    //    // if(ctrl)
+    //    RecordIndex::select_as_current(_item); // alternative_item
+    //    // }
+    //    //
     // _item->binder() ? _item->binder()->page() ?
     // _item->binder()->page()->record_ctrl() ? [&] {
     // auto record_controller = _item->binder()->page()->record_ctrl();
@@ -4298,9 +4296,11 @@ tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge)
                 assert(_current_model()->item([=](boost::intrusive_ptr<const i_t> t) { return t->id() == result->id(); }));
                 if (session_id_changed)
                     static_cast<tkm_t*>(_current_model())->session_id(TreeIndex::item_require_treeindex(_current_model, result));
-                if (_to_be_operated_is_current_of_rocord_view)
-                    if (_rctrl)
-                        _rctrl->select_as_current(_rctrl->index<pos_proxy>(result)); //_to_be_operated
+                if (_to_be_operated_is_current_of_rocord_view) {
+                    if (_rctrl) {
+                        RecordIndex::instance([&] { return _rctrl->source_model(); }, result)->select_as_current(); // _rctrl->select_as_current(_rctrl->index<pos_proxy>(result)); //_to_be_operated
+                    }
+                }
                 know_model_save();
 
                 // find_object<MainWindow>("mainwindow")

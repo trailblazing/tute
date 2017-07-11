@@ -32,87 +32,87 @@ boost::intrusive_ptr<i_t>
 RecordIndex::bind( // const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_,
     bool make_current) noexcept
 {
-	boost::intrusive_ptr<i_t> result(nullptr);
-	auto rctrl_ = _current_model()->record_ctrl();
-	assert(rctrl_);
-	if (rctrl_) {
-		auto tab_widget = rctrl_->tab_widget();
+    boost::intrusive_ptr<i_t> result(nullptr);
+    auto rctrl_ = _current_model()->record_ctrl();
+    assert(rctrl_);
+    if (rctrl_) {
+        auto tab_widget = rctrl_->tab_widget();
 
-		web::Browser* browser_ = nullptr;
+        web::Browser* browser_ = nullptr;
 
-		if (tab_widget) browser_ = tab_widget->browser();
-		assert(browser_); //browser_ is a weak_ptr?
-		assert(_host);
-		if (_host && browser_) {
-			auto url = _host->field<url_key>();
-			if (url != url_value("")) { // && url != web::Browser::_defaulthome
-				// if(sibling_item_ != _host){
-				// index_source sibling_index_ = sibling_item_ ?
-				// current_model_()->index(sibling_item_) :
-				// current_model_()->current_index();
-				// if(! static_cast<QModelIndex>(sibling_index_).isValid()){
-				// sibling_index_ = index_source(current_model_()->fake_index(_host));
-				// assert(!
-				// static_cast<QModelIndex>(current_model_()->index(_host)).isValid());
-				// assert(static_cast<QModelIndex>(sibling_index_).isValid());
-				// }	// index(0, 0, QModelIndex())
-				// if(static_cast<QModelIndex>(sibling_index_).isValid())result =
-				// browser_->bind(new RecordIndex(current_model_, _host, sibling_item_),
-				// make_current);
-				// }else result = sibling_item_;
+        if (tab_widget) browser_ = tab_widget->browser();
+        assert(browser_); //browser_ is a weak_ptr?
+        assert(_host);
+        if (_host && browser_) {
+            auto url = _host->field<url_key>();
+            if (url != url_value("")) { // && url != web::Browser::_defaulthome
+                // if(sibling_item_ != _host){
+                // index_source sibling_index_ = sibling_item_ ?
+                // current_model_()->index(sibling_item_) :
+                // current_model_()->current_index();
+                // if(! static_cast<QModelIndex>(sibling_index_).isValid()){
+                // sibling_index_ = index_source(current_model_()->fake_index(_host));
+                // assert(!
+                // static_cast<QModelIndex>(current_model_()->index(_host)).isValid());
+                // assert(static_cast<QModelIndex>(sibling_index_).isValid());
+                // }	// index(0, 0, QModelIndex())
+                // if(static_cast<QModelIndex>(sibling_index_).isValid())result =
+                // browser_->bind(new RecordIndex(current_model_, _host, sibling_item_),
+                // make_current);
+                // }else result = sibling_item_;
 
-				result = browser_->bind(this, make_current);
-				assert(result->binder());
-				assert(result->page());
-			}
-		}
-	}
-	assert(result);
-	return result;
+                result = browser_->bind(this, make_current);
+                assert(result->binder());
+                assert(result->page());
+            }
+        }
+    }
+    assert(result);
+    return result;
 }
 
 boost::intrusive_ptr<RecordIndex>
 RecordIndex::instance(const std::function<RecordModel*()>& current_model_, boost::intrusive_ptr<i_t> host_, boost::intrusive_ptr<i_t> sibling_item_)
 {
-	boost::intrusive_ptr<RecordIndex> result(nullptr);
-	assert(host_);
-	if (sibling_item_ == host_) {
-		auto rctrl_ = current_model_()->record_ctrl();
-		if (rctrl_) {
-			auto tab = rctrl_->tab_widget();
-			if (tab) {
-				sibling_item_ = tab->sibling(sibling_item_); // sibling_s(sibling_item_);
-									     // if(! sibling_item_)throw std::runtime_error(formatter() << "sibling_item_
-									     // == host_; host_ has already been inside the record view");
-			}
-		}
-	}
-	index_source sibling_index_;
-	if (sibling_item_)
-		sibling_index_ = current_model_()->index(sibling_item_);
-	if (!static_cast<QModelIndex>(sibling_index_).isValid()) {
-		auto parent = host_->linker()->host_parent();
-		if (parent)
-			sibling_index_ = current_model_()->index(parent);
-	}
-	if (!static_cast<QModelIndex>(sibling_index_).isValid()) {
-		auto sibling_ = host_->sibling();
-		if (sibling_)
-			sibling_index_ = current_model_()->index(sibling_);
-	}
-	if (!static_cast<QModelIndex>(sibling_index_).isValid())
-		sibling_index_ = current_model_()->current_index();
-	if (!static_cast<QModelIndex>(sibling_index_).isValid()) {
-		sibling_index_ = index_source(static_cast<RecordModel*>(current_model_())->fake_index(host_));
-		assert(!static_cast<QModelIndex>(current_model_()->index(host_)).isValid());
-		assert(static_cast<QModelIndex>(sibling_index_).isValid());
-	} // index(0, 0, QModelIndex())
-	if (!static_cast<QModelIndex>(sibling_index_).isValid())
-		throw std::runtime_error(formatter() << "sibling_index_ isn\'t valid");
-	result = new RecordIndex(current_model_, host_, sibling_index_);
-	if (!result)
-		throw std::runtime_error(formatter() << "construct record index failed");
-	return result;
+    boost::intrusive_ptr<RecordIndex> result(nullptr);
+    assert(host_);
+    if (sibling_item_ == host_) {
+        auto rctrl_ = current_model_()->record_ctrl();
+        if (rctrl_) {
+            auto tab = rctrl_->tab_widget();
+            if (tab) {
+                sibling_item_ = tab->sibling(sibling_item_); // sibling_s(sibling_item_);
+                                                             // if(! sibling_item_)throw std::runtime_error(formatter() << "sibling_item_
+                                                             // == host_; host_ has already been inside the record view");
+            }
+        }
+    }
+    index_source sibling_index_;
+    if (sibling_item_)
+        sibling_index_ = current_model_()->index(sibling_item_);
+    if (!static_cast<QModelIndex>(sibling_index_).isValid()) {
+        auto parent = host_->linker()->host_parent();
+        if (parent)
+            sibling_index_ = current_model_()->index(parent);
+    }
+    if (!static_cast<QModelIndex>(sibling_index_).isValid()) {
+        auto sibling_ = host_->sibling();
+        if (sibling_)
+            sibling_index_ = current_model_()->index(sibling_);
+    }
+    if (!static_cast<QModelIndex>(sibling_index_).isValid())
+        sibling_index_ = current_model_()->current_index();
+    if (!static_cast<QModelIndex>(sibling_index_).isValid()) {
+        sibling_index_ = index_source(static_cast<RecordModel*>(current_model_())->fake_index(host_));
+        assert(!static_cast<QModelIndex>(current_model_()->index(host_)).isValid());
+        assert(static_cast<QModelIndex>(sibling_index_).isValid());
+    } // index(0, 0, QModelIndex())
+    if (!static_cast<QModelIndex>(sibling_index_).isValid())
+        throw std::runtime_error(formatter() << "sibling_index_ isn\'t valid");
+    result = new RecordIndex(current_model_, host_, sibling_index_);
+    if (!result)
+        throw std::runtime_error(formatter() << "construct record index failed");
+    return result;
 }
 // boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const
 // std::function<RecordModel *()> &current_model_,
@@ -160,16 +160,16 @@ RecordIndex::RecordIndex(const std::function<RecordModel*()>& current_model, boo
 
 std::function<RecordModel*()> RecordIndex::current_model() const
 {
-	return _current_model;
+    return _current_model;
 }
 
 index_source RecordIndex::sibling_index() const
 {
-	return _sibling_index;
+    return _sibling_index;
 }
 void RecordIndex::sibling_index(const QModelIndex& si)
 {
-	_sibling_index = si;
+    _sibling_index = si;
 }
 
 // QModelIndex RecordModel::ModelIndex::current_index() const {}
@@ -179,54 +179,47 @@ void RecordIndex::sibling_index(const QModelIndex& si)
 
 boost::intrusive_ptr<i_t> RecordIndex::host() const
 {
-	return _host;
+    return _host;
 }
 
-boost::intrusive_ptr<i_t> RecordIndex::select_as_current(
-    boost::intrusive_ptr<i_t> host_) noexcept
-{ // const
-	// std::function<RecordModel
-	// *()> &current_model_,
-	boost::intrusive_ptr<i_t> _found_item(nullptr);
-	if (host_) {
-		//		auto rctrl = _current_model()->record_ctrl();
-		//		assert(rctrl);
-		//		if (rctrl) {
-		//			auto tab_widget = rctrl->tab_widget();
+boost::intrusive_ptr<i_t> RecordIndex::select_as_current( //boost::intrusive_ptr<i_t> _host
+    ) noexcept
+{
 
-		//			web::Browser* browser_ = nullptr;
-		//			if (tab_widget) browser_ = tab_widget->browser();
-		//			assert(browser_); //browser_ is a weak_ptr?
-		//			assert(host_);
-		//			if (host_ && tab_widget) {  // browser_
-		auto v = gl_paras->main_window()
-			     ->find(
-				 [&](boost::intrusive_ptr<const ::Binder> b) {
-					 return url_equal(detail::to_string(b->host()->field<home_key>()), detail::to_string(host_->field<home_key>()));
-				 });
-		if (v) {
-			auto rctrl = v->tabmanager()->record_screen()->record_ctrl();
-			if (rctrl) {
-				//				auto current_model_ = [&] { return rctrl->source_model(); };
-				_found_item = v->page()->host();
-				if (_found_item == host_) {
-					auto pos_proxy_ = rctrl->index<pos_proxy>(_found_item);
-					if (static_cast<int>(pos_proxy_) != -1) {
-						auto url = detail::to_string(_found_item->field<url_key>()); // host_->field<url_type>();
-						if (url != "") {                                             // && url != web::Browser::_defaulthome
-							// rctrl_t *rctrl = current_model_()->rctrl();
-							auto record_current = rctrl->view()->current_item();
-							if (_found_item != record_current) {
-								_found_item = rctrl->select_as_current(pos_proxy_ //RecordIndex::instance(current_model_, alternative_item, nullptr)
-								    );                                            // host_
-							}
-						}
-					}
-				}
-			}
-		}
-		//			}
-		//		}
-	}
-	return _found_item; // _record;
+    boost::intrusive_ptr<i_t> _found_item(nullptr);
+    if (_host) {
+
+        //        auto v = gl_paras->main_window()
+        //                     ->find(
+        //                         [&](boost::intrusive_ptr<const ::Binder> b) {
+        //                             return url_equal(detail::to_string(b->host()->field<home_key>()), detail::to_string(_host->field<home_key>()));
+        //                         });
+        auto rctrl_ = _current_model()->record_ctrl();
+        assert(rctrl_);
+        if (rctrl_) {
+            //            if (v) {
+            //                auto rctrl = v->tabmanager()->record_screen()->record_ctrl();
+            //                if (rctrl) {
+            //				auto current_model_ = [&] { return rctrl->source_model(); };
+            _found_item = _host; // v->page()->host();
+                                 //            if (_found_item == _host) {
+            auto pos_proxy_ = rctrl_->index<pos_proxy>(_found_item);
+            if (static_cast<int>(pos_proxy_) != -1) {
+                auto url = detail::to_string(_found_item->field<url_key>()); // host_->field<url_type>();
+                if (url != "") {                                             // && url != web::Browser::_defaulthome
+                    // rctrl_t *rctrl = current_model_()->rctrl();
+                    auto record_current = rctrl_->view()->current_item();
+                    if (_found_item != record_current) {
+                        _found_item = rctrl_->select_as_current(pos_proxy_); //RecordIndex::instance(current_model_, alternative_item, nullptr)
+                                                                            // host_
+                    }
+                }
+            }
+            //            }
+            //                }
+            //            }
+        }
+        //		}
+    }
+    return _found_item; // _record;
 }

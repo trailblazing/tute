@@ -1401,6 +1401,7 @@ namespace web {
 
         WebView* view_current = this->webView(index);
         if (view_current) { // return;
+            auto page_current = view_current->page();
             // int lc = _lineedits->count();
             // int c = count();
             // assert(lc == c);
@@ -1425,11 +1426,11 @@ namespace web {
 #endif
             connect(static_cast<QWebEnginePage*>(view_current->page()), &QWebEnginePage::linkHovered, this, &TabWidget::linkHovered);
             connect(view_current, &WebView::loadProgress, this, &TabWidget::loadProgress);
-            connect(view_current->page()->profile(), &Profile::downloadRequested, this, &TabWidget::downloadRequested);
-            connect(static_cast<QWebEnginePage*>(view_current->page()), &QWebEnginePage::fullScreenRequested, this, &TabWidget::fullScreenRequested);
+            connect(page_current->profile(), &Profile::downloadRequested, this, &TabWidget::downloadRequested);
+            connect(static_cast<QWebEnginePage*>(page_current), &QWebEnginePage::fullScreenRequested, this, &TabWidget::fullScreenRequested);
             for (int i = 0; i < _actions.count(); ++i) {
                 WebActionMapper* mapper = _actions[i];
-                mapper->updateCurrent(view_current->page());
+                mapper->updateCurrent(page_current);
             }
             emit setCurrentTitle(view_current->title()); // "test"//
 
@@ -1437,8 +1438,12 @@ namespace web {
 
             emit loadProgress(view_current->progress());
             emit showStatusBarMessage(view_current->lastStatusBarText());
-            if (view_current->page()->url().isEmpty()) _lineedit_stack->currentWidget()->setFocus();
-            // else {}
+            auto toolbar_search = static_cast<ToolbarSearch*>(_lineedit_stack->currentWidget());
+            if (page_current->url().isEmpty())
+                toolbar_search->setFocus();
+            else {
+                toolbar_search->synchronize_text(page_current->url().toString());
+            }
         }
     }
 
@@ -1837,48 +1842,57 @@ namespace web {
                     return url_equal(b->host()->field<url_key>(), result_item->field<url_key>());
                 });
                 if (view == nullptr) {
-                    // if(view == nullptr) {
+// if(view == nullptr) {
 
-                    // {
-                    ////		    line edit, move after new WebView ! ! !
-                    // UrlLineEdit *urlLineEdit = new UrlLineEdit;
-                    // QLineEdit	*lineEdit = urlLineEdit->lineEdit();
-                    // if(! _lineeditcompleter && count() > 0){
-                    // HistoryCompletionModel *completionModel = new
-                    // HistoryCompletionModel(this);
-                    // completionModel->setSourceModel(QtSingleApplication::historyManager()->historyFilterModel());
-                    // _lineeditcompleter = new QCompleter(completionModel, this);
-                    ////			Should this be in Qt by default?
-                    // QAbstractItemView	*popup		= _lineeditcompleter->popup();
-                    // QListView		*listView	= qobject_cast<QListView
-                    // *>(popup);
-                    // if(listView)listView->setUniformItemSizes(true);
-                    // }
-                    // lineEdit->setCompleter(_lineeditcompleter);
-                    // connect(lineEdit, &QLineEdit::returnPressed, this,
-                    // &TabWidget::lineEditReturnPressed);
-                    // _lineedits->addWidget(urlLineEdit);
-                    // _lineedits->setSizePolicy(lineEdit->sizePolicy());
-                    // }
+// {
+////		    line edit, move after new WebView ! ! !
+// UrlLineEdit *urlLineEdit = new UrlLineEdit;
+// QLineEdit	*lineEdit = urlLineEdit->lineEdit();
+// if(! _lineeditcompleter && count() > 0){
+// HistoryCompletionModel *completionModel = new
+// HistoryCompletionModel(this);
+// completionModel->setSourceModel(QtSingleApplication::historyManager()->historyFilterModel());
+// _lineeditcompleter = new QCompleter(completionModel, this);
+////			Should this be in Qt by default?
+// QAbstractItemView	*popup		= _lineeditcompleter->popup();
+// QListView		*listView	= qobject_cast<QListView
+// *>(popup);
+// if(listView)listView->setUniformItemSizes(true);
+// }
+// lineEdit->setCompleter(_lineeditcompleter);
+// connect(lineEdit, &QLineEdit::returnPressed, this,
+// &TabWidget::lineEditReturnPressed);
+// _lineedits->addWidget(urlLineEdit);
+// _lineedits->setSizePolicy(lineEdit->sizePolicy());
+// }
 
-                    // optimization to delay creating the more expensive WebView, history, etc
-                    // if(count() == 0) {return new_dummy();}
+// optimization to delay creating the more expensive WebView, history, etc
+// if(count() == 0) {return new_dummy();}
 
-                    //// webview
-                    // if(!record->page_valid()
-                    ////           && !record->unique_page()
-                    // ) {
+//// webview
+// if(!record->page_valid()
+////           && !record->unique_page()
+// ) {
+
+#ifdef QT_DEBUG
+                    auto pid = ::getpid();
+                    assert(pid == _browser->pid());
+#endif // QT_DEBUG
 
                     view = new WebView(result_item, _profile, // use record for return
                         _tree_screen, _blogger, _browser_docker, _browser, this, _record_screen->record_ctrl());
-                    // } else {
-                    // view = record->unique_page()->view();
-                    // }
+// } else {
+// view = record->unique_page()->view();
+// }
 
-                    // record->view(webView);  // inside PageView initialization
-                    // webView->setPage(new WebPage(_profile, webView));
+// record->view(webView);  // inside PageView initialization
+// webView->setPage(new WebPage(_profile, webView));
 
-                    // assert(item->page_valid() && item->unique_page());
+// assert(item->page_valid() && item->unique_page());
+//
+#ifdef QT_DEBUG
+                    assert(pid == view->pid());
+#endif // QT_DEBUG
                     assert(view);
                     assert(view->page()->binder()->integrity_internal());
                     assert(view->page()->binder()->integrity_external(result_item, view->page()));
@@ -2594,7 +2608,11 @@ namespace web {
         if (next == count()) next = 0;
         setCurrentIndex(next);
         auto _rctrl = _record_screen->record_ctrl();
-        if (_rctrl) _rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(next)));
+        if (_rctrl) {
+            RecordIndex::instance([&] { return _rctrl->source_model(); }, current_item())->select_as_current(); //
+                                                                                                                //        auto _rctrl = _record_screen->record_ctrl();
+                                                                                                                //        if (_rctrl) _rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(next)));
+        }
     }
 
     WebView* TabWidget::sibling(WebView* v) const
@@ -2610,7 +2628,11 @@ namespace web {
         if (next < 0) next = count() - 1;
         setCurrentIndex(next);
         auto _rctrl = _record_screen->record_ctrl();
-        if (_rctrl) _rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(next)));
+        if (_rctrl) {
+            RecordIndex::instance([&] { return _rctrl->source_model(); }, current_item())->select_as_current(); //
+                                                                                                                //        auto _rctrl = _record_screen->record_ctrl();
+                                                                                                                //        if (_rctrl) _rctrl->select_as_current(_rctrl->index<pos_proxy>(pos_source(next)));
+        }
     }
 
 

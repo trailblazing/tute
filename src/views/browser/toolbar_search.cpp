@@ -287,7 +287,7 @@ namespace web {
         //		};
 
         auto deal_with_rebuilt_url = [&](tv_t* tree_view_, //const QString& search_text,
-                                 boost::intrusive_ptr<TreeIndex> tree_index, url_value real_url, web::Browser* browser_) {
+                                         boost::intrusive_ptr<TreeIndex> tree_index, url_value real_url, web::Browser* browser_) {
             // QLineEdit *lineedit =
             auto ti = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
                 [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
@@ -312,7 +312,7 @@ namespace web {
             //						if (line_edit)
             //							line_edit->setText(search_text);
             //					}
-            _lineedit->setText(detail::to_qstring(real_url));
+            synchronize_text(detail::to_qstring(real_url)); // _lineedit->setText(detail::to_qstring(real_url));
 
             // globalparameters.entrance()->activebrowser()->tabWidget()->currentLineEdit()->setText(searchText);
             // currentLineEdit();  // lineEditReturnPressed();
@@ -541,7 +541,7 @@ namespace web {
         QVariant v = action->data();
         if (v.canConvert<QString>()) {
             QString text = v.toString();
-            _lineedit->setText(text);
+            synchronize_text(text); //_lineedit->setText(text);
             //			auto real_url_ =
             real_url_t<QString>::instance<decltype(static_cast<ToolbarSearch*>(nullptr)->search_non_url(boost::intrusive_ptr<real_url_t<QString>>()))>(_lineedit->text(),
                 //                            [&](auto real_target_url_) {

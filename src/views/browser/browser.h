@@ -241,6 +241,9 @@ namespace web {
         //		void test();
 
         QToolBar* navigater() const;
+#ifdef QT_DEBUG
+        __pid_t pid() const;
+#endif // QT_DEBUG
     public slots:
         // void loadPage(const QString &url) = delete;
         void slotHome();
@@ -403,6 +406,9 @@ namespace web {
 
         web::Docker<web::Browser>* _browser_docker;
 
+#ifdef QT_DEBUG
+        __pid_t _pid;
+#endif // QT_DEBUG
         //		bool _closed = false;
         friend class sapp_t; // QtSingleApplication;
 

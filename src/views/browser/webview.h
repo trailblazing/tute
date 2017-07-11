@@ -96,424 +96,431 @@ class FindScreen;
 // #define USE_POPUP_WINDOW
 
 namespace web {
-	class Browser;
-	class PopupWindow;
-	class WebView;
-	class TabWidget;
-	template <typename>
-	class Docker;
+    class Browser;
+    class PopupWindow;
+    class WebView;
+    class TabWidget;
+    template <typename>
+    class Docker;
 
 #ifdef USE_POPUP_WINDOW
-	class PopupView;
-	class PopupPage : public QWebEnginePage {
+    class PopupView;
+    class PopupPage : public QWebEnginePage {
 #if QT_VERSION == 0x050600
-		W_OBJECT(PopupPage)
+        W_OBJECT(PopupPage)
 #else
-		Q_OBJECT
+        Q_OBJECT
 #endif
-	    signals:
+    signals:
 
 #if QT_VERSION == 0x050600
-		void loadingUrl(const QUrl& url) W_SIGNAL(loadingUrl, (const QUrl&), url); //
+        void loadingUrl(const QUrl& url) W_SIGNAL(loadingUrl, (const QUrl&), url); //
 #else
-		void loadingUrl(const QUrl& url);
+        void loadingUrl(const QUrl& url);
 
 #endif
-	    public:
-		PopupPage(PopupView* view_, web::Browser* browser_, Profile* profile_);
-		web::Browser* browser();
+    public:
+        PopupPage(PopupView* view_, web::Browser* browser_, Profile* profile_);
+        web::Browser* browser();
 
-	    protected:
-		bool acceptNavigationRequest(const QUrl& url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
+    protected:
+        bool acceptNavigationRequest(const QUrl& url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
 // QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type)
 // Q_DECL_OVERRIDE;
 #if !defined(QT_NO_UITOOLS)
-		QObject* createPlugin(const QString& classId, const QUrl& url, const QStringList& paramNames, const QStringList& paramValues);
+        QObject* createPlugin(const QString& classId, const QUrl& url, const QStringList& paramNames, const QStringList& paramValues);
 #endif
-		virtual bool
-		certificateError(const QWebEngineCertificateError& error) Q_DECL_OVERRIDE;
+        virtual bool
+        certificateError(const QWebEngineCertificateError& error) Q_DECL_OVERRIDE;
 
-	    private slots:
+    private slots:
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
-		void handleUnsupportedContent(QNetworkReply* reply);
+        void handleUnsupportedContent(QNetworkReply* reply);
 #endif
-		void authenticationRequired(const QUrl& requestUrl, QAuthenticator* auth);
-		void proxyAuthenticationRequired(const QUrl& requestUrl, QAuthenticator* auth, const QString& proxyHost);
+        void authenticationRequired(const QUrl& requestUrl, QAuthenticator* auth);
+        void proxyAuthenticationRequired(const QUrl& requestUrl, QAuthenticator* auth, const QString& proxyHost);
 
-	    private:
-		friend class PopupView;
+    private:
+        friend class PopupView;
 
-		// set the webview mousepressedevent
-		PopupView* _view;
-		browser_ref _browser;
-		Qt::KeyboardModifiers _keyboard_modifiers;
-		Qt::MouseButtons _pressed_buttons;
-		QUrl _loading_url;
-		bool _certificate_ignored = false;
-	};
+        // set the webview mousepressedevent
+        PopupView* _view;
+        browser_ref _browser;
+        Qt::KeyboardModifiers _keyboard_modifiers;
+        Qt::MouseButtons _pressed_buttons;
+        QUrl _loading_url;
+        bool _certificate_ignored = false;
+    };
 
 #endif // USE_POPUP_WINDOW
 
-	class WebPage : public QWebEnginePage {
+    class WebPage : public QWebEnginePage {
 #if QT_VERSION == 0x050600
-		W_OBJECT(WebPage)
+        W_OBJECT(WebPage)
 #else
-		Q_OBJECT
+        Q_OBJECT
 #endif
-	    signals:
+    signals:
 
 #if QT_VERSION == 0x050600
-		void loadingUrl(const QUrl& url) W_SIGNAL(loadingUrl, (const QUrl&), url); //
+        void loadingUrl(const QUrl& url) W_SIGNAL(loadingUrl, (const QUrl&), url); //
 #else
-		void loadingUrl(const QUrl& url);
+        void loadingUrl(const QUrl& url);
 #endif
 // void linkHovered(const QString &url, int time_out = 0);
 
 #if QT_VERSION == 0x050600
-		void close_requested() W_SIGNAL(close_requested); //
+        void close_requested() W_SIGNAL(close_requested); //
 #else
-		void close_requested();
+        void close_requested();
 #endif
 
 #if QT_VERSION == 0x050600
 
-		void become_current(boost::intrusive_ptr<::Binder> _binder) W_SIGNAL(become_current, (boost::intrusive_ptr<::Binder>), _binder);
+        void become_current(boost::intrusive_ptr<::Binder> _binder) W_SIGNAL(become_current, (boost::intrusive_ptr<::Binder>), _binder);
 #else
-		void become_current(boost::intrusive_ptr<::Binder> _binder);
+        void become_current(boost::intrusive_ptr<::Binder> _binder);
 #endif
 
-	    public:
-		// typedef Binder coupler_delegation;
-		// typedef typename Binder::bind_interface bind_interface;
-		// typedef typename Binder::activate_interface activate_interface;
-		// typedef typename Binder::item_interface item_interface;
-		// typedef typename Binder::page_interface page_interface;
+    public:
+        // typedef Binder coupler_delegation;
+        // typedef typename Binder::bind_interface bind_interface;
+        // typedef typename Binder::activate_interface activate_interface;
+        // typedef typename Binder::item_interface item_interface;
+        // typedef typename Binder::page_interface page_interface;
 
-		// typedef typename Binder::bind_helper bind_helper;
-		// typedef typename Binder::activate_helper activate_helper;
-		// typedef typename Binder::item_helper item_helper;
-		// typedef typename Binder::page_helper page_helper;
+        // typedef typename Binder::bind_helper bind_helper;
+        // typedef typename Binder::activate_helper activate_helper;
+        // typedef typename Binder::item_helper item_helper;
+        // typedef typename Binder::page_helper page_helper;
 
-	    public:
-		WebPage(Profile* profile, boost::intrusive_ptr<i_t> item, ts_t* tree_screen,
-		    Blogger* blogger_,
-		    web::Docker<web::Browser>* browser_docker_, web::Browser* browser, web::TabWidget* tabmanager,
-		    rctrl_t* rctrl_,
-		    WebView* parent = 0);
+    public:
+        WebPage(Profile* profile, boost::intrusive_ptr<i_t> item, ts_t* tree_screen,
+            Blogger* blogger_,
+            web::Docker<web::Browser>* browser_docker_, web::Browser* browser, web::TabWidget* tabmanager,
+            rctrl_t* rctrl_,
+            WebView* parent = 0);
 
-		~WebPage();
+        ~WebPage();
 
-		web::TabWidget* tabmanager();
-		web::Browser* browser();
-		WebView* view(); // {assert(_view); return _view;}
+        web::TabWidget* tabmanager();
+        web::Browser* browser();
+        WebView* view(); // {assert(_view); return _view;}
 
-		rctrl_t* record_ctrl(); // {return _record_controller;}
-		WebView* activate(bool force_reload = false);
-		WebView* load(boost::intrusive_ptr<i_t> item, bool switch_to = true, bool force_reload = false);
+        rctrl_t* record_ctrl(); // {return _record_controller;}
+        WebView* activate(bool force_reload = false);
+        WebView* load(boost::intrusive_ptr<i_t> item, bool switch_to = true, bool force_reload = false);
 
-		void load(const QUrl& url) = delete;
+        void load(const QUrl& url) = delete;
 
-		boost::intrusive_ptr<i_t>
-		host() const; // {return _record_binder->bounded_item();}
-		bool activated() const;
-		struct Binder : public std::enable_shared_from_this<
-				    Binder> { // boost::intrusive_ref_counter<Binder,
-					      // boost::thread_safe_counter>    //
-		    private:
-			boost::intrusive_ptr<i_t> _host;
-			WebPage* _page;
+        boost::intrusive_ptr<i_t>
+        host() const; // {return _record_binder->bounded_item();}
+        bool activated() const;
+        struct Binder : public std::enable_shared_from_this<
+                            Binder> { // boost::intrusive_ref_counter<Binder,
+                                      // boost::thread_safe_counter>    //
+        private:
+            boost::intrusive_ptr<i_t> _host;
+            WebPage* _page;
 
-			// bool _make_current;
-		    public:
-			Binder(boost::intrusive_ptr<i_t> item_, WebPage* page_);
-			~Binder();
-			void host(boost::intrusive_ptr<i_t> it)
-			{
-				_host = it;
-			}
+            // bool _make_current;
+        public:
+            Binder(boost::intrusive_ptr<i_t> item_, WebPage* page_);
+            ~Binder();
+            void host(boost::intrusive_ptr<i_t> it)
+            {
+                _host = it;
+            }
 
-			void page(WebPage* p)
-			{
-				_page = p;
-			}
+            void page(WebPage* p)
+            {
+                _page = p;
+            }
 
-			boost::intrusive_ptr<i_t> host() const
-			{
-				return _host;
-			}
+            boost::intrusive_ptr<i_t> host() const
+            {
+                return _host;
+            }
 
-			WebPage* page() const
-			{
-				return _page;
-			}
+            WebPage* page() const
+            {
+                return _page;
+            }
 
-			WebView*
-			bind(); // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
-			WebView* activator(bool force_reload = false);
-			static QString binder_type()
-			{
-				return "page_binder";
-			}
-		};
+            WebView*
+            bind(); // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
+            WebView* activator(bool force_reload = false);
+            static QString binder_type()
+            {
+                return "page_binder";
+            }
+        };
 
-		//		void metaeditor_sychronize();
+        //		void metaeditor_sychronize();
 
-		boost::intrusive_ptr<i_t> bind(boost::intrusive_ptr<i_t> host_);
+        boost::intrusive_ptr<i_t> bind(boost::intrusive_ptr<i_t> host_);
 
-		boost::intrusive_ptr<::Binder> binder();
-		//		const boost::intrusive_ptr<::Binder>&& binder() const;
-		boost::intrusive_ptr<::Binder>
-		binder(boost::intrusive_ptr<::Binder>&& binder_);
+        boost::intrusive_ptr<::Binder> binder();
+        //		const boost::intrusive_ptr<::Binder>&& binder() const;
+        boost::intrusive_ptr<::Binder>
+        binder(boost::intrusive_ptr<::Binder>&& binder_);
 
-	    protected:
-		// void setUrl(const QUrl &url);
+    protected:
+        // void setUrl(const QUrl &url);
 
-		bool acceptNavigationRequest(const QUrl& url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
-		QWebEnginePage*
-		createWindow(QWebEnginePage::WebWindowType type) Q_DECL_OVERRIDE;
+        bool acceptNavigationRequest(const QUrl& url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
+        QWebEnginePage*
+        createWindow(QWebEnginePage::WebWindowType type) Q_DECL_OVERRIDE;
 #if !defined(QT_NO_UITOOLS)
-		QObject* createPlugin(const QString& classId, const QUrl& url, const QStringList& paramNames, const QStringList& paramValues);
+        QObject* createPlugin(const QString& classId, const QUrl& url, const QStringList& paramNames, const QStringList& paramValues);
 #endif
-		virtual bool
-		certificateError(const QWebEngineCertificateError& error) Q_DECL_OVERRIDE;
+        virtual bool
+        certificateError(const QWebEngineCertificateError& error) Q_DECL_OVERRIDE;
 
-		void record_info_update(const QUrl& url, const QString& title);
-		void record_view_remove(boost::intrusive_ptr<i_t> host_);
-		void binder_reset();
-		std::function<void(const QUrl& url)> onUrlChanged;        // void onUrlChanged(const QUrl &url);
-		std::function<void(const QString& title)> onTitleChanged; // void onTitleChanged(const QString &title);
+        void record_info_update(const QUrl& url, const QString& title);
+        void record_view_remove(boost::intrusive_ptr<i_t> host_);
+        void binder_reset();
+        std::function<void(const QUrl& url)> onUrlChanged;        // void onUrlChanged(const QUrl &url);
+        std::function<void(const QString& title)> onTitleChanged; // void onTitleChanged(const QString &title);
 
-	    private slots:
+    private slots:
 
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
-		void handleUnsupportedContent(QNetworkReply* reply);
+        void handleUnsupportedContent(QNetworkReply* reply);
 #endif
-		void authenticationRequired(const QUrl& requestUrl, QAuthenticator* auth);
-		void proxyAuthenticationRequired(const QUrl& requestUrl, QAuthenticator* auth, const QString& proxyHost);
+        void authenticationRequired(const QUrl& requestUrl, QAuthenticator* auth);
+        void proxyAuthenticationRequired(const QUrl& requestUrl, QAuthenticator* auth, const QString& proxyHost);
 
-	    private:
-		Profile* _profile;
-		ts_t* _tree_screen;
-		blogger_ref _blogger;
-		web::Docker<web::Browser>* _browser_docker;
-		browser_ref _browser;
-		tabwidget_ref _tab_widget;
-		rctrl_ref _rctrl;
+    private:
+        Profile* _profile;
+        ts_t* _tree_screen;
+        blogger_ref _blogger;
+        web::Docker<web::Browser>* _browser_docker;
+        browser_ref _browser;
+        tabwidget_ref _tab_widget;
+        rctrl_ref _rctrl;
 
-		WebView* _view;
+        WebView* _view;
 
-		Qt::KeyboardModifiers _keyboardmodifiers = Qt::NoModifier;
-		Qt::MouseButtons _pressedbuttons = Qt::NoButton;
+        Qt::KeyboardModifiers _keyboardmodifiers = Qt::NoModifier;
+        Qt::MouseButtons _pressedbuttons = Qt::NoButton;
 
-		QUrl _loadingurl = QUrl();
-		QString _hovered_url; // = Browser::_defaulthome;
+        QUrl _loadingurl = QUrl();
+        QString _hovered_url; // = Browser::_defaulthome;
 
-		boost::intrusive_ptr<::Binder> _binder;
+        boost::intrusive_ptr<::Binder> _binder;
 
-		bool _certificate_ignored = false;
-		bool _activated = false;
+        bool _certificate_ignored = false;
+        bool _activated = false;
 
-		friend class TabWidget;
-		friend class WebView;
-		friend class r_t;
-	};
+        friend class TabWidget;
+        friend class WebView;
+        friend class r_t;
+    };
 
 #ifdef USE_POPUP_WINDOW
 
-	class PopupView : public QWebEngineView {
+    class PopupView : public QWebEngineView {
 #if QT_VERSION == 0x050600
-		W_OBJECT(PopupView)
+        W_OBJECT(PopupView)
 #else
-		Q_OBJECT
+        Q_OBJECT
 #endif
-	    public:
-		PopupView(QWidget* parent = 0);
-		PopupPage* webPage() const
-		{
-			return _page;
-		}
+    public:
+        PopupView(QWidget* parent = 0);
+        PopupPage* webPage() const
+        {
+            return _page;
+        }
 
-		void setPage(PopupPage* page_);
+        void setPage(PopupPage* page_);
 
-		void loadUrl(const QUrl& url);
-		QUrl url() const;
-		QIcon icon() const;
+        void loadUrl(const QUrl& url);
+        QUrl url() const;
+        QIcon icon() const;
 
-		QString lastStatusBarText() const;
-		inline int progress() const
-		{
-			return _progress;
-		}
+        QString lastStatusBarText() const;
+        inline int progress() const
+        {
+            return _progress;
+        }
 
-	    protected:
-		void mousePressEvent(QMouseEvent* event);
-		void mouseReleaseEvent(QMouseEvent* event);
-		void contextMenuEvent(QContextMenuEvent* event);
-		void wheelEvent(QWheelEvent* event);
+    protected:
+        void mousePressEvent(QMouseEvent* event);
+        void mouseReleaseEvent(QMouseEvent* event);
+        void contextMenuEvent(QContextMenuEvent* event);
+        void wheelEvent(QWheelEvent* event);
 
-	    signals:
+    signals:
 
 #if QT_VERSION == 0x050600
-		void iconChanged() W_SIGNAL(iconChanged); //
+        void iconChanged() W_SIGNAL(iconChanged); //
 #else
-		void iconChanged();
+        void iconChanged();
 #endif
-	    private slots:
-		void setProgress(int progress);
-		void loadFinished(bool success);
-		void setStatusBarText(const QString& string);
-		void openLinkInNewTab();
-		void onFeaturePermissionRequested(const QUrl& securityOrigin, QWebEnginePage::Feature);
-		void onIconUrlChanged(const QUrl& url);
-		void iconLoaded();
+    private slots:
+        void setProgress(int progress);
+        void loadFinished(bool success);
+        void setStatusBarText(const QString& string);
+        void openLinkInNewTab();
+        void onFeaturePermissionRequested(const QUrl& securityOrigin, QWebEnginePage::Feature);
+        void onIconUrlChanged(const QUrl& url);
+        void iconLoaded();
 
-	    private:
-		QString _statusbar_text;
-		QUrl _initial_url;
-		int _progress;
-		PopupPage* _page;
-		QIcon _icon;
-		QNetworkReply* _icon_reply;
-	};
+    private:
+        QString _statusbar_text;
+        QUrl _initial_url;
+        int _progress;
+        PopupPage* _page;
+        QIcon _icon;
+        QNetworkReply* _icon_reply;
+    };
 
 #endif // USE_POPUP_WINDOW
 
-	class ToolbarSearch;
-	// template Q_ONJECT
-	// https://doc.qt.io/archives/qq/qq16-dynamicqobject.html
-	// browserview
-	// template<typename T>
-	class WebView : public QWebEngineView {
+    class ToolbarSearch;
+    // template Q_ONJECT
+    // https://doc.qt.io/archives/qq/qq16-dynamicqobject.html
+    // browserview
+    // template<typename T>
+    class WebView : public QWebEngineView {
 #if QT_VERSION == 0x050600
-		W_OBJECT(WebView)
+        W_OBJECT(WebView)
 #else
-		Q_OBJECT
+        Q_OBJECT
 #endif
 
-	    public:
-		WebView(boost::intrusive_ptr<i_t> host_,
-		    Profile* profile, // , bool openinnewtab
-		    ts_t* tree_screen,
-		    Blogger* blogger_,
-		    web::Docker<web::Browser>* entrance,
-		    Browser* browser,
-		    web::TabWidget* tabmanager,
-		    rctrl_t* rctrl_);
+    public:
+        WebView(boost::intrusive_ptr<i_t> host_,
+            Profile* profile, // , bool openinnewtab
+            ts_t* tree_screen,
+            Blogger* blogger_,
+            web::Docker<web::Browser>* entrance,
+            Browser* browser,
+            web::TabWidget* tabmanager,
+            rctrl_t* rctrl_);
 
-		~WebView();
+        ~WebView();
 
-		static WebView* instance(FindScreen* find_screen_, url_value const& real_url);
-		WebPage* page() const;
+        static WebView* instance(FindScreen* find_screen_, url_value const& real_url);
+        WebPage* page() const;
 
-		bool load_finished() const;
-		void page(WebPage* page_);
-		void activateWindow();
+        bool load_finished() const;
+        void page(WebPage* page_);
+        void activateWindow();
 
-		WebView* load(boost::intrusive_ptr<i_t> it, bool switch_to = true, bool force_reload = false);
-		QUrl url() const = delete;
-		QIcon icon() const;
+        WebView* load(boost::intrusive_ptr<i_t> it, bool switch_to = true, bool force_reload = false);
+        QUrl url() const = delete;
+        QIcon icon() const;
 
-		QString lastStatusBarText() const;
-		int progress() const;
+        QString lastStatusBarText() const;
+        int progress() const;
 
-		rctrl_t* record_ctrl(); // {return _record_controller;}
-					//		void record_ctrl(rctrl_t* rctrl_); // {this->_record_controller =
-		// _record_controller;}
+        rctrl_t* record_ctrl(); // {return _record_controller;}
+                                //		void record_ctrl(rctrl_t* rctrl_); // {this->_record_controller =
+        // _record_controller;}
 
-		web::TabWidget* tabmanager() const;
+        web::TabWidget* tabmanager() const;
 
-		bool current_view_global_consistency();
+        bool current_view_global_consistency();
 
-		ToolbarSearch* toolbarsearch() const;
-		//		void toolbarsearch(ToolbarSearch* tbs);
+        ToolbarSearch* toolbarsearch() const;
+        //		void toolbarsearch(ToolbarSearch* tbs);
 
-		Browser* browser() const;
+        Browser* browser() const;
 
-	    protected:
-		void loadUrl(const QUrl& url);
+#ifdef QT_DEBUG
+        __pid_t pid() const;
+#endif // QT_DEBUG
 
-		void mousePressEvent(QMouseEvent* event);
-		void mouseReleaseEvent(QMouseEvent* event);
-		void contextMenuEvent(QContextMenuEvent* event);
-		void wheelEvent(QWheelEvent* event);
-		void focusOutEvent(QFocusEvent* event);
-	    signals:
+    protected:
+        void loadUrl(const QUrl& url);
+
+        void mousePressEvent(QMouseEvent* event);
+        void mouseReleaseEvent(QMouseEvent* event);
+        void contextMenuEvent(QContextMenuEvent* event);
+        void wheelEvent(QWheelEvent* event);
+        void focusOutEvent(QFocusEvent* event);
+    signals:
 
 #if QT_VERSION == 0x050600
-		void iconChanged() W_SIGNAL(iconChanged); //
+        void iconChanged() W_SIGNAL(iconChanged); //
 #else
-		void iconChanged();
+        void iconChanged();
 #endif
 
 #if QT_VERSION == 0x050600
-		void close_requested() W_SIGNAL(close_requested); //
+        void close_requested() W_SIGNAL(close_requested); //
 #else
-		void close_requested();
+        void close_requested();
 #endif
-	    public slots:
-		// void loadFinished(bool success);
-		// void openLinkInNewTab();
-		void on_close_requested();
-	    private slots:
-		void setProgress(int progress);
+    public slots:
+        // void loadFinished(bool success);
+        // void openLinkInNewTab();
+        void on_close_requested();
+    private slots:
+        void setProgress(int progress);
 
-		void setStatusBarText(const QString& string);
-		void openLinkInNewTab();
-		void openLinkInNewTab(const QUrl& url);
-		void onFeaturePermissionRequested(const QUrl& securityOrigin, QWebEnginePage::Feature);
-		void onIconUrlChanged(const QUrl& url);
-		void iconLoaded();
-		void onLoadFinished(bool success);
+        void setStatusBarText(const QString& string);
+        void openLinkInNewTab();
+        void openLinkInNewTab(const QUrl& url);
+        void onFeaturePermissionRequested(const QUrl& securityOrigin, QWebEnginePage::Feature);
+        void onIconUrlChanged(const QUrl& url);
+        void iconLoaded();
+        void onLoadFinished(bool success);
 
-		// void onCloseTab(int index);
-	    private:
-		ToolbarSearch* _toolbarsearch;
-		browser_ref _browser;
-		tabwidget_ref _tab_widget;
-		rctrl_ref _rctrl;
+        // void onCloseTab(int index);
+    private:
+        ToolbarSearch* _toolbarsearch;
+        browser_ref _browser;
+        tabwidget_ref _tab_widget;
+        rctrl_ref _rctrl;
 
-		WebPage* _page;
-		QString _statusbartext;
-		// QUrl _initialurl;
-		int _progress;
-		QIcon _icon;
-		QNetworkReply* _icon_reply;
-		bool _load_finished = false;
-        boost::signals2::signal<void(bool)> _load_finished_signal;
-		//		QMetaObject::Connection _home_connection; // for disconnect
-		friend class TabWidget;
-		friend class WebPage;
-	};
+        WebPage* _page;
+        QString _statusbartext;
+        // QUrl _initialurl;
+        int _progress;
+        QIcon _icon;
+        QNetworkReply* _icon_reply;
+        bool _load_finished = false;
+        boost::signals2::signal<void(const QString&)> _load_finished_signal;
+        //		QMetaObject::Connection _home_connection; // for disconnect
+#ifdef QT_DEBUG
+        __pid_t _pid;
+#endif // QT_DEBUG
+        friend class TabWidget;
+        friend class WebPage;
+    };
 
 #ifdef USE_POPUP_WINDOW
 
-	class PopupWindow : public QWidget {
+    class PopupWindow : public QWidget {
 #if QT_VERSION == 0x050600
-		W_OBJECT(PopupWindow)
+        W_OBJECT(PopupWindow)
 #else
-		Q_OBJECT
+        Q_OBJECT
 #endif
-	    public:
-		PopupWindow(web::Browser* browser_, Profile* profile_);
+    public:
+        PopupWindow(web::Browser* browser_, Profile* profile_);
 
-		QWebEnginePage* page() const
-		{
-			return _view->page();
-		}
+        QWebEnginePage* page() const
+        {
+            return _view->page();
+        }
 
-	    private Q_SLOTS:
-		void setUrl(const QUrl& url)
-		{
-			_addressbar->setText(url.toString());
-		}
+    private Q_SLOTS:
+        void setUrl(const QUrl& url)
+        {
+            _addressbar->setText(url.toString());
+        }
 
-		void adjustGeometry(const QRect& newGeometry);
+        void adjustGeometry(const QRect& newGeometry);
 
-	    private:
-		browser_ref _browser;
-		QLineEdit* _addressbar;
-		PopupView* _view;
-	};
+    private:
+        browser_ref _browser;
+        QLineEdit* _addressbar;
+        PopupView* _view;
+    };
 
 #endif // USE_POPUP_WINDOW
 }
