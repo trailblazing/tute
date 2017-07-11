@@ -840,6 +840,7 @@ namespace web {
               //	    }()
               )
         , _browser_docker(gl_paras->browser_docker()->prepend(this))
+        , _pid(::getpid())
     { // , dock_widget(new QDockWidget(parent,
         // Qt::MaximizeUsingFullscreenGeometryHint))
         //		_tab_widget = sd::make_intrusive<web::TabWidget>(blogger_, this, _main_window);
@@ -2590,6 +2591,13 @@ namespace web {
     }
 
     QToolBar* Browser::navigater() const { return _navigater; }
+
+#ifdef QT_DEBUG
+    __pid_t Browser::pid() const
+    {
+        return _pid;
+    }
+#endif // QT_DEBUG
 }
 
 //

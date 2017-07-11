@@ -622,24 +622,25 @@ namespace web {
             //			if(is_current) metaeditor_sychronize();
             //// metaeditor->bind(_record);
             //#endif //USE_EDITOR_WRAP
-            // auto _tree_screen = globalparameters.tree_screen();
-            auto it = _binder->host();
-            auto tree_view = _tree_screen->view();
-            if (is_current) { // globalparameters.mainwindow()
-                if (tree_view->current_item() != it)
-                    tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, it));
-#ifdef USE_HAS_SELECTION
-                auto _record_view = _rctrl->view();
-                QItemSelectionModel* item_selection_model = _record_view->selectionModel();
-                bool has_selection = item_selection_model->hasSelection();
-#endif // USE_HAS_SELECTION
-                if (_rctrl->view()->current_item() != it
-#ifdef USE_HAS_SELECTION
-                    || !has_selection
-#endif // USE_HAS_SELECTION
-                    )
-                    _rctrl->select_as_current(_rctrl->index<pos_proxy>(it)); // IdType(_binder->item()->field("id"))
-            }
+
+            // recursive call
+            //            auto it = _binder->host();
+            //            auto tree_view = _tree_screen->view();
+            //            if (is_current) { // globalparameters.mainwindow()
+            //                if (tree_view->current_item() != it)
+            ////                    tree_view->select_as_current(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); }, it));
+            //#ifdef USE_HAS_SELECTION
+            //                auto _record_view = _rctrl->view();
+            //                QItemSelectionModel* item_selection_model = _record_view->selectionModel();
+            //                bool has_selection = item_selection_model->hasSelection();
+            //#endif // USE_HAS_SELECTION
+            //                if (_rctrl->view()->current_item() != it
+            //#ifdef USE_HAS_SELECTION
+            //                    || !has_selection
+            //#endif // USE_HAS_SELECTION
+            //                    )
+            //                    RecordIndex::select_as_current(it); //_rctrl->select_as_current(_rctrl->index<pos_proxy>(it)); // IdType(_binder->item()->field("id"))
+            //            }
             if (is_current)
                 _view->setFocus(); // make upate validate
         }
@@ -934,18 +935,20 @@ namespace web {
                                     target_->add_rating();
                                     // assert(_lineedits);
 
-                                    // if(_lineedits) {
-                                    QLineEdit* line_edit = _view->toolbarsearch()->lineEdit(); // _tab_widget->currentLineEdit(); // qobject_cast<QLineEdit
-                                                                                               // *>(_lineedits->currentWidget());
+                                    _view->_load_finished_signal(url().toString());
+                                    //                                    // if(_lineedits) {
+                                    //                                    QLineEdit* line_edit = _view->toolbarsearch()->lineEdit(); // _tab_widget->currentLineEdit(); // qobject_cast<QLineEdit
+                                    //                                                                                               // *>(_lineedits->currentWidget());
 
-                                    std::mutex m;
-                                    if (m.try_lock()) {
-                                        //                                        std::lock_guard<std::mutex> lock(m);
-                                        if (line_edit) line_edit->setText(_url_str);
-                                        m.unlock();
-                                    }
+                                    //                                    std::mutex m;
+                                    //                                    if (m.try_lock()) {
+                                    //                                        //                                        std::lock_guard<std::mutex> lock(m);
+                                    //                                        if (line_edit) line_edit->setText(_url_str);
+                                    //                                        m.unlock();
+                                    //                                    }
 
-                                    // }
+                                    //                                    // }
+
                                     auto current = [&] {
                                         boost::intrusive_ptr<i_t> r;
                                         auto v = _tab_widget->currentWebView();
@@ -971,9 +974,9 @@ namespace web {
                                         || !has_selection
 #endif // USE_HAS_SELECTION
                                         ) {
-                                        auto pp = _rctrl->index<pos_proxy>(current);
+                                        //                                        auto pp = _rctrl->index<pos_proxy>(current);
                                         // auto	index_proxy_	= _record_controller->index<index_proxy>(pp);
-                                        _rctrl->select_as_current(pp);
+                                        RecordIndex::instance([&] { return _rctrl->source_model(); }, current)->select_as_current(); //_rctrl->select_as_current(pp);
                                         // auto v = _record_controller->view();
                                         // if(v){
                                         // v->setCurrentIndex(index_proxy_);
@@ -1291,7 +1294,7 @@ namespace web {
         // assert(url_ != "");
         QUrl target_url = QUrl(_hovered_url);
 
-        if (!target_url.isValid())
+        if (!target_url.isValid() || target_url.toString().contains("javascript") || target_url.toString().contains("JavaScript"))
             target_url = web::Browser::_defaulthome;
         auto real_url = url_value(target_url.toString());
         // assert(url != "");
@@ -1401,10 +1404,8 @@ namespace web {
                             },
                             browser_ref());
                     });
-                assert(it);
-                // page = it ? it->activate(std::bind(&HidableTabWidget::find,
-                // globalparameters.main_window()->vtab_record(),
-                // std::placeholders::_1))->page() : nullptr;
+                //                assert(it);
+                // page = it ? it->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page() : nullptr;
                 if (it)
                     it->topic_replace(_blogger->topic()); //target_url.toString()
                 page = it ? it->page() : nullptr;
@@ -1454,7 +1455,7 @@ namespace web {
                             },
                             browser_ref());
                     });
-                assert(it);
+                //                assert(it);
                 if (it)
                     it->topic_replace(_blogger->topic());
                 page = it ? it->activate(std::bind(&wn_t::find, gl_paras->main_window(), find_binder))->page() : nullptr; // std::placeholders::_1
@@ -1907,7 +1908,7 @@ namespace web {
             _page->onUrlChanged(_page->url());
             _page->onTitleChanged(_page->title());
 
-            _load_finished_signal(success);
+            _load_finished_signal(_page->url().toString());
             //            if (_toolbarsearch) {
 
             //                auto line_edit = _toolbarsearch->lineEdit();
@@ -1969,6 +1970,7 @@ namespace web {
         // , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
         , _progress(0)
         , _icon_reply(0)
+        , _pid(::getpid())
     {
         settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
         settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
@@ -2077,16 +2079,20 @@ namespace web {
 #endif // USE_QT_DELETE_ON_CLOSE
         // set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));    //
         // does not work for base class is not QAbstractItemView
-        _load_finished_signal.connect([&](bool success) {
+        _load_finished_signal.connect(std::bind(&ToolbarSearch::synchronize_text, _toolbarsearch, std::placeholders::_1)
 
-            if (success && _toolbarsearch) {
-                auto line_edit = _toolbarsearch->lineEdit();
-                if (line_edit) {
-                    auto url_str = _page->url().toString();
-                    if (line_edit->text() != url_str) line_edit->setText(url_str);
-                }
-            }
-        });
+            //            [&](bool success) {
+
+            //                if (success && _toolbarsearch) {
+            //                    auto line_edit = _toolbarsearch->lineEdit();
+            //                    if (line_edit) {
+            //                        auto url_str = _page->url().toString();
+            //                        if (line_edit->text() != url_str) line_edit->setText(url_str);
+            //                    }
+            //                }
+            //            }
+
+            );
     }
 
     void WebView::page(WebPage* page_)
@@ -2255,7 +2261,7 @@ namespace web {
                 || !has_selection
 #endif // USE_HAS_SELECTION
                 )
-                _rctrl->select_as_current(_rctrl->index<pos_proxy>(_page->host())); // IdType(_page->item()->field("id"))
+                RecordIndex::instance([&] { return _rctrl->source_model(); }, _page->host())->select_as_current(); //_rctrl->select_as_current(_rctrl->index<pos_proxy>(_page->host())); // IdType(_page->item()->field("id"))
         }
         // }
     }
@@ -2446,13 +2452,12 @@ namespace web {
             QItemSelectionModel* item_selection_model = _record_view->selectionModel();
             bool has_selection = item_selection_model->hasSelection();
 #endif // USE_HAS_SELECTION
-            if ((_record_view->current_item() != it) ||
-                (_tab_widget->currentWebView() != this)
+            if (_rctrl && ((_record_view->current_item() != it) || (_tab_widget->currentWebView() != this)
 #ifdef USE_HAS_SELECTION
-                || !has_selection
+                              || !has_selection
 #endif // USE_HAS_SELECTION
-                )
-                _rctrl->select_as_current(_rctrl->index<pos_proxy>(it));
+                              ))
+                RecordIndex::instance([&] { return _rctrl->source_model(); }, it)->select_as_current(); //_rctrl->select_as_current(_rctrl->index<pos_proxy>(it));
             if (_page->title() != it->field<name_key>())
                 _page->record_info_update(_page->url(), _page->title());
 
@@ -2481,6 +2486,13 @@ namespace web {
     {
         return _browser;
     }
+
+#ifdef QT_DEBUG
+    __pid_t WebView::pid() const
+    {
+        return _pid;
+    }
+#endif // QT_DEBUG
     // void WebView::switch_show()
     // {
     // _tab_widget->setCurrentIndex(_tab_widget->webViewIndex(this));
