@@ -495,6 +495,7 @@ QStackedWidget* FindScreen::lineedit_stack() const
 
 void FindScreen::switch_stack(QStackedWidget* lineedit_stack_)
 {
+
 #ifdef USE_STACK_LAYOUT
     auto clear_layout = [&](QVBoxLayout* _stack_layout) {
         while (_stack_layout->count() > 0) { // (child_item = _item_tags_layout->takeAt(0)) != 0
@@ -773,8 +774,9 @@ void FindScreen::setup_signals(void)
             auto toolbar_search = static_cast<web::ToolbarSearch*>(_lineedit_stack->currentWidget());
 #endif // USE_STACK_LAYOUT
                 if (toolbar_search) {
-                    auto line_edit = toolbar_search->lineEdit();
-                    line_edit->setText(str);
+                    toolbar_search->synchronize_text(str);
+                    //                    auto line_edit = toolbar_search->lineEdit();
+                    //                    line_edit->setText(str);
                     emit toolbar_search->return_pressed(); //lineEdit()->returnPressed();
                                                            //				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
                                                            //					line_edit->text(), //_toolbarsearch_buffer->text(),
@@ -1807,8 +1809,13 @@ void FindScreen::browser(web::Browser* bro)
 {
     //	if (_browser != bro) {//browser_ref might undefined
     _browser = bro;
-    //		static_cast<QTabWidget*>(_browser->tab_widget())->currentChanged(_browser->tab_widget()->currentIndex());
-    //	}
+//		static_cast<QTabWidget*>(_browser->tab_widget())->currentChanged(_browser->tab_widget()->currentIndex());
+//	}
+
+#ifdef QT_DEBUG
+    auto pid = ::getpid();
+    assert(pid == _browser->pid());
+#endif // QT_DEBUG
 }
 
 //web::ToolbarSearch* FindScreen::toolbarsearch() const { return _toolbarsearch; }

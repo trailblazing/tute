@@ -91,7 +91,8 @@ namespace web {
 		ChaseWidget* chasewidget() const;
 #endif // USE_CLEAR_BUTTON
 
-	    protected:
+        void synchronize_text(const QString &url_str) const;
+    protected:
 		void focusInEvent(QFocusEvent* event);
 		void focusOutEvent(QFocusEvent* event);
 		void keyPressEvent(QKeyEvent* event);

@@ -229,12 +229,12 @@ namespace web {
                                         //									    if (this->inactiveText() == web::SearchLineEdit::_default_tip) {
                                         this->setInactiveText(topic);
                                         //									    }
-                                        _lineedit->setText(this->inactiveText());
+                                        synchronize_text(this->inactiveText()); // _lineedit->setText(this->inactiveText());
                                         //						search_edit->left_widget(search_edit->searchbutton());
                                         //						search_edit->left_widget()->show();
                                         //						search_edit->iconlabel()->hide();
                                     } else {
-                                        _lineedit->setText(url_);
+                                        synchronize_text(url_); //_lineedit->setText(url_);
                                         //						search_edit->left_widget(search_edit->iconlabel());
                                         //						search_edit->left_widget()->show();
                                         //						search_edit->searchbutton()->hide();

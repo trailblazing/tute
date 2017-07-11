@@ -124,15 +124,15 @@ namespace web {
         return _lineedit;
     }
 
-//    void ExLineEdit::left_widget(QWidget* widget)
-//    {
-//        _left_widget = widget;
-//    }
+    //    void ExLineEdit::left_widget(QWidget* widget)
+    //    {
+    //        _left_widget = widget;
+    //    }
 
-//    QWidget* ExLineEdit::left_widget() const
-//    {
-//        return _left_widget;
-//    }
+    //    QWidget* ExLineEdit::left_widget() const
+    //    {
+    //        return _left_widget;
+    //    }
 
     void ExLineEdit::right_widget(QWidget* widget)
     {
@@ -259,6 +259,14 @@ namespace web {
 
 
 #endif // USE_CLEAR_BUTTON
+
+    void ExLineEdit::synchronize_text(const QString& url_str) const
+    {
+        // corrupted might because of browser(process) across operation -- current find_screen design
+        if (_lineedit->text() != url_str) _lineedit->setText(url_str);
+    }
+
+
     UrlIconLabel::UrlIconLabel(QWidget* parent)
         : QLabel(parent)
         , _browserview(0)
@@ -353,7 +361,7 @@ namespace web {
 
     void UrlLineEdit::webViewUrlChanged(const QUrl& url)
     {
-        _lineedit->setText(QString::fromUtf8(url.toEncoded()));
+        _lineedit->setText(QString::fromUtf8(url.toEncoded())); // to do?
         qDebug() << "_lineedit->text()=\t" << _lineedit->text();
         _lineedit->setCursorPosition(0);
     }
