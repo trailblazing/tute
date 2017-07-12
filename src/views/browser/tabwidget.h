@@ -524,12 +524,13 @@ namespace web {
         // QWidget *
         // void lineEditStack(QStackedWidget *lineedits);
         QStackedWidget* lineEditStack() const;
-        QLineEdit* currentLineEdit() const;
+//        QLineEdit* currentLineEdit() const;
         WebView* select_as_current(WebView* v);
         boost::intrusive_ptr<i_t> current_item();
         WebView* currentWebView() const;
         WebView* webView(int index) const;
-        QLineEdit* lineEdit(int index) const;
+        ToolbarSearch* currentToolbarSearch() const;
+        ToolbarSearch *toolbarSearch(int index) const;
         int webViewIndex(WebView* webView) const;
 
         QByteArray saveState() const;

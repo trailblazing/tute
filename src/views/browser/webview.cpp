@@ -934,8 +934,7 @@ namespace web {
 
                                     target_->add_rating();
                                     // assert(_lineedits);
-
-                                    _view->_load_finished_signal(url().toString());
+                                    _tab_widget->toolbarSearch(_tab_widget->webViewIndex(_view))->synchronize_text(url().toString()); //_view->_load_finished_signal(url().toString());
                                     //                                    // if(_lineedits) {
                                     //                                    QLineEdit* line_edit = _view->toolbarsearch()->lineEdit(); // _tab_widget->currentLineEdit(); // qobject_cast<QLineEdit
                                     //                                                                                               // *>(_lineedits->currentWidget());
@@ -1908,7 +1907,8 @@ namespace web {
             _page->onUrlChanged(_page->url());
             _page->onTitleChanged(_page->title());
 
-            _load_finished_signal(_page->url().toString());
+
+            _tab_widget->toolbarSearch(_tab_widget->webViewIndex(this))->synchronize_text(_page->url().toString()); //_load_finished_signal(_page->url().toString());
             //            if (_toolbarsearch) {
 
             //                auto line_edit = _toolbarsearch->lineEdit();
@@ -1958,7 +1958,7 @@ namespace web {
         web::Docker<web::Browser>* browser_docker_, web::Browser* browser, web::TabWidget* tabmanager,
         rctrl_t* rctrl_)
         : QWebEngineView(static_cast<QWidget*>(tabmanager)) // ->parent()
-        , _toolbarsearch(new ToolbarSearch(this))
+                                                            //        , _toolbarsearch(new ToolbarSearch(this))
         , _browser(browser)
         , _tab_widget(tabmanager) // , _record(record)
         , _rctrl(rctrl_)
@@ -2079,20 +2079,21 @@ namespace web {
 #endif // USE_QT_DELETE_ON_CLOSE
         // set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));    //
         // does not work for base class is not QAbstractItemView
-        _load_finished_signal.connect(std::bind(&ToolbarSearch::synchronize_text, _toolbarsearch, std::placeholders::_1)
 
-            //            [&](bool success) {
+        //        _load_finished_signal.connect(std::bind(&ToolbarSearch::synchronize_text, _tab_widget->currentToolbarSearch(), std::placeholders::_1)
 
-            //                if (success && _toolbarsearch) {
-            //                    auto line_edit = _toolbarsearch->lineEdit();
-            //                    if (line_edit) {
-            //                        auto url_str = _page->url().toString();
-            //                        if (line_edit->text() != url_str) line_edit->setText(url_str);
-            //                    }
-            //                }
-            //            }
+        //            //            [&](bool success) {
 
-            );
+        //            //                if (success && _toolbarsearch) {
+        //            //                    auto line_edit = _toolbarsearch->lineEdit();
+        //            //                    if (line_edit) {
+        //            //                        auto url_str = _page->url().toString();
+        //            //                        if (line_edit->text() != url_str) line_edit->setText(url_str);
+        //            //                    }
+        //            //                }
+        //            //            }
+
+        //            );
     }
 
     void WebView::page(WebPage* page_)
@@ -2479,7 +2480,7 @@ namespace web {
 
         return result;
     }
-    ToolbarSearch* WebView::toolbarsearch() const { return _toolbarsearch; }
+    //    ToolbarSearch* WebView::toolbarsearch() const { return _toolbarsearch; }
     //	void WebView::toolbarsearch(ToolbarSearch* tbs) { _toolbarsearch = tbs; }
 
     Browser* WebView::browser() const

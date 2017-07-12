@@ -424,7 +424,7 @@ namespace web {
 
         bool current_view_global_consistency();
 
-        ToolbarSearch* toolbarsearch() const;
+//        ToolbarSearch* toolbarsearch() const;
         //		void toolbarsearch(ToolbarSearch* tbs);
 
         Browser* browser() const;
@@ -471,7 +471,7 @@ namespace web {
 
         // void onCloseTab(int index);
     private:
-        ToolbarSearch* _toolbarsearch;
+//        ToolbarSearch* _toolbarsearch;
         browser_ref _browser;
         tabwidget_ref _tab_widget;
         rctrl_ref _rctrl;
@@ -483,7 +483,7 @@ namespace web {
         QIcon _icon;
         QNetworkReply* _icon_reply;
         bool _load_finished = false;
-        boost::signals2::signal<void(const QString&)> _load_finished_signal;
+//        boost::signals2::signal<void(const QString&)> _load_finished_signal;
         //		QMetaObject::Connection _home_connection; // for disconnect
 #ifdef QT_DEBUG
         __pid_t _pid;

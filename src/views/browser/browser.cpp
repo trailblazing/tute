@@ -477,20 +477,20 @@ namespace web {
         _websearch.connect([&] {
             // _toolbarsearch
             //        static_cast<ToolbarSearch*>(_find_screen->lineedit_stack()->currentWidget())
-            auto view = currentTab();
-            if (view) {
-                auto toolbarsearch = view->toolbarsearch();
-                if (toolbarsearch) {
-                    auto line = toolbarsearch->lineEdit();
+            //            auto view = currentTab();
+            //            if (view) {
+            auto toolbarsearch = _tab_widget->currentToolbarSearch(); //view->toolbarsearch();
+            if (toolbarsearch) {
+                auto line = toolbarsearch->lineEdit();
 
-                    if (line) {
-                        line->selectAll();
-                        // _toolbarsearch
-                        //            _find_screen->lineedit_stack()->currentWidget()
-                        line->setFocus();
-                    }
+                if (line) {
+                    line->selectAll();
+                    // _toolbarsearch
+                    //            _find_screen->lineedit_stack()->currentWidget()
+                    line->setFocus();
                 }
             }
+            //            }
         });
     }
 
@@ -1812,7 +1812,8 @@ namespace web {
 
     void Browser::slotSelectLineEdit()
     {
-        auto line = currentTab()->toolbarsearch()->lineEdit(); //_tab_widget->currentLineEdit();
+        auto line = //currentTab()->toolbarsearch()->lineEdit(); //
+            _tab_widget->currentToolbarSearch()->lineEdit();
         std::mutex m;
         if (m.try_lock()) {
             //            std::lock_guard<std::mutex> lock(m);
@@ -2149,7 +2150,8 @@ namespace web {
             std::mutex m;
             if (m.try_lock()) {
                 //                std::lock_guard<std::mutex> lock(m);
-                auto line = currentTab()->toolbarsearch()->lineEdit(); //_tab_widget->currentLineEdit();
+                auto line = //currentTab()->toolbarsearch()->lineEdit(); //
+                    _tab_widget->currentToolbarSearch()->lineEdit();
                 if (line) line->setFocus();
                 m.unlock();
             }
@@ -2181,13 +2183,13 @@ namespace web {
 #else
             [&] {
                 ChaseWidget* chasewidget_ = nullptr;
-                auto view = currentTab();
-                if (view) {
-                    auto s = view->toolbarsearch();
-                    if (s) {
-                        chasewidget_ = s->chasewidget();
-                    }
+                //                auto view = currentTab();
+                //                if (view) {
+                auto s = _tab_widget->currentToolbarSearch(); //view->toolbarsearch();
+                if (s) {
+                    chasewidget_ = s->chasewidget();
                 }
+                //                }
                 return chasewidget_;
             }();
 #endif // USE_CLEAR_BUTTON

@@ -75,8 +75,8 @@ namespace web {
     W_OBJECT_IMPL(ExLineEdit)
 #endif
 
-    ExLineEdit::ExLineEdit(QWidget* view)
-        : QWidget(view)
+    ExLineEdit::ExLineEdit(QWidget* view_)
+        : QWidget(view_)
 #ifdef USE_CLEAR_BUTTON
         , _clearbutton(new ClearButton(this))
         , _left_widget(_clearbutton) //
@@ -87,7 +87,7 @@ namespace web {
 #endif // USE_CLEAR_BUTTON
         , _right_widget(nullptr)
         , _lineedit(new QLineEdit(this))
-        , _web_view(dynamic_cast<web::WebView*>(view))
+        , _web_view(dynamic_cast<web::WebView*>(view_))
     {
         assert(_web_view);
 #ifndef USE_CLEAR_BUTTON
@@ -263,13 +263,13 @@ namespace web {
     void ExLineEdit::synchronize_text(const QString& url_str) const
     {
         // corrupted might because of browser(process) across operation -- current find_screen design
-        if (_lineedit->text() != url_str) _lineedit->setText(url_str);
+        if (_lineedit->text() != url_str && !_lineedit->isReadOnly()) _lineedit->setText(url_str);
     }
 
 
     UrlIconLabel::UrlIconLabel(QWidget* parent)
         : QLabel(parent)
-        , _browserview(0)
+        , _web_view(0)
     {
         setMinimumWidth(16);
         setMinimumHeight(16);
@@ -287,15 +287,15 @@ namespace web {
         if (event->buttons() == Qt::LeftButton &&
             (event->pos() - _dragstartpos).manhattanLength() >
                 QApplication::startDragDistance() &&
-            _browserview) {
-            if (_browserview->page()) {
+            _web_view) {
+            if (_web_view->page()) {
                 QDrag* drag = new QDrag(this);
                 QMimeData* mimeData = new QMimeData;
 
                 mimeData->setText(
-                    QString::fromUtf8(_browserview->page()->url().toEncoded()));
+                    QString::fromUtf8(_web_view->page()->url().toEncoded()));
                 QList<QUrl> urls;
-                urls.append(_browserview->page()->url());
+                urls.append(_web_view->page()->url());
                 mimeData->setUrls(urls);
 
                 drag->setMimeData(mimeData);
@@ -308,8 +308,8 @@ namespace web {
     W_OBJECT_IMPL(UrlLineEdit)
 #endif
 
-    UrlLineEdit::UrlLineEdit(QWidget* view)
-        : ExLineEdit(view)
+    UrlLineEdit::UrlLineEdit(QWidget* view_)
+        : ExLineEdit(view_)
         //	    , _find_screen(gl_paras->find_screen()) //dynamic_cast<FindScreen*>(find_screen_)
         //	    , _web_view(view)
         , _iconlabel(new UrlIconLabel(this))
@@ -343,14 +343,14 @@ namespace web {
 
 #endif //USE_URL_ICON
         _defaultbasecolor = palette().color(QPalette::Base);
-        setWebView(dynamic_cast<web::WebView*>(view));
+        setWebView(dynamic_cast<web::WebView*>(_web_view));
     }
 
     void UrlLineEdit::setWebView(WebView* webView)
     {
         // Q_ASSERT(!_web_view);
         _web_view = webView;
-        _iconlabel->_browserview = _web_view;
+        _iconlabel->_web_view = _web_view;
         connect(_web_view, &WebView::urlChanged, this, &UrlLineEdit::webViewUrlChanged);
         connect(_web_view, &WebView::iconChanged, this, &UrlLineEdit::webViewIconChanged);
         connect(_web_view, &WebView::loadProgress, this, [&](int i) {
