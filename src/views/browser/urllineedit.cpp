@@ -427,7 +427,7 @@ namespace web {
         }
     }
 
-    WebView* UrlLineEdit::webview() { return _web_view; }
+//    WebView* UrlLineEdit::webview() { return _web_view; }
 
     UrlIconLabel* UrlLineEdit::iconlabel() const
     {
