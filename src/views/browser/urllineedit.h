@@ -145,7 +145,7 @@ namespace web {
             QWidget* view_);
 		void setWebView(WebView* webView);
 
-		WebView* webview();
+//		WebView* webview();
 		UrlIconLabel* iconlabel() const;
 
 	    protected:

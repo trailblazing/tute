@@ -2141,40 +2141,36 @@ namespace web {
     void TabWidget::lineEditReturnPressed()
     {
         if (ToolbarSearch* search_edit = qobject_cast<ToolbarSearch*>(sender())) { //if (QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender())) {
-            //			auto parent = lineEdit->parent();
-            //			if (parent) {
-            //				auto lineEdit = dynamic_cast<UrlLineEdit*>(parent);
-            //				if (lineEdit) {
-            auto view = search_edit->webview();
-            auto page = view->page();
 
-            auto old_url = page->url();
+            //            auto view = search_edit->webview();
+            //            auto page = view->page();
+
+            //            auto old_url = page->url();
             auto text = search_edit->lineEdit()->text();
             //            auto it = page->host();
-            auto tree_view_ = gl_paras->tree_screen()->view();
+            //            auto tree_view_ = gl_paras->tree_screen()->view();
             auto real_url = to_be_url(text);
             if (real_url != QUrl() && real_url != detail::to_qstring(web::Browser::_defaulthome)) {
-                if (old_url == QUrl(detail::to_qstring(web::Browser::_defaulthome))) { // for Ctrl+T and QKeySequence::AddTab
-                    auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(url_value(text),
-                        [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
-                            return TreeIndex::url_require_item_from_tree(
-                                real_target_url_, std::bind(&tv_t::move, tree_view_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-                                [&](boost::intrusive_ptr<const i_t> it) -> bool {
-                                    return url_equal(url_value(detail::to_qstring(it->field<home_key>())), text) || url_equal(it->field<url_key>(), url_value(text));
-                                });
-                        });
-                    it->field<url_key>(detail::from_qstring<url_key>(real_url.toString()));
-                    page->load(it, true, true); // force reload
-                } else {
-                    emit openLinkInNewTab(text);
-                }
+                //                if (old_url == QUrl(detail::to_qstring(web::Browser::_defaulthome))) { // for Ctrl+T and QKeySequence::AddTab
+                //                    auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(url_value(text),
+                //                        [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
+                //                            return TreeIndex::url_require_item_from_tree(
+                //                                real_target_url_, std::bind(&tv_t::move, tree_view_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
+                //                                [&](boost::intrusive_ptr<const i_t> it) -> bool {
+                //                                    return url_equal(url_value(detail::to_qstring(it->field<home_key>())), text) || url_equal(it->field<url_key>(), url_value(text));
+                //                                });
+                //                        });
+                //                    it->field<url_key>(detail::from_qstring<url_key>(real_url.toString()));
+                //                    page->load(it, true, true); // force reload
+                //                } else {
+                emit openLinkInNewTab(text);
+                //                }
                 if (_lineedit_stack->currentWidget() == search_edit) {
                     auto v = currentWebView();
                     if (v) v->setFocus();
                 }
             }
-            //				}
-            //			}
+
         }
     }
 
