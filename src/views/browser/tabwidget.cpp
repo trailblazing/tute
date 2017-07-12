@@ -1076,7 +1076,7 @@ namespace web {
         _recentlyclosedtabs.clear();
         // clear the line edit history
         for (int i = 0; i < _lineedit_stack->count(); ++i) {
-            QLineEdit* qLineEdit = lineEdit(i);
+            QLineEdit* qLineEdit = toolbarSearch(i)->lineEdit();
             qLineEdit->setText(qLineEdit->text());
         }
     }
@@ -1468,30 +1468,36 @@ namespace web {
         return _lineedit_stack;
     }
 
-    QLineEdit* TabWidget::currentLineEdit() const
-    {
-        return lineEdit(_lineedit_stack->currentIndex());
-    }
+    //    QLineEdit* TabWidget::currentLineEdit() const
+    //    {
+    //        return toolbarSearch(_lineedit_stack->currentIndex())->lineEdit();
+    //    }
 
+    ToolbarSearch* TabWidget::currentToolbarSearch() const
+    {
+        return toolbarSearch(_lineedit_stack->currentIndex());
+    }
     // void TabWidget::lineEditStack(QStackedWidget *lineedits)
     // {
     // _lineedits = lineedits;
     // }
 
-    QLineEdit* TabWidget::lineEdit(int index) const
+    ToolbarSearch* TabWidget::toolbarSearch(int index) const
     {
-        QLineEdit* line = nullptr;
+        ToolbarSearch* line = nullptr;
         if (0 <= index && index < count()) {
             std::mutex m;
             if (m.try_lock()) {
                 //            std::lock_guard<std::mutex> lock(m);
-                //        UrlLineEdit* urlLineEdit = qobject_cast<UrlLineEdit*>(_lineedit_stack->widget(index));
-                ToolbarSearch* toolbar_search = nullptr;
-                auto view = webView(index);
-                if (view) toolbar_search = view->toolbarsearch();
-                if (toolbar_search //urlLineEdit
-                    ) line =       ///urlLineEdit
-                    toolbar_search->lineEdit();
+                //                UrlLineEdit*
+                ToolbarSearch* urlLineEdit = qobject_cast< //UrlLineEdit
+                    ToolbarSearch*>(_lineedit_stack->widget(index));
+                //                ToolbarSearch* toolbar_search = nullptr;
+                //                auto view = webView(index);
+                //                if (view) toolbar_search = view->toolbarsearch();
+                if (urlLineEdit) //                if (toolbar_search)                  //
+
+                    line = urlLineEdit; //urlLineEdit->lineEdit(); //toolbar_search->lineEdit();
                 //            return nullptr;
                 m.unlock();
             }
@@ -1901,7 +1907,7 @@ namespace web {
                     auto find_screen = gl_paras->find_screen();
                     assert(find_screen);
                     // line edit
-                    auto toolbar_search = view->toolbarsearch(); // new ToolbarSearch(find_screen, view); //UrlLineEdit(view);
+                    auto toolbar_search = new ToolbarSearch(view); //UrlLineEdit(view);
 #ifndef USE_STRINGLIST_MODEL
                     //                    QLineEdit* lineEdit = toolbar_search->lineEdit();
                     if (!_lineeditcompleter && count() > 0) {
@@ -2270,7 +2276,7 @@ namespace web {
                         if (lineEdit) {
                             disconnect(lineEdit);
                             _lineedit_stack->removeWidget(lineEdit);
-                            lineEdit->deleteLater(); // delete lineEdit;
+                            lineEdit->deleteLater(); // delete lineEdit; // move owner to webview
                         }
                         auto it = _view_to_close->page()->host();
                         assert(it->page() == _view_to_close->page());
@@ -2796,11 +2802,11 @@ namespace web {
                         if (page) {
                             auto view = page->view();
                             if (view) {
-                                auto toolbar_search = view->toolbarsearch();
-                                if (toolbar_search) {
-                                    ti->field<url_key>(_main_window->query_internet(_blogger->topic()));
-                                    ti->field<home_key>(detail::from_qstring<home_key>(detail::to_qstring(ti->field<url_key>())));
-                                }
+                                //                                auto toolbar_search = view->toolbarsearch();
+                                //                                if (toolbar_search) {
+                                ti->field<url_key>(_main_window->query_internet(_blogger->topic()));
+                                ti->field<home_key>(detail::from_qstring<home_key>(detail::to_qstring(ti->field<url_key>())));
+                                //                                }
                             }
                         }
                     }

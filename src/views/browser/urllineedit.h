@@ -76,7 +76,7 @@ namespace web {
 #endif
 
 	    public:
-		ExLineEdit(QWidget* view);
+        ExLineEdit(QWidget* view_);
 
         QLineEdit* lineEdit() const;
 
@@ -122,7 +122,7 @@ namespace web {
 	    public:
 		UrlIconLabel(QWidget* parent);
 
-		WebView* _browserview;
+        WebView* _web_view;
 
 	    protected:
 		void mousePressEvent(QMouseEvent* event);
@@ -140,9 +140,9 @@ namespace web {
 #endif
 
 	    public:
-		UrlLineEdit( //QWidget* find_screen_,
-		    //			    QWidget* right_widget_,
-		    QWidget* view);
+        UrlLineEdit(//QWidget* find_screen_,
+            //			    QWidget* right_widget_,
+            QWidget* view_);
 		void setWebView(WebView* webView);
 
 		WebView* webview();

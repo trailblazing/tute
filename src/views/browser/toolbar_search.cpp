@@ -155,6 +155,7 @@ namespace web {
                   QAbstractItemView* popup = _lineeditcompleter->popup();
                   QListView* listView = qobject_cast<QListView*>(popup);
                   if (listView) listView->setUniformItemSizes(true);
+
 #endif // USE_STRINGLIST_MODEL
                   return _lineeditcompleter;
               }()
