@@ -5,11 +5,15 @@
 TARGET_OS   =   ANY_OS
 
 lessThan(QT_VERSION, 5.6) {
+!equals(QT_VERSION, 5.10.0){
     error("Tute requires at least Qt 5.6!")
+}
 }
 
 lessThan(QT.webengine.VERSION, 5.6) {
+!equals(QT_VERSION, 5.10.0){
     error("Tute requires at least QtWebEngine 5.6!")
+}
 }
 
 # Flags for profile application
@@ -124,7 +128,7 @@ DEPENDPATH      += $${PROJECT_QT_VERSION}/plugins/platforminputcontexts
 
 LIBS            += -L$$PROJECT_QT_LIBS -lQt5Svg -lQt5WebEngineWidgets -lQt5PrintSupport -lQt5Widgets -lQt5WebEngineCore -lQt5Quick -lQt5Gui -lQt5Xml -lQt5Qml -lQt5Network -lQt5WebChannel -lQt5Core -lQt5WebEngine -lQt5Positioning
 #LIBS            += /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/libfcitxplatforminputcontextplugin.so
-LIBS            += -L$${PROJECT_QT_VERSION}/plugins/platforminputcontexts -lfcitxplatforminputcontextplugin
+#LIBS            += -L$${PROJECT_QT_VERSION}/plugins/platforminputcontexts -lfcitxplatforminputcontextplugin
 
 contains(TARGET_OS, ANY_OS) {
 DESTDIR     =   bin

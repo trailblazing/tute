@@ -707,7 +707,7 @@ void sapp_t::browsers_shared_info_init()
 					tree_view->index_invoke(TreeIndex::item_require_treeindex([&] { return tree_view->source_model(); },
 					    real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(_url,
 												      [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
-													      return TreeIndex::url_require_item_from_tree(
+													      return TreeIndex::item_require_from_tree_by_url(
 														  real_target_url_,
 														  std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 														  [&](boost::intrusive_ptr<const i_t> it_) -> bool {
@@ -1202,7 +1202,7 @@ void sapp_t::newLocalSocketConnection()
 			// if(tree_index)
 			it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
 			    [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
-				    return TreeIndex::url_require_item_from_tree(
+				    return TreeIndex::item_require_from_tree_by_url(
 					real_target_url_, std::bind(&tv_t::move, tree_view_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 					[&](boost::intrusive_ptr<const i_t> it) -> bool {
 						return url_equal(url_value(detail::to_qstring(it->field<home_key>())), real_url) || url_equal(it->field<url_key>(), real_url);

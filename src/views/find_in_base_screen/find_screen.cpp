@@ -91,11 +91,11 @@ FindScreen::FindScreen(QString object_name, //
               nav->setMaximumWidth(130);
               return nav;
               //		  return _browser->navigater();
-          }())                                                //new QToolBar(this)
-    , _historyback(new QAction(tr("Back"), _navigater))       // FlatToolButton *_history_back;
+	  }()) //new QToolBar(this)
+    , _historyback(new QAction(tr("Back"), _navigater)) // FlatToolButton *_history_back;
     , _historyforward(new QAction(tr("Forward"), _navigater)) // FlatToolButton *_history_forward;
-    , _historyhome(new QAction(tr("Home"), _navigater))       // FlatToolButton *_history_home;
-    , _stopreload(new QAction(_navigater))                    // FlatToolButton *_stop_reload;
+    , _historyhome(new QAction(tr("Home"), _navigater)) // FlatToolButton *_history_home;
+    , _stopreload(new QAction(_navigater)) // FlatToolButton *_stop_reload;
     , _stop(new QAction(tr("&Stop"), _navigater))
     , _reload(new QAction(tr("Reload Page"), _navigater)) // , back_ground{      //      // _tree_screen->know_branch()->root_item()      // //_selected_branch_root      // }
     , _editor_switch(new FlatToolButton(tr("Editor Show/Hide"), this))
@@ -236,7 +236,6 @@ FindScreen::~FindScreen(void)
     // delete _selected_branch_as_pages;
 }
 
-
 FlatToolButton* FindScreen::findstartbutton() const { return _find_start_button; }
 
 //void FindScreen::historyback(QAction* hb) { _historyback = hb; }
@@ -303,7 +302,7 @@ void FindScreen::setup_navigate(void)
 
     _historyforward->setShortcuts(QKeySequence::Forward);
     _historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg")); // style()->standardIcon(QStyle::SP_ArrowForward,
-                                                                          // 0, this)
+    // 0, this)
 
     // _historyforwardmenu = new QMenu(this);
     // connect(_historyforwardmenu, SIGNAL(aboutToShow()), this,
@@ -379,7 +378,6 @@ void FindScreen::setup_findtext_and_button(void)
     _tools_expand->setEnabled(true);
     _tools_expand->setAutoRaise(true);
 }
-
 
 // Текст поиска и кнопка "Поиск"
 void FindScreen::assembly_findtext_and_button(void)
@@ -514,7 +512,8 @@ void FindScreen::switch_stack(QStackedWidget* lineedit_stack_)
 
 #ifdef USE_STACK_LAYOUT
     if (_stack_layout->widget() != lineedit_stack_) {
-        if (_stack_layout->count() > 0) clear_layout(_stack_layout);
+	if (_stack_layout->count() > 0)
+	    clear_layout(_stack_layout);
         _stack_layout->addWidget(lineedit_stack_);
         lineedit_stack_->show();
     }
@@ -554,7 +553,6 @@ void FindScreen::switch_stack(QStackedWidget* lineedit_stack_)
 #endif // USE_LINE_EDIT_LAYOUT
     //	}// end if (lineedit_stack_)
 
-
     //	else {
     //		if (_stack_layout->widget() != _lineedit_stack) {
     //			if (_stack_layout->count() > 0) clear_layout(_stack_layout);
@@ -588,7 +586,8 @@ void FindScreen::setup_combooption(void)
     _tree_search_area->addItem(
         QIcon(":/resource/pic/find_in_base_search_branch.svg"), tr("In current branch")); // Текущая ветка
     _tree_search_area->setCurrentIndex(appconfig->find_screen_tree_search_area());
-    if (appconfig->interface_mode() == "desktop") _tree_search_area->hide();
+    if (appconfig->interface_mode() == "desktop")
+	_tree_search_area->hide();
     if (appconfig->interface_mode() == "mobile") {
         // wordRegard->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
         // howExtract->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
@@ -634,7 +633,7 @@ void FindScreen::setup_closebutton(void)
     //	_close_button = new FlatToolButton("", this);
     _close_button->setVisible(true);
     _close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton)); // SP_TitleBarCloseButton
-                                                                                         // SP_DialogCloseButton
+    // SP_DialogCloseButton
     _close_button->setAutoRaise(true);
     if (appconfig->interface_mode() == "desktop") {
         int w = _close_button->geometry().width();
@@ -690,11 +689,14 @@ void FindScreen::assembly_wherefind_line(void)
 {
     //	_where_find_line = new QHBoxLayout();
     _where_find_line->setEnabled(false);
-    if (appconfig->interface_mode() == "desktop") _where_find_line->addWidget(_where_find_label);
-    if (appconfig->interface_mode() == "mobile") _where_find_label->hide();
+    if (appconfig->interface_mode() == "desktop")
+	_where_find_line->addWidget(_where_find_label);
+    if (appconfig->interface_mode() == "mobile")
+	_where_find_label->hide();
     _where_find_line->addWidget(_word_regard);
     _where_find_line->addWidget(_how_extract);
-    if (appconfig->interface_mode() == "mobile") _where_find_line->addWidget(_tree_search_area);
+    if (appconfig->interface_mode() == "mobile")
+	_where_find_line->addWidget(_tree_search_area);
     _where_find_line->addWidget(_find_in_pin);
     _where_find_line->addWidget(_find_in_name);
     _where_find_line->addWidget(_find_in_author);
@@ -727,7 +729,6 @@ void FindScreen::setup_signals(void)
     //	// Он вырабатывается в слоте setFindText()
     //	connect(this, &FindScreen::text_changed, this, &FindScreen::enable_findbutton);
 
-
     // При нажатии кнопки Find
     connect(_find_start_button, &QPushButton::clicked, //this,
         [this] {
@@ -743,16 +744,16 @@ void FindScreen::setup_signals(void)
 
                 if (toolbar_search) {
                     emit toolbar_search->return_pressed(); //lineEdit()->returnPressed();
-                                                           //				    auto line_edit = search_edit->lineEdit();
-                                                           //				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), true))>(
-                                                           //					line_edit->text(), //_toolbarsearch_buffer->text(),
-                                                           //					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
-                                                           //						auto topic_new = real_target_url_->value(); //
-                                                           //						auto topic_old = _browser->blogger()->topic();
-                                                           //						bool is_new_topic = true;
-                                                           //						if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_new_topic = false;
-                                                           //						return _toolbarsearch_buffer->search_now(real_target_url_, is_new_topic); // FindScreen::find_clicked();
-                                                           //					});
+		    //				    auto line_edit = search_edit->lineEdit();
+		    //				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>(), true))>(
+		    //					line_edit->text(), //_toolbarsearch_buffer->text(),
+		    //					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+		    //						auto topic_new = real_target_url_->value(); //
+		    //						auto topic_old = _browser->blogger()->topic();
+		    //						bool is_new_topic = true;
+		    //						if (topic_new.contains(topic_old) || topic_old.contains(topic_new)) is_new_topic = false;
+		    //						return _toolbarsearch_buffer->search_now(real_target_url_, is_new_topic); // FindScreen::find_clicked();
+		    //					});
                 }
 #ifdef USE_STACK_LAYOUT
             }
@@ -778,14 +779,14 @@ void FindScreen::setup_signals(void)
                     //                    auto line_edit = toolbar_search->lineEdit();
                     //                    line_edit->setText(str);
                     emit toolbar_search->return_pressed(); //lineEdit()->returnPressed();
-                                                           //				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
-                                                           //					line_edit->text(), //_toolbarsearch_buffer->text(),
-                                                           //					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
-                                                           //						return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
-                                                           //					});
-                                                           //				    search_edit->left_widget(search_edit->searchbutton());
-                                                           //				    search_edit->left_widget()->show();
-                                                           //				    search_edit->iconlabel()->hide();
+		    //				    real_url_t<QString>::instance<decltype(static_cast<web::ToolbarSearch*>(nullptr)->search_now(boost::intrusive_ptr<real_url_t<QString>>()))>(
+		    //					line_edit->text(), //_toolbarsearch_buffer->text(),
+		    //					[&](boost::intrusive_ptr<real_url_t<QString>> real_target_url_) {
+		    //						return _toolbarsearch_buffer->search_now(real_target_url_); // FindScreen::find_clicked();
+		    //					});
+		    //				    search_edit->left_widget(search_edit->searchbutton());
+		    //				    search_edit->left_widget()->show();
+		    //				    search_edit->iconlabel()->hide();
                 }
 #ifdef USE_STACK_LAYOUT
             }
@@ -799,7 +800,8 @@ void FindScreen::setup_signals(void)
     connect(_close_button, &FlatToolButton::clicked, this, &FindScreen::widget_hide);
     connect(_close_button, &FlatToolButton::clicked, [&] {
         //		auto browser_ = _browser ? static_cast<web::Browser*>(_browser) : gl_paras->main_window()->browser(QString(gl_para::_current_browser), false);
-        if (_browser) _browser->updateToolbarActionText(false);
+	if (_browser)
+	    _browser->updateToolbarActionText(false);
     });
 
     // Сигналы для запоминания состояния интерфейса
@@ -880,9 +882,9 @@ void FindScreen::assembly(void)
     }
     _central_desktop_layout->addLayout(_where_find_line);
     // centralDesktopLayout->addWidget(_findtable, 10);
-    _central_desktop_layout->setContentsMargins(0, 0, 0, 0);              // Boundaries removed // Границы убираются
+    _central_desktop_layout->setContentsMargins(0, 0, 0, 0); // Boundaries removed // Границы убираются
     _central_desktop_layout->setSizeConstraint(QLayout::SetNoConstraint); // SetFixedSize // this setting will lead TableScreen can not
-                                                                          // resize!!!
+    // resize!!!
 
     _central_desktop_layout->setMargin(0);
     _central_desktop_layout->setSpacing(0);
@@ -948,7 +950,8 @@ boost::intrusive_ptr<i_t> FindScreen::find_internal_decomposed(QString const& se
     int findEnableFlag = 0;
 
     foreach (bool value, _search_area)
-        if (value == true) findEnableFlag = 1;
+	if (value == true)
+	    findEnableFlag = 1;
     // Если не отмечены поля для поиска
     if (findEnableFlag != 0) {
         // Выясняется список слов, которые нужно искать
@@ -995,7 +998,8 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
     // были найдены введенные перед нажатием Find данные, если они есть
     // find_object<MainWindow>("mainwindow")
     auto rs = dynamic_cast<rs_t*>(gl_paras->vtab_record()->currentWidget());
-    if (rs) rs->blogger()->save_text_context();
+    if (rs)
+	rs->blogger()->save_text_context();
     //// Очищается таблица результата поиска
     // _findtable->re_initialize();
 
@@ -1032,8 +1036,8 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
     boost::intrusive_ptr<i_t> final_result = i_t::dangle_instance(data); // QMap<QString, QString>()
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
     // Выясняется сколько всего конечных записей
-    boost::intrusive_ptr<i_t> _start_item(nullptr);                                          // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString,
-                                                                                             // QString>(), nullptr));
+    boost::intrusive_ptr<i_t> _start_item(nullptr); // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString,
+    // QString>(), nullptr));
     boost::intrusive_ptr<i_t> _session_root_item(_tree_screen->view()->session_root_auto()); // new TreeItem(nullptr, data)
     // _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();
     // //
@@ -1081,7 +1085,7 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
     // __________________________________________________________________________________________________
 
     auto browsers_search_prepare = [&](
-                                       boost::intrusive_ptr<i_t>& _start_item, int& _candidate_records) { // , boost::intrusive_ptr<TreeItem>
+	boost::intrusive_ptr<i_t>& _start_item, int& _candidate_records) { // , boost::intrusive_ptr<TreeItem>
         // &_result_item
         // to be done
         // QMap<QString, QString> data;
@@ -1121,7 +1125,7 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
     };
 
     auto current_model_search_prepare = [&](
-                                            boost::intrusive_ptr<i_t>& _start_item, int& _candidate_records) { // , boost::intrusive_ptr<TreeItem>
+	boost::intrusive_ptr<i_t>& _start_item, int& _candidate_records) { // , boost::intrusive_ptr<TreeItem>
         // &_result_item
         //// Индекс текущей выбранной ветки
         // QModelIndex current_item_index =    //
@@ -1141,7 +1145,7 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
     // Q_UNUSED(branch_search_prepare)
 
     auto global_search_prepare = [&](
-                                     boost::intrusive_ptr<i_t>& _start_item, int& _candidate_records) { // , boost::intrusive_ptr<TreeItem>
+	boost::intrusive_ptr<i_t>& _start_item, int& _candidate_records) { // , boost::intrusive_ptr<TreeItem>
         // &_result_item	// ,
         // std::shared_ptr<RecordTable> &resultset_data
         // Корневой элемент дерева
@@ -1200,9 +1204,9 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
 #endif
 
     auto final_search = [&](
-                            boost::intrusive_ptr<i_t>& final_result,       // QList<boost::intrusive_ptr<Linker> >    &_result_list
-                            boost::intrusive_ptr<i_t>& _session_root_item, // std::shared_ptr<RecordTable> &resultset_data
-                            boost::intrusive_ptr<i_t>& _start_item) -> boost::intrusive_ptr<i_t>& {
+	boost::intrusive_ptr<i_t>& final_result, // QList<boost::intrusive_ptr<Linker> >    &_result_list
+	boost::intrusive_ptr<i_t>& _session_root_item, // std::shared_ptr<RecordTable> &resultset_data
+	boost::intrusive_ptr<i_t>& _start_item) -> boost::intrusive_ptr<i_t>& {
         qDebug() << "Start finding in " << _candidate_records << " records";
 
         _total_progress_counter = 0;
@@ -1222,17 +1226,16 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
 
         // std::future<QList<boost::intrusive_ptr<Linker> > >
         final_result = std::async(std::launch::async, [&] {
-            return find_recursive(topic, final_result, _session_root_item, _start_item);
-        })
-                           .get();
+			   return find_recursive(topic, final_result, _session_root_item, _start_item);
+		       }).get();
 
         // std::thread(&FindScreen::find_recursive, this, _result_list,
         // _session_root_item, _start_item).detach();	//
         // find_recursive(_result_list, _session_root_item, _start_item); //
         // candidate_root->tabledata();
         return final_result; //
-                             // find_recursive(final_result, _session_root_item, _start_item);				//
-                             // _result_list;
+	// find_recursive(final_result, _session_root_item, _start_item);				//
+	// _result_list;
     };
 
     // deprecated by KnowModel::model_move_as_child_impl in this->find_recursive
@@ -1264,7 +1267,7 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
         if (0 != _candidate_records) {
             final_result = final_search(final_result, _session_root_item, _start_item);
             _tree_screen->enable_up_action(); // !_is_search_global
-                                              // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
+	    // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
         }
         // }
         // stage 2
@@ -1274,7 +1277,7 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
                 if (0 != _candidate_records) {
                     final_result = final_search(final_result, _session_root_item, _start_item);
                     _tree_screen->enable_up_action(); // !_is_search_global
-                                                      // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
+		    // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
                 }
                 // stage 3
                 if (0 == final_result->count_direct()) { // (_result_item->count_direct() -
@@ -1304,10 +1307,10 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
                         if (0 != _candidate_records) {
                             final_result = final_search(final_result, _session_root_item, _start_item);
                             _tree_screen->enable_up_action(); // _tree_screen->know_branch()->root_item()->id()
-                                                              // != _search_model->root_item()->id()
-                                                              // // !_is_search_global
-                                                              // _selected_branch_as_pages !=
-                                                              // _tree_screen->know_root()->root_item()
+			    // != _search_model->root_item()->id()
+			    // // !_is_search_global
+			    // _selected_branch_as_pages !=
+			    // _tree_screen->know_root()->root_item()
                         }
                         // }
                     } else
@@ -1338,7 +1341,7 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
     ////    if(_result_list.size() > 0)for(auto it : _result_list)final_result <<
     ///it->host();	//= _result_list.at(0)->host();
 
-    std::vector<boost::intrusive_ptr<i_t>> pre;
+    std::vector<boost::intrusive_ptr<i_t> > pre;
     pre.reserve(final_result->count_direct());
     for (auto il : final_result->child_linkers()) {
         auto it = il->host();
@@ -1358,7 +1361,7 @@ boost::intrusive_ptr<i_t> FindScreen::find_implement(QString const& topic)
     boost::fusion::at_key<file_key>(data_) = "text.html";
     boost::intrusive_ptr<i_t> _final_result = i_t::dangle_instance(data_);
     // if(pre.size() > 0)_final_result << pre[0];
-    for (std::vector<boost::intrusive_ptr<i_t>>::size_type i = 0; i < pre.size();
+    for (std::vector<boost::intrusive_ptr<i_t> >::size_type i = 0; i < pre.size();
          i++) {
         if (i < 10)
             _final_result << pre[i];
@@ -1458,7 +1461,8 @@ boost::intrusive_ptr<i_t>& FindScreen::find_recursive(QString const& topic, boos
                         int found_flag = 0;
 
                         foreach (bool value, iteration_search_result)
-                            if (value == true) found_flag = 1;
+			    if (value == true)
+				found_flag = 1;
                         // Если запись найдена
                         if (found_flag == 1) {
                             // qDebug() << "Find succesfull in " <<
@@ -1480,7 +1484,8 @@ boost::intrusive_ptr<i_t>& FindScreen::find_recursive(QString const& topic, boos
                             // , curritem->getPath()
                             // , searchRecordTable->field("id", i)
                             // );
-                            if (candidate->is_lite()) candidate->to_fat();
+			    if (candidate->is_lite())
+				candidate->to_fat();
                             // {// move to search result
                             // auto					browser
                             // =
@@ -1541,7 +1546,7 @@ boost::intrusive_ptr<i_t>& FindScreen::find_recursive(QString const& topic, boos
                                 //search_topic;
                                 //								candidate->field<tags_type>(tags_);
                                 candidate->topic_replace(topic //_browser->blogger()->topic()
-                                    );                         //_toolbarsearch_buffer->text()
+				    ); //_toolbarsearch_buffer->text()
 
                                 final_result << candidate; // result->linker();
                             }
@@ -1560,7 +1565,8 @@ boost::intrusive_ptr<i_t>& FindScreen::find_recursive(QString const& topic, boos
                             // }
                         }
                         if (candidate)
-                            if (candidate->count_direct() > 0) find_recursive(topic, final_result, _session_root_item, candidate);
+			    if (candidate->count_direct() > 0)
+				find_recursive(topic, final_result, _session_root_item, candidate);
 #ifdef SHOW_PROCESS_DIALOG
                     } else {
                         // if(_progress->wasCanceled()) {
@@ -1574,7 +1580,7 @@ boost::intrusive_ptr<i_t>& FindScreen::find_recursive(QString const& topic, boos
 #else
 #endif
                 } // Закрылся цикл перебора записей в таблице конечных записей
-            }     // Закрылось условие что в ветке есть таблица конечных записей
+	    } // Закрылось условие что в ветке есть таблица конечных записей
 
             //// Рекурсивная обработка каждой подчиненной ветки
             // for(int i = 0; i < _start_item->current_count(); i++)
@@ -1597,15 +1603,19 @@ bool FindScreen::find_in_text_process(const QString& text)
         if (_how_extract->currentIndex() == 0) {
             // Текст разбивается на слова с очисткой от лишних знаков
             // и проверяется, есть ли в полученном списке текущее слово
-            if (text_delimiter_decompose(text).contains(_search_word_list.at(i), Qt::CaseInsensitive)) findFlag = 1;
+	    if (text_delimiter_decompose(text).contains(_search_word_list.at(i), Qt::CaseInsensitive))
+		findFlag = 1;
         } else {
             // Если надо найти слово как подстроку
-            if (text.contains(_search_word_list.at(i), Qt::CaseInsensitive)) findFlag = 1;
+	    if (text.contains(_search_word_list.at(i), Qt::CaseInsensitive))
+		findFlag = 1;
         }
         // Если слово было найдено, количество найденных слов увеличивается
-        if (findFlag == 1) findWordCount++;
+	if (findFlag == 1)
+	    findWordCount++;
         // Если ищется хотя бы одно совпадение
-        if (findFlag == 1 && _word_regard->currentIndex() == 0) return true; // То при первом же совпадении цикл прекращается
+	if (findFlag == 1 && _word_regard->currentIndex() == 0)
+	    return true; // То при первом же совпадении цикл прекращается
     }
     // Искалось хотябы одно совпадение, но небыло найдено
     if (_word_regard->currentIndex() == 0)
@@ -1698,7 +1708,7 @@ void FindScreen::widget_hide(void)
 
     // Виджет скрывается
     appconfig->findscreen_show(false);
-    this->close();
+    //    this->close();
 }
 
 //void FindScreen::switch_search_content()
@@ -1763,7 +1773,8 @@ void FindScreen::switch_tools_expand(bool flag)
         _tree_search_area->setVisible(flag);
     }
     // Надпись Find in видна и управляется только в desktop режиме интерфейса
-    if (appconfig->interface_mode() == "desktop") _where_find_label->setVisible(flag);
+    if (appconfig->interface_mode() == "desktop")
+	_where_find_label->setVisible(flag);
     // Флаги поиска скрываются для любого интерфейса, так как они всегда находятся
     // на отдельной строке
     _word_regard->setVisible(flag);
@@ -1797,7 +1808,7 @@ web::Browser* FindScreen::browser()
     if (!_browser) {
 
         _browser = real_url_t<url_value>::instance<web::Browser*>(web::Browser::_defaulthome,
-            [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) {
+	    [&](boost::intrusive_ptr<real_url_t<url_value> > real_target_url_) {
                 return gl_paras->main_window()->browser(real_target_url_, true);
             });
     }
