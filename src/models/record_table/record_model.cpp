@@ -723,7 +723,7 @@ web::WebView* RecordModel::insert_new_item(boost::intrusive_ptr<i_t> _target_ite
 			auto _target_item = // this_index->
 			    real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(target_url,
 				[&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
-					return TreeIndex::url_require_item_from_tree(
+					return TreeIndex::item_require_from_tree_by_url(
 					    real_target_url_, //std::placeholders::_1,
 					    std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
 					    [&](boost::intrusive_ptr<const i_t> it_) -> bool {

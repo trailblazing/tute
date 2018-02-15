@@ -152,5 +152,6 @@
         <file>resource/pic/edit_switch.svg</file>
         <file>resource/standardconfig/any/custom_browser_tabbar_style.css</file>
         <file>resource/standardconfig/any/custom_hidable_tab_style.css</file>
+        <file>resource/pic/screenshot.png</file>
     </qresource>
 </RCC>

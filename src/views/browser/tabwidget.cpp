@@ -1157,7 +1157,7 @@ namespace web {
                             auto _url = QUrl(_target_item->field<url_key>()); //
                             _target_item = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(_target_item->field<url_key>(),
                                 [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
-                                    return TreeIndex::url_require_item_from_tree(real_target_url_, //real_url_t<url_value>::instance(_target_item->field<url_key>()),
+				    return TreeIndex::item_require_from_tree_by_url(real_target_url_, //real_url_t<url_value>::instance(_target_item->field<url_key>()),
                                         std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
                                             return url_equal(detail::to_string(it_->field<home_key>()), _url.toString().toStdString()) || url_equal(detail::to_string(it_->field<url_key>()), _url.toString().toStdString());
                                         });
@@ -1407,7 +1407,7 @@ namespace web {
             // assert(lc == c);
             Q_ASSERT(_lineedit_stack->count() == count());
 
-            qDebug() << "_lineedits->count()\t" << _lineedit_stack->count() << "\tcount()\n";
+	    qDebug() << "_lineedits->count()\t" << _lineedit_stack->count() << "\tcount()\t" << count()<<"\n";
 
             WebView* view_previous = this->webView(_lineedit_stack->currentIndex());
             if (view_previous && view_current != view_previous) {
@@ -2592,7 +2592,7 @@ namespace web {
                         << "! parent");
                 auto it = real_url_t<url_value>::instance<boost::intrusive_ptr<i_t>>(real_url,
                     [&](boost::intrusive_ptr<real_url_t<url_value>> real_target_url_) -> boost::intrusive_ptr<i_t> {
-                        return TreeIndex::url_require_item_from_tree(
+			return TreeIndex::item_require_from_tree_by_url(
                             real_target_url_, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const i_t> it_) -> bool {
                                 return url_equal(url_value(detail::to_qstring(it_->field<home_key>())), real_url) || url_equal(it_->field<url_key>(), real_url);
                             }); // instance([&] {return tree_view->source_model();},

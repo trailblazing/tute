@@ -55,7 +55,7 @@ W_OBJECT_IMPL(rs_t)
 
 rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager_)
 #ifdef USE_SIGNAL_CLOSE
-    : QWidget()    //
+    : QWidget() //
     , sd::renter() //sd::renter<rs_t>()
 #else
     : QWidget(gl_paras->vtab_record()) //
@@ -123,7 +123,6 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
     //            new rctrl_t(blogger_, tabmanager_, this);
     //#endif //USE_SIGNAL_CLOSE
 
-
     [&] {
         auto _vtab_record = gl_paras->vtab_record();
         bool found = false;
@@ -139,7 +138,7 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
         if (!found) {
             _vtab_record->setUpdatesEnabled(false);
             auto index = _vtab_record->addTab(this, QIcon(":/resource/pic/three_leaves_clover.svg"), truncate(_blogger->topic().toStdString(), 7).c_str()); // QString("Browser ") +
-                                                                                                                                                            // QString::number(vtab_record->count())
+	    // QString::number(vtab_record->count())
             (void)index;
             // bool found = false;
             // for(int i = 0; i < _vtab_record->count(); i++){
@@ -360,9 +359,7 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
 ////    }
 ///
 
-
 //	connect(this, &rs_t::close_request, gl_paras->vtab_record(), &::HidableTab::on_child_self_close_requested);
-
 
 //	connect(gl_paras->vtab_record(), &::HidableTab::currentChanged, [](int index) {
 //		auto _vtab_record = gl_paras->vtab_record();
@@ -489,7 +486,6 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
         //		self_close_request.connect(std::bind(&web::Browser::self_close_request, _browser)); //should via blogger
         connect(this, &rs_t::isHidden, _browser, &web::Browser::hide);
 
-
 #ifdef USE_SIGNAL_CLOSE
 //		destroy_transfer(_browser->destroy_trigger_from_others());
 #endif //USE_SIGNAL_CLOSE
@@ -500,16 +496,14 @@ rs_t::rs_t(Blogger* blogger_, web::Browser* browser_, web::TabWidget* tabmanager
         if (r != this) { //&& !this->_destroyed_request_sent
             close_trigger_from_others()(r);
             //			this->_destroyed_request_sent =
-            this->close();
+	    this->deleteLater(); //close();//2017-09-18
             assert(this->_destroy_request_sent == true);
             //			delete this;
         }
     }); //std::make_shared<sd::method<sd::meta_info<void>>>("", &rs_t::close, &_closed, this) //close_requested.connect(std::bind(&rs_t::close, this));
-        //	if (_blogger) close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &Blogger::close_requested, _blogger, static_cast<sd::renter* const>(this))); //close_requested.connect(_blogger->close_requested);                 //(std::bind(&Blogger::self_close_request, _blogger));
-
+//	if (_blogger) close_connect(std::make_shared<sd::method<sd::meta_info<void>>>("", &Blogger::close_requested, _blogger, static_cast<sd::renter* const>(this))); //close_requested.connect(_blogger->close_requested);                 //(std::bind(&Blogger::self_close_request, _blogger));
 
 #endif //USE_SIGNAL_CLOSE
-
 
     //	}
 }
@@ -559,8 +553,8 @@ rs_t::~rs_t()
         //			 );
     }
 #endif //USE_SIGNAL_CLOSE
-       //	delete _rctrl;
-       //	_vertical_scrollarea->deleteLater();
+    //	delete _rctrl;
+    //	_vertical_scrollarea->deleteLater();
 }
 
 // void rs_t::save_in_new_branch(bool checked){
@@ -817,7 +811,8 @@ void rs_t::setup_actions(void)
     ////////	    emit
     ///_tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
     // });
-    if (_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen")) emit gl_paras->h_record_splitter()->splitterMoved(gl_paras->h_record_splitter()->sizes()[0], 1);
+    if (_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen"))
+	emit gl_paras->h_record_splitter()->splitterMoved(gl_paras->h_record_splitter()->sizes()[0], 1);
 // emit _tree_hide->triggered();
 
 //// _save_in_new_branch = new QAction(tr("Save in new branch"), this);
@@ -909,11 +904,11 @@ void rs_t::setup_actions(void)
     connect(_pin, &QAction::triggered, [&](bool checked = false) mutable {
         Q_UNUSED(checked)
         // Обновление инфополей в области редактирования записи
-        MetaEditor* metaeditor =
-            globalparameters
-                .meta_editor(); // MetaEditor *metaEditor =
-                                // find_object<MetaEditor>(meta_editor_singleton_name);
-        if (metaeditor) metaeditor->switch_pin();
+	MetaEditor* metaeditor = globalparameters
+				     .meta_editor(); // MetaEditor *metaEditor =
+	// find_object<MetaEditor>(meta_editor_singleton_name);
+	if (metaeditor)
+	    metaeditor->switch_pin();
     });
 #endif
 
@@ -927,7 +922,7 @@ void rs_t::setup_actions(void)
     connect(_addnew_to_end, &QAction::triggered, _record_controller // _tab_widget
         ,
         std::bind(&rctl_t::addnew_blank, _record_controller, add_new_record_to_end) // &RecordController::addnew_to_end
-                                                                                    // // &web::TabWidget::addnew_to_end
+	// // &web::TabWidget::addnew_to_end
         );
 
     // Добавление записи до
@@ -936,7 +931,7 @@ void rs_t::setup_actions(void)
     connect(_addnew_before, &QAction::triggered, _record_controller // _tab_widget
         ,
         std::bind(&rctl_t::addnew_blank, _record_controller, add_new_record_before) // &RecordController::addnew_before
-                                                                                    // // &web::TabWidget::addnew_before
+	// // &web::TabWidget::addnew_before
         );
 
     // Добавление записи после
@@ -945,7 +940,7 @@ void rs_t::setup_actions(void)
     connect(_addnew_after, &QAction::triggered, _record_controller // _tab_widget
         ,
         std::bind(&rctl_t::addnew_blank, _record_controller, add_new_record_after) // &RecordController::addnew_after
-                                                                                   // // &web::TabWidget::addnew_after
+	// // &web::TabWidget::addnew_after
         );
 #endif
 
@@ -954,7 +949,8 @@ void rs_t::setup_actions(void)
     // tags...)"), this);
     _edit_field->setStatusTip(tr("Edit note properties")); // (pin, name, author, url, tags...)
     _edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
-    if (_rctrl) connect(_edit_field, &QAction::triggered, _rctrl->view(), &rv_t::edit_field_context); //_rctrl, &rctrl_t::on_edit_fieldcontext); // _tab_widget
+    if (_rctrl)
+	connect(_edit_field, &QAction::triggered, _rctrl->view(), &rv_t::edit_field_context); //_rctrl, &rctrl_t::on_edit_fieldcontext); // _tab_widget
 // &web::TabWidget::on_edit_fieldcontext
 
 #ifdef USE_BUTTON_CLOSE
@@ -983,13 +979,14 @@ void rs_t::setup_actions(void)
                             auto p = v->page();
                             if (p) {
                                 auto b = p->binder();
-                                if (b) r = b->host();
+				if (b)
+				    r = b->host();
                             }
                         }
                     }
                     return r;
                 }();
-            _tree_view->delete_permanent(_current_model, QList<boost::intrusive_ptr<i_t>>() << _item, &tkm_t::delete_permanent, "cut", false);
+	    _tree_view->delete_permanent(_current_model, QList<boost::intrusive_ptr<i_t> >() << _item, &tkm_t::delete_permanent, "cut", false);
         });
 
 #ifdef USE_WITHOUT_REGISTERED_TREEITEM
@@ -1042,12 +1039,13 @@ void rs_t::setup_actions(void)
     // _settings = new QAction(tr("&Settings"), this);
     _settings->setStatusTip(tr("Table view settins"));
     _settings->setIcon(QIcon(":/resource/pic/cogwheel.svg"));
-    if (_rctrl) connect(_settings, &QAction::triggered, _rctrl
+    if (_rctrl)
+	connect(_settings, &QAction::triggered, _rctrl
 #ifdef USE_SIGNAL_CLOSE
-                                                            .get()
+						    .get()
 #endif
-                                                            ,
-        &rctrl_t::settings); // &web::TabWidget::settings
+						    ,
+	    &rctrl_t::settings); // &web::TabWidget::settings
     //	assert(_record_controller);
     // Перемещение записи вверх
     // _action_move_up = new QAction(tr("&Move Up"), this);
@@ -1090,8 +1088,7 @@ void rs_t::setup_actions(void)
 
             // Выясняется ссылка на таблицу конечных данных
             // auto item = _source_model->browser_pages();
-            pos_proxy target =
-                static_cast<int>(pos_proxy_) > 0 ? pos_proxy(static_cast<int>(pos_proxy_) - 1) : pos_proxy(0);
+	    pos_proxy target = static_cast<int>(pos_proxy_) > 0 ? pos_proxy(static_cast<int>(pos_proxy_) - 1) : pos_proxy(0);
             auto pos_source_ = _rctrl->index<pos_source>(target);
             // Перемещение текущей записи вверх
             _rctrl->source_model()->move(_rctrl->index<pos_source>(pos_proxy_), pos_source_);
@@ -1120,8 +1117,7 @@ void rs_t::setup_actions(void)
 
             // Выясняется ссылка на таблицу конечных данных
             // auto item = _source_model->browser_pages();
-            pos_proxy target =
-                static_cast<int>(pos_proxy_) < _rctrl->tab_widget()->count() - 1 ? pos_proxy(static_cast<int>(pos_proxy_) + 1) : pos_proxy(_rctrl->tab_widget()->count() - 1);
+	    pos_proxy target = static_cast<int>(pos_proxy_) < _rctrl->tab_widget()->count() - 1 ? pos_proxy(static_cast<int>(pos_proxy_) + 1) : pos_proxy(_rctrl->tab_widget()->count() - 1);
             auto pos_source_ = _rctrl->index<pos_source>(target);
             // Перемещение текущей записи вниз
             _rctrl->source_model()->move(_rctrl->index<pos_source>(pos_proxy_), pos_source_);
@@ -1195,12 +1191,13 @@ void rs_t::setup_actions(void)
     // _print = new QAction(tr("Print table"), this);
     _print->setStatusTip(tr("Print current notes table"));
     _print->setIcon(QIcon(":/resource/pic/drops.svg")); // actionPrint->setIcon(QIcon(":/resource/pic/print_record_table.svg"));
-    if (_rctrl) connect(_print, &QAction::triggered, _rctrl
+    if (_rctrl)
+	connect(_print, &QAction::triggered, _rctrl
 #ifdef USE_SIGNAL_CLOSE
-                                                         .get()
+						 .get()
 #endif
-                                                         ,
-        &rctrl_t::on_print_click);
+						 ,
+	    &rctrl_t::on_print_click);
     // _tab_widget
     // &web::TabWidget::on_print_click
 
@@ -1276,7 +1273,8 @@ void rs_t::setup_ui(void)
     // int width = recordTableController->getView()->contentsRect().width();
     // treePathLabel->setMaximumWidth(contentsRect().width());
     // treePathLabel->setMinimumWidth(contentsRect().width());
-    if (appconfig->interface_mode() == "desktop") _treepathlabel->hide();
+    if (appconfig->interface_mode() == "desktop")
+	_treepathlabel->hide();
     // _vertical_scrollarea = new VerticalScrollArea(
     // std::make_shared<sd::_interface<sd::meta_info<void >, void, QResizeEvent
     // *>>("", &RecordView::resizeEvent, _record_controller->view())
@@ -1362,7 +1360,6 @@ void rs_t::assembly(void)
     _vertical_scrollarea_layout->setMargin(0);
     _vertical_scrollarea_layout->setContentsMargins(0, 0, 0, 0);
 
-
     _vertical_scrollarea_layout->addWidget(_rctrl->view()->vertical_scrollarea());
     // _verticalscrollarea->viewport()->installEventFilter(rtview);
 
@@ -1394,7 +1391,8 @@ void rs_t::resizeEvent(QResizeEvent* e)
 {
     if (_rctrl) {
         auto v = _rctrl->view();
-        if (v) v->resizeEvent(e);
+	if (v)
+	    v->resizeEvent(e);
     }
     QWidget::resizeEvent(e);
 
@@ -1542,7 +1540,8 @@ void rs_t::tools_update()
             if (has_selection // item_selection_model->hasSelection()
                 // && 1 == selected_rows
                 // // (item_selection_model->selectedRows()).size() == 1
-                ) _edit_field->setEnabled(true);
+		)
+		_edit_field->setEnabled(true);
             // Удаление записи
             // Пункт активен только если запись (или записи) выбраны в списке
             if (has_selection) { // item_selection_model->hasSelection()
@@ -1572,15 +1571,15 @@ void rs_t::tools_update()
             // или не выбрано ни одной строки (тогда добавляется в конец списка)
             // или записей вообще нет
             // И проверяется, содержит ли буфер обмена данные нужного формата
-            if ((has_selection &&
-                    1 == selected_rows) // (item_selection_model->hasSelection() &&
-                                        // (item_selection_model->selectedRows()).size() ==
-                                        // 1)
-                || !has_selection       // item_selection_model->hasSelection() == false
+	    if ((has_selection && 1 == selected_rows) // (item_selection_model->hasSelection() &&
+		// (item_selection_model->selectedRows()).size() ==
+		// 1)
+		|| !has_selection // item_selection_model->hasSelection() == false
                 || 0 == _view->model()->rowCount()) {
                 const QMimeData* mime_data = QApplication::clipboard()->mimeData();
                 if (mime_data != nullptr)
-                    if (mime_data->hasFormat(gl_paras->application_name() + "/records")) _paste->setEnabled(true);
+		    if (mime_data->hasFormat(gl_paras->application_name() + "/records"))
+			_paste->setEnabled(true);
             }
 #endif
             // Перемещение записи вверх
@@ -1603,7 +1602,8 @@ void rs_t::tools_update()
                 // && 1 == selected_rows
                 // // (item_selection_model->selectedRows()).size() == 1
                 && false == sorting_enabled // view->isSortingEnabled() == false
-                && _view->is_selected_set_to_bottom() == false) _action_move_dn->setEnabled(true);
+		&& _view->is_selected_set_to_bottom() == false)
+		_action_move_dn->setEnabled(true);
             //			// Обновляется состояние области редактирования текста
             //			if (has_selection // item_selection_model->hasSelection()
             //			    && _rctrl->row_count() > 0) {
@@ -1747,7 +1747,6 @@ Blogger* rs_t::blogger()
 //	//	self_close_request();
 //	close();
 //}
-
 
 void rs_t::on_topic_changed(const QString& original_topic_, const QString& new_topic_, bool append_mode)
 {
