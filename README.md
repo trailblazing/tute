@@ -66,7 +66,7 @@ Let's say the directory of your current project is named "working":
 ```
         /opt
 ```
-But it's not a must. Current support Qt version: 5.9.0.
+But it's not a must. Current support Qt version: 5.10.0.
 
 * Environment in ~/.profile (~/.bash_profile or ~/.bashrc)for command line build and installation
 ```
@@ -101,6 +101,13 @@ Set PATH to /path-to-qt-installation/bin:/path-to-qt-installation/plugins/platfo
 Set QT5DIR to /path-to-qt-installation
 Set QT5INC to /path-to-qt-installation/include
 Set QT5LIB to /path-to-qt-installation/plugins/platforms:/path-to-qt-installation/lib
+
+```
+* If you want to switch qt lib version manually, I usually change the environment variable like this:
+```
+export PATH=/path-to-qt-installation/bin:/path-to-qt-installation/plugins/platforms:/path-to-qt-installation/lib:/path-to-qt-installation/include:/path-to-compiler-installation/bin:/path-to-compiler-installation/include:/path-to-compiler-installation/lib:$PATH
+env |grep QT
+then export corresponding variables to current version.
 
 ```
 ####1.4 Clone the repo to your workbench

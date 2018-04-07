@@ -391,7 +391,7 @@ WebPage::WebPage(Profile* profile,
 	    if (header_title == title_field_description) {
 		title_column = i;
 		break;
-            }
+	    }
 	}
 	auto title_index = source_model()->index(static_cast<QModelIndex>(_rctrl->index<index_source>(host_)).row(), title_column);
 	auto record_view_title = static_cast<RecordModel*>(source_model())->data(title_index, Qt::DisplayRole).toString();
@@ -410,7 +410,7 @@ WebPage::WebPage(Profile* profile,
 		|| (!record_view_title.contains(title_))) {
 		record_info_update(url(), title_);
 		// record_view_synchronize(_binder->host());
-	    }
+            }
 	    // }
 
 	    if (_blogger) {
@@ -591,7 +591,7 @@ void WebPage::record_info_update(const QUrl& url, const QString& title)
 		_blogger->home(host_->field<home_type>());
             }
 #endif // USE_EDITOR_WRAP
-	}
+        }
 	if (data_changed) { // && is_current, without is_current will lead current
 	    // view lost editing focus
 	    //				RecordIndex::select_as_current(_binder->host());
@@ -600,7 +600,7 @@ void WebPage::record_info_update(const QUrl& url, const QString& title)
 	    };
 	    source_model()->emit_datachanged_signal(source_model()->index(_binder->host()));
 	    _rctrl->on_recordtable_configchange();
-        }
+	}
 	// move to connect();
 	//#ifdef USE_EDITOR_WRAP
 	//			if(_blogger->item() != _binder->host() && is_current)
@@ -925,7 +925,9 @@ WebView* WebPage::activate(bool force_reload)
 
 				target_->add_rating();
 				// assert(_lineedits);
-				_tab_widget->toolbarSearch(_tab_widget->webViewIndex(_view))->synchronize_text(url().toString()); //_view->_load_finished_signal(url().toString());
+				auto ToolbarSearch_ = _tab_widget->toolbarSearch(_tab_widget->webViewIndex(_view));
+				if (ToolbarSearch_)
+				    ToolbarSearch_->synchronize_text(url().toString()); //_view->_load_finished_signal(url().toString());
 				//                                    // if(_lineedits) {
 				//                                    QLineEdit* line_edit = _view->toolbarsearch()->lineEdit(); // _tab_widget->currentLineEdit(); // qobject_cast<QLineEdit
 				//                                                                                               // *>(_lineedits->currentWidget());
