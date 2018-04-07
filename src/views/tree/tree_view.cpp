@@ -3489,8 +3489,10 @@ tv_t::move(boost::intrusive_ptr<TreeIndex> _treeindex, // std::function<KnowMode
                 // Вставка новых данных в модель дерева записей
 		result = TreeLevel::instance(TreeIndex::item_require_treeindex(current_model, host), _source_item)->move();
                 assert(result);
-		assert(result == _source_item);
-                assert(result != _know_model_board->root_item());
+		assert( //result == _source_item
+		    (_source_item == result) || _substitute_condition(
+						    result->linker()));
+		assert(result != _know_model_board->root_item());
                 // Установка курсора на только что созданную позицию
                 // QModelIndex
                 assert(current_model()->item([=](boost::intrusive_ptr<const i_t> t) {
