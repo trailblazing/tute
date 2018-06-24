@@ -12,22 +12,21 @@
 
 //#include "models/tree/tree_item.dec"
 
-#include "main.h"
-#include "tree_item.h"
-#include "tree_know_model.h"
-#include "tree_model.h"
-#include "tree_xml.h"
-
 #include "libraries/clipboard_branch.h"
 #include "libraries/clipboard_records.h"
 #include "libraries/crypt/password.h"
 #include "libraries/disk_helper.h"
 #include "libraries/global_parameters.h"
 #include "libraries/trash_monitoring.h"
+#include "main.h"
 #include "models/app_config/app_config.h"
 #include "models/record_table/linker.hxx"
 #include "models/tree/binder.hxx"
 #include "models/tree/tree_index.hxx"
+#include "tree_item.h"
+#include "tree_know_model.h"
+#include "tree_model.h"
+#include "tree_xml.h"
 #include "views/app_config/app_config_dialog.h"
 #include "views/browser/browser.h"
 #include "views/browser/docker.h"
@@ -164,7 +163,7 @@ std::shared_ptr<XmlTree> tkm_t::init_from_xml(bool force_recover)
     auto target_file = std::make_shared<QFileInfo>(_xml_file_path);
 
     bool succeeded = false;
-    if (!QFile::exists(_xml_file_path) || 0 >= filesize(_xml_file_path.toStdString().c_str()) || force_recover) {
+    if (!QFile::exists(_xml_file_path) || 0 >= filesize_non_qt(_xml_file_path.toStdString().c_str()) || force_recover) {
         //		bool existance = QFile::exists(_xml_file_path);
 
         // AppConfigDialog appconfigdialog(nullptr	//
@@ -183,6 +182,9 @@ std::shared_ptr<XmlTree> tkm_t::init_from_xml(bool force_recover)
             appconfigdialog.show();
             // _file_name =;
             _xml_file_path = gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + gl_para::_index_xml_file_name;
+            if (!QFile::exists(_xml_file_path)) {
+                DiskHelper::qt_resource_recover(std::make_shared<QFileInfo>(_xml_file_path));
+            }
         }
     }
     if (_xml_tree->dom_model()->isNull() || force_recover) {
@@ -574,29 +576,29 @@ void tkm_t::save()
 {
     auto check_integrity = [&](const QString& fake_path) {
         bool result = false;
-        std::mutex m;
-        if (m.try_lock()) {
-            //            std::lock_guard<std::mutex> lock(m);
-            QFile xmlFile(fake_path); //_xml_file_path
-            if (!xmlFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                qDebug() << "Cant open file " << _xml_file_path << " for read.";
-                exit(1);
-            }
-            QDomDocument doc(QString(gl_para::_program_instance_name) + "doc");
-
-            QString errorStr;
-            int errorLine;
-            int errorColumn;
-            if (!doc.setContent(&xmlFile, true, &errorStr, &errorLine, &errorColumn)) {
-                QMessageBox::information(
-                    0, tr("Error converting to DOM"), tr("Parse error at line %1, column %2:\n%3\nIt\'s a good time for you to correct it manually when leave the warning open :)").arg(errorLine).arg(errorColumn).arg(errorStr));
-
-                //		result = false;
-                exit(1);
-            } else
-                result = true;
-            m.unlock();
+        //        std::mutex m;
+        //        if (m.try_lock()) {
+        //            std::lock_guard<std::mutex> lock(m);
+        QFile xmlFile(fake_path); //_xml_file_path
+        if (!xmlFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "Cant open file " << _xml_file_path << " for read.";
+            exit(1);
         }
+        QDomDocument doc(QString(gl_para::_program_instance_name) + "doc");
+
+        QString errorStr;
+        int errorLine;
+        int errorColumn;
+        if (!doc.setContent(&xmlFile, true, &errorStr, &errorLine, &errorColumn)) {
+            QMessageBox::information(
+                0, tr("Error converting to DOM"), tr("Parse error at line %1, column %2:\n%3\nIt\'s a good time for you to correct it manually when leave the warning open :)").arg(errorLine).arg(errorColumn).arg(errorStr));
+
+            //		result = false;
+            exit(1);
+        } else
+            result = true;
+        //            m.unlock();
+        //        }
         return result;
     };
 
@@ -642,11 +644,11 @@ void tkm_t::save()
             if (doc.hasChildNodes()) {
                 auto write_to = [&](const QString& file_name_, bool backup_ = true) {
                     std::mutex m;
-//                    std::lock_guard<std::mutex> lock(m);
+                    //                    std::lock_guard<std::mutex> lock(m);
                     // аспечатка на экран, что будет выводиться в XML файл
                     // qDebug() << "Doc document for write " << doc.toString();
                     // Перенос текущего файла дерева в корзину
-                    if (0 < filesize(file_name_.toStdString().c_str()) && backup_)
+                    if (0 < filesize_non_qt(file_name_.toStdString().c_str()) && backup_)
                         DiskHelper::backup(file_name_);
                     // Запись DOM данных в файл
                     QSaveFile xmlFile(file_name_);
@@ -852,7 +854,7 @@ tkm_t::new_child(boost::intrusive_ptr<TreeIndex> _modelindex, QString id, QStrin
     beginInsertRows(index_parent, pos // parent->count_direct()
         ,
         pos // parent->count_direct()
-        );
+    );
 
     full_fields_map data;
     boost::fusion::at_key<id_key>(data) = id;
@@ -1111,7 +1113,7 @@ tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree_level, int mode)
             beginInsertRows(_index_new_parent, pos, // parent->count_direct()
                 pos                                 // (pos + 1 < parent->count_direct()) ? pos + 1 :
                 // parent->count_direct()
-                );
+            );
 
             _to_be_operated = move_impl(pos, mode); // source_item->parent(host, pos, mode)->host();
                                                     // // add_new_branch(parent, id, name);  //
@@ -1465,7 +1467,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::lock_child_add(
 // Перемещение ветки вверх или вниз
 QModelIndex tkm_t::move_up_dn(const QModelIndex& _index,
     int (i_t::*_move)() // int direction
-    )
+)
 {
     QModelIndex _new_index;
     // Получение ссылки на Item элемент по QModelIndex
@@ -1906,7 +1908,7 @@ tkm_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge, const view_delete_perm
             _index_target,             // .parent()
             0,                         // target->count_direct() - 1 // target->sibling_order()    // 0
             result->count_direct() - 1 // target->sibling_order()    // target->count_direct() - 1
-            );
+        );
 
         result = result->merge(source); // not a pure insertion, move removerows to
         // below: _view_delete_permantent
@@ -2447,7 +2449,7 @@ void TreeModelKnow::record_to_item()
         boost::intrusive_ptr<TreeItem>)> // , boost::intrusive_ptr<TreeItem>
         record_to_item_recurse = [&](boost::intrusive_ptr<TreeItem> item
                                      // , boost::intrusive_ptr<TreeItem> parent
-                                     ) {
+                                 ) {
             // if(!is_item_id_exists(item->id())) {
             // add_child(item, parent);
             // }

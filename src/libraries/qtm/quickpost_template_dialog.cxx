@@ -32,6 +32,7 @@
 #include <QTextEdit>
 #include <QWhatsThis>
 #include <QWidget>
+#include <QAction>
 
 #include "quickpost_template_dialog.h"
 #include "ui_QuickpostTemplateForm.h"
@@ -266,11 +267,11 @@ void QuickpostTemplateDialog::doInsertTabIntoTemplate() {
 
 void QuickpostTemplateDialog::setDirty() {
 	dirty = true;
-	disconnect(leName, 0, this, SLOT(setDirty()));
-	disconnect(teTemplateText, 0, this, SLOT(setDirty()));
-	disconnect(teAssocHosts, 0, this, SLOT(setDirty()));
-	disconnect(cbDefaultPublishStatus, 0, this, SLOT(setDirty()));
-	disconnect(chCopyTitle, 0, this, SLOT(setDirty()));
+    disconnect(leName, nullptr, this, SLOT(setDirty()));
+    disconnect(teTemplateText, nullptr, this, SLOT(setDirty()));
+    disconnect(teAssocHosts, nullptr, this, SLOT(setDirty()));
+    disconnect(cbDefaultPublishStatus, nullptr, this, SLOT(setDirty()));
+    disconnect(chCopyTitle, nullptr, this, SLOT(setDirty()));
 	// disconnect( this, SLOT( setDirty() ) );
 }
 
@@ -279,11 +280,11 @@ void QuickpostTemplateDialog::setClean() {
 	dirty = false;
 
 	// disconnect( this, SLOT( setDirty() ) ); // to prevent duplicates
-	disconnect(leName, 0, this, SLOT(setDirty()));
-	disconnect(teTemplateText, 0, this, SLOT(setDirty()));
-	disconnect(teAssocHosts, 0, this, SLOT(setDirty()));
-	disconnect(cbDefaultPublishStatus, 0, this, SLOT(setDirty()));
-	disconnect(chCopyTitle, 0, this, SLOT(setDirty()));
+    disconnect(leName, nullptr, this, SLOT(setDirty()));
+    disconnect(teTemplateText, nullptr, this, SLOT(setDirty()));
+    disconnect(teAssocHosts, nullptr, this, SLOT(setDirty()));
+    disconnect(cbDefaultPublishStatus, nullptr, this, SLOT(setDirty()));
+    disconnect(chCopyTitle, nullptr, this, SLOT(setDirty()));
 
 	connect(leName, SIGNAL(textChanged(const QString &)), this, SLOT(setDirty()));
 	connect(teTemplateText, SIGNAL(textChanged()), this, SLOT(setDirty()));

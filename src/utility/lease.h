@@ -177,7 +177,7 @@ namespace sd {
     struct intrusive_ptr;
 
     //	template <typename real_renter>
-    class renter : public boost::intrusive_ref_counter<renter, boost::thread_safe_counter> //boost::intrusive_ref_counter<real_renter, boost::thread_safe_counter>
+    class renter : public boost::intrusive_ref_counter<renter, boost::thread_safe_counter>
     {
     public:
         typedef typename boost::signals2::signal<void(renter* const)> signal_type;

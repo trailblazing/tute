@@ -992,7 +992,7 @@ int main(int argc, char** argv)
 					  // application.exec();
 }
 
-std::ifstream::pos_type filesize(const char* filename)
+std::ifstream::pos_type filesize_non_qt(const char* filename)
 {
 	std::ifstream in(
 	    filename, std::ios::ate | std::ios::binary); // std::ifstream in(filename,
@@ -1001,14 +1001,14 @@ std::ifstream::pos_type filesize(const char* filename)
 	return in.tellg();
 }
 
-std::streampos file_size(const char* file_path)
-{
-	std::ifstream file(file_path, std::ios::ate | std::ios::binary);
-	std::streampos fsize = file.tellg();
-	// file.close();
+//std::streampos file_size_non_qt(const char* file_path)
+//{
+//	std::ifstream file(file_path, std::ios::ate | std::ios::binary);
+//	std::streampos fsize = file.tellg();
+//	// file.close();
 
-	return fsize;
-}
+//	return fsize;
+//}
 
 // similar to QString::leftJustified
 std::string truncate(std::string str, size_t width, bool show_ellipsis)
