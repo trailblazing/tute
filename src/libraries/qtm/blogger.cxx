@@ -232,7 +232,7 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
 	    if (!QDir(_current_topic_full_folder_name).exists())
 		    if (!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
 	    auto conf_file_info = std::make_shared<QFileInfo>(_current_topic_full_config_name);
-	    conf_file_info = DiskHelper::recover_ini_file(conf_file_info, true);
+	    conf_file_info = DiskHelper::qt_resource_recover(conf_file_info, true);
 	    if ((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(_current_topic_full_config_name) & (QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_full_config_name, QFile::ReadUser | QFile::WriteUser);
 	    return std::make_shared<QSettings>(_current_topic_full_config_name, QSettings::IniFormat);
     }())

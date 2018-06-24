@@ -36,7 +36,7 @@ TrashMonitoring::recover_from_trash(std::shared_ptr<QFileInfo> target_file, bool
 		// unsigned int _file_size = 0;
 		// QFile		file_from(file_name_fullpath);
 		// if(file_from.open(QIODevice::ReadOnly)){
-		auto _file_size = filesize(
+		auto _file_size = filesize_non_qt(
 		    target_file_full_name.toStdString()
 		        .c_str());  // file_from.size();		// when file does open.
 		// file_from.close();
@@ -103,7 +103,7 @@ TrashMonitoring::recover_from_trash(std::shared_ptr<QFileInfo> target_file, bool
 		auto s = gl_paras->root_path() + "/" +
 		    QDir(appconfig->trash_dir()).dirName() + "/" + file_data->_name;
 		if (file_data)
-			result = DiskHelper::copy_file_force(s, target_file_full_name);
+            result = DiskHelper::file_recover(s, target_file_full_name);
 		// result = target_file;
 		// }
 	}
@@ -137,7 +137,7 @@ void TrashMonitoring::init(QString _trash_path) {
 		QString _file_name = fileInfoList.at(i).fileName();
 		// unsigned int	_file_time	=
 		// fileInfoList.at(i).created().toTime_t();
-		auto _file_size = filesize(
+		auto _file_size = filesize_non_qt(
 		    _file_name.toStdString().c_str());  // fileInfoList.at(i).size();
 		// Директории с именами "." и ".." обрабатывать не нужно
 		if (_file_name == "." || _file_name == "..")
@@ -167,7 +167,7 @@ void TrashMonitoring::add_file(QString _file_name) {
 	// Выясняется размер файла
 	// QFile			currentFile(_path + "/" + _file_name);
 	auto _file_size =
-	    filesize(QString(_path + "/" + _file_name).toStdString().c_str());
+	    filesize_non_qt(QString(_path + "/" + _file_name).toStdString().c_str());
 	;  // currentFile.size();
 
 	// Увеличивается подсчитываемый размер директории
@@ -292,7 +292,7 @@ TrashMonitoring::FileData::FileData(TrashMonitoring *tm, const QString &name_)
 		    // QFile file_from(_trashmonitoring->_path + "/" + _name);
 		    // if(file_from.open(QIODevice::ReadOnly)){
 		    // _file_size = file_from.size();	// when file does open.
-		    _file_size = filesize(QString(_trashmonitoring->_path + "/" + _name).toStdString().c_str());
+		    _file_size = filesize_non_qt(QString(_trashmonitoring->_path + "/" + _name).toStdString().c_str());
 		    // file_from.close();
 		    // }
 	    }
@@ -304,7 +304,7 @@ std::ifstream::pos_type TrashMonitoring::FileData::size() const {
 	// QFile			currentFile(_trashmonitoring->_path + "/" +
 	// _name);
 	// unsigned int	_file_size = currentFile.size();
-	return const_cast<FileData *>(this)->_size = filesize(
+	return const_cast<FileData *>(this)->_size = filesize_non_qt(
 	           QString(_trashmonitoring->_path + "/" + _name)
 	               .toStdString()
 	               .c_str());  // const_cast<FileData *>(this)->_size = _file_size;

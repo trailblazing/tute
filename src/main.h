@@ -318,8 +318,8 @@ extern bool url_equal(const url_value& u0, const url_value& u1);
 // boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record>
 // record, web::WebPage *page);
 
-extern std::ifstream::pos_type filesize(const char* filename);
-extern std::streampos file_size(const char* file_path);
+extern std::ifstream::pos_type filesize_non_qt(const char* filename);
+//extern std::streampos file_size_non_qt(const char* file_path);
 extern std::string truncate(std::string str, size_t width, bool show_ellipsis = true);
 extern auto to_be_url(const url_value& url_) -> QUrl;
 extern auto to_be_url(const QUrl& url_) -> QUrl;

@@ -1,5 +1,5 @@
-#ifndef __GLOBALPARAMETERS_H__
-#define __GLOBALPARAMETERS_H__
+#ifndef GLOBALPARAMETERS_H__
+#define GLOBALPARAMETERS_H__
 
 
 #include <functional>
@@ -46,7 +46,7 @@ class rv_t;
 
 #include "utility/lease.h"
 
-
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>
@@ -97,7 +97,7 @@ class gl_para : public QObject {
 #endif
 
     public:
-	gl_para(QObject* pobj = 0);
+    gl_para(QObject* pobj = nullptr);
 	virtual ~gl_para();
 
 	// void main_program_full_file(QString file);
@@ -295,4 +295,4 @@ class gl_para : public QObject {
 	friend class AppConfigPageMain;
 };
 
-#endif /* __GLOBALPARAMETERS_H__ */
+#endif /* GLOBALPARAMETERS_H__ */
