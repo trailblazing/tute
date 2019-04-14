@@ -47,42 +47,42 @@ extern const std::string program_title_string;
 W_OBJECT_IMPL(GlobalParameters)
 #endif
 
-
-constexpr char gl_para::_program_root_dir_name[];      //  = "rootdir";
-constexpr char gl_para::_program_instance_name[];      //  = "tute"; // QCoreApplication::applicationName();// won't work // constexpr const char* gl_para::_program_instance_name;
-constexpr char gl_para::_index_xml_file_name[];        //  = "index.xml";
-constexpr char gl_para::_mode_filename[];              //  = "mode.ini";              // constexpr char gl_para::_mode_filename[]; //	= "mode.ini";
-constexpr char gl_para::_conf_filename[];              //  = "conf.ini";              // constexpr char gl_para::_conf_filename[]; //	= "conf.ini";
-constexpr char gl_para::_browser_conf_filename[];      //  = "browser.conf";  // constexpr char gl_para::_browser_conf_filename[]; //  = "browser.conf";
-constexpr char gl_para::_dock_conf_filename[];         //  = "dock.ini";         // constexpr char gl_para::_dock_conf_filename[]; //  = "dock.ini";
+constexpr char gl_para::_program_root_dir_name[]; //  = "rootdir";
+constexpr char gl_para::_program_instance_name[]; //  = "tute"; // QCoreApplication::applicationName();// won't work // constexpr const char* gl_para::_program_instance_name;
+constexpr char gl_para::_index_xml_file_name[]; //  = "index.xml";
+constexpr char gl_para::_mode_filename[]; //  = "mode.ini";              // constexpr char gl_para::_mode_filename[]; //	= "mode.ini";
+constexpr char gl_para::_conf_filename[]; //  = "conf.ini";              // constexpr char gl_para::_conf_filename[]; //	= "conf.ini";
+constexpr char gl_para::_browser_conf_filename[]; //  = "browser.conf";  // constexpr char gl_para::_browser_conf_filename[]; //  = "browser.conf";
+constexpr char gl_para::_dock_conf_filename[]; //  = "dock.ini";         // constexpr char gl_para::_dock_conf_filename[]; //  = "dock.ini";
 constexpr char gl_para::_dock_settings_section_name[]; //  = "system";   // constexpr char gl_para::_dock_settings_section_name[]; //  = "system";
-constexpr char gl_para::_editor_conf_filename[];       //  = "editorconf.ini"; // constexpr char gl_para::_editor_conf_filename[]; //  = "editorconf.ini";
-constexpr char gl_para::_data_conf_filename[];         //  = "database.ini";     //	constexpr char gl_para::*_browser_dock_conf_filename; //  = "entrance.ini";//static constexpr char _entrance_conf_filename[]; //  = "entrance.ini";
-constexpr char gl_para::_stylesheet_filename[];        //  = "stylesheet.css";  // constexpr char gl_para::_stylesheet_filename[]; //  = "stylesheet.css";
+constexpr char gl_para::_editor_conf_filename[]; //  = "editorconf.ini"; // constexpr char gl_para::_editor_conf_filename[]; //  = "editorconf.ini";
+constexpr char gl_para::_data_conf_filename[]; //  = "database.ini";     //	constexpr char gl_para::*_browser_dock_conf_filename; //  = "entrance.ini";//static constexpr char _entrance_conf_filename[]; //  = "entrance.ini";
+constexpr char gl_para::_stylesheet_filename[]; //  = "stylesheet.css";  // constexpr char gl_para::_stylesheet_filename[]; //  = "stylesheet.css";
 // constexpr char _document_config_name[]; //  = "document.ini";
-constexpr char gl_para::_file_menu_name[];     //  = "file_menu";
-constexpr char gl_para::_tools_menu_name[];    //  = "tools_menu";
-constexpr char gl_para::_edit_menu_name[];     //  = "edit_menu";
-constexpr char gl_para::_view_menu_name[];     //  = "view_menu";
-constexpr char gl_para::_window_menu_name[];   //  = "window_menu";
-constexpr char gl_para::_help_menu_name[];     //  = "help_menu";
-constexpr char gl_para::_history_menu_name[];  //  = "history_menu";
+constexpr char gl_para::_file_menu_name[]; //  = "file_menu";
+constexpr char gl_para::_tools_menu_name[]; //  = "tools_menu";
+constexpr char gl_para::_edit_menu_name[]; //  = "edit_menu";
+constexpr char gl_para::_view_menu_name[]; //  = "view_menu";
+constexpr char gl_para::_window_menu_name[]; //  = "window_menu";
+constexpr char gl_para::_help_menu_name[]; //  = "help_menu";
+constexpr char gl_para::_history_menu_name[]; //  = "history_menu";
 constexpr char gl_para::_bookmark_menu_name[]; //  = "bookmark_menu";
 
-
 constexpr char gl_para::_default_topic[]; // = "undefined";
-constexpr char gl_para::_default_post[];  // = "Welcome to \"undefined\" topic";
+constexpr char gl_para::_default_post[]; // = "Welcome to \"undefined\" topic";
 #ifdef USE_CURRENT_BROWSER_KEY_WORD
-constexpr char gl_para::_current_browser[];        // = "current_browser";
-#endif                                             // USE_CURRENT_BROWSER_KEY_WORD
+constexpr char gl_para::_current_browser[]; // = "current_browser";
+#endif // USE_CURRENT_BROWSER_KEY_WORD
 constexpr char gl_para::_browser_navigater_name[]; // = "browser_navigater";
 constexpr char gl_para::_browser_lineedit_stack_name[];
-constexpr char gl_para::_blog_root_dir[];               // = "blog";
-constexpr char gl_para::_custom_hidable_tab_style[];    // = "custom_hidable_tab_style.css";
+constexpr char gl_para::_blog_root_dir[]; // = "blog";
+constexpr char gl_para::_custom_hidable_tab_style[]; // = "custom_hidable_tab_style.css";
 constexpr char gl_para::_custom_browser_tabbar_style[]; // = "custom_browser_tabbar_style.css";
-constexpr int gl_para::initialize_priority;             // = 0;
+constexpr int gl_para::initialize_priority; // = 0;
 
+QString gl_para::_app_data_path_system = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
 
+<<<<<<< HEAD
 gl_para::gl_para(QObject* pobj)
     : mode_full_name_in_app_data_path_system([&] {
         return _app_data_path_system + "/" + gl_para::_mode_filename;
@@ -100,6 +100,24 @@ gl_para::gl_para(QObject* pobj)
             ,
             QCoreApplication::applicationName());
         QString dir = QFileInfo(ini.fileName()).absolutePath();
+=======
+std::function<QString()> gl_para::mode_full_name_in_app_data_path_system = [] {
+    return gl_para::_app_data_path_system + "/" + gl_para::_mode_filename;
+};
+
+std::function<std::tuple<const bool, const QString>()> gl_para::init = []() -> std::tuple<const bool, const QString> {
+#ifdef TEST_CONFIG_PATH
+    auto recommend_path = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    auto organization = QCoreApplication::organizationName(); // Unknow
+    auto appname = QCoreApplication::applicationName();
+    QSettings ini(
+        QSettings::IniFormat, QSettings::UserScope,
+        gl_para::
+            _program_instance_name // QCoreApplication::organizationName()
+        ,
+        QCoreApplication::applicationName());
+    QString dir = QFileInfo(ini.fileName()).absolutePath();
+>>>>>>> tuple
 #endif // TEST_CONFIG_PATH
 // _main_program_full_file = app_name;
 // QFileInfo fi(app_name);
@@ -108,6 +126,7 @@ gl_para::gl_para(QObject* pobj)
 // gl_para::_program_instance_name, QDir::homePath() + "/." +
 // gl_para::_program_instance_name);
 #ifdef USE_ALTERNATIVE_PATH
+<<<<<<< HEAD
         // if(QFile(_candidate_paths_by_system.first).exists())
         // _config_path_given_by_system = _candidate_paths_by_system.first;
         // else if(QFile(_candidate_paths_by_system.second).exists())
@@ -153,13 +172,65 @@ gl_para::gl_para(QObject* pobj)
                         // root_path(std::get<1>(result));
                         // Инициализация рабочей директории
     })
+=======
+    // if(QFile(_candidate_paths_by_system.first).exists())
+    // _config_path_given_by_system = _candidate_paths_by_system.first;
+    // else if(QFile(_candidate_paths_by_system.second).exists())
+    // _config_path_given_by_system = _candidate_paths_by_system.second;
+    if (!QDir(QDir::homePath() + "/.config/").exists() || !QDir(QDir::homePath() + "/.config/" + gl_para::_program_instance_name).exists()) {
+        if (QDir::root().mkdir(_candidate_paths_by_system.first))
+            _config_path_given_by_system = _candidate_paths_by_system.first;
+    } else if (QDir::root().mkdir(_candidate_paths_by_system.second))
+        _config_path_given_by_system = _candidate_paths_by_system.second;
+    else
+        critical_error("Can\'t create normal dir for current user.");
+#endif // USE_ALTERNATIVE_PATH
+
+    // assert(_config_path_given_by_system != ".");
+
+    // mode_file_location = _standard_path + "/" + gl_para::_mode_filename;
+    auto t = mode_full_name_in_app_data_path_system();
+    if (!QFile(t).exists()) {
+        //            auto s = QString(":/resource/standardconfig/") + target_os() + "/" + _mode_filename;
+        if (!DiskHelper::qt_resource_recover(std::make_shared<QFileInfo>(t)))
+            critical_error(
+                QString("Unhandled error encountered when force copy file \"") + ":/resource/standardconfig/" + target_os() + "/" + _mode_filename + "\" to \"" + t + "\"");
+    }
+    if ((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(t) & (QFile::ReadUser | QFile::WriteUser)))
+        QFile::setPermissions(t, QFile::ReadUser | QFile::WriteUser);
+    assert(t != (QString("./") + gl_para::_mode_filename));
+    QSettings mode_ini(t, QSettings::IniFormat);
+    auto root_path_from_app_data_path_system = mode_ini.value(gl_para::_program_root_dir_name).toString();
+    QString temp_root = ".";
+    if (root_path_from_app_data_path_system != ".")
+        temp_root = root_path_from_app_data_path_system;
+    else
+        temp_root = _app_data_path_system;
+    // auto result =
+    return permanent_coordinate_root(temp_root); // app_mode() == standardItem,
+        // assert(std::get<0>(result));
+        // root_path(std::get<1>(result));
+        // Инициализация рабочей директории
+};
+gl_para::gl_para(QObject* pobj)
+//    :
+//      mode_full_name_in_app_data_path_system([&] {
+//        return _app_data_path_system + "/" + gl_para::_mode_filename;
+//    })
+//    ,
+//      init()
+>>>>>>> tuple
 {
     Q_UNUSED(pobj);
     init();
 
     _editors_shared_full_path_name = [&]() -> QString {
+<<<<<<< HEAD
         //			  // Handle local directory settings; a default is used if none is
         //specified
+=======
+        //			  // Handle local directory settings; a default is used if none is specified
+>>>>>>> tuple
         //			  if(gl_paras->editors_shared_full_path_name().isEmpty()){
         QString path =
 #ifdef Q_OS_WIN32
@@ -217,7 +288,7 @@ QString gl_para::main_program_full_file(void) const
 // setting.setValue("application_mode", mode);
 // }
 
-QString gl_para::root_path(void) const
+QString gl_para::root_path(void)
 {
     // return get_parameter(gl_para::_program_root_dir_name);
     assert(QDir(_app_data_path_system).exists());
@@ -319,17 +390,29 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
                         // переменная datadir
                         if (app_conf.contains("datadir"))
                             result = true; // return true;
+<<<<<<< HEAD
                                            // else return false;
+=======
+                                // else return false;
+>>>>>>> tuple
                     } else {
                         // Иначе номер версии больше 3
                         if (app_conf.contains("programm")) {
                             if (app_conf.value("programm").toString() == application_name())
                                 result = true; // return true;
+<<<<<<< HEAD
                                                // else return false;
                         }                      // else return false;
                     }
                 } // else return false;	// Нет переменной version
             }     // else return false;	// Нет указанного файла
+=======
+                                    // else return false;
+                        } // else return false;
+                    }
+                } // else return false;	// Нет переменной version
+            } // else return false;	// Нет указанного файла
+>>>>>>> tuple
             return result;
         };
         qDebug() << "Detect home directory " << root_path_local;
@@ -341,11 +424,16 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
         if (!QFile(config_path).exists())
             if (!QDir::root().mkpath(config_path))
                 critical_error("Can not make path \"" + config_path + "\""); // throw std::runtime_error("Can not make path \""
+<<<<<<< HEAD
                                                                              // + config_path.toStdString() + "\"");
+=======
+                    // + config_path.toStdString() + "\"");
+>>>>>>> tuple
         auto check_exists_and_permission = [&](const QString& name) {
             // auto	config_path	= root_path + "/" + target_os();
             auto config_location = config_path + "/" + name;
             if (!QFile(config_location).exists())
+<<<<<<< HEAD
                 if (!QFile::copy(QString(":/resource/standardconfig/") + target_os() + "/" + name, config_location))
                     critical_error("Can not copy " + name); // throw
                                                             // std::runtime_error("Can not
@@ -354,6 +442,14 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
             if ((QFile::ReadUser | QFile::WriteUser) !=
                 (QFile::permissions(config_location) &
                     (QFile::ReadUser | QFile::WriteUser)))
+=======
+                if (!DiskHelper::file_cover(QResource(QString(":/resource/standardconfig/") + target_os() + "/" + name), config_location))
+                    critical_error("Can not copy " + name); // throw
+                        // std::runtime_error("Can not
+                        // copy " +
+                        // name.toStdString());
+            if ((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(config_location) & (QFile::ReadUser | QFile::WriteUser)))
+>>>>>>> tuple
                 QFile::setPermissions(config_location, QFile::ReadUser | QFile::WriteUser);
         };
         auto config_full_name = config_path + "/" + gl_para::_conf_filename;
@@ -398,20 +494,31 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
             if (!DiskHelper::qt_resource_recover(std::make_shared<QFileInfo>(t)))
                 critical_error(QString("Unhandled error encountered when force copy file \"") + ":/resource/standardconfig/" + target_os() + "/" + _mode_filename + "\" to \"" + t + "\"");
         }
+<<<<<<< HEAD
         if ((QFile::ReadUser | QFile::WriteUser) !=
             (QFile::permissions(t) & (QFile::ReadUser | QFile::WriteUser)))
+=======
+        if ((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(t) & (QFile::ReadUser | QFile::WriteUser)))
+>>>>>>> tuple
             QFile::setPermissions(t, QFile::ReadUser | QFile::WriteUser);
         //
         QSettings mode_ini(t, QSettings::IniFormat);
         //
         QDir directory(target_root);
         if (!directory.exists())
+<<<<<<< HEAD
             if (DiskHelper::create_directory(QDir::rootPath(), target_root) !=
                 target_root)
                 critical_error("What\'s wrong? Can\'t create directory as want");
         if (directory.exists() && directory.isReadable()) {
             if (mode_ini.value(gl_para::_program_root_dir_name).toString() !=
                 target_root)
+=======
+            if (DiskHelper::create_directory(QDir::rootPath(), target_root) != target_root)
+                critical_error("What\'s wrong? Can\'t create directory as want");
+        if (directory.exists() && directory.isReadable()) {
+            if (mode_ini.value(gl_para::_program_root_dir_name).toString() != target_root)
+>>>>>>> tuple
                 mode_ini.setValue(gl_para::_program_root_dir_name, target_root);
             mode_ini.sync();
 
@@ -450,8 +557,13 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
             if (!QDir::root().mkpath(_candidate_mode_paths_by_system.first))
                 critical_error(
                     "auto figure_out_standard_work_path = [&] {...} can not "
+<<<<<<< HEAD
                     "make path \"" +
                     standard_path_ + "\"");
+=======
+                    "make path \""
+                    + standard_path_ + "\"");
+>>>>>>> tuple
             else
                 standard_path_ = _candidate_mode_paths_by_system.first;
         } else if (!QDir(_candidate_mode_paths_by_system.second).exists()) {
@@ -460,24 +572,37 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
             if (!QDir::root().mkpath(_candidate_mode_paths_by_system.second))
                 critical_error(
                     "auto figure_out_standard_work_path = [&] {...} can not "
+<<<<<<< HEAD
                     "make path \"" +
                     standard_path_ + "\"");
+=======
+                    "make path \""
+                    + standard_path_ + "\"");
+>>>>>>> tuple
             else
                 standard_path_ = _candidate_mode_paths_by_system.second;
         } else if (QDir(_candidate_mode_paths_by_system.first).exists())
             standard_path_ = _candidate_mode_paths_by_system.first;
         else
             standard_path_ = _candidate_mode_paths_by_system.second;
+<<<<<<< HEAD
         return _mode_path_given_by_system =
                    standard_path_; // recover_config(standard_path_);
+=======
+        return _mode_path_given_by_system = standard_path_; // recover_config(standard_path_);
+>>>>>>> tuple
     };
 #endif // USE_ALTERNATIVE_PATH
     auto path_could_be_reach_from_system = [&](const QString& new_mode_position) {
         return
 #ifdef USE_ALTERNATIVE_PATH
+<<<<<<< HEAD
             (new_mode_position == _candidate_mode_paths_by_system.first ||
                 new_mode_position == _candidate_mode_paths_by_system.second) &&
             QFile(new_mode_position).exists()
+=======
+            (new_mode_position == _candidate_mode_paths_by_system.first || new_mode_position == _candidate_mode_paths_by_system.second) && QFile(new_mode_position).exists()
+>>>>>>> tuple
 #else
             QFile(new_mode_position).exists()
 #endif // USE_ALTERNATIVE_PATH
@@ -502,8 +627,12 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
                     )) {
             if (QFile(mode_full_name_in_app_data_path_system()).exists()) {
                 QSettings mode_ini(mode_full_name_in_app_data_path_system(), QSettings::IniFormat);
+<<<<<<< HEAD
                 if (mode_ini.value(gl_para::_program_root_dir_name).toString() ==
                     target_root) {
+=======
+                if (mode_ini.value(gl_para::_program_root_dir_name).toString() == target_root) {
+>>>>>>> tuple
                     //
                     //
                     // if(path_could_be_reach_from_system(QDir::currentPath())){
@@ -515,15 +644,23 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
         }
         return result_coordinate
 #ifdef USE_FILE_PER_TREEITEM
+<<<<<<< HEAD
             && is_standard_path(QDir(datadir.remove("/data")).absolutePath()) &&
             is_standard_path(QDir(trashdir.remove("/trash")).absolutePath())
+=======
+            && is_standard_path(QDir(datadir.remove("/data")).absolutePath()) && is_standard_path(QDir(trashdir.remove("/trash")).absolutePath())
+>>>>>>> tuple
 #endif // USE_FILE_PER_TREEITEM
             ;
     };
     //
     auto change_current_to_portable_root = [&](const QString& root_path_) {
+<<<<<<< HEAD
         auto result_current =
             std::tuple<bool, QString>(false, root_path_); // , std::get<2>(result)
+=======
+        auto result_current = std::tuple<bool, QString>(false, root_path_); // , std::get<2>(result)
+>>>>>>> tuple
         // Устанавливается эта директория как рабочая
         if (!QDir::setCurrent(root_path_))
             critical_error("Can not set work directory as '" + root_path_ + "'. System problem.");
@@ -537,7 +674,11 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
     };
     auto check_current_root =
         [&](const QString& target_root_current) { // (bool is_standard_mode)
+<<<<<<< HEAD
             auto result_current = final_root;     // std::make_pair(false, _root_path);
+=======
+            auto result_current = final_root; // std::make_pair(false, _root_path);
+>>>>>>> tuple
             if (!is_coordinate(target_root_current)) {
                 //// Если рабочая директория не определена
                 // if(current_path_is_standard){
@@ -590,6 +731,7 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
     while (!std::get<0>(final_root = check_current_root(std::get<1>(final_root)))) { // app_mode() == standardItem
         // Иначе есть возможность создать как стандартное файловое окружение,
         // так и "переносимое"
+<<<<<<< HEAD
         QString target_root_path =
             std::get<1>(final_root); // _root_path_given_by_system;
 #ifdef USE_DEFAULT_PATH
@@ -600,12 +742,20 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
             QString::number(APPLICATION_RELEASE_VERSION) + '.' +
             QString::number(APPLICATION_RELEASE_SUBVERSION) + '.' +
             QString::number(APPLICATION_RELEASE_MICROVERSION) + "!";
+=======
+        QString target_root_path = std::get<1>(final_root); // _root_path_given_by_system;
+#ifdef USE_DEFAULT_PATH
+        QString dataDirName = ".config/" + application_name() + "/data";
+
+        QString welcomeText = tr(std::string("Welcome to " + program_title_string + " v.").c_str()) + QString::number(APPLICATION_RELEASE_VERSION) + '.' + QString::number(APPLICATION_RELEASE_SUBVERSION) + '.' + QString::number(APPLICATION_RELEASE_MICROVERSION) + "!";
+>>>>>>> tuple
 
         QString standartText = tr("Create subdirectory  \"%1\"\nin user directory  "
                                   "\"%2\",\nand create application files in it.")
                                    .arg(dataDirName)
                                    .arg(QDir::homePath());
 
+<<<<<<< HEAD
         QString portableText =
             tr("Create application files\nin current directory  \"%1\".")
                 .arg(std::get<1>(result));
@@ -614,6 +764,12 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
             tr("Please, select application path: \n\n") +
             tr("Standart:\n") + standartText + "\n\n" +
             tr("Portable:\n") + portableText + "\n\n";
+=======
+        QString portableText = tr("Create application files\nin current directory  \"%1\".")
+                                   .arg(std::get<1>(result));
+
+        QString infoText = welcomeText + "\n\n" + tr("Please, select application path: \n\n") + tr("Standart:\n") + standartText + "\n\n" + tr("Portable:\n") + portableText + "\n\n";
+>>>>>>> tuple
 
         QStringList items;
         // QString		standardItem	= tr("Standard");
@@ -640,26 +796,44 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
 
         //		AppConfigPageMain::get_root_path();
 
+<<<<<<< HEAD
         target_root_path =
             force ? std::get<1>(final_root) // d->selectedFiles()[0];//
                     :                       // QFileDialog::getExistingDirectory(new QWidget(), "Specific
+=======
+        target_root_path = force ? std::get<1>(final_root) // d->selectedFiles()[0];//
+                                 : // QFileDialog::getExistingDirectory(new QWidget(), "Specific
+>>>>>>> tuple
             // the applications\'s data center path", std::get<1>(result),
             // QFileDialog::ShowDirsOnly);
             [&] {
                 QFileDialog* fd = new QFileDialog;
+<<<<<<< HEAD
                 QTreeView* tree = fd->findChild<QTreeView*>();
                 tree->setRootIsDecorated(true);
                 tree->setItemsExpandable(true);
                 fd->setWindowTitle(
                     "Specific the applications\'s data center path");
+=======
+                std::unique_ptr<QTreeView> tree = std::make_unique<QTreeView>(fd->findChild<QTreeView*>());
+                if (tree) {
+                    tree->setRootIsDecorated(true);
+                    tree->setItemsExpandable(true);
+                }
+                fd->setWindowTitle("Specific the applications\'s data center path (include the \"bin\")");
+>>>>>>> tuple
                 fd->setFileMode(QFileDialog::Directory);
                 fd->setOption(QFileDialog::ShowDirsOnly);
                 fd->setViewMode(QFileDialog::Detail);
                 int result_ = fd->exec();
                 QString directory = std::get<QString>(final_root);
                 if (result_) {
+<<<<<<< HEAD
                     directory =
                         fd->directory().absolutePath(); // selectedFiles()[0];
+=======
+                    directory = fd->directory().absolutePath(); // selectedFiles()[0];
+>>>>>>> tuple
                     qDebug() << "Selected root path: \"" << directory << "\"";
                 }
                 delete fd;
@@ -775,13 +949,21 @@ gl_para::permanent_coordinate_root(const QString& recommend_root_path_,
 #ifdef USE_FILE_PER_TREEITEM
             initialize_index(
                 target_root_path); // create_things_for_portable_root(target_root_path);
+<<<<<<< HEAD
 #endif                             // USE_FILE_PER_TREEITEM
+=======
+#endif // USE_FILE_PER_TREEITEM
+>>>>>>> tuple
 
             change_current_to_portable_root(target_root_path); // portableItem,
             // root_path(QDir(return_path).absolutePath());
             final_root = check_current_root(
                 QDir(target_root_path).absolutePath()); // PORTABLE_MODE
+<<<<<<< HEAD
                                                         // }
+=======
+            // }
+>>>>>>> tuple
         }
     }
     // else std::get<0>(result) = true;
@@ -817,7 +999,7 @@ QString gl_para::style_source() const
 // QString gl_para::config_filename(void) const {return
 // gl_para::_conf_filename;}
 
-QString gl_para::target_os(void) const
+QString gl_para::target_os(void)
 {
 #if TARGET_OS == ANY_OS
 
@@ -837,7 +1019,7 @@ QString gl_para::target_os(void) const
 
 // Имя программы в системе
 // Используется для создания и поиска каталога с данными пользователя
-QString gl_para::application_name(void) const
+QString gl_para::application_name(void)
 {
     // todo: Подумать и заменить этот код на значения, полученные из PRO-файла
     QString app_name = "";
@@ -927,8 +1109,12 @@ web::DownloadManager* gl_para::request_download_manager()
 {
     //	bool found = false;
     if (!_download_manager) {
+<<<<<<< HEAD
         _download_manager =
             new web::DownloadManager(download_manager_singleton_name, _vtab_record);
+=======
+        _download_manager = new web::DownloadManager(download_manager_singleton_name, _vtab_record);
+>>>>>>> tuple
     }
 
     //	for (int i = 0; i < _vtab_record->count(); i++) {
@@ -1021,7 +1207,12 @@ gl_para::record_screens() const
         result;
     for (auto& bro : _mainwindow->browsers()) {
         auto rs = bro->tab_widget()->record_screen();
+<<<<<<< HEAD
         if (result.find(rs) != result.end()) result.insert(rs);
+=======
+        if (result.find(rs) != result.end())
+            result.insert(rs);
+>>>>>>> tuple
     }
     return result;
 }

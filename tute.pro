@@ -92,8 +92,17 @@ DEFINES += USE_STRINGLIST_MODEL
 #DEFINES += USE_CLEAR_BUTTON
 
 # http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
+if(equals(QT5DIR, '')){
+    error(Qt5 directory (which should not be empty): QT5DIR == $${QT5DIR})
+    return()
+}else{
+    message(Qt5 directory (which should not be empty): QT5DIR == $${QT5DIR})
+}
 
+<<<<<<< HEAD
 message(Qt5 directory (which sould not be empty): QT5DIR == $${QT5DIR})
+=======
+>>>>>>> tuple
 PROJECT_QT_VERSION  = $${QT5DIR}
 PROJECT_QT_LIBS     = $$PROJECT_QT_VERSION/lib
 
@@ -153,7 +162,7 @@ CODECFORTR      =   utf8
 INCLUDEPATH     +=  $${_PRO_FILE_PWD_}/src
 
 equals(QT_VERSION, 5.6) {
-INCLUDEPATH     += ../../verdigris/src
+    INCLUDEPATH     += ../../verdigris/src
 }
 
 contains(TARGET_OS, ANY_OS) {
@@ -800,7 +809,13 @@ DISTFILES   +=          \
     resource/translations/tr_3_lrelease.sh \
     resource/translations/ru.qm \
     resource/translations/ru.ts \
+<<<<<<< HEAD
     update.sh
+=======
+    update.sh \
+    .clang-format \
+    qt.conf
+>>>>>>> tuple
 
 
 

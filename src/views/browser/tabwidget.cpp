@@ -2886,7 +2886,11 @@ bool TabWidget::restoreState(const QByteArray& state)
 
 void TabWidget::downloadRequested(QWebEngineDownloadItem* download)
 {
+<<<<<<< HEAD
     int ret = !QMessageBox::Ok;
+=======
+    int ret = ~QMessageBox::Ok;
+>>>>>>> tuple
     auto url_ = download->url();
     if (_current_download_acceptance //.first
 	!= url_) { //!

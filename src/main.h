@@ -27,6 +27,7 @@
 // #include "models/record_table/Record.h"
 // #include "libraries/GlobalParameters.h"
 // #include "views/record_table/TableScreen.h"
+#include "libraries/disk_helper.h"
 
 using namespace std;
 
@@ -151,7 +152,7 @@ QString set_css_style(widget_type* widget, const QString& root_path_, const QStr
 	if (!css_to.exists())
 		// if(! QFile::remove(file_name_to)) critical_error("Can not remove file\n"
 		// + file_name_to);
-		if (!QFile::copy(":/resource/standardconfig/" + target_os + "/" + file_name, file_name_to)) { // file_name_from, file_name_to
+        if (!DiskHelper::file_cover(QResource(QString(":/resource/standardconfig/" + target_os + "/" + file_name)), file_name_to)) { // file_name_from, file_name_to
 			// trashmonitoring.add_file(file_name_to_short); // Оповещение что в
 			// корзину добавлен файл
 			// }else {
@@ -318,8 +319,13 @@ extern bool url_equal(const url_value& u0, const url_value& u1);
 // boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record>
 // record, web::WebPage *page);
 
+<<<<<<< HEAD
 extern std::ifstream::pos_type filesize_non_qt(const char* filename);
 //extern std::streampos file_size_non_qt(const char* file_path);
+=======
+extern std::ifstream::pos_type filesize_non_qt_resource(const char* filename);
+//extern std::streampos filesize_non_qt_resource(const char* file_path);
+>>>>>>> tuple
 extern std::string truncate(std::string str, size_t width, bool show_ellipsis = true);
 extern auto to_be_url(const url_value& url_) -> QUrl;
 extern auto to_be_url(const QUrl& url_) -> QUrl;

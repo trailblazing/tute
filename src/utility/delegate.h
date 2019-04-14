@@ -1597,7 +1597,7 @@ namespace sd {
 
 		return_type operator()()
 		{
-			method_object();
+			(*method_object)();
 			return rt;
 		}
 	};

@@ -130,9 +130,10 @@ namespace web {
  */
     class Browser : public QMainWindow
 #ifdef USE_SIGNAL_CLOSE
-        ,
+
                     //			public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>,
-                    public sd::renter //<Browser>
+		    ,
+		    public sd::renter //<Browser>
 #endif                                //USE_SIGNAL_CLOSE
 
     {
@@ -231,8 +232,8 @@ namespace web {
         //		sd::intrusive_ptr<rs_t>
         //#else
         rs_t*
-        //#endif //USE_SIGNAL_CLOSE
-        record_screen();
+	    //#endif //USE_SIGNAL_CLOSE
+	    record_screen();
         //		web::Docker *browser_docker();
         void init_configuration(std::unique_ptr<QSettings>&& conf);
         void configuration_full_name(const QString& conf_name);

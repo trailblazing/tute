@@ -50,7 +50,9 @@ W_OBJECT_IMPL(tkm_t)
 
 // Конструктор модели дерева, состоящего из Item элементов
 tkm_t::tkm_t(tv_t* parent) // const QString &index_xml_file_name_,
-    : tm_t(parent), _xml_file_path(gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + gl_para::_index_xml_file_name), _xml_tree(std::make_shared<XmlTree>())
+    : tm_t(parent)
+    , _xml_file_path(gl_paras->root_path() + "/" + QDir(appconfig->data_dir()).dirName() + "/" + gl_para::_index_xml_file_name)
+    , _xml_tree(std::make_shared<XmlTree>())
 { // , _root_item(nullptr)
     // xmlFileName = "";
     // rootItem = nullptr;
@@ -70,15 +72,15 @@ tkm_t::tkm_t(tv_t* parent) // const QString &index_xml_file_name_,
     if (_root_item)
         _root_item.reset();
     _root_item = i_t::dangle_instance(data); // boost::intrusive_ptr<TreeItem>(new
-                                             // TreeItem(_root_item_parent,
-                                             // root_data));		// ?
+        // TreeItem(_root_item_parent,
+        // root_data));		// ?
 
     // assert(_root_item->linker()->host().get() == _root_item.get());
     // assert(_root_item->linker()->host_parent().get() != _root_item.get());
     //	_xml_file_path = gl_paras->root_path() + "/" +
     //QDir(appconfig->data_dir()).dirName() + "/" + index_xml_file_name_;
     init_from_xml(); // _know_branch->intercept(know_root_holder::know_root()->root_item());
-                     // // init_from_xml(xml);  //
+        // // init_from_xml(xml);  //
     //	int all_count = count_records_all();
     while (_xml_tree->dom_model()->isNull()) { //(all_count <= 0){
         //		assert(trashmonitoring.is_inited());
@@ -150,7 +152,8 @@ std::shared_ptr<XmlTree> tkm_t::init_from_xml(bool force_recover)
             return 1;
         }
         // assert(_root_item->linker()->host().get() == _root_item.get());
-        // assert(_root_item->linker()->host_parent().get() != _root_item.get());
+        // assert(_root_item->linker()->host_parent().get() !=
+        // _root_item.get());
         _root_item->dom_to_records(dom_content_root_as_record);
 
         endResetModel();
@@ -163,7 +166,12 @@ std::shared_ptr<XmlTree> tkm_t::init_from_xml(bool force_recover)
     auto target_file = std::make_shared<QFileInfo>(_xml_file_path);
 
     bool succeeded = false;
+<<<<<<< HEAD
     if (!QFile::exists(_xml_file_path) || 0 >= filesize_non_qt(_xml_file_path.toStdString().c_str()) || force_recover) {
+=======
+
+    if (!target_file || !target_file->exists() || 0 >= target_file->size() || force_recover) {
+>>>>>>> tuple
         //		bool existance = QFile::exists(_xml_file_path);
 
         // AppConfigDialog appconfigdialog(nullptr	//
@@ -570,7 +578,6 @@ void tkm_t::reload(void)
     gl_paras->main_window()->setEnabled(true);
 }
 
-
 // Запись всех данных в XML файл
 void tkm_t::save()
 {
@@ -603,7 +610,6 @@ void tkm_t::save()
     };
 
     std::mutex m;
-
 
     if (m.try_lock()) {
 //        std::lock_guard<std::mutex> lock(m);
@@ -644,11 +650,20 @@ void tkm_t::save()
             if (doc.hasChildNodes()) {
                 auto write_to = [&](const QString& file_name_, bool backup_ = true) {
                     std::mutex m;
+<<<<<<< HEAD
+=======
+                    QFileInfo file(file_name_);
+                    auto file_size = file.exists() ? file.size() : -1;
+>>>>>>> tuple
                     //                    std::lock_guard<std::mutex> lock(m);
                     // аспечатка на экран, что будет выводиться в XML файл
                     // qDebug() << "Doc document for write " << doc.toString();
                     // Перенос текущего файла дерева в корзину
+<<<<<<< HEAD
                     if (0 < filesize_non_qt(file_name_.toStdString().c_str()) && backup_)
+=======
+                    if (0 < file_size && backup_)
+>>>>>>> tuple
                         DiskHelper::backup(file_name_);
                     // Запись DOM данных в файл
                     QSaveFile xmlFile(file_name_);
@@ -714,7 +729,7 @@ void tkm_t::dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement& xm
     // как подчиненный элемент к текущему элементу
     if (!item_flat_dom.isNull())
         xml_data.appendChild(item_flat_dom); // .cloneNode()
-                                             // }
+            // }
 
     // I don't think these codes is needed:
 
@@ -1034,7 +1049,7 @@ tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree_level, int mode)
                     });
                 if (_linker->host() != _to_be_operated)
                     _linker->host(std::forward<boost::intrusive_ptr<i_t>>(_to_be_operated)); // std::move(boost::intrusive_ptr<TreeItem>(this))
-                auto link_result = _linker->parent(_parent, pos, mode);                      // _linker->host_parent()->release(this->linker());
+                auto link_result = _linker->parent(_parent, pos, mode); // _linker->host_parent()->release(this->linker());
                 assert(link_result == _linker);
                 assert(_linker->integrity_external(_to_be_operated, _parent));
             }
@@ -1111,13 +1126,13 @@ tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree_level, int mode)
         ////        }
         if (static_cast<QModelIndex>(_index_new_parent).isValid() || to_be_host == _root_item) {
             beginInsertRows(_index_new_parent, pos, // parent->count_direct()
-                pos                                 // (pos + 1 < parent->count_direct()) ? pos + 1 :
+                pos // (pos + 1 < parent->count_direct()) ? pos + 1 :
                 // parent->count_direct()
             );
 
             _to_be_operated = move_impl(pos, mode); // source_item->parent(host, pos, mode)->host();
-                                                    // // add_new_branch(parent, id, name);  //
-                                                    // parent->count_direct()
+                // // add_new_branch(parent, id, name);  //
+                // parent->count_direct()
             endInsertRows();
             if (_to_be_operated && child([&](boost::intrusive_ptr<const i_t> it) -> bool {
                     return it->id() == _to_be_operated->id();
@@ -1148,9 +1163,9 @@ tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree_level, int mode)
             // // maybe merged? not need a real tree member?second one
         } else
             _to_be_operated = move_impl(pos, mode); // should not use?	//
-                                                    // source_item->parent(host, pos,
-                                                    // mode)->host();
-                                                    // // 1-3
+                // source_item->parent(host, pos,
+                // mode)->host();
+                // // 1-3
         assert(_to_be_operated->linker()->integrity_external(_to_be_operated, to_be_host));
         if (to_be_host->field<crypt_key>() == crypt_value(true) && _to_be_operated) {
             // Новая ветка превращается в зашифрованную
@@ -1540,7 +1555,7 @@ tkm_t::delete_permanent(boost::intrusive_ptr<Linker> delete_linker)
     auto host = delete_linker->host();
 
     auto model_delete_permantent_impl =
-        [&](                                                  // boost::intrusive_ptr<TreeItem> parent_item,
+        [&]( // boost::intrusive_ptr<TreeItem> parent_item,
             boost::intrusive_ptr<Linker> delete_target_linker // , int position,
             // int rows, const
             // QModelIndex
@@ -1621,8 +1636,8 @@ tkm_t::delete_permanent(boost::intrusive_ptr<Linker> delete_linker)
         }
         assert(host->count_direct() == 0);
         deleted_item = model_delete_permantent_impl(
-            delete_linker);                                                                       // if(removeRows(_index_delete.row(), 1,
-                                                                                                  // _index_delete.parent()))
+            delete_linker); // if(removeRows(_index_delete.row(), 1,
+        // _index_delete.parent()))
         if (host_parent && host_parent->count_direct() == 0 && root_item()->count_direct() > 0) { // (index.row() > 0) == index.isValid()
             tv_t* tree_view = static_cast<tv_t*>(static_cast<QObject*>(this)->parent());
             while ((deleted_item = host_parent->delete_permanent_recursive([&](boost::intrusive_ptr<const i_t> it) {
@@ -1662,7 +1677,7 @@ tkm_t::delete_permanent_recursive(boost::intrusive_ptr<Linker> delete_linker)
 
     std::function<boost::intrusive_ptr<i_t>(boost::intrusive_ptr<Linker>)>
         model_delete_permantent_impl =
-            [&](                                                  // boost::intrusive_ptr<TreeItem> parent_item,
+            [&]( // boost::intrusive_ptr<TreeItem> parent_item,
                 boost::intrusive_ptr<Linker> delete_target_linker // , int
                 // position, int
                 // rows, const
@@ -1783,7 +1798,7 @@ tkm_t::delete_permanent_recursive(boost::intrusive_ptr<Linker> delete_linker)
         // _index_to_be_delete.row(), _index_to_be_delete.row());
         deleted_root_item = model_delete_permantent_impl(
             delete_linker); // if(removeRows(_index_delete.row(), 1,
-                            // _index_delete.parent()))
+        // _index_delete.parent()))
 
         ////        if(!_item_deleted)_item_deleted = _item_delete; // temporary
         ///radded before reimplement relation management of TreeItem!!!, 2016-04-07
@@ -1905,8 +1920,8 @@ tkm_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge, const view_delete_perm
         // auto _index_origin = index(source);
 
         beginInsertColumns(
-            _index_target,             // .parent()
-            0,                         // target->count_direct() - 1 // target->sibling_order()    // 0
+            _index_target, // .parent()
+            0, // target->count_direct() - 1 // target->sibling_order()    // 0
             result->count_direct() - 1 // target->sibling_order()    // target->count_direct() - 1
         );
 
@@ -1947,7 +1962,7 @@ tkm_t::merge(boost::intrusive_ptr<TreeLevel> _tree_merge, const view_delete_perm
         if (static_cast<QModelIndex>(_index_origin_source).isValid()) {
             auto index_ = index(source);
             if (static_cast<QModelIndex>(index_).isValid()) { // source->parent()->field("name") !=
-                                                              // clipboard_items_root
+                // clipboard_items_root
                 if (source->count_direct() == 0) {
                     // beginRemoveRows(_index.parent(), _index.row(), _index.row());
                     if (source->linker()->host() && source->linker()->host_parent()) {
@@ -2464,7 +2479,7 @@ void TreeModelKnow::record_to_item()
     // if(_root_item->child_count() > 0) {
     for (int i = 0; i < _root_item->size(); i++)
         record_to_item_recurse(_root_item->child(i)); // , _root_item
-                                                      // }
+            // }
 }
 
 #endif
@@ -2642,13 +2657,13 @@ QList<boost::intrusive_ptr<i_t>> tkm_t::children(
         int)> // , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
         item_by_equal_recursive = [&](boost::intrusive_ptr<i_t> it_, int mode)
         -> QList<boost::intrusive_ptr<i_t>> { // boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem>
-                                              // item, QString name, int mode);
+        // item, QString name, int mode);
         // , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
         static QList<boost::intrusive_ptr<i_t>>
             _items_list; // static boost::intrusive_ptr<TreeItem> _index_list;
         if (mode == 0) {
             _items_list.clear(); // find_item = nullptr;
-            return _items_list;  // nullptr;
+            return _items_list; // nullptr;
         }
         // if(_index_list.size() > 0) return _index_list;
         if (_equal(it_)) {
@@ -2679,14 +2694,14 @@ QModelIndexList tkm_t::indexes(
         item_by_equal_recursive = [&](
                                       boost::intrusive_ptr<const i_t> it_,
                                       int mode) { // boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem>
-                                                  // item, QString name, int mode);
+            // item, QString name, int mode);
             // , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
 
             static QModelIndexList
                 _index_list; // static boost::intrusive_ptr<TreeItem> _index_list;
             if (mode == 0) {
                 _index_list.clear(); // find_item = nullptr;
-                return _index_list;  // nullptr;
+                return _index_list; // nullptr;
             }
             // if(_index_list.size() > 0) return _index_list;
             if (_equal(it_)) {
@@ -3061,8 +3076,8 @@ void tkm_t::clear()
 {
     beginResetModel();
     this->_root_item->clear(); // delete_list_items();   // =
-                               // boost::intrusive_ptr<TreeItem>(new
-                               // TreeItem(QMap<QString, QString>(), nullptr));
+        // boost::intrusive_ptr<TreeItem>(new
+        // TreeItem(QMap<QString, QString>(), nullptr));
     endResetModel();
 }
 
