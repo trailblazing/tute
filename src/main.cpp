@@ -640,8 +640,7 @@ void set_kinetic_scrollarea(QAbstractItemView* object)
 		    "QScrollBar::handle: hover {"
 		    "   background-color: rgb(100, 100, 100);"
 		    "   width:10px;"
-		    "}"
-		    // "QScrollBar: vertical {"
+		    "}"		    // "QScrollBar: vertical {"
 		    // "border-color: rgb(227, 227, 227);"
 		    // "border-width: 1px;"
 		    // "border-style: solid;"
@@ -992,7 +991,7 @@ int main(int argc, char** argv)
 					  // application.exec();
 }
 
-std::ifstream::pos_type filesize_non_qt(const char* filename)
+std::ifstream::pos_type filesize_non_qt_resource(const char* filename)
 {
 	std::ifstream in(
 	    filename, std::ios::ate | std::ios::binary); // std::ifstream in(filename,
@@ -1001,7 +1000,7 @@ std::ifstream::pos_type filesize_non_qt(const char* filename)
 	return in.tellg();
 }
 
-//std::streampos file_size_non_qt(const char* file_path)
+//std::streampos filesize_non_qt_resource(const char* file_path)
 //{
 //	std::ifstream file(file_path, std::ios::ate | std::ios::binary);
 //	std::streampos fsize = file.tellg();

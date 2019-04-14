@@ -514,7 +514,7 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
 	// _editor_dock->add_blog_editor(this);
 
 	// _blog_editor = new EditingWindow();
-	setSTI(0); // No STI
+	setSTI(nullptr); // No STI
 	setWindowTitle(QObject::tr((program_title_string + " - new entry [*]").c_str()));
 	if (handleArguments()) {
 		show();
@@ -955,7 +955,7 @@ void Blogger::doUiSetup()
 	taskbarProgress->setVisible(false);
 #endif
 
-	_highlighter = new Highlighter((QTextDocument*)nullptr, this);
+	_highlighter = new Highlighter(static_cast<QTextDocument*>(nullptr), this);
 
 	// Set up hash of entry attributes
 	accountAttributes["useHTTPS"] = &useHTTPS;
@@ -1077,10 +1077,10 @@ bool Blogger::handleArguments()
 					QMessageBox::information(this, tr("Error"), tr("Could not load the following:\n\n%1").arg(failedFiles.join("\n")), QMessageBox::Ok);
 					rv = false;
 				} else {
-					if (QMessageBox::question(0, tr("Error"), tr("Could not load the "
+					if (QMessageBox::question(nullptr, tr("Error"), tr("Could not load the "
 										     "following:\n\n%1")
 										      .arg(failedFiles.join("\n")),
-						tr("&Open blank window"), tr("E&xit"), 0))
+						tr("&Open blank window"), tr("E&xit"), nullptr))
 						QApplication::exit();
 					else
 						rv = false;
@@ -1174,7 +1174,7 @@ void Blogger::checkForEmptySettings()
 	// Check if this is a brand new user
 	if (gl_paras->editors_shared_full_path_name().isEmpty() || server.isEmpty()) {
 		if (QMessageBox::question(
-			0, tr("Welcome to QTM"), tr("You do not have any preferences set, and QTM "
+			nullptr, tr("Welcome to QTM"), tr("You do not have any preferences set, and QTM "
 						    "needs to know where to find your blog, and where "
 						    "to store your data.\n\n"
 						    "Set these preferences now?"),
@@ -2226,11 +2226,11 @@ void Blogger::setHighlighting(bool hl)
 	// QSettings::IniFormat);
 
 	enableHighlighting = hl;
-	disconnect(_editor->document(), 0, this, SLOT(dirtify()));
+	disconnect(_editor->document(), nullptr, this, SLOT(dirtify()));
 	if (enableHighlighting) {
-		if (_highlighter->document() == 0) _highlighter->setDocument(_editor->document());
+		if (_highlighter->document() == nullptr) _highlighter->setDocument(_editor->document());
 	} else
-		_highlighter->setDocument(0);
+		_highlighter->setDocument(nullptr);
 	_topic_editor_config->setValue("account/enableHighlighting", enableHighlighting);
 	QTimer::singleShot(250, this, SLOT(reenableDirty()));
 	// connect( editor_object->document(), SIGNAL( contentsChanged() ), this,
@@ -2422,7 +2422,7 @@ void Blogger::placeNetworkRequest(HttpBusinessType hbtype, QByteArray& array)
 
 	addToConsole(request.url().toString());
 	addToConsole(QString(array));
-	if (QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+	if (QApplication::overrideCursor() == nullptr) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	_current_http_business = hbtype;
 	connect(_net_acess_manager.get(), SIGNAL(finished(QNetworkReply*)), this, SLOT(handleDone(QNetworkReply*)));
 #ifndef DONT_USE_SSL
@@ -2469,8 +2469,8 @@ void Blogger::stopThisJob()
 		_current_reply->abort();
 
 		_current_http_business = None;
-		disconnect(this, SIGNAL(httpBusinessFinished()), 0, 0);
-		if (QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+		disconnect(this, SIGNAL(httpBusinessFinished()), nullptr, nullptr);
+		if (QApplication::overrideCursor() != nullptr) QApplication::restoreOverrideCursor();
 		_current_reply->deleteLater();
 		_current_reply = nullptr;
 	}
@@ -2484,7 +2484,7 @@ void Blogger::handleDone(QNetworkReply* reply)
 			_status_widget->showMessage(tr("Operation cancelled."), 2000);
 		else
 			_status_widget->showMessage(tr("The request failed"), 2000);
-		if (QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+		if (QApplication::overrideCursor() != nullptr) QApplication::restoreOverrideCursor();
 	} else {
 		responseData = reply->readAll();
 		_status_widget->showMessage(
@@ -2616,7 +2616,7 @@ void Blogger::changeAccount(int a)
 				    this, SLOT(changeBlog(int))); // eliminate duplicate connections
 				connect(_control_tab->cbBlogSelector, SIGNAL(activated(int)), this, SLOT(changeBlog(int)));
 				emit blogRefreshFinished();
-				if (QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+				if (QApplication::overrideCursor() != nullptr) QApplication::restoreOverrideCursor();
 			} else
 				refreshBlogList();
 		} else
@@ -2724,7 +2724,7 @@ void Blogger::changeBlog(int b, bool fromChangeAccount)
 				}
 				if (uncategorized) _control_tab->cbMainCat->setCurrentIndex(uncategorized);
 				emit categoryRefreshFinished();
-				if (QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+				if (QApplication::overrideCursor() != nullptr) QApplication::restoreOverrideCursor();
 			} else
 				callRefreshCategories();
 		} else
@@ -2827,7 +2827,7 @@ void Blogger::insertLink(bool isAutoLink)
 	linkEntry.setWindowFlags(Qt::Sheet);
 #endif
 	leui.setupUi(&linkEntry);
-	if (isAutoLink) leui.cbMakeAutoLink->setChecked(Qt::Checked);
+    if (isAutoLink) leui.cbMakeAutoLink->setChecked(Qt::Checked>0? true : false);
 	if (!selectedString.isEmpty()) leui.leLinkText->setText(selectedString);
 	if (linkEntry.exec()) {
 		linkString = leui.leLinkURL->text();
@@ -3361,7 +3361,7 @@ void Blogger::newMTPost()
 			responseData = "";
 			_doing_new_post = true;
 			placeNetworkRequest(_metaWeblog_newPost, requestArray);
-			if (QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+			if (QApplication::overrideCursor() == nullptr) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 			if (postAsSave && !_entry_ever_saved) {
 				_clean_save = true;
 				setDirtySignals(true);
@@ -3535,7 +3535,7 @@ void Blogger::newWPPost()
 		QByteArray requestArray(doc.toByteArray());
 		responseData = "";
 		placeNetworkRequest(_wp_newPost, requestArray);
-		if (QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+		if (QApplication::overrideCursor() == nullptr) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 		if (postAsSave && !_entry_ever_saved) {
 			_clean_save = true;
 			setDirtySignals(true);
@@ -3662,7 +3662,7 @@ void Blogger::submitMTEdit()
 	QByteArray requestArray(doc.toByteArray());
 	responseData = "";
 	placeNetworkRequest(_metaWeblog_editPost, requestArray);
-	if (QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+	if (QApplication::overrideCursor() == nullptr) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	if (postAsSave && !_entry_ever_saved) {
 		_clean_save = true;
 		setDirtySignals(true);
@@ -3819,7 +3819,7 @@ void Blogger::submitWPEdit()
 		QByteArray requestArray(doc.toByteArray());
 		responseData = "";
 		placeNetworkRequest(_wp_editPost, requestArray);
-		if (QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+		if (QApplication::overrideCursor() == nullptr) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 		if (postAsSave && !_entry_ever_saved) {
 			_clean_save = true;
 			setDirtySignals(true);
@@ -3930,7 +3930,7 @@ void Blogger::setPostCategories()
 #ifdef WIN_QTV
 			if (taskbarProgress->isVisible()) taskbarProgress->setValue(taskbarProgress->value() + 1);
 #endif
-			if (QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+			if (QApplication::overrideCursor() == nullptr) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 		} else {
 #ifdef QTM_DEBUG
 			statusWidget->showMessage(
@@ -3944,7 +3944,7 @@ void Blogger::setPostCategories()
 		// An override cursor might have been set when posting an entry in a
 		// non-category-enabled blog
 		qDebug() << "categories not enabled";
-		if (QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+		if (QApplication::overrideCursor() != nullptr) QApplication::restoreOverrideCursor();
 	}
 }
 
@@ -4020,7 +4020,7 @@ void Blogger::on_topic_changed(const QString& tp)
 				if (!QDir(_current_topic_full_folder_name).exists())
 					if (!QDir::root().mkpath(_current_topic_full_folder_name)) critical_error("Can not create directory: \"" + _current_topic_full_folder_name + "\"");
 				if (!QFile(_current_topic_full_config_name).exists())
-					if (!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename, _current_topic_full_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
+                    if (!DiskHelper::file_cover(QResource(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + ::gl_para::_editor_conf_filename), _current_topic_full_config_name)) critical_error(QString("Can not copy \"") + ::gl_para::_editor_conf_filename + "\""); // throw std::runtime_error("Can not copy document.ini");
 				if ((QFile::ReadUser | QFile::WriteUser) !=
 				    (QFile::permissions(_current_topic_full_config_name) &
 					(QFile::ReadUser | QFile::WriteUser))) QFile::setPermissions(_current_topic_full_config_name, QFile::ReadUser | QFile::WriteUser);
@@ -4223,7 +4223,7 @@ void Blogger::saveAccountsDom()
 		QDir dir(gl_paras->editors_shared_full_path_name());
 		if (!dir.exists()) {
 			if (QMessageBox::question(
-				0, tr("Cannot find storage directory"), tr((program_title_string +
+				nullptr, tr("Cannot find storage directory"), tr((program_title_string +
 									       " cannot find the directory you specified to " +
 									       "store your account data and files.\n\n" + "Create it?")
 										.c_str()),
@@ -4375,7 +4375,7 @@ bool Blogger::load(const QString& fname, bool fromSTI)
 	QStringList otherCatStringList;
 	QDomNodeList accts;
 	// bool getDetailsAgain = false;
-	bool isOK;
+	bool isOK = false;
 	int b, c, d, g, h, hh;
 	_no_auto_save = true;
 	QFile f(fname);
@@ -4562,7 +4562,7 @@ bool Blogger::load(const QString& fname, bool fromSTI)
 				// i.e. if it gets to the end of the accounts tree without
 				// finding the account
 				QMessageBox::information(
-				    0, tr((program_title_string + " - No such account").c_str()), tr((program_title_string + " could not find this account (perhaps it was deleted).\n\nWill set up a blank default account; you will need to fill in the access details by choosing Accounts from the File menu.").c_str()), QMessageBox::Ok);
+				    nullptr, tr((program_title_string + " - No such account").c_str()), tr((program_title_string + " could not find this account (perhaps it was deleted).\n\nWill set up a blank default account; you will need to fill in the access details by choosing Accounts from the File menu.").c_str()), QMessageBox::Ok);
 				QDomElement newDefaultAccount = _accounts_dom.createElement("account");
 				newDefaultAccount.setAttribute("id", QString("newAccount_%1").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
 				QDomElement newDetailElement = _accounts_dom.createElement("details");
@@ -4610,12 +4610,12 @@ bool Blogger::load(const QString& fname, bool fromSTI)
 					if (blogNodeList.at(hh).firstChildElement("blogid").text() ==
 					    currentBlogid) currentBlogElement = blogNodeList.at(hh).toElement();
 				}
-				_control_tab->cbBlogSelector->disconnect(SIGNAL(activated(int)), this, 0);
+				_control_tab->cbBlogSelector->disconnect(SIGNAL(activated(int)), this, nullptr);
 				// qDebug() << "connecting changeBlog";
 				connect(_control_tab->cbBlogSelector, SIGNAL(activated(int)), this, SLOT(changeBlog(int)));
 				if (!isOK) {
 					QMessageBox::information(
-					    0, tr((program_title_string + " - Invalid blog").c_str()), tr("Could not get a valid blog number. Please set it again."), QMessageBox::Ok);
+					    nullptr, tr((program_title_string + " - Invalid blog").c_str()), tr("Could not get a valid blog number. Please set it again."), QMessageBox::Ok);
 					return true;
 				}
 				for (hh = 0; hh < _control_tab->cbBlogSelector->count(); hh++) {
@@ -4734,7 +4734,7 @@ bool Blogger::load(const QString& fname, bool fromSTI)
 		if (pwd.exec())
 			password = pui.lePassword->text();
 		else
-			QMessageBox::warning(0, tr("No password"), tr("This entry was saved without a password.\n"
+			QMessageBox::warning(nullptr, tr("No password"), tr("This entry was saved without a password.\n"
 								      "You will need to set one, using the\n"
 								      "Preferences window."),
 			    QMessageBox::Ok, QMessageBox::NoButton);
@@ -4909,7 +4909,7 @@ void Blogger::uploadFile()
 							QByteArray requestArray(doc.toByteArray());
 							responseData = "";
 							placeNetworkRequest(_metaWeblog_newMediaObject, requestArray);
-							if (QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+							if (QApplication::overrideCursor() == nullptr) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 						} else
 							_status_widget->showMessage(tr("Upload was cancelled."), 2000);
 					}
@@ -5078,7 +5078,7 @@ void Blogger::newCategory(int parentCategory)
 						QByteArray requestArray(doc.toByteArray());
 						responseData = "";
 						placeNetworkRequest(_wp_newCategory, requestArray);
-						if (QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+						if (QApplication::overrideCursor() == nullptr) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 					} else
 						_status_widget->showMessage(tr("All HTTP requests are blocked."), 2000);
 				} else
@@ -5140,7 +5140,7 @@ void Blogger::refreshKeywordTags()
 			QByteArray requestArray(doc.toByteArray(2));
 			responseData = "";
 			placeNetworkRequest(_wp_getTags, requestArray);
-			if (QApplication::overrideCursor() == 0) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+			if (QApplication::overrideCursor() == nullptr) QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 		} else
 			_status_widget->showMessage(tr("This feature only works on Wordpress."), 2000);
 	} else {
@@ -5315,11 +5315,11 @@ void Blogger::setDirtySignals(bool d)
 		connect(_control_tab->teExcerpt, SIGNAL(textChanged()), this, SLOT(dirtify()));
 	} else {
 		foreach (QWidget* w, widgetList) {
-			disconnect(w, 0, this, SLOT(dirtify()));
-			disconnect(w, 0, this, SLOT(dirtifyIfText()));
+			disconnect(w, nullptr, this, SLOT(dirtify()));
+			disconnect(w, nullptr, this, SLOT(dirtifyIfText()));
 		}
 
-		disconnect(_editor->document(), 0, this, SLOT(dirtify()));
+		disconnect(_editor->document(), nullptr, this, SLOT(dirtify()));
 	}
 }
 

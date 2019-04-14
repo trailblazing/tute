@@ -41,7 +41,7 @@ AppConfig::AppConfig(std::shared_ptr<gl_para> gl_paras_, QObject* pobj)
 		if (!QDir(location).exists())
 			if (!QDir::root().mkpath(location))
 				critical_error("void AppConfig::init(void) can not make path \"" + location + "\"");
-		if (!QFile::copy(QString(":/resource/standardconfig/") + gl_paras_->target_os() + "/" + gl_para::_conf_filename, _config_file_full_name))
+        if (!DiskHelper::file_cover(QResource(QString(":/resource/standardconfig/") + gl_paras_->target_os() + "/" + gl_para::_conf_filename), _config_file_full_name))
 			critical_error(QString("void AppConfig::init(void) can not copy \"") + gl_para::_conf_filename + "\"");
 	}
 	// throw std::runtime_error("Can not copy " + name.toStdString());
@@ -97,7 +97,7 @@ QString AppConfig::get_parameter(QString name) const
 		AppConfig* _this = const_cast<AppConfig*>(this);
 		if (QFile(_config_file_full_name).exists())
 			QFile::remove(_config_file_full_name);
-		if (!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + gl_para::_conf_filename, _config_file_full_name))
+        if (!DiskHelper::file_cover(QResource(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + gl_para::_conf_filename), _config_file_full_name))
 			critical_error(QString("Can not copy \"") + gl_para::_conf_filename + "\"");
 		if ((QFile::ReadUser | QFile::WriteUser) !=
 		    (QFile::permissions(_config_file_full_name) &

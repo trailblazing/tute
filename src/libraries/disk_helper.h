@@ -1,12 +1,14 @@
 #ifndef DISKHELPER_H
 #define DISKHELPER_H
 
+#include <memory>
 #include <QByteArray>
 #include <QFileInfo>
 #include <QMap>
 #include <QString>
 #include <QStringList>
-#include <memory>
+#include <QResource>
+
 
 // Класс, помогающий работать с дисковой подсистемой
 
@@ -28,7 +30,8 @@ public:
     static QByteArray get_topic_from_directory(QString dirName, QString fileMask);
     static bool save_strings_to_directory(QString dirName, QMap<QString, QString> fileList);
     static bool save_files_to_directory(QString dirName, QMap<QString, QByteArray> fileList);
-    static std::shared_ptr<QFileInfo> file_recover(QString source, QString target);
+    static std::shared_ptr<QFileInfo> file_cover(QString source, QString target);
+    static std::shared_ptr<QFileInfo> file_cover(const QResource & source, QString target);
     static std::shared_ptr<QFileInfo> qt_resource_recover(std::shared_ptr<QFileInfo> target_file, bool force_remove = false);
 };
 

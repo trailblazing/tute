@@ -211,14 +211,14 @@ void AccountsDialog::setDirty()
 {
 	dirty = true;
 	Q_FOREACH (QWidget* w, accountWidgets)
-		disconnect(w, 0, this, SLOT(setDirty()));
+		disconnect(w, nullptr, this, SLOT(setDirty()));
 }
 
 void AccountsDialog::setClean()
 {
 	dirty = false;
 	Q_FOREACH (QWidget* w, accountWidgets)
-		disconnect(w, 0, this, SLOT(setDirty()));
+		disconnect(w, nullptr, this, SLOT(setDirty()));
 	Q_FOREACH (QWidget* v, accountWidgets)
 		if (qobject_cast<QLineEdit*>(v))
 			connect(v, SIGNAL(textChanged(const QString&)), this, SLOT(setDirty()));
@@ -275,7 +275,7 @@ void AccountsDialog::on_leBlogURI_returnPressed()
 	QString uris = uri.toString();
 	if (!uri.isValid()) {
 		QMessageBox::information(
-		    0, tr((program_title_string + ": URI not valid").c_str()),
+		    nullptr, tr((program_title_string + ": URI not valid").c_str()),
 		    tr("That web location is not valid."), QMessageBox::Cancel);
 		return;
 	}
@@ -374,7 +374,7 @@ void AccountsDialog::on_leBlogURI_returnPressed()
          http->get( loc.append( loc.endsWith( '/' ) ? "rsd.xml" : "/rsd.xml" )
      );
        */
-	if (sapp_t::instance()->overrideCursor() == 0)
+	if (sapp_t::instance()->overrideCursor() == nullptr)
 		sapp_t::instance()->setOverrideCursor(QCursor(Qt::BusyCursor));
 	networkBiz = FindingRsdXml;
 
@@ -421,7 +421,7 @@ void AccountsDialog::handleHttpDone(QNetworkReply* reply)
 			netmgr->disconnect();
 			reply->disconnect();
 			reply->deleteLater();
-			currentReply = NULL;
+			currentReply = nullptr;
 			break;
 		case FindingXmlrpcPhp:
 			/*
@@ -458,7 +458,7 @@ void AccountsDialog::handleHttpDone(QNetworkReply* reply)
 	} else {
 		QMessageBox::information(
 		    this, tr((program_title_string + " - Network failure (%1)").c_str())
-			      .arg((int)reply->error()),
+			      .arg(static_cast<int>(reply->error())),
 		    tr((program_title_string +
 			   " could not contact the site.  Please consult the documentation "
 			   "for your content management system or service and enter the "
@@ -467,9 +467,9 @@ void AccountsDialog::handleHttpDone(QNetworkReply* reply)
 		    QMessageBox::Cancel);
 		netmgr->disconnect();
 		reply->deleteLater();
-		currentReply = NULL;
+		currentReply = nullptr;
 	}
-	if (sapp_t::instance()->overrideCursor() != 0)
+	if (sapp_t::instance()->overrideCursor() != nullptr)
 		sapp_t::instance()->restoreOverrideCursor();
 }
 
