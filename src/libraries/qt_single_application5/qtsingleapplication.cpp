@@ -659,7 +659,7 @@ void sapp_t::browsers_shared_info_init()
     QFileInfo check_file(global_brower_conf_full_path);
     if (!(check_file.exists() && check_file.isFile())) {
         // Файл перемещается в корзину
-        if (!QFile::copy(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, global_brower_conf_full_path))
+        if (!DiskHelper::file_cover(QResource(QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename), global_brower_conf_full_path))
             throw std::runtime_error("Can not copy \"" + std::string(gl_para::_browser_conf_filename) + "\"");
         // if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not
         // open browser.conf");

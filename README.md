@@ -25,7 +25,7 @@ Welcome to fork and give back :)
 
 Please note that Tute is distributed under the GPL v3.
 
-##How to remote synchronize Tute
+## How to remote synchronize Tute
 _______________________________________________________________________
 
 Currently I chose Dropbox
@@ -36,10 +36,10 @@ Move files to Dropbox:
 ```
 After that, change settings from contextmenu of Record View on the left side: Main Menu: Tools: Main Preferences: "Main" tag: "Root directory". Point it to the parent folder where you want "data" and "trash" to locate (E.g.: "~/dropbox/knowledge\ management/bin". Leave the "Data directory" and the "Trash directory" as "./data" and "./trash" are OK).
 
-##How to build Tute
+## How to build Tute
 _______________________________________________________________________
 
-###1 Build on Linux
+### 1 Build on Linux
 
 Let's say the directory of your current project is named "working":
 ```
@@ -50,25 +50,21 @@ Let's say the directory of your current project is named "working":
 	    |____knowledge management (name is whatever)
 		    |____tute (created by or synchronized with git)
 ```
-####1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
+#### 1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
-####1.2 Install verdigris (only needed by remove qt::moc in Qt 5.6. Two header-only files.)
+#### 1.2 Install verdigris (only needed by remove qt::moc in Qt 5.6. Two header-only files.)
 ```
 	git clone https://github.com/woboq/verdigris.git
 ```
-####1.3 Download and install Qt packages (May 18, 2017: qt-unified-linux-x64-2.0.5-2-online.run)
+#### 1.3 Download and install Qt packages (May 18, 2017: qt-unified-linux-x64-2.0.5-2-online.run)
 ```
         wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run
         chmod a+x ./qt-unified-linux-x64-online.run
         ./qt-unified-linux-x64-online.run
 ```
 * Run the installation. Default location for administrator installation (hereafter called "path-to-qt-installation"):
-```
-        /opt
-```
-But it's not a must. Current support Qt version: 5.10.0.
 
-* Environment in ~/.profile (~/.bash_profile or ~/.bashrc)for command line build and installation
+* Environment in ~/.profile (~/.bash_profile or ~/.bashrc) for command line build and installation
 ```
 	QT5DIR=/path-to-qt-installation/gcc_64
 
@@ -94,32 +90,29 @@ But it's not a must. Current support Qt version: 5.10.0.
 
 	export QT5DIR QT5INC QT5LIB PATH
 ```
+* After modified the above file, use
+```
+.  ~/.bashrc
+```
+* to export it.
+
 * Do not recommend to mix it up with system installation of Qt
 * If you compile and debug the project by qt-creator, environment variable could be overrided by qt-creeator. So you can skip the shell settings and just check them in qt-creator's "Projects" mode => "Build Environment" settings as following:
 ```
-Set PATH to /path-to-qt-installation/bin:/path-to-qt-installation/plugins/platforms:/path-to-qt-installation/lib:/path-to-qt-installation/include:/path-to-compiler-installation/bin:/path-to-compiler-installation/include:/path-to-compiler-installation/lib:...
 Set QT5DIR to /path-to-qt-installation
-Set QT5INC to /path-to-qt-installation/include
-Set QT5LIB to /path-to-qt-installation/plugins/platforms:/path-to-qt-installation/lib
+Set PATH to ${QT5DIR}/bin:${QT5LIB}:${QT5INC}:/path-to-compiler-installation/bin:/path-to-compiler-installation/include:/path-to-compiler-installation/lib:...
+Set QT5INC to ${QT5DIR}/include
+Set QT5LIB to ${QT5DIR}/plugins/platforms:${QT5DIR}/lib
 
 ```
-* If you want to switch qt lib version manually, I usually change the environment variable like this:
-```
-export PATH=/path-to-qt-installation/bin:/path-to-qt-installation/plugins/platforms:/path-to-qt-installation/lib:/path-to-qt-installation/include:/path-to-compiler-installation/bin:/path-to-compiler-installation/include:/path-to-compiler-installation/lib:$PATH
-env |grep QT
-then export corresponding variables to current version.
-
-```
-####1.4 Clone the repo to your workbench
+#### 1.4 Clone the repo to your workbench
 ```
 	git clone https://github.com/beimprovised/tute.git
 ```
-####1.5 Compile
+#### 1.5 Compile
 ```
 	/path-to-qt-installation/gcc_64/bin/qmake tute.pro
-
         make -j$(nproc) all
-
 	sudo make install
 ```
 * Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7 or more recent version):
@@ -127,7 +120,7 @@ then export corresponding variables to current version.
         "Configure" the project in qtcreator (append "-j*" with prefer progress number * to "make" options might be better)
         Build it.
 
-####1.6 Input methods (for non-English users)
+#### 1.6 Input methods (for non-English users)
 ```
                 // Suppose we chose Fcitx:
                 // On Ubuntu:
@@ -153,7 +146,7 @@ then export corresponding variables to current version.
 
 _______________________________________________________________________
 
-##Thanks to MyTetra: Tute is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
+## Thanks to MyTetra: Tute is forked from mytetra_webengine and mytetra_webengine is forked from MyTetra
 _______________________________________________________________________
 
 ENG: Central source repository for MyTetra development.
