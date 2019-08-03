@@ -70,6 +70,7 @@ class SettingsDialog : public QDialog, public Ui_Settings {
 	void saveToSettings();
 
 	void setHomeToCurrentPage();
+    void setZoomFactor();
 	void showCookies();
 	void showExceptions();
 
@@ -79,6 +80,7 @@ class SettingsDialog : public QDialog, public Ui_Settings {
 	private:
 	QFont standardFont;
 	QFont fixedFont;
+    double _zoomFactor;
 };
 }
 
