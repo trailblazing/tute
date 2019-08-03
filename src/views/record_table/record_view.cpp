@@ -1938,11 +1938,11 @@ void rv_t::resizeEvent(QResizeEvent* e)
         // bool	_vertical_scroll_is_visible		= _vertical_scroll_area ?
         // _vertical_scroll_area->verticalScrollBar()->isVisible() : false;
 
-	int scroll_sapce_width = _is_vertival_scroll_bar_visibale ? 0 : _scroll_bar_width;
-        rating_width = [&] { return _rating_width + scroll_sapce_width; };
+    int scroll_space_width = _is_vertival_scroll_bar_visibale ? 0 : _scroll_bar_width;
+        rating_width = [&] { return _rating_width + scroll_space_width; };
 	_delegate->_x_offset = _is_vertival_scroll_bar_visibale ? (_delegate->_rating_width - 2 * _scroll_bar_width / 3) : (_delegate->_rating_width);
 
-	int suggest_others_width = row_number_width + _pin_width + rating_width() + (_scroll_bar_width - scroll_sapce_width); // _vertical_scroll_bar_width
+    int suggest_others_width = row_number_width + _pin_width + rating_width() + (_scroll_bar_width - scroll_space_width); // _vertical_scroll_bar_width
         // auto size_width = size().width();
         auto show_fields = appconfig->record_table_show_fields();
         auto show_fields_width = appconfig->record_table_fields_width();

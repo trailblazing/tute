@@ -1988,6 +1988,13 @@ WebView::WebView(boost::intrusive_ptr<i_t> host_,
     connect(this, &WebView::loadProgress, this, &WebView::setProgress);
 
     connect(this, &WebView::loadFinished, this, &WebView::onLoadFinished);
+
+    QObject::connect(this, &QWebEngineView::loadFinished,
+                     [=](bool arg) {
+        (void)arg;
+        this->setZoomFactor(0.50);  // zoomFactor
+    });
+
     connect(this, &QWebEngineView::renderProcessTerminated, [=](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
 	const char* status = "";
 	switch (termStatus) {

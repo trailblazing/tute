@@ -240,6 +240,21 @@ padding:
         margin-right : 0 px;
 } /* margin: 0 px;*/
 
+QTabBar::tab:selected {
+    background: #ff0000;
+}
+browser--QTabBar::tab:selected {
+    background: #ff0000;
+} 
+browser--QTabWidget::tab-bar:selected {
+    background: #ff0000;
+} 
+
+.scrollable-element {
+  scrollbar-width: thin;
+}
+
+
 /*
 QTabBar::tab {
     max-width: 200px;

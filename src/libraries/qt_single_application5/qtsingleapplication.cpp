@@ -337,8 +337,7 @@ set_user_style_sheet(QWebEngineProfile* profile, const QString& styleSheet
     Q_ASSERT(profile);
     QString scriptName(QStringLiteral("userStyleSheet"));
     QWebEngineScript script;
-    QList<QWebEngineScript> styleSheets =
-        profile->scripts()->findScripts(scriptName);
+    QList<QWebEngineScript> styleSheets = profile->scripts()->findScripts(scriptName);
     if (!styleSheets.isEmpty())
         script = styleSheets.first();
     Q_FOREACH (const QWebEngineScript& s, styleSheets)
@@ -349,21 +348,20 @@ set_user_style_sheet(QWebEngineProfile* profile, const QString& styleSheet
         script.setRunsOnSubFrames(true);
         script.setWorldId(QWebEngineScript::ApplicationWorld);
     }
-    QString source =
-        QString::fromLatin1(
-            "(function() {"
-            "var css = "
-            "document.getElementById(\"_qt_testBrowser_"
-            "userStyleSheet\");"
-            "if (css == undefined) {"
-            "    css = document.createElement(\"style\");"
-            "    css.type = \"text/css\";"
-            "    css.id = \"_qt_testBrowser_userStyleSheet\";"
-            "    document.head.appendChild(css);"
-            "}"
-            "css.innerText = \"%1\";"
-            "})()")
-            .arg(styleSheet);
+    QString source = QString::fromLatin1(
+        "(function() {"
+        "var css = "
+        "document.getElementById(\"_qt_testBrowser_"
+        "userStyleSheet\");"
+        "if (css == undefined) {"
+        "    css = document.createElement(\"style\");"
+        "    css.type = \"text/css\";"
+        "    css.id = \"_qt_testBrowser_userStyleSheet\";"
+        "    document.head.appendChild(css);"
+        "}"
+        "css.innerText = \"%1\";"
+        "})()")
+                         .arg(styleSheet);
     script.setSourceCode(source);
     profile->scripts()->insert(script);
     // run the script on the already loaded views
@@ -388,11 +386,10 @@ void sapp_t::sys_init(char** argv)
     // Файл запущенной программы (нулевой аргумент функции main)
     // Store the file name running binaries
     // File running program (a zero argument to main)
-    QString main_program_file =
-        QString::fromLatin1(argv[0]); // Todo: This code must not work correctly
-                                      // with ways to UTF 8   // todo: Этот код
-                                      // наверно некорректно работает с путями в
-                                      // UTF8
+    QString main_program_file = QString::fromLatin1(argv[0]); // Todo: This code must not work correctly
+        // with ways to UTF 8   // todo: Этот код
+        // наверно некорректно работает с путями в
+        // UTF8
     qDebug() << "Set main program file to " << main_program_file;
     // Инициализация глобальных параметров,
     // внутри происходит установка рабочей директории
@@ -604,9 +601,7 @@ void sapp_t::sys_init(char** argv)
         QLatin1String(gl_paras->application_name().toLatin1()));
     QCoreApplication::setApplicationVersion(app_version); // QLatin1String("0.1")
 
-    QString serverName = QCoreApplication::applicationName() +
-        QString::fromLatin1(QT_VERSION_STR).remove('.') +
-        QLatin1String("webengine");
+    QString serverName = QCoreApplication::applicationName() + QString::fromLatin1(QT_VERSION_STR).remove('.') + QLatin1String("webengine");
 
     QLocalSocket socket;
     socket.connectToServer(serverName);
@@ -625,8 +620,7 @@ void sapp_t::sys_init(char** argv)
     // _localserver = new QLocalServer(this);
     connect(_localserver, &QLocalServer::newConnection, this, &sapp_t::newLocalSocketConnection);
     if (!_localserver->listen(serverName)) {
-        if (_localserver->serverError() == QAbstractSocket::AddressInUseError &&
-            QFile::exists(_localserver->serverName())) {
+        if (_localserver->serverError() == QAbstractSocket::AddressInUseError && QFile::exists(_localserver->serverName())) {
             QFile::remove(_localserver->serverName());
             _localserver->listen(serverName);
         }
@@ -725,8 +719,7 @@ void sapp_t::browsers_shared_info_init()
 void sapp_t::blog_init()
 {
     qDebug() << "setting up application";
-    if (arguments().contains("--sandbox") ||
-        arguments().contains("--delete-sandbox")) {
+    if (arguments().contains("--sandbox") || arguments().contains("--delete-sandbox")) {
         setOrganizationName("Catkin Project Sandbox");
         setOrganizationDomain("qtm-sandbox.blogistan.co.uk");
         setApplicationName(program_title_qstring + "-sandbox");
@@ -750,8 +743,7 @@ void sapp_t::main_window()
 {
     // Do not run another copy    // Не запущен ли другой экземпляр
     if (isRunning()) {
-        QString message =
-            "Another " + program_title_qstring + " exemplar is running.\n";
+        QString message = "Another " + program_title_qstring + " exemplar is running.\n";
 
         printf("%s", message.toStdString().c_str()); // message.toLocal8Bit()
 
@@ -1154,7 +1146,8 @@ void sapp_t::newLocalSocketConnection()
     QString _url;
     stream >> _url;
     url_value real_url(_url);
-    if (_url.isEmpty()) real_url = web::Browser::_defaulthome; // web::DockedWindow *w = nullptr;
+    if (_url.isEmpty())
+        real_url = web::Browser::_defaulthome; // web::DockedWindow *w = nullptr;
 
     // if(!url.isEmpty()) {
     auto setting_path = gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename;
@@ -1218,15 +1211,15 @@ void sapp_t::newLocalSocketConnection()
                     return rm;
                 },
                 it); // ,
-                     // browser->record_screen()->record_ctrl()->source_model()->sibling(it)
+            // browser->record_screen()->record_ctrl()->source_model()->sibling(it)
             // } catch(std::exception &) {}
             // if(record_index){
             browser->bind(record_index)->activate(std::bind(&wn_t::find, gl_paras->main_window(), std::placeholders::_1)); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0),
-                                                                                                                           // it);
-                                                                                                                           // }
-                                                                                                                           // else{
-                                                                                                                           // tree_view->index_invoke(tree_view->source_model()->index(it));
-                                                                                                                           // }
+                // it);
+                // }
+                // else{
+                // tree_view->index_invoke(tree_view->source_model()->index(it));
+                // }
         } else {
             // boost::intrusive_ptr<TreeIndex> tree_index;
             // try {tree_index = new TreeIndex([&] {return tree_view->source_model();
@@ -1331,13 +1324,11 @@ void sapp_t::quitBrowser()
  */
 void sapp_t::postLaunch()
 {
-    QString directory =
-        gl_paras
-            ->root_path(); // QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    QString directory = gl_paras
+                            ->root_path(); // QStandardPaths::writableLocation(QStandardPaths::DataLocation);
     if (directory.isEmpty())
-        directory =
-            gl_paras
-                ->app_data_path_system(); // QDir::homePath() + QLatin1String("/.")
+        directory = gl_paras
+                        ->app_data_path_system(); // QDir::homePath() + QLatin1String("/.")
 // + QCoreApplication::applicationName();
 #if defined(QWEBENGINESETTINGS_PATHS)
     QWebEngineSettings::setIconDatabasePath(directory);
@@ -1382,27 +1373,24 @@ void sapp_t::postLaunch()
 
 void sapp_t::loadSettings()
 {
-    QSettings settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename, QSettings::IniFormat);
+    QString browser_path_absolute = gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_browser_conf_filename;
+    QSettings settings(browser_path_absolute, QSettings::IniFormat);
 
     settings.beginGroup(QLatin1String("websettings"));
 
     QWebEngineSettings* defaultSettings = QWebEngineSettings::globalSettings();
     // QWebEngineProfile *defaultProfile = QWebEngineProfile::defaultProfile();
 
-    QString standardFontFamily =
-        defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
-    int standardFontSize =
-        defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
+    QString standardFontFamily = defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
+    int standardFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
     QFont standardFont = QFont(standardFontFamily, standardFontSize);
     standardFont = qvariant_cast<QFont>(
         settings.value(QLatin1String("standardFont"), standardFont));
     defaultSettings->setFontFamily(QWebEngineSettings::StandardFont, standardFont.family());
     defaultSettings->setFontSize(QWebEngineSettings::DefaultFontSize, standardFont.pointSize());
 
-    QString fixedFontFamily =
-        defaultSettings->fontFamily(QWebEngineSettings::FixedFont);
-    int fixedFontSize =
-        defaultSettings->fontSize(QWebEngineSettings::DefaultFixedFontSize);
+    QString fixedFontFamily = defaultSettings->fontFamily(QWebEngineSettings::FixedFont);
+    int fixedFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFixedFontSize);
     QFont fixedFont = QFont(fixedFontFamily, fixedFontSize);
     fixedFont = qvariant_cast<QFont>(
         settings.value(QLatin1String("fixedFont"), fixedFont));
@@ -1444,15 +1432,17 @@ void sapp_t::loadSettings()
         QWebEngineProfile::PersistentCookiesPolicy::
             ForcePersistentCookies); // AllowPersistentCookies
 
-    QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy =
-        QWebEngineProfile::PersistentCookiesPolicy(
-            settings.value(QLatin1String("persistentCookiesPolicy"))
-                .toInt() // QWebEngineProfile::ForcePersistentCookies
-                         // //vQWebEngineProfile::AllowPersistentCookies   //
-        );
+    QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(
+        settings.value(QLatin1String("persistentCookiesPolicy"))
+            .toInt() // QWebEngineProfile::ForcePersistentCookies
+        // //vQWebEngineProfile::AllowPersistentCookies   //
+    );
     _profile->setPersistentCookiesPolicy(persistentCookiesPolicy);
-    QString persistent_data_path =
-        settings.value(QLatin1String("persistentDataPath")).toString();
+    QString persistent_data_path = settings.value(QLatin1String("persistentDataPath")).toString();
+    if (persistent_data_path == "") {
+        persistent_data_path = browser_path_absolute;
+        settings.setValue(QLatin1String("persistentDataPath"), persistent_data_path);
+    }
     QDir cookie_path(persistent_data_path);
     if (!cookie_path.exists()) {
         // QDir dir;
@@ -1774,8 +1764,7 @@ QIcon sapp_t::icon(const QUrl& url) const
 QIcon sapp_t::defaultIcon() const
 {
     if (_default_icon.isNull())
-        _default_icon =
-            QIcon(QLatin1String(":/resource/pic/trace.svg")); // ":defaulticon.png"
+        _default_icon = QIcon(QLatin1String(":/resource/pic/trace.svg")); // ":defaulticon.png"
     return _default_icon;
 }
 
@@ -1816,8 +1805,7 @@ QByteArray sapp_t::authenticationKey(const QUrl& url, const QString& realm)
 
     copy.setFragment(realm);
 
-    return "auth:" +
-        copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery);
+    return "auth:" + copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery);
 }
 
 QByteArray sapp_t::proxyAuthenticationKey(const QNetworkProxy& proxy, const QString& realm)
@@ -1855,8 +1843,7 @@ void sapp_t::authenticationRequired(QNetworkReply* reply, QAuthenticator* authen
         return;
     Q_ASSERT(_last_authenticator.option("key").isValid());
     QByteArray lastKey = _last_authenticator.option("key").toByteArray();
-    QByteArray key =
-        sapp_t::authenticationKey(reply->url(), authenticator->realm());
+    QByteArray key = sapp_t::authenticationKey(reply->url(), authenticator->realm());
     if (lastKey == key)
         *authenticator = _last_authenticator;
 }
@@ -1866,13 +1853,11 @@ void sapp_t::proxyAuthenticationRequired(const QNetworkProxy& proxy, QAuthentica
     if (_last_proxy_authenticator.isNull())
         return;
     QNetworkProxy::ProxyType proxyType = proxy.type();
-    if (proxyType != QNetworkProxy::HttpProxy ||
-        proxyType != QNetworkProxy::HttpCachingProxy)
+    if (proxyType != QNetworkProxy::HttpProxy || proxyType != QNetworkProxy::HttpCachingProxy)
         return;
     Q_ASSERT(_last_proxy_authenticator.option("host").isValid());
     QByteArray lastKey = _last_proxy_authenticator.option("key").toByteArray();
-    QByteArray key =
-        sapp_t::proxyAuthenticationKey(proxy, authenticator->realm());
+    QByteArray key = sapp_t::proxyAuthenticationKey(proxy, authenticator->realm());
     if (lastKey == key)
         *authenticator = _last_authenticator;
 }
@@ -1921,8 +1906,7 @@ void sapp_t::setupRecentFiles()
         crf = settings.value(QString("recentFile%1").arg(i), "").toString();
         // qDebug() << "Recent file:" << crf;
         //		    if( crf.isEmpty() )qDebug() << QString("recentFile%1" ).arg( i ) << "is empty";
-        currentRF->filename =
-            crf.section("filename:", 1, 1).section(" ##title:", 0, 0);
+        currentRF->filename = crf.section("filename:", 1, 1).section(" ##title:", 0, 0);
         currentRF->title = crf.section(" ##title:", 1, 1);
         if (currentRF->filename.isEmpty())
             break;
@@ -2110,7 +2094,8 @@ void sapp_t::handleWindowChange(QWidget* oldW, QWidget* newW)
 
 void sapp_t::handleLastWindowClosed()
 {
-    if (_blogger) _blogger->close_trigger_from_others()(nullptr); //if (_blogger) _blogger->close_requested_from_others(nullptr); //	_blogger = nullptr;
+    if (_blogger)
+        _blogger->close_trigger_from_others()(nullptr); //if (_blogger) _blogger->close_requested_from_others(nullptr); //	_blogger = nullptr;
 }
 
 #endif
