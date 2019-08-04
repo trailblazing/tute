@@ -63,13 +63,6 @@ Let's say the directory of your current project is named "working":
         ./qt-unified-linux-x64-online.run
 ```
 * Run the installation. Default location for administrator installation (hereafter called "path-to-qt-installation"):
-<<<<<<< HEAD
-```
-        /opt
-```
-But it's not a must. Current support Qt version: 5.10.0.
-=======
->>>>>>> tuple
 
 * Environment in ~/.profile (~/.bash_profile or ~/.bashrc) for command line build and installation
 ```
@@ -112,18 +105,7 @@ Set QT5INC to ${QT5DIR}/include
 Set QT5LIB to ${QT5DIR}/plugins/platforms:${QT5DIR}/lib
 
 ```
-<<<<<<< HEAD
-* If you want to switch qt lib version manually, I usually change the environment variable like this:
-```
-export PATH=/path-to-qt-installation/bin:/path-to-qt-installation/plugins/platforms:/path-to-qt-installation/lib:/path-to-qt-installation/include:/path-to-compiler-installation/bin:/path-to-compiler-installation/include:/path-to-compiler-installation/lib:$PATH
-env |grep QT
-then export corresponding variables to current version.
-
-```
-####1.4 Clone the repo to your workbench
-=======
 #### 1.4 Clone the repo to your workbench
->>>>>>> tuple
 ```
 	git clone https://github.com/beimprovised/tute.git
 ```

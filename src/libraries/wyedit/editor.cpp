@@ -1208,13 +1208,9 @@ void Editor::save_textarea(void)
                  << work_directory();
         if (QFileInfo(full_path).exists()) {
             qDebug() << "File exists. Remove it.";
-<<<<<<< HEAD
-            if (0 < filesize_non_qt(full_path.toStdString().c_str()))
-=======
             QFileInfo file(full_path);
             auto file_size = file.exists() ? file.size() : -1;
             if (0 < file_size)
->>>>>>> tuple
                 DiskHelper::backup(full_path);
         } else
             qDebug() << "Cant remove file. File not exists.";

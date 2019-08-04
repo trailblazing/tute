@@ -408,11 +408,7 @@ int AppConfigPageMain::apply_changes(void)
         if (dir.exists() && dir.isReadable()) {
             // Новое имя запоминается в конфиг
             // gl_paras->permanent_root_path_to_standard_path(dir.path());
-<<<<<<< HEAD
-            result = gl_paras->permanent_coordinate_root(_rootdir_input->text(),
-=======
             result = gl_para::permanent_coordinate_root(_rootdir_input->text(),
->>>>>>> tuple
                 true); // is_standard,
             difficult_changes = 1;
             if (QDir::currentPath() != dir.absolutePath())

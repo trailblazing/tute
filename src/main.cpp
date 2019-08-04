@@ -991,11 +991,7 @@ int main(int argc, char** argv)
 					  // application.exec();
 }
 
-<<<<<<< HEAD
-std::ifstream::pos_type filesize_non_qt(const char* filename)
-=======
 std::ifstream::pos_type filesize_non_qt_resource(const char* filename)
->>>>>>> tuple
 {
 	std::ifstream in(
 	    filename, std::ios::ate | std::ios::binary); // std::ifstream in(filename,
@@ -1004,11 +1000,7 @@ std::ifstream::pos_type filesize_non_qt_resource(const char* filename)
 	return in.tellg();
 }
 
-<<<<<<< HEAD
-//std::streampos file_size_non_qt(const char* file_path)
-=======
 //std::streampos filesize_non_qt_resource(const char* file_path)
->>>>>>> tuple
 //{
 //	std::ifstream file(file_path, std::ios::ate | std::ios::binary);
 //	std::streampos fsize = file.tellg();

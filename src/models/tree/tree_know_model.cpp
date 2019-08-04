@@ -166,12 +166,8 @@ std::shared_ptr<XmlTree> tkm_t::init_from_xml(bool force_recover)
     auto target_file = std::make_shared<QFileInfo>(_xml_file_path);
 
     bool succeeded = false;
-<<<<<<< HEAD
-    if (!QFile::exists(_xml_file_path) || 0 >= filesize_non_qt(_xml_file_path.toStdString().c_str()) || force_recover) {
-=======
 
     if (!target_file || !target_file->exists() || 0 >= target_file->size() || force_recover) {
->>>>>>> tuple
         //		bool existance = QFile::exists(_xml_file_path);
 
         // AppConfigDialog appconfigdialog(nullptr	//
@@ -650,20 +646,13 @@ void tkm_t::save()
             if (doc.hasChildNodes()) {
                 auto write_to = [&](const QString& file_name_, bool backup_ = true) {
                     std::mutex m;
-<<<<<<< HEAD
-=======
                     QFileInfo file(file_name_);
                     auto file_size = file.exists() ? file.size() : -1;
->>>>>>> tuple
                     //                    std::lock_guard<std::mutex> lock(m);
                     // аспечатка на экран, что будет выводиться в XML файл
                     // qDebug() << "Doc document for write " << doc.toString();
                     // Перенос текущего файла дерева в корзину
-<<<<<<< HEAD
-                    if (0 < filesize_non_qt(file_name_.toStdString().c_str()) && backup_)
-=======
                     if (0 < file_size && backup_)
->>>>>>> tuple
                         DiskHelper::backup(file_name_);
                     // Запись DOM данных в файл
                     QSaveFile xmlFile(file_name_);

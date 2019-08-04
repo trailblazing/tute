@@ -1,9 +1,5 @@
 #ifndef GLOBALPARAMETERS_H__
 #define GLOBALPARAMETERS_H__
-<<<<<<< HEAD
-
-=======
->>>>>>> tuple
 
 #include <functional>
 #include <memory>
@@ -93,15 +89,9 @@ class gl_para : public QObject {
     Q_OBJECT
 #endif
 
-<<<<<<< HEAD
-    public:
-    gl_para(QObject* pobj = nullptr);
-	virtual ~gl_para();
-=======
 public:
     gl_para(QObject* pobj = nullptr);
     virtual ~gl_para();
->>>>>>> tuple
 
     // void main_program_full_file(QString file);
     QString main_program_full_file(void) const;

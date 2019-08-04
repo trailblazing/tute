@@ -1,5 +1,4 @@
 #include <QDir>
-#include <QResource>
 #include <sstream>
 
 #include "disk_helper.h"
@@ -24,12 +23,7 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom)
     QDir dirfrom(nameDirFrom);
     QStringList fileList = dirfrom.entryList();
 
-<<<<<<< HEAD
-    QString name_dir_to =
-        gl_paras->root_path() + "/" + QDir(appconfig->trash_dir()).dirName();
-=======
     QString name_dir_to = gl_paras->root_path() + "/" + QDir(appconfig->trash_dir()).dirName();
->>>>>>> tuple
     // Перебор всех файлов в удаляемой директории
     for (int i = 0; i < fileList.size(); i++) {
         // Директории с именами "." и ".." обрабатывать не нужно
@@ -92,17 +86,6 @@ void DiskHelper::backup(QString file_name_from)
     QString file_name_to = gl_paras->root_path() + "/" + QDir(appconfig->trash_dir()).dirName() + "/" + file_name_to_short;
 
     qDebug() << "Move file from " << file_name_from << " to " << file_name_to;
-<<<<<<< HEAD
-    if (QFile::exists(file_name_from)) {
-        if (0 < filesize_non_qt(file_name_from.toStdString().c_str())) {
-            // Файл перемещается в корзину
-            if (QFile::rename(file_name_from, file_name_to) == true)
-                trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
-            else {
-                // critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve
-                // file\n" + fileNameTo);
-            }
-=======
 
     QFileInfo source_info(file_name_from);
     auto source_file_size = source_info.exists() ? source_info.size() : -1; //
@@ -114,7 +97,6 @@ void DiskHelper::backup(QString file_name_from)
         else {
             // critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve
             // file\n" + fileNameTo);
->>>>>>> tuple
         }
     }
 }
@@ -141,27 +123,6 @@ DiskHelper::copy_file_to_data_folder(const QString& file_name_to, const QString&
     // file_name_to_short;
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;
-<<<<<<< HEAD
-    QFileInfo fileInfoFrom(file_name_from);
-
-    // QFile file_from(file_name_from);
-    // if(file_from.open(QIODevice::ReadOnly)){
-    // auto	file_from_size		= file_from.size();	// when file does
-    // open.
-    auto file_from_size_again = filesize_non_qt(file_name_from.toStdString().c_str());
-    // file_from.close();
-    if (file_from_size_again > 0) { // if(fileInfoFrom.size() != 0){	// prevent
-                                    // to erase file target // file_from_size > 0
-                                    // ||
-        // Файл копируется в корзину
-        if (!QFile::copy(file_name_from, file_name_to)) {
-            // trashmonitoring.add_file(file_name_to_short); // Оповещение что в
-            // корзину добавлен файл
-            // }else {
-            critical_error("Can not copy file\n" + file_name_from + "\nto file\n" + file_name_to);
-        } else
-            result = std::make_shared<QFileInfo>(file_name_to);
-=======
     // QFileInfo fileInfoFrom(file_name_from);
 
     // QFile file_from(file_name_from);
@@ -183,17 +144,12 @@ DiskHelper::copy_file_to_data_folder(const QString& file_name_to, const QString&
         }
         // else
         //    result = std::make_shared<QFileInfo>(file_name_to);
->>>>>>> tuple
     }
     // }
     // QFileInfo fileInfoTo(file_name_to);
 
     return result; // fileInfoTo.absoluteFilePath();
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> tuple
 
 // Копирование файла в корзину
 // Функция возвращает полное имя файла копии
@@ -205,26 +161,13 @@ QString DiskHelper::copy_file_to_trash_folder(QString file_name_from)
 
     // Получение имени файла для сохранения в корзине
     QString file_name_to_short = detail::to_qstring(get_unical_id()) + "_" + file_name_from_short;
-<<<<<<< HEAD
-    QString file_name_to = gl_paras->root_path() + "/" +
-        QDir(appconfig->trash_dir()).dirName() + "/" +
-        file_name_to_short;
-=======
     QString file_name_to = gl_paras->root_path() + "/" + QDir(appconfig->trash_dir()).dirName() + "/" + file_name_to_short;
->>>>>>> tuple
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;
     if (QFile::exists(file_name_from)) {
         // Файл копируется в корзину
-<<<<<<< HEAD
-        if (QFile::copy(file_name_from, file_name_to))
-            trashmonitoring.add_file(file_name_from_short); // file_name_to_short //
-                                                            // Оповещение что в
-                                                            // корзину добавлен файл
-=======
         if (DiskHelper::file_cover(file_name_from, file_name_to))
             trashmonitoring.add_file(file_name_from_short); // file_name_to_short
->>>>>>> tuple
         else
             critical_error("Can not remove file\n" + file_name_from + "\nto reserve file\n" + file_name_to);
     }
@@ -296,14 +239,9 @@ bool DiskHelper::copy_directory(const QString& fromName, const QString& toName)
     QDir fromDir(fromName);
     QDir toDir(toName);
     if (fromDir.exists() && toDir.exists()) {
-<<<<<<< HEAD
-        Q_FOREACH (QFileInfo info, fromDir.entryInfoList(QDir::Files))
-            QFile::copy(info.absoluteFilePath(), toName + "/" + info.fileName());
-=======
         Q_FOREACH (QFileInfo info, fromDir.entryInfoList(QDir::Files)) {
             DiskHelper::file_cover(info.absoluteFilePath(), toName + "/" + info.fileName()); // QFile::copy(info.absoluteFilePath(), toName + "/" + info.fileName());
         }
->>>>>>> tuple
         return true;
     }
     return false;
@@ -398,10 +336,6 @@ DiskHelper::get_topic_from_directory(QString dirName, QString fileMask)
 
         foreach (QFileInfo info, directory.entryInfoList(filter, QDir::Dirs | QDir::NoDotAndDotDot)) {
 
-<<<<<<< HEAD
-
-=======
->>>>>>> tuple
             if (QDir(info.absoluteFilePath()).dirName() == fileMask)
                 result_data = find_byte_data(info);
 
@@ -488,11 +422,7 @@ bool DiskHelper::save_files_to_directory(QString dirName, QMap<QString, QByteArr
     }
 }
 
-<<<<<<< HEAD
-std::shared_ptr<QFileInfo> DiskHelper::file_recover(QString source, QString target)
-=======
 std::shared_ptr<QFileInfo> DiskHelper::file_cover(const QResource& source, QString target)
->>>>>>> tuple
 {
     std::shared_ptr<QFileInfo> result(nullptr);
     //	bool result = false;
@@ -500,9 +430,6 @@ std::shared_ptr<QFileInfo> DiskHelper::file_cover(const QResource& source, QStri
     if (!QDir(traget_info.path()).exists())
         QDir::root().mkpath(traget_info.path());
 
-<<<<<<< HEAD
-    auto source_file_size = filesize_non_qt(source.toStdString().c_str());
-=======
     auto source_file_size = source.isValid() ? source.size() : -1; // filesize_non_qt(source.toStdString().c_str());
     if (source_file_size > 0) {
         if (QFile(target).exists())
@@ -530,7 +457,6 @@ std::shared_ptr<QFileInfo> DiskHelper::file_cover(QString source, QString target
         QDir::root().mkpath(traget_info.path());
     QFileInfo source_info(source);
     auto source_file_size = source_info.exists() ? source_info.size() : -1; // filesize_non_qt(source.toStdString().c_str());
->>>>>>> tuple
     if (source_file_size > 0) {
         if (QFile(target).exists())
             if (!QFile::remove(target))
@@ -538,12 +464,7 @@ std::shared_ptr<QFileInfo> DiskHelper::file_cover(QString source, QString target
         if (!QFile::copy(source, target))
             critical_error("Can\'t copy \"" + source + "\" to " + target + "\"");
     }
-<<<<<<< HEAD
-    if ((QFile::ReadUser | QFile::WriteUser) !=
-        (QFile::permissions(target) & (QFile::ReadUser | QFile::WriteUser))) {
-=======
     if ((QFile::ReadUser | QFile::WriteUser) != (QFile::permissions(target) & (QFile::ReadUser | QFile::WriteUser))) {
->>>>>>> tuple
         if (!QFile::setPermissions(target, QFile::ReadUser | QFile::WriteUser))
             critical_error("Can\'t set permissions to file \"" + target + "\"");
         else
@@ -553,29 +474,11 @@ std::shared_ptr<QFileInfo> DiskHelper::file_cover(QString source, QString target
     return result;
 }
 
-
 std::shared_ptr<QFileInfo>
 DiskHelper::qt_resource_recover(std::shared_ptr<QFileInfo> target_file, bool force_remove)
 {
     std::shared_ptr<QFileInfo> result(nullptr); // = false;
     auto need_recover = force_remove;
-<<<<<<< HEAD
-    auto _file_name = target_file->fileName(); // "someting.ini" // "index.xml";
-    auto only_path = target_file->path();
-    auto target_file_name_fullpath = target_file->filePath();
-    auto source_file_name = QString(":/resource/standardconfig/") + gl_paras->target_os() + "/" + _file_name;
-    if (!need_recover) {
-        if (QFile::exists(target_file_name_fullpath)) {
-
-            auto target_file_size = filesize_non_qt(target_file_name_fullpath.toStdString().c_str());
-            QResource qt_source_file(source_file_name);
-            auto qt_source_size = qt_source_file.size();
-
-            if (0 == target_file_size || target_file_size < qt_source_size) {
-                if (!QFile::remove(target_file_name_fullpath)) { // Файл физически удаляется
-                    // }else{
-                    critical_error("In recover_from_trash. Can not delete file " + target_file_name_fullpath);
-=======
     auto source_file_name = target_file->fileName(); // "someting.ini" // "index.xml";
     auto only_path = target_file->path();
     auto target_file_name_fullpath = target_file->filePath();
@@ -596,7 +499,6 @@ DiskHelper::qt_resource_recover(std::shared_ptr<QFileInfo> target_file, bool for
                 if (!QFile::remove(target_file_name_fullpath)) { // Файл физически удаляется
                     // }else{
                     critical_error("In qt_resource_recover. Can not delete file " + target_file_name_fullpath);
->>>>>>> tuple
                     exit(0);
                 } else
                     need_recover = true;
@@ -609,13 +511,8 @@ DiskHelper::qt_resource_recover(std::shared_ptr<QFileInfo> target_file, bool for
             if (!QFile::remove(target_file_name_fullpath))
                 critical_error("Can\'t remove fiel \"" + target_file_name_fullpath + "\"");
 
-<<<<<<< HEAD
-        if (!QFile::copy(source_file_name, target_file_name_fullpath))
-            critical_error("Can not copy file from \"" + source_file_name + "\" to \"" + target_file_name_fullpath + "\"");
-=======
         if (!file_cover(resource, target_file_name_fullpath))
             critical_error("Can not copy file from \"" + source_file_full_name + "\" to \"" + target_file_name_fullpath + "\"");
->>>>>>> tuple
 
         QFile::setPermissions(target_file_name_fullpath, QFile::ReadUser | QFile::WriteUser);
 

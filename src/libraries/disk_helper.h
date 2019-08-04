@@ -30,12 +30,8 @@ public:
     static QByteArray get_topic_from_directory(QString dirName, QString fileMask);
     static bool save_strings_to_directory(QString dirName, QMap<QString, QString> fileList);
     static bool save_files_to_directory(QString dirName, QMap<QString, QByteArray> fileList);
-<<<<<<< HEAD
-    static std::shared_ptr<QFileInfo> file_recover(QString source, QString target);
-=======
     static std::shared_ptr<QFileInfo> file_cover(QString source, QString target);
     static std::shared_ptr<QFileInfo> file_cover(const QResource & source, QString target);
->>>>>>> tuple
     static std::shared_ptr<QFileInfo> qt_resource_recover(std::shared_ptr<QFileInfo> target_file, bool force_remove = false);
 };
 
