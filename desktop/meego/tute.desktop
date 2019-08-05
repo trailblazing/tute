@@ -1,9 +1,9 @@
 [Desktop Entry]
-Name=MyTetra WebEngine
+Name=Tute
 Comment=Smart manager for information collecting
 Comment[ru]=Менеджер накопления осмысленной информации
-Exec=/opt/ru.webhamster.mytetra/bin/mytetra_webengine
-Icon=mytetra
+Exec=/opt/ru.webhamster.tute/bin/tute
+Icon=tute
 Terminal=false
 Type=Application
 StartupNotify=true

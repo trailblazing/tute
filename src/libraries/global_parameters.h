@@ -237,7 +237,7 @@ public:
 private:
 #define STANDARD_MODE true
 #define PORTABLE_MODE false
-    static std::tuple<const bool, const QString> permanent_coordinate_root(const QString& recommend_root_path_ = "", bool force = false);
+    static std::tuple<bool, QString> permanent_coordinate_root(const QString& recommend_root_path_ = "", bool force = false);
     // bool check_workdirectory(bool enablePortable);
 
     // void create_root_standard(void);
