@@ -51,6 +51,7 @@
 #include <QtNetwork/QNetworkReply>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
+#include <QtWebEngineWidgets/QWebEngineCertificateError>
 
 #if defined(QWEBENGINEPAGE_HITTESTCONTENT)
 #include <QWebEngineHitTestResult>
@@ -2092,7 +2093,9 @@ WebView::WebView(boost::intrusive_ptr<i_t> host_,
 #ifdef USE_QT_DELETE_ON_CLOSE
     setAttribute(Qt::WA_DeleteOnClose, true);
 #endif // USE_QT_DELETE_ON_CLOSE
-    // set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));    //
+
+    //    set_kinetic_scrollarea(qobject_cast<QAbstractItemView*>(this)); //
+
     // does not work for base class is not QAbstractItemView
 
     //        _load_finished_signal.connect(std::bind(&ToolbarSearch::synchronize_text, _tab_widget->currentToolbarSearch(), std::placeholders::_1)
@@ -2157,8 +2160,6 @@ void WebView::activateWindow()
         _browser->activateWindow();
     //	        QObject::disconnect(_home_connection);
 
-    //	        _home_connection
-    //
     if (_tab_widget->currentWebView() != this) {
         _tab_widget->select_as_current(this);
         //emit static_cast<QTabWidget*>(_tab_widget)->currentChanged(_tab_widget->webViewIndex(this));

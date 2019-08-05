@@ -226,11 +226,11 @@ contains(TARGET_OS, ANDROID_OS) {
 INSTALLS    +=  desktop_file
 
 icon_scalable_file.path     =   /usr/share/icons/hicolor/scalable/apps
-icon_scalable_file.files    =   desktop/icon.svg
+icon_scalable_file.files    =   desktop/tute.svg
 INSTALLS    +=  icon_scalable_file
 
 icon_48_file.path   =   /usr/share/icons/hicolor/48x48/apps
-icon_48_file.files  =   desktop/icon.png
+icon_48_file.files  =   desktop/tute.png
 INSTALLS    +=  icon_48_file
 
 
@@ -807,7 +807,8 @@ DISTFILES   +=          \
     resource/translations/ru.ts \
     update.sh \
     .clang-format \
-    qt.conf
+    qt.conf \
+    desktop/tute.svg
 
 
 
