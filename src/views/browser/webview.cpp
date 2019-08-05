@@ -51,6 +51,7 @@
 #include <QtNetwork/QNetworkReply>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
+#include <QtWebEngineWidgets/QWebEngineCertificateError>
 
 #if defined(QWEBENGINEPAGE_HITTESTCONTENT)
 #include <QWebEngineHitTestResult>
