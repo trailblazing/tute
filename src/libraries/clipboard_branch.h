@@ -13,6 +13,7 @@
 #include "libraries/clipboard_records.h"
 // #include "models/tree/TreeModel.h"
 
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>

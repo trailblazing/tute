@@ -1,9 +1,7 @@
 
 #include <functional>
 
-#if QT_VERSION == 0x050600
-#include <wobjectimpl.h>
-#endif
+
 
 #include <QBoxLayout>
 #include <QGridLayout>
@@ -39,6 +37,10 @@
 #include "views/record_table/record_view.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
+
+#if QT_VERSION == 0x050600
+#include <wobjectimpl.h>
+#endif
 
 #ifdef USE_QTM
 #include "libraries/qtm/blogger.h"

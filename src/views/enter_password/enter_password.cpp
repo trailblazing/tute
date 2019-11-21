@@ -1,8 +1,6 @@
 
 
-#if QT_VERSION == 0x050600
-#include <wobjectimpl.h>
-#endif
+
 
 #include <QHBoxLayout>
 #include <QLabel>
@@ -20,6 +18,10 @@
 #include "enter_password.h"
 #include "main.h"
 #include "views/find_in_base_screen/find_screen.h"
+
+#if QT_VERSION == 0x050600
+#include <wobjectimpl.h>
+#endif
 
 extern const char *program_title;
 extern const QString program_title_qstring;

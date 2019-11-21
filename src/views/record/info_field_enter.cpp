@@ -1,8 +1,6 @@
 
 
-#if QT_VERSION == 0x050600
-#include <wobjectimpl.h>
-#endif
+
 
 #include <QSizePolicy>
 
@@ -11,6 +9,10 @@
 #include "main.h"
 #include "models/app_config/app_config.h"
 #include "views/browser/tabwidget.h"
+
+#if QT_VERSION == 0x050600
+#include <wobjectimpl.h>
+#endif
 
 extern std::shared_ptr<AppConfig> appconfig;
 

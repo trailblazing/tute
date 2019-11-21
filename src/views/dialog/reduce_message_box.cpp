@@ -1,8 +1,6 @@
 
 
-#if QT_VERSION == 0x050600
-#include <wobjectimpl.h>
-#endif
+
 
 #include <QVBoxLayout>
 
@@ -10,6 +8,10 @@
 #include "main.h"
 #include "reduce_message_box.h"
 #include "views/main_window/main_window.h"
+
+#if QT_VERSION == 0x050600
+#include <wobjectimpl.h>
+#endif
 
 extern std::shared_ptr<gl_para> gl_paras;
 

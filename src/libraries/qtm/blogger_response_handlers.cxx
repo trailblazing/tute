@@ -271,7 +271,7 @@ void Blogger::mt_getCategoryList(QByteArray response)
 				.arg(returnedCats.at(j).firstChildElement("categoryId").text()));
 		}
 	if (!_no_alpha_cats)
-		qSort(catList.begin(), catList.end(), Blogger::caseInsensitiveLessThan);
+        std::sort(catList.begin(), catList.end(), Blogger::caseInsensitiveLessThan);
 	if (xfault)
 		statusBar()->showMessage(
 		    tr("Could not connect; check account details & password"), 2000);

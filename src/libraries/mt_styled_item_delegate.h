@@ -3,6 +3,7 @@
 
 #include <QStyledItemDelegate>
 
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 #include <wobjectdefs.h>
 #endif

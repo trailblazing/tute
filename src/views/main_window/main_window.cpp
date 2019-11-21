@@ -1,10 +1,6 @@
 
 #include <string>
 
-#if QT_VERSION == 0x050600
-#include <wobjectimpl.h>
-#endif
-
 #include <QDesktopWidget>
 #include <QDir>
 #include <QHBoxLayout>
@@ -48,6 +44,10 @@
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
 
+#if QT_VERSION == 0x050600
+#include <wobjectimpl.h>
+#endif
+
 extern std::shared_ptr<AppConfig> appconfig;
 extern TrashMonitoring trashmonitoring;
 extern std::shared_ptr<gl_para> gl_paras;
@@ -75,6 +75,314 @@ extern const char* action_find_in_base;
 W_OBJECT_IMPL(wn_t)
 #endif
 
+//
+//
+//
+
+//   // old version
+//  ____________________________________________________________________________________________________________________
+// |                                                                                                                    |
+// |    ________________________________________________      ______________________________________________________    |
+// |   |                                                |    |                                                      |	|
+// |   |	 ___________________   _____________        |    |  ________________________________________________    |	|
+// |   |	|                   | |             |       |    | |                                                |   |	|
+// |   |	|                   | |             |       |    | |     _______________________________________	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |		      _entrance                 |	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |_______________________________________|	|   |	|
+// |   |	|                   | |             |       |    | |                                                |   |	|
+// |   |	|                   | |             |       |    | |	       _v_right_splitter                    |   |	|
+// |   |	|                   | |             |       |    | |     ________________________________________	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|_vtab_tree         | |_vtab_record |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |		   _editor_screen               |	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |                                       |	|   |	|
+// |   |	|                   | |             |       |    | |    |_______________________________________|	|   |	|
+// |   |	|                   | |             |       |    | |                                                |   |	|
+// |   |	|                   | |             |       |    | |                                                |   |	|
+// |   |	|                   | |             |       |    | |________________________________________________|   |	|
+// |   |	|                   | |             |       |    |                                                      |	|
+// |   |	|                   | |             |       |    |			   _v_find_splitter                         |	|
+// |   |	|                   | |             |       |    |  _______________________________________________     |	|
+// |   |	|                   | |             |       |    | |                                               |    |	|
+// |   |	|                   | |             |       |    | |		   _find_screen                        |    |	|
+// |   |	|___________________| |_____________|       |    | |_______________________________________________|    |	|
+// |   |                                                |    |                                                      |	|
+// |   |		_h_tree_splitter                        |    |                                                      |	|
+// |   |________________________________________________|    |______________________________________________________|	|
+// |                                                                                                                    |
+// |					    _h_record_splitter                                                                          |
+// |____________________________________________________________________________________________________________________|
+//
+//
+
+//   // current version diagram
+//  __________________________________________________________________________________________________________________________________________
+// |                                                                                                                                          |
+// |    ____________________________      ________________________________________________________________________________________________    |
+// |   |                            |    |                                                                                                |   |
+// |   |                            |    |	  _______________________      _________________________________________________________      |   |
+// |   |                            |    |	 |                       |    |                                                         |     |   |
+// |   |                            |    |	 |                       |    |  ___________________________________________________    |     |   |
+// |   |                            |    |	 |                       |    |  |                                                  |   |     |   |
+// |   |                            |    |	 |                       |    |  |     _______________________________________      |   |     |   |
+// |   |                            |    |	 |                       |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |	 |                       |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |	   _browser_docker                    |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |_______________________________________|     |   |     |   |
+// |   |                            |    |   |                       |    |  |                                                  |   |     |   |
+// |   |                            |    |   |                       |    |  |                                                  |   |     |   |
+// |   |                            |    |   |                       |    |  |     ________________________________________     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |                                       |     |   |     |   |
+// |   |        _vtab_tree          |    |   |  _vtab_record         |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |		   _editor_docker                 |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |                                       |     |   |     |   |
+// |   |                            |    |   |                       |    |  |    |_______________________________________|     |   |     |   |
+// |   |                            |    |   |                       |    |  |                                                  |   |     |   |
+// |   |                            |    |   |                       |    |  |   _v_right_splitter                              |   |     |   |
+// |   |                            |    |   |                       |    |  |__________________________________________________|   |     |   |
+// |   |                            |    |   |                       |    |                                                         |     |   |
+// |   |                            |    |   |                       |    |                                                         |     |   |
+// |   |                            |    |   |                       |    |   __________________________________________________    |     |   |
+// |   |                            |    |   |                       |    |  |                                                  |   |     |   |
+// |   |                            |    |   |                       |    |  |	       _find_screen                             |   |     |   |
+// |   |                            |    |   |                       |    |  |__________________________________________________|   |     |   |
+// |   |                            |    |   |                       |    |                                                         |     |   |
+// |   |                            |    |   |                       |    |  _v_find_splitter                                       |     |   |
+// |   |                            |    |	 |_______________________|    |_________________________________________________________|     |   |
+// |   |                            |    |                                                                                                |   |
+// |   |                            |    |      _h_record_splitter                                                                        |   |
+// |   |____________________________|    |________________________________________________________________________________________________|   |																    |
+// |    _h_tree_splitter                                                                                                                      |
+// |__________________________________________________________________________________________________________________________________________|
+//
+//
+//
+
+// follow comments above to learn the "assembly function"
+void wn_t::assembly(void)
+{
+    // v_right_splitter = new QSplitter(Qt::Vertical);
+    _v_right_splitter->addWidget(_browser_docker);
+    // _v_right_splitter->addWidget(_editor_screen);			// Text entries //
+    // Текст записи
+    _v_right_splitter->addWidget(_editor_docker);
+    _v_right_splitter->setCollapsible(0, true); // if true, make editor can
+    // overload it    // The list of
+    // final entries can not link up
+    // // Список конечных записей не
+    // может смыкаться
+    _v_right_splitter->setCollapsible(1, false); // The contents of the recording
+    // can not link up    //
+    // Содержимое записи не может
+    // смыкаться
+    _v_right_splitter->setObjectName("v_right_splitter");
+
+    // find_splitter = new QSplitter(Qt::Vertical);
+    _v_find_splitter->addWidget(
+        _v_right_splitter); // findSplitter->addWidget(hSplitter);
+    _v_find_splitter->addWidget(_find_screen);
+    _v_find_splitter->setCollapsible(0, false); // Верхняя часть не должна смыкаться
+    _v_find_splitter->setCollapsible(
+        1, false); // Часть для поиска не должна смыкаться
+    _v_find_splitter->setObjectName("find_splitter");
+
+    //// _qtabwidget = new QTabWidget(this);
+    ////    _vtab_tree->hide();
+    ////    _vtab_record->setTabPosition(QTabWidget::West);	//
+    ///_vtab_tree->setTabPosition(QTabWidget::West);			// sometime make
+    ///"QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
+
+    //// _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"),
+    ///"Tree");
+
+    //// _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"),
+    ///"Candidate");
+
+    //// if(_page_screen)_vtabwidget->addTab(_page_screen,
+    ///QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
+
+    ////    auto index = _vtab_tree->addTab(static_cast<QWidget *>(new
+    ///tsv_t(_tree_screen, nullptr)),
+    ///QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
+    // _vtab_record->addTab(static_cast<QWidget *>(_download),
+    // QIcon(":/resource/pic/apple.svg"), "Download");	//
+    // _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(this, _tree_screen,
+    // _download)), QIcon(":/resource/pic/apple.svg"), "Download");			//
+    // QIcon(":/resource/pic/holly.svg")
+
+    ////    _vtab_tree->setCurrentIndex(index);
+
+    appconfig->find_screen_tree_search_area(0); // force to root_item of global tree
+
+    // v_left_splitter = new QSplitter(
+    // Qt::Horizontal  // Qt::Vertical
+    // );
+
+    // int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 100
+    // int vtab_g_width = _vtabwidget->geometry().width();         // 100
+    // int this_width = geometry().width();                        // 640
+    // int download_width = _download->geometry().width();         // 1089
+    // int tree_screen_width = _tree_screen->geometry().width();   // 100
+    // int find_splitter_width = _v_find_splitter->geometry().width(); // 640
+    // int left_splitter_width = _h_left_splitter->geometry().width(); // 640
+
+    // if(_vtabwidget->frameGeometry().width() ==
+    // _h_left_splitter->geometry().width()) {
+    // _vtabwidget->resize(_vtabwidget->geometry().width() * 15 / 100,
+    // _vtabwidget->geometry().height());
+    // }
+
+    _h_record_splitter->setObjectName("h_record_splitter");
+    _h_record_splitter->addWidget(_vtab_record); // _h_record_splitter->addWidget(_h_tree_splitter);
+    _h_record_splitter->addWidget(_v_find_splitter);
+    _h_record_splitter->setCollapsible(0, false);
+    _h_record_splitter->setCollapsible(1, false);
+
+    // _h_tree_splitter->addWidget(_tree_screen); //
+    _h_tree_splitter->addWidget(_vtab_tree);
+    _h_tree_splitter->addWidget(_h_record_splitter); // _h_tree_splitter->addWidget(_vtab_record);
+
+    // v_left_splitter->addWidget(treeScreen);
+    // v_left_splitter->addWidget(recordTableScreen);
+    _h_tree_splitter->setCollapsible(0, true);
+    _h_tree_splitter->setCollapsible(1, false);
+    // v_left_splitter->setCollapsible(1, false);
+    _h_tree_splitter->setObjectName("h_tree_splitter");
+    //
+    // {
+    // auto sizes = _h_right_splitter->sizes();
+    // if(_globalparameters.entrance()->browsers().size() == 0) { //
+    // h_right_splitter->widget(0)->width()
+    // sizes[0] = 0;
+    // sizes[1] = sizes[0] + sizes[1];
+    // _h_right_splitter->setSizes(sizes);
+
+    // }
+    // emit _h_right_splitter->splitterMoved(sizes[0], 1);
+    // }
+
+    // gl_paras->v_right_splitter(_v_right_splitter);
+    // gl_paras->find_splitter(_v_find_splitter);
+    // gl_paras->h_tree_splitter(_h_tree_splitter);
+    // gl_paras->h_record_splitter(_h_record_splitter);
+
+    // _vtab_tree->setMinimumWidth(_vtab_tree->tabBar()->geometry().width());
+    // _vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    // _h_splitter->addWidget(_tree_screen);
+
+    // hSplitter = new QSplitter(Qt::Horizontal);
+    // _h_splitter->addWidget(_h_left_splitter);
+    // hSplitter->addWidget(treeScreen);             // Tree branches    // Дерево
+    // веток
+    // hSplitter->addWidget(recordTableScreen);      // The list of final entries
+    // // Список конечных записей
+
+    // _h_splitter->addWidget(_find_splitter); //hSplitter->addWidget(vSplitter);
+
+    // _h_splitter->setCollapsible(0, false);            // Дерево веток не может
+    // смыкаться
+    // _h_splitter->setCollapsible(1, false);            // Столбец со списком и
+    // содержимым записи не может смыкаться
+    // _h_splitter->setObjectName("hsplitter");
+
+    // connect(find_splitter, &QSplitter::splitterMoved, browser_entrance,
+    // &web::Entrance::on_splitter_moved);
+    // connect(find_splitter, &QSplitter::splitterMoved, recordTableScreen,
+    // &RecordTableScreen::on_splitter_moved);
+
+    // findSplitter=new QSplitter(Qt::Vertical);
+    // findSplitter->addWidget(hSplitter);
+    // findSplitter->addWidget(findScreenDisp);
+    // findSplitter->setCollapsible(0,false);        // Верхняя часть не должна
+    // смыкаться
+    // findSplitter->setCollapsible(1,false);        // Часть для поиска не должна
+    // смыкаться
+    // findSplitter->setObjectName("find_splitter");
+
+    QHBoxLayout* tree_layout = new QHBoxLayout();
+    tree_layout->setMargin(0);
+    tree_layout->setContentsMargins(0, 0, 0, 0);
+    tree_layout->setSpacing(0);
+    tree_layout->addWidget(_h_tree_splitter);
+    QVBoxLayout* central_ayout = new QVBoxLayout(_central_widget);
+    central_ayout->setMargin(0);
+    central_ayout->setContentsMargins(0, 0, 0, 0);
+    central_ayout->setSpacing(0);
+
+    central_ayout->addLayout(tree_layout);
+    _central_widget->setLayout(central_ayout);
+    setCentralWidget(_central_widget); // setCentralWidget(_h_record_splitter);//
+    // setCentralWidget(_h_splitter);
+    // //setCentralWidget(findSplitter);
+
+    _central_widget->adjustSize();
+    // auto	record_sizes	= _h_record_splitter->sizes();	//
+    // _h_tree_splitter->sizes();
+    // auto	bar_width		= _vtab_record->minimumSizeHint().width();	//
+    // tabBar()->geometry().width();	//
+    // _vtab_tree->tabBar()->geometry().width();
+    // auto	bar_width_s		= _vtab_record->sizeHint().width();//24
+    // auto	bar_width_t		= _vtab_record->tabBar()->sizeHint().width();//
+    // 0
+    //// auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0]
+    ///== 0
+    // if(bar_width >= record_sizes[0]){			//
+    // _h_left_splitter->widget(0)->width()
+    // auto vtab_record_min_width = _vtab_record->minimumSizeHint().width();	//
+    // auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();		//
+    // _tree_screen->minimumSizeHint().width();                 //
+    // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();
+    // // 6xx   // h_right_splitter->widget(0)->width();    // 0    //
+    // sizeHint().width();    // 23
+    //// auto h = h_right_splitter->handle(1);
+    //// h->move(lr + shw, h->rect().top());
+
+    // auto	size_memory	= appconfig->h_record_splitter_sizelist();//
+    // appconfig->h_tree_splitter_sizelist();
+    // auto	sum			= size_memory[0] > 0 ? size_memory[0] :
+    // this->geometry().width() * 15 / 100 + size_memory[1] > 0 ? size_memory[1] :
+    // this->geometry().width() * 85 / 100;
+    // record_sizes[0]	= size_memory[0] > vtab_record_min_width ? size_memory[0]
+    // < sum ? size_memory[0] : sum * 15 / 100 : vtab_record_min_width;
+    // record_sizes[1]	= sum - record_sizes[0] > 0 ? sum - record_sizes[0] : sum
+    // * 85 / 100;					// sizes[1] > size_memory[1] ? size_memory[1] :
+    // sizes[1];
+    ////	_vtab_tree->setMaximumWidth(maximumWidth());
+    ////	_vtab_tree->setSizePolicy(QSizePolicy::Expanding,
+    ///QSizePolicy::Expanding);// h_left_splitter->moveSplitter(sizes[0], 1);   //
+    ///protected member
+    // _h_record_splitter->setSizes(record_sizes);	//
+    // _h_tree_splitter->setSizes(tree_sizes);	// emit
+    // _h_tree_splitter->splitterMoved(sizes[0], 1);
+
+    //// auto s_0 = _vtab_tree->minimumSizeHint();   // (146, 146)
+    //// auto s_1 = _vtab_record->minimumSizeHint(); // (25, 146)
+    //// auto s_2 = _entrance->minimumSizeHint();
+    //// auto s_3 = _h_right_splitter->minimumSizeHint();    // (241,146)
+    //// auto s_4 = _h_right_splitter->maximumWidth();    // (241,146)
+    //// auto sizes_check = _h_left_splitter->sizes();
+    //// h_right_splitter->resize(h_right_splitter->sizeHint().width(),
+    ///h_right_splitter->height());
+    // }
+}
+
 wn_t::wn_t(
     web::Profile* profile, QString style_source // std::shared_ptr<gl_para> gl_paras	// , std::shared_ptr<AppConfig> appconfig_	// , std::shared_ptr<DataBaseConfig> databaseconfig_,
     )
@@ -88,6 +396,11 @@ wn_t::wn_t(
         this->setAttribute(Qt::WA_InputMethodEnabled);
         return style_source;
     }())
+    , _switcher([&] {
+        auto sw = new WindowSwitcher(windowswitcher_singleton_name, this);
+        gl_paras->window_switcher(sw);
+        return sw;
+    }())
     , _v_right_splitter([&]() -> QSplitter* {
         auto vrs = new QSplitter(Qt::Vertical);
         vrs->setSizes(appconfig->v_right_splitter_sizelist());
@@ -100,19 +413,24 @@ wn_t::wn_t(
         gl_paras->find_splitter(vfs);
         return vfs;
     }())
-    // , _vtab_tree([&](QString style_source_){auto vt = new HidableTabWidget(style_source_, this);gl_paras->vtab_tree(vt);return vt;} (_style))
-    , _h_record_splitter([&]() -> QSplitter* {
-        auto hrs = new QSplitter(Qt::Horizontal);
-        hrs->setSizes(appconfig->h_record_splitter_sizelist());
-        gl_paras->h_record_splitter(hrs);
-        return hrs;
-    }())
     , _h_tree_splitter([&]() -> QSplitter* {
         auto hls = new QSplitter(Qt::Horizontal);
         hls->setSizes(appconfig->h_tree_splitter_sizelist());
         gl_paras->h_tree_splitter(hls);
         return hls;
     }()) // Qt::Vertical
+    , _h_record_splitter([&]() -> QSplitter* {
+        auto hrs = new QSplitter(Qt::Horizontal);
+        hrs->setSizes(appconfig->h_record_splitter_sizelist());
+        gl_paras->h_record_splitter(hrs);
+        return hrs;
+    }())
+    , _vtab_tree([&](QString style_source_) -> HidableTab* {
+        (void)style_source_;
+        auto vt = new HidableTab(
+                this, _h_tree_splitter, std::make_shared<QSettings>(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat), "General", "h_tree_splitter_sizelistu", "collapsed", this);
+        gl_paras->vtab_tree(vt);
+        return vt; }(style_source))
     , _vtab_record([&]() -> HidableTab* {
         _vtab_record = nullptr;
         auto vr = new HidableTab(
@@ -134,7 +452,7 @@ wn_t::wn_t(
     }())
     , _tree_screen([&]() -> ts_t* {
         _tree_screen = nullptr;
-        auto ts = new ts_t(tree_screen_singleton_name, _editor_docker, this);
+        auto ts = new ts_t(tree_screen_singleton_name, _editor_docker, _vtab_tree, _switcher, this);
         gl_paras->tree_screen(ts);
         return ts;
     }()) // _vtabwidget
@@ -148,11 +466,6 @@ wn_t::wn_t(
         auto st = new QStatusBar(this);
         gl_paras->status_bar(st);
         return st;
-    }())
-    , _switcher([&] {
-        auto sw = new WindowSwitcher(windowswitcher_singleton_name, this);
-        gl_paras->window_switcher(sw);
-        return sw;
     }())
     , _quit_action([&]() -> QAction* {
         auto q = new QAction(tr("&Quit"), this);
@@ -222,10 +535,17 @@ wn_t::wn_t(
     QSettings main_settings(gl_paras->root_path() + "/" + gl_paras->target_os() + "/" + gl_para::_conf_filename, QSettings::IniFormat);
 
     QStringList line_list;
-    QList<int> list;
+    QList<int> record_list;
+    QList<int> tree_list;
     main_settings.beginGroup("General");
     line_list = (main_settings.value("h_record_splitter_sizelist", "100,100")).toString().split(",");
-    for (int i = 0; i < line_list.size(); ++i) list.append(line_list.at(i).toInt());
+    for (int i = 0; i < line_list.size(); ++i)
+        record_list.append(line_list.at(i).toInt());
+
+    QStringList tree_list_record = (main_settings.value("h_tree_splitter_sizelist", "100,100")).toString().split(",");
+    for (int i = 0; i < tree_list_record.size(); ++i)
+        tree_list.append(tree_list_record.at(i).toInt());
+
     auto collapsed = main_settings.value("collapsed", 0).toBool();
     // HidableTabWidget::_editentry->_blog_editor->_splitter->setSizes(list);
     main_settings.endGroup();
@@ -301,7 +621,8 @@ wn_t::wn_t(
         // tray_icon->setToolTip(iconComboBox->itemText(index));
     }();
     // set_icon();
-    if (QSystemTrayIcon::isSystemTrayAvailable()) _tray_icon->show();
+    if (QSystemTrayIcon::isSystemTrayAvailable())
+        _tray_icon->show();
     //// Инициализируется объект слежения за корзиной
     // trashmonitoring.init(appconfig->get_trashdir());
     // trashmonitoring.update();
@@ -312,7 +633,9 @@ wn_t::wn_t(
     // Инициализация генератора случайных чисел
     init_random();
 
+    tree_list[0] = 350;
     {
+
         ////	QSettings	qtm_settings(_config_file_name,
         ///QSettings::IniFormat);
         // auto	barwidth_geometry	=
@@ -322,28 +645,41 @@ wn_t::wn_t(
         // _control_panel->tabBar()->width();
 
         auto bar_width = _vtab_record->tabBar()->sizeHint().width();
-        if (0 == bar_width) bar_width = _vtab_record->sizeHint().width();
-        if (list[0] <= bar_width || collapsed) {
-            _vtab_record->collapse_when_true(true);
+        if (0 == bar_width)
+            bar_width = _vtab_record->sizeHint().width();
+        int final_left_control = tree_list[0] + record_list[0];
+        if (record_list[0] <= bar_width || collapsed) {
+            _vtab_record->collapse(true);
             // auto list = _splitter->sizes();
 
-            list[1] = width() - bar_width;
-            list[0] = bar_width;
+            record_list[0] = tree_list[0] + bar_width;
+            final_left_control = tree_list[0] + record_list[0];
+            record_list[1] = width() - bar_width - final_left_control;
+
             // _splitter->setSizes(list);
             // emit _splitter->splitterMoved(list[0], 0);
         } else {
-            _vtab_record->collapse_when_true(false);
+            _vtab_record->collapse(false);
+            tree_list[0] = bar_width;
             // 284
             // 428
         }
-        _vtab_record->resize(list[0], _vtab_record->parentWidget()->geometry().height());
-        _h_record_splitter->setSizes(list);
 
-        _browser_docker->resize(list[1], this->geometry().height());
+        _vtab_record->resize(record_list[0], _vtab_record->parentWidget()->geometry().height());
+        _h_record_splitter->setSizes(record_list);
 
-        assert(list[1] == _browser_docker->width());
-        emit _h_record_splitter->splitterMoved(list[0], 0);
+        _browser_docker->resize(record_list[1], this->geometry().height());
+
+        assert(record_list[1] == _browser_docker->width());
+        emit _h_record_splitter->splitterMoved(final_left_control, 0);
     }
+    tree_list[1] = width() - tree_list[0];
+    _h_tree_splitter->setSizes(tree_list);
+
+    _vtab_tree->resize(tree_list[0], height());
+    //    _tree_screen->resize(tree_list[0], height());
+    //    _vtab_tree->show();
+    emit _h_tree_splitter->splitterMoved(tree_list[0], 0);
 }
 
 // void wn_t::append_quit_menu(){
@@ -416,7 +752,8 @@ wn_t::~wn_t()
 
 void wn_t::setup_ui(void)
 {
-    if (gl_paras->target_os() == "android") setWindowState(Qt::WindowMaximized); // Для Андроида окно просто
+    if (gl_paras->target_os() == "android")
+        setWindowState(Qt::WindowMaximized); // Для Андроида окно просто
     // разворачивается на весь экран
     else {
         QRect rect = appconfig->mainwin_geometry();
@@ -472,7 +809,8 @@ void wn_t::setup_ui(void)
     // _switcher->setObjectName(windowswitcher_singleton_name); //
     // "windowSwitcher"
     // gl_paras->window_switcher(_switcher);
-    if (!_find_screen->isVisible()) _switcher->find_in_base_click();
+    if (!_find_screen->isVisible())
+        _switcher->find_in_base_click();
     // if(_table_screen) {
     // _entrance = new web::Entrance(
     // _record_ontroller
@@ -499,9 +837,6 @@ void wn_t::setup_signals(void)
 
     connect(sapp_t::instance(), &QApplication::focusChanged, this, &wn_t::on_focus_changed);
 
-    // Связывание сигналов кнопки поиска по базе с действием по открытию виджета
-    // поиска по базе
-    connect(_tree_screen->_actionlist[action_find_in_base], &QAction::triggered, gl_paras->window_switcher(), &WindowSwitcher::find_in_base_click);
     // connect(_entrance->getactionFreeze(), &QAction::triggered,
     // globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
     // connect(_table_screen->_find_in_base, &QAction::triggered,
@@ -705,64 +1040,90 @@ void wn_t::setup_signals(void)
     connect(_h_tree_splitter, &QSplitter::splitterMoved, [&](int _tree_pos, int index) {
         (void)index;
         (void)_tree_pos;
+        QList<int> current_record_parameter = _h_record_splitter->sizes();
+        QString _hide_tree_text = current_record_parameter[0] == 0 ? tr("Show tree view") : tr("Hide tree view");
+        QIcon _hide_tree_icon = current_record_parameter[0] == 0 ? QIcon(":/resource/pic/butterfly-right.svg") : QIcon(":/resource/pic/butterfly-left.svg");
 
-        // QList<int>	current_tree_sizes = _h_tree_splitter->sizes();
-        // QString _hide_tree_text = current_tree_sizes[0] == 0 ? tr("Show
-        // tree view") : tr("Hide tree view");
-        // QIcon _hide_tree_icon = current_tree_sizes[0] == 0 ?
-        // QIcon(":/resource/pic/butterfly-right.svg") :
-        // QIcon(":/resource/pic/butterfly-left.svg");
-        // auto widget = _vtab_record->currentWidget();
-        // auto _record_screen = widget ? widget->objectName() ==
-        // record_screen_multi_instance_name ? static_cast<rs_t *>(widget) :
-        // nullptr : nullptr;	//
-        // globalparameters.entrance()->activated_browser()->record_screen();
-        // auto _record_hide = _record_screen ? _record_screen->_record_hide
-        // : nullptr;
-        //////	    auto _hide_tree_icon =
-        ///_record_screen->_hide_tree_icon;
-        //////	    auto _hide_tree_text =
-        ///_record_screen->_hide_tree_text;
-        ////	    auto old_tree_sizes =
-        ///appconfig->h_tree_splitter_sizelist();
-        //////	    auto _h_record_splitter = this->h_record_splitter();
-        ////	    auto record_sizes = _h_record_splitter->sizes();
+        std::vector<rs_t*> rss;
+        auto count = _vtab_record->count();
+        for (int rs = 0; rs < count; rs++) {
+            //            auto widget = _vtab_record->currentWidget();
+            //            auto _record_screen = widget ? widget->objectName() == record_screen_multi_instance_name ? static_cast<rs_t*>(widget) : nullptr : nullptr;
+            //            auto _record_hide = _record_screen ? _record_screen->_record_hide : nullptr;
+            auto widget = _vtab_record->widget(rs);
+            auto _record_screen = widget ? widget->objectName() == record_screen_multi_instance_name ? static_cast<rs_t*>(widget) : nullptr : nullptr;
+            if (_record_screen) {
+                rss.push_back(_record_screen);
+            }
+        }
 
-        //////	    auto _vtab_tree = this->vtab_tree();
-        // auto bar_width = 0;	//
-        // _vtab_tree->tabBar()->geometry().width();
-        // if(_tree_pos <= bar_width){	// if(bar_width >= sizes[0]){//
-        // h_left_splitter->widget(0)->width()
-        ////		//		vtab_tree->resize(bar_width,
-        ///vtab_tree->height());
-        ////		//		vtab_tree->setSizePolicy(QSizePolicy::Minimum,
-        ///QSizePolicy::Expanding);
-        ////		_vtab_tree->setMinimumWidth(bar_width);	//
-        ///vtab_tree->setMaximumWidth(bar_width);
-        // if(_record_hide){
-        // _hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
-        // _hide_tree_text = tr("Show tree view");
-        // if(!
-        // _record_screen->_toolsline->actions().contains(_record_hide))insert_action_as_button<QToolButton>(_record_screen->_toolsline,
-        // _record_screen->_pin, _record_hide);
-        // }
-        // }else{
-        //////		vtab_tree->setSizePolicy(QSizePolicy::Expanding,
-        ///QSizePolicy::Expanding);
-        ////
-        ///_vtab_tree->setMaximumWidth(this->maximumWidth());
-        // if(_record_hide){
-        // _hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");
-        // _hide_tree_text = tr("Hide tree view");
-        // if(_record_screen->_toolsline->actions().contains(_record_hide))_record_screen->_toolsline->removeAction(_record_hide);
-        // }
-        // }
-        // if(_record_hide){
-        // _record_hide->setIcon(_hide_tree_icon);
-        // _record_hide->setToolTip(_hide_tree_text);
-        // _record_hide->setStatusTip(_hide_tree_text);
-        // _record_hide->setText(_hide_tree_text);
-        // }
+        ////	    auto _hide_tree_icon = _record_screen->_hide_tree_icon;
+        ////	    auto _hide_tree_text = _record_screen->_hide_tree_text;
+        //	    auto old_tree_sizes = appconfig->h_tree_splitter_sizelist();
+        ////	    auto _h_record_splitter = this->h_record_splitter();
+        //	    auto record_sizes = _h_record_splitter->sizes();
+
+        ////	    auto _vtab_tree = this->vtab_tree();
+        auto bar_width = _vtab_tree->tabBar()->geometry().width();
+        if (_tree_pos <= bar_width) { // if(bar_width >= sizes[0]){// _h_tree_splitter->widget(0)->width()  // _h_left_splitter->widget(0)->width()
+            //		//		_vtab_tree->resize(bar_width, vtab_tree->height());
+            //		//		_vtab_tree->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+            //		_vtab_tree->setMinimumWidth(bar_width);	// vtab_tree->setMaximumWidth(bar_width);
+            //		//		_vtab_tree->resize(bar_width, vtab_tree->height());
+            //            _vtab_tree->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+            //            _vtab_tree->setMinimumWidth(bar_width); // vtab_tree->setMaximumWidth(bar_width);
+
+            //            _vtab_tree->hide();
+            //            if (rss.size() > 0) {
+            //                for (auto rs : rss) {
+            //                    auto _record_hide = rs ? rs->_record_hide : nullptr;
+            //                    if (nullptr == _record_hide) {
+            //                        _hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
+            //                        _hide_tree_text = tr("Show tree view");
+
+            //                        _record_hide = new QAction(_hide_tree_icon, _hide_tree_text, rs);
+            //                        _record_hide->setIcon(_hide_tree_icon);
+            //                        _record_hide->setToolTip(_hide_tree_text);
+            //                        _record_hide->setStatusTip(_hide_tree_text);
+            //                        _record_hide->setText(_hide_tree_text);
+            //                        connect(_record_hide, &QAction::triggered, this, [&]() { _vtab_tree->show(); });
+
+            //                        //                        if (!in->_toolsline->actions().contains(_record_hide))
+            //                        add_action<QToolButton>(rs->_toolsline, rs->_edit_field, _record_hide);
+            //                    }
+            //                }
+            //            }
+        } else {
+            ////		vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            // _vtab_tree->setMaximumWidth(this->maximumWidth());
+            _vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            _vtab_tree->setMaximumWidth(this->maximumWidth());
+            //            _vtab_tree->show();
+            //            if (rss.size() > 0) {
+            //                for (auto rs : rss) {
+            //                    auto _record_hide = rs ? rs->_record_hide : nullptr;
+            //                    if (_record_hide) {
+            //                        //                        if (_record_screen->_toolsline->actions().contains(_record_hide))
+            //                        disconnect(_record_hide);
+            //                        rs->_toolsline->removeAction(_record_hide);
+            //                        delete _record_hide;
+            //                    }
+            //                }
+            //            }
+        }
+
+        //        if (rss.size() > 0) {
+        //            for (auto in : rss) {
+        //                auto _record_hide = in ? in->_record_hide : nullptr;
+        //                if (_record_hide) {
+        //                    _record_hide->setIcon(_hide_tree_icon);
+        //                    _record_hide->setToolTip(_hide_tree_text);
+        //                    _record_hide->setStatusTip(_hide_tree_text);
+        //                    _record_hide->setText(_hide_tree_text);
+        //                }
+        //            }
+        //        }
+
         auto tree_siezes = _h_tree_splitter->sizes();
         ////	    emit
         ///_tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
@@ -773,26 +1134,41 @@ void wn_t::setup_signals(void)
         // _h_record_splitter->setSizes(record_sizes);
         // if(0 != pos){
         // auto tree_siezes = _h_tree_splitter->sizes();
-        if (tree_siezes != appconfig->h_tree_splitter_sizelist()) appconfig->h_tree_splitter_sizelist(tree_siezes);
+        if (tree_siezes != appconfig->h_tree_splitter_sizelist())
+            appconfig->h_tree_splitter_sizelist(tree_siezes);
         // }
     });
 
-    //// moved to HidableTabWidget
-    // connect(_h_record_splitter, &QSplitter::splitterMoved, [&](int record_pos,
-    // int index){
-    // auto result = _vtab_record->inner_rebuild_on_splitter_moved(record_pos,
-    // index);
-    // auto bar_width = std::get<0>(result);
-    // auto sizes = std::get<1>(result);
-    // if(sizes != appconfig->h_record_splitter_sizelist()	// &&
-    // h_record_sizes[0] != bar_width
-    // ){
-    // if(sizes[0] <= bar_width) ;// appconfig->collapsed(true);
-    // else appconfig->h_record_splitter_sizelist(sizes);
-    // }
-    // });
+    // moved to HidableTabWidget
+    connect(_h_record_splitter, &QSplitter::splitterMoved, [&](int record_pos, int index) {
+        (void)index;
+        //        auto result = _vtab_record->inner_rebuild_on_splitter_moved(record_pos, index);
+        //        auto bar_width = std::get<0>(result);
+        //        auto sizes = std::get<1>(result);
+        auto bar_width = _vtab_record->tabBar()->geometry().width();
+        if (bar_width != appconfig->h_record_splitter_sizelist()[0]) // (sizes != appconfig->h_record_splitter_sizelist() // && h_record_sizes[0] != bar_width
+        //)
+        {
+            auto record_siezes = _h_record_splitter->sizes();
+            if (record_pos <= bar_width) { // (sizes[0] <= bar_width)
+                //                // appconfig->collapsed(true);
+                //                _vtab_record->hide();
+                record_siezes[1] = record_siezes[0] + record_siezes[1] - bar_width;
+                record_siezes[0] = bar_width;
+                //                _h_record_splitter->setSizes(QList<int>({ 2, record_siezes[1] - 2 }));
 
-    _vtab_record->tabBar()->setUsesScrollButtons(true);            // _vtab_tree->tabBar()->setUsesScrollButtons(true);
+            } else {
+                //                //                //                QList<int> sizes;
+                //                //                //                sizes[0] = bar_width;
+                //                //                //                sizes[1] = _vtab_record->geometry().width();
+                //                _vtab_record->show();
+                //                //                appconfig->h_record_splitter_sizelist(record_siezes);
+            }
+            appconfig->h_record_splitter_sizelist(record_siezes);
+        }
+    });
+
+    _vtab_record->tabBar()->setUsesScrollButtons(true); // _vtab_tree->tabBar()->setUsesScrollButtons(true);
     connect(_vtab_record->tabBar(), &::QTabBar::tabCloseRequested, // this, &wn_t::on_tabCloseRequested);
         [&](int index) {
             auto count = _vtab_record->count();
@@ -816,20 +1192,20 @@ void wn_t::setup_signals(void)
                             //						    //						    if (_browser) _browser->close();
                             if (_browser) {
                                 _browser->destroy_trigger_from_others()(_blogger); //browser_->close(); // emit browser_->close_request(browser_);
-                                                                                   //									browser_->deleteLater();                        //
-                                                                                   // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-                                                                                   //                                                                                _browser->deleteLater();
+                                    //									browser_->deleteLater();                        //
+                                    // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+                                    //                                                                                _browser->deleteLater();
                             }
-////						    _blogger->destroy_trigger_from_others()(nullptr); //_blogger->close(); //
-////						    delete _blogger;                              //	_blogger->deleteLater(); //blogger_->~Blogger();
+                        ////						    _blogger->destroy_trigger_from_others()(nullptr); //_blogger->close(); //
+                        ////						    delete _blogger;                              //	_blogger->deleteLater(); //blogger_->~Blogger();
 
 #else
                             rs->close_sender_id(typeid(HidableTab).name());
                             if (_browser) {
                                 _browser->close(); //_browser->close_requested_from_others(nullptr); // emit browser_->close_request(browser_);
-                                                   //									browser_->deleteLater();                        //
-                                                   // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-                                                   //										_browser->deleteLater();
+                                    //									browser_->deleteLater();                        //
+                                    // if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+                                    //										_browser->deleteLater();
                             }
 
 //									_blogger->close(); // emit _blogger->close_request(blogger_);
@@ -864,8 +1240,10 @@ void wn_t::setup_signals(void)
                                     if (blogger_ != editor_docker_->widget()) {
                                         blogger_->show();
                                         blogger_->activateWindow();
-                                        if (!blogger_->isTopLevel()) blogger_->raise();
-                                        if (editor_docker_->widget() != blogger_) editor_docker_->prepend(blogger_);
+                                        if (!blogger_->isTopLevel())
+                                            blogger_->raise();
+                                        if (editor_docker_->widget() != blogger_)
+                                            editor_docker_->prepend(blogger_);
                                         //									_editor_docker->setWidget(blogger_);
                                         //									blogger_->setParent(_editor_docker);
                                         blogger_->adjustSize();
@@ -880,7 +1258,8 @@ void wn_t::setup_signals(void)
                                     current_bro->show();
                                     //							if(!browser->isActiveWindow())
                                     current_bro->activateWindow();
-                                    if (!current_bro->isTopLevel()) current_bro->raise();
+                                    if (!current_bro->isTopLevel())
+                                        current_bro->raise();
                                     current_bro->adjustSize();
                                     auto _tab_widget = current_bro->tab_widget();
                                     if (_tab_widget->count() > 0) {
@@ -932,12 +1311,14 @@ void wn_t::setup_signals(void)
                                             auto blogger_ = rs->blogger();
                                             if (blogger_) {
                                                 blogger_->hide();
-                                                if (blogger_->isTopLevel()) blogger_->lower();
+                                                if (blogger_->isTopLevel())
+                                                    blogger_->lower();
                                             }
                                             auto browser_ = rs->browser();
                                             if (browser_) {
                                                 browser_->hide();
-                                                if (browser_->isTopLevel()) browser_->lower();
+                                                if (browser_->isTopLevel())
+                                                    browser_->lower();
                                             }
                                         }
                                     }
@@ -952,318 +1333,6 @@ void wn_t::setup_signals(void)
     });
 }
 
-//
-//
-//
-
-//   // old version
-//  ____________________________________________________________________________________________________________________
-// |															|
-// |    ________________________________________________      ____________________________________________________	|
-// |   |						|    |							  |	|
-// |   |	 ___________________   _____________    |    |  ________________________________________________  |	|
-// |   |	|		    | |		    |	|    | |						| |	|
-// |   |	|		    | |		    |	|    | |     _______________________________________	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |		      _entrance		     |	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |________________________________________|	| |	|
-// |   |	|		    | |		    |	|    | |						| |	|
-// |   |	|		    | |		    |	|    | |	       _v_right_splitter		| |	|
-// |   |	|		    | |		    |	|    | |     ________________________________________	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|_vtab_tree	    | |_vtab_record |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |		   _editor_screen            |	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |					     |	| |	|
-// |   |	|		    | |		    |	|    | |    |________________________________________|	| |	|
-// |   |	|		    | |		    |	|    | |						| |	|
-// |   |	|		    | |		    |	|    | |						| |	|
-// |   |	|		    | |		    |	|    | |________________________________________________| |	|
-// |   |	|		    | |		    |	|    |							  |	|
-// |   |	|		    | |		    |	|    |			   _v_find_splitter               |	|
-// |   |	|		    | |		    |	|    |  ________________________________________________  |	|
-// |   |	|		    | |		    |	|    | |						| |	|
-// |   |	|		    | |		    |	|    | |		   _find_screen			| |	|
-// |   |	|___________________| |_____________|	|    | |________________________________________________| |	|
-// |   |			                        |    |							  |	|
-// |   |		_h_tree_splitter		|    |							  |	|
-// |   |________________________________________________|    |____________________________________________________|	|
-// |															|
-// |					    _h_record_splitter								|
-// |____________________________________________________________________________________________________________________|
-
-//   // current version diagram
-//  ________________________________________________________________________________________________________________________________________
-// |																	    |
-// |    ________________________________      __________________________________________________________________________________________    |
-// |   |				|    |												|   |
-// |   |				|    |	  ______________________      ____________________________________________________	|   |
-// |   |				|    |	 |			|    |							  |	|   |
-// |   |				|    |	 |		        |    |  ________________________________________________  |	|   |
-// |   |				|    |	 |		        |    | |						| |	|   |
-// |   |				|    |	 |		        |    | |     _______________________________________	| |	|   |
-// |   |				|    |	 |		        |    | |    |					    |	| |	|   |
-// |   |				|    |	 |		        |    | |    |					    |	| |	|   |
-// |   |				|    |	 |		        |    | |    |					    |	| |	|   |
-// |   |				|    |   |		        |    | |    |					    |	| |	|   |
-// |   |				|    |   |		        |    | |    |	   _browser_dock		    |	| |	|   |
-// |   |				|    |   |		        |    | |    |					    |	| |	|   |
-// |   |				|    |   |		        |    | |    |					    |	| |	|   |
-// |   |				|    |   |		        |    | |    |_______________________________________|	| |	|   |
-// |   |				|    |   |		        |    | |						| |	|   |
-// |   |				|    |   |		        |    | |	       _v_right_splitter		| |	|   |
-// |   |				|    |   |		        |    | |     ________________________________________	| |	|   |
-// |   |				|    |   |		        |    | |    |					     |	| |	|   |
-// |   |	    _vtab_tree	        |    |   |	_vtab_record	|    | |    |					     |	| |	|   |
-// |   |				|    |   |		        |    | |    |					     |	| |	|   |
-// |   |				|    |   |		        |    | |    |					     |	| |	|   |
-// |   |				|    |   |		        |    | |    |		   _editor_dock		     |	| |	|   |
-// |   |				|    |   |		        |    | |    |					     |	| |	|   |
-// |   |				|    |   |		        |    | |    |					     |	| |	|   |
-// |   |				|    |   |		        |    | |    |________________________________________|	| |	|   |
-// |   |				|    |   |		        |    | |						| |	|   |
-// |   |				|    |   |		        |    | |						| |	|   |
-// |   |				|    |   |		        |    | |________________________________________________| |	|   |
-// |   |				|    |   |		        |    |							  |	|   |
-// |   |				|    |   |		        |    |			   _v_find_splitter               |	|   |
-// |   |				|    |   |		        |    |  ________________________________________________  |	|   |
-// |   |				|    |   |		        |    | |						| |	|   |
-// |   |				|    |   |		        |    | |	       _find_screen			| |	|   |
-// |   |				|    |   |		        |    | |________________________________________________| |	|   |
-// |   |			        |    |   |			|    |							  |	|   |
-// |   |		                |    |   |                      |    |							  |	|   |
-// |   |				|    |	 |______________________|    |____________________________________________________|	|   |
-// |   |				|    |												|   |
-// |   |				|    |		       _h_record_splitter							|   |
-// |   |________________________________|    |__________________________________________________________________________________________|   |																    |
-// |																	    |
-// |			    _h_tree_splitter												    |
-// |________________________________________________________________________________________________________________________________________|
-
-
-//
-//
-//
-// follow comments above to learn the "assembly function"
-void wn_t::assembly(void)
-{
-    // v_right_splitter = new QSplitter(Qt::Vertical);
-    _v_right_splitter->addWidget(_browser_docker);
-    // _v_right_splitter->addWidget(_editor_screen);			// Text entries //
-    // Текст записи
-    _v_right_splitter->addWidget(_editor_docker);
-    _v_right_splitter->setCollapsible(0, true); // if true, make editor can
-    // overload it    // The list of
-    // final entries can not link up
-    // // Список конечных записей не
-    // может смыкаться
-    _v_right_splitter->setCollapsible(1, false); // The contents of the recording
-    // can not link up    //
-    // Содержимое записи не может
-    // смыкаться
-    _v_right_splitter->setObjectName("v_right_splitter");
-
-    // find_splitter = new QSplitter(Qt::Vertical);
-    _v_find_splitter->addWidget(
-        _v_right_splitter); // findSplitter->addWidget(hSplitter);
-    _v_find_splitter->addWidget(_find_screen);
-    _v_find_splitter->setCollapsible(0, false); // Верхняя часть не должна смыкаться
-    _v_find_splitter->setCollapsible(
-        1, false); // Часть для поиска не должна смыкаться
-    _v_find_splitter->setObjectName("find_splitter");
-
-    //// _qtabwidget = new QTabWidget(this);
-    ////    _vtab_tree->hide();
-    ////    _vtab_record->setTabPosition(QTabWidget::West);	//
-    ///_vtab_tree->setTabPosition(QTabWidget::West);			// sometime make
-    ///"QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
-
-    //// _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"),
-    ///"Tree");
-
-    //// _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"),
-    ///"Candidate");
-
-    //// if(_page_screen)_vtabwidget->addTab(_page_screen,
-    ///QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
-
-    ////    auto index = _vtab_tree->addTab(static_cast<QWidget *>(new
-    ///tsv_t(_tree_screen, nullptr)),
-    ///QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
-    // _vtab_record->addTab(static_cast<QWidget *>(_download),
-    // QIcon(":/resource/pic/apple.svg"), "Download");	//
-    // _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(this, _tree_screen,
-    // _download)), QIcon(":/resource/pic/apple.svg"), "Download");			//
-    // QIcon(":/resource/pic/holly.svg")
-
-    ////    _vtab_tree->setCurrentIndex(index);
-
-    appconfig->find_screen_tree_search_area(
-        0); // force to root_item of global tree
-
-    // v_left_splitter = new QSplitter(
-    // Qt::Horizontal  // Qt::Vertical
-    // );
-
-    // int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 100
-    // int vtab_g_width = _vtabwidget->geometry().width();         // 100
-    // int this_width = geometry().width();                        // 640
-    // int download_width = _download->geometry().width();         // 1089
-    // int tree_screen_width = _tree_screen->geometry().width();   // 100
-    // int find_splitter_width = _v_find_splitter->geometry().width(); // 640
-    // int left_splitter_width = _h_left_splitter->geometry().width(); // 640
-
-    // if(_vtabwidget->frameGeometry().width() ==
-    // _h_left_splitter->geometry().width()) {
-    // _vtabwidget->resize(_vtabwidget->geometry().width() * 15 / 100,
-    // _vtabwidget->geometry().height());
-    // }
-
-    _h_record_splitter->setObjectName("h_record_splitter");
-    _h_record_splitter->addWidget(
-        _vtab_record); // _h_record_splitter->addWidget(_h_tree_splitter);
-    _h_record_splitter->addWidget(_v_find_splitter);
-    _h_record_splitter->setCollapsible(0, false);
-    _h_record_splitter->setCollapsible(1, false);
-
-    //
-    _h_tree_splitter->addWidget(
-        _tree_screen); // _h_tree_splitter->addWidget(_vtab_tree);
-    _h_tree_splitter->addWidget(
-        _h_record_splitter); // _h_tree_splitter->addWidget(_vtab_record);
-
-    // v_left_splitter->addWidget(treeScreen);
-    // v_left_splitter->addWidget(recordTableScreen);
-    _h_tree_splitter->setCollapsible(0, true);
-    _h_tree_splitter->setCollapsible(1, false);
-    // v_left_splitter->setCollapsible(1, false);
-    _h_tree_splitter->setObjectName("h_tree_splitter");
-    //
-    // {
-    // auto sizes = _h_right_splitter->sizes();
-    // if(_globalparameters.entrance()->browsers().size() == 0) { //
-    // h_right_splitter->widget(0)->width()
-    // sizes[0] = 0;
-    // sizes[1] = sizes[0] + sizes[1];
-    // _h_right_splitter->setSizes(sizes);
-
-    // }
-    // emit _h_right_splitter->splitterMoved(sizes[0], 1);
-    // }
-
-    // gl_paras->v_right_splitter(_v_right_splitter);
-    // gl_paras->find_splitter(_v_find_splitter);
-    // gl_paras->h_tree_splitter(_h_tree_splitter);
-    // gl_paras->h_record_splitter(_h_record_splitter);
-
-    // _vtab_tree->setMinimumWidth(_vtab_tree->tabBar()->geometry().width());
-    // _vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-    // _h_splitter->addWidget(_tree_screen);
-
-    // hSplitter = new QSplitter(Qt::Horizontal);
-    // _h_splitter->addWidget(_h_left_splitter);
-    // hSplitter->addWidget(treeScreen);             // Tree branches    // Дерево
-    // веток
-    // hSplitter->addWidget(recordTableScreen);      // The list of final entries
-    // // Список конечных записей
-
-    // _h_splitter->addWidget(_find_splitter); //hSplitter->addWidget(vSplitter);
-
-    // _h_splitter->setCollapsible(0, false);            // Дерево веток не может
-    // смыкаться
-    // _h_splitter->setCollapsible(1, false);            // Столбец со списком и
-    // содержимым записи не может смыкаться
-    // _h_splitter->setObjectName("hsplitter");
-
-    // connect(find_splitter, &QSplitter::splitterMoved, browser_entrance,
-    // &web::Entrance::on_splitter_moved);
-    // connect(find_splitter, &QSplitter::splitterMoved, recordTableScreen,
-    // &RecordTableScreen::on_splitter_moved);
-
-    // findSplitter=new QSplitter(Qt::Vertical);
-    // findSplitter->addWidget(hSplitter);
-    // findSplitter->addWidget(findScreenDisp);
-    // findSplitter->setCollapsible(0,false);        // Верхняя часть не должна
-    // смыкаться
-    // findSplitter->setCollapsible(1,false);        // Часть для поиска не должна
-    // смыкаться
-    // findSplitter->setObjectName("find_splitter");
-
-    QHBoxLayout* tree_layout = new QHBoxLayout();
-    tree_layout->setMargin(0);
-    tree_layout->setContentsMargins(0, 0, 0, 0);
-    tree_layout->setSpacing(0);
-    tree_layout->addWidget(_h_tree_splitter);
-    QVBoxLayout* central_ayout = new QVBoxLayout(_central_widget);
-    central_ayout->setMargin(0);
-    central_ayout->setContentsMargins(0, 0, 0, 0);
-    central_ayout->setSpacing(0);
-
-    central_ayout->addLayout(tree_layout);
-    _central_widget->setLayout(central_ayout);
-    setCentralWidget(_central_widget); // setCentralWidget(_h_record_splitter);//
-    // setCentralWidget(_h_splitter);
-    // //setCentralWidget(findSplitter);
-
-    _central_widget->adjustSize();
-    // auto	record_sizes	= _h_record_splitter->sizes();	//
-    // _h_tree_splitter->sizes();
-    // auto	bar_width		= _vtab_record->minimumSizeHint().width();	//
-    // tabBar()->geometry().width();	//
-    // _vtab_tree->tabBar()->geometry().width();
-    // auto	bar_width_s		= _vtab_record->sizeHint().width();//24
-    // auto	bar_width_t		= _vtab_record->tabBar()->sizeHint().width();//
-    // 0
-    //// auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0]
-    ///== 0
-    // if(bar_width >= record_sizes[0]){			//
-    // _h_left_splitter->widget(0)->width()
-    // auto vtab_record_min_width = _vtab_record->minimumSizeHint().width();	//
-    // auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();		//
-    // _tree_screen->minimumSizeHint().width();                 //
-    // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();
-    // // 6xx   // h_right_splitter->widget(0)->width();    // 0    //
-    // sizeHint().width();    // 23
-    //// auto h = h_right_splitter->handle(1);
-    //// h->move(lr + shw, h->rect().top());
-
-    // auto	size_memory	= appconfig->h_record_splitter_sizelist();//
-    // appconfig->h_tree_splitter_sizelist();
-    // auto	sum			= size_memory[0] > 0 ? size_memory[0] :
-    // this->geometry().width() * 15 / 100 + size_memory[1] > 0 ? size_memory[1] :
-    // this->geometry().width() * 85 / 100;
-    // record_sizes[0]	= size_memory[0] > vtab_record_min_width ? size_memory[0]
-    // < sum ? size_memory[0] : sum * 15 / 100 : vtab_record_min_width;
-    // record_sizes[1]	= sum - record_sizes[0] > 0 ? sum - record_sizes[0] : sum
-    // * 85 / 100;					// sizes[1] > size_memory[1] ? size_memory[1] :
-    // sizes[1];
-    ////	_vtab_tree->setMaximumWidth(maximumWidth());
-    ////	_vtab_tree->setSizePolicy(QSizePolicy::Expanding,
-    ///QSizePolicy::Expanding);// h_left_splitter->moveSplitter(sizes[0], 1);   //
-    ///protected member
-    // _h_record_splitter->setSizes(record_sizes);	//
-    // _h_tree_splitter->setSizes(tree_sizes);	// emit
-    // _h_tree_splitter->splitterMoved(sizes[0], 1);
-
-    //// auto s_0 = _vtab_tree->minimumSizeHint();   // (146, 146)
-    //// auto s_1 = _vtab_record->minimumSizeHint(); // (25, 146)
-    //// auto s_2 = _entrance->minimumSizeHint();
-    //// auto s_3 = _h_right_splitter->minimumSizeHint();    // (241,146)
-    //// auto s_4 = _h_right_splitter->maximumWidth();    // (241,146)
-    //// auto sizes_check = _h_left_splitter->sizes();
-    //// h_right_splitter->resize(h_right_splitter->sizeHint().width(),
-    ///h_right_splitter->height());
-    // }
-}
-
 void wn_t::save_all_state(void)
 {
     Blogger* currrent_blogger = nullptr;
@@ -1273,7 +1342,8 @@ void wn_t::save_all_state(void)
         auto rs = dynamic_cast<rs_t*>(wd);
         if (rs) {
             auto blogger_ = rs->blogger();
-            if (rs == _vtab_record->currentWidget()) currrent_blogger = blogger_;
+            if (rs == _vtab_record->currentWidget())
+                currrent_blogger = blogger_;
             if (blogger_ && !blogger_->close_request_sent() && !blogger_->destroy_request_sent()) {
                 blogger_->save_text_context(); // auto bro = rs->browser(); if (bro && !bro->close_request_sent() && !bro->destroy_request_sent()) bro->save();
                 blogger_->save_editor_cursor_position();
@@ -1308,8 +1378,8 @@ void wn_t::save_all_state(void)
         auto drop_flag_status = walkhistory.drop_flag();
         walkhistory.drop_flag(true);
         walkhistory.add<WALK_HISTORY_GO_NONE>(
-            id,                                      //static_cast<id_value>(_control_tab->topic()), // id
-            currrent_blogger->cursor_position(),     // _editor_screen->cursor_position()
+            id, //static_cast<id_value>(_control_tab->topic()), // id
+            currrent_blogger->cursor_position(), // _editor_screen->cursor_position()
             currrent_blogger->scrollbar_position()); // _editor_screen->scrollbar_position());
         walkhistory.drop_flag(drop_flag_status);
     }
@@ -1390,7 +1460,7 @@ QSplitter* wn_t::h_tree_splitter() const
 // Слот, срабатывающий когда происходит выход из оконной системы
 void wn_t::commit_data(QSessionManager& manager)
 {
-    Q_UNUSED(manager);
+    (void)manager;
     qDebug() << "Session manager send commit data signal.";
 
     application_fast_exit();
@@ -1399,7 +1469,8 @@ void wn_t::commit_data(QSessionManager& manager)
 // Восстанавливается геометрия окна и позиции основных разделителей
 void wn_t::restore_geometry(void)
 {
-    if (gl_paras->target_os() == "android") setWindowState(Qt::WindowMaximized); // Для Андроида окно просто
+    if (gl_paras->target_os() == "android")
+        setWindowState(Qt::WindowMaximized); // Для Андроида окно просто
     // разворачивается на весь экран
     else {
         QRect rect = appconfig->mainwin_geometry();
@@ -1504,7 +1575,7 @@ void wn_t::restore_geometry(void)
 
     _h_record_splitter->setSizes(
         record_sizes); // _h_tree_splitter->setSizes(record_sizes);
-                       // // new_sizes
+    // // new_sizes
 
     // _v_right_splitter->setSizes(appconfig->vspl_sizelist());
     // _h_splitter->setSizes(appconfig->hspl_sizelist());
@@ -1534,7 +1605,8 @@ void wn_t::save_geometry(void)
     // if(findScreenDisp->isVisible()) - так делать нельзя, т.к.
     // данный метод вызывается из декструктора главного окна, и к этому моменту
     // виджет уже невиден
-    if (appconfig->findscreen_show()) appconfig->findsplitter_sizelist(_v_find_splitter->sizes());
+    if (appconfig->findscreen_show())
+        appconfig->findsplitter_sizelist(_v_find_splitter->sizes());
 }
 
 void wn_t::restore_tree_position(void)
@@ -1693,7 +1765,8 @@ bool wn_t::is_tree_position_crypt()
     // Получаем указатель на элемент вида TreeItem, используя путь
     auto item = know_model_board()->item(path);
     if (item) {
-        if (item->field<crypt_key>() == crypt_value(true)) result = true;
+        if (item->field<crypt_key>() == crypt_value(true))
+            result = true;
         // else
         // return false;
     }
@@ -1994,7 +2067,8 @@ void wn_t::application_exit(void)
     // Если в конфиге настроено, что нужно синхронизироваться при выходе
     // И задана команда синхронизации
     if (appconfig->synchro_on_exit())
-        if (appconfig->synchro_command().trimmed().length() > 0) synchronization();
+        if (appconfig->synchro_command().trimmed().length() > 0)
+            synchronization();
     // Запуск выхода из программы
     _enable_real_close = true;
     emit close();
@@ -2019,7 +2093,8 @@ void wn_t::find_bar_switch(void)
         web::ToolbarSearch* toolbarsearch = static_cast<web::ToolbarSearch*>(_find_screen->lineedit_stack()->currentWidget());
         if (toolbarsearch) {
             auto line = toolbarsearch->lineEdit();
-            if (line) line->selectAll();
+            if (line)
+                line->selectAll();
             toolbarsearch->setFocus();
         }
     } else
@@ -2073,8 +2148,8 @@ void wn_t::on_expand_edit_area(bool flag)
 
         emit _vtab_record->_hide_action->setChecked(
             true); // emit _vtab_tree->_hide_action->setChecked(true);
-                   // QTabWidget *tab = globalparameters.vtab();
-                   // tab->currentWidget()->hide();
+        // QTabWidget *tab = globalparameters.vtab();
+        // tab->currentWidget()->hide();
 
         // auto * tab_pane = tab->findChild<QStackedWidget *>();
         // tab_pane->hide();
@@ -2099,7 +2174,7 @@ void wn_t::on_expand_edit_area(bool flag)
 
         // emit _vtabwidget->hideAction.toggle();
         emit _vtab_record->_hide_action->setChecked(false); // emit _vtab_tree->_hide_action->setChecked(false);
-                                                            // globalparameters.vtab()->resize(vtab_size); // show();
+            // globalparameters.vtab()->resize(vtab_size); // show();
     }
 }
 
@@ -2237,7 +2312,8 @@ void wn_t::synchronization(void)
 
 void wn_t::icon_activated(QSystemTrayIcon::ActivationReason reason)
 {
-    if (!QSystemTrayIcon::isSystemTrayAvailable()) return;
+    if (!QSystemTrayIcon::isSystemTrayAvailable())
+        return;
     switch (reason) {
     case QSystemTrayIcon::Trigger:
     case QSystemTrayIcon::DoubleClick:
@@ -2261,7 +2337,8 @@ void wn_t::icon_activated(QSystemTrayIcon::ActivationReason reason)
 void wn_t::closeEvent(QCloseEvent* event)
 {
     if (_enable_real_close == false) {
-        if (!QSystemTrayIcon::isSystemTrayAvailable()) return;
+        if (!QSystemTrayIcon::isSystemTrayAvailable())
+            return;
         // При приходе события закрыть окно, событие игнорируется
         // и окно просто делается невидимым. Это нужно чтобы при закрытии окна
         // программа не завершала работу
@@ -2274,7 +2351,7 @@ void wn_t::closeEvent(QCloseEvent* event)
 
 bool wn_t::eventFilter(QObject* o, QEvent* e)
 {
-    Q_UNUSED(o);
+    (void)o;
     // qDebug() << "Event: " << e->type();
     // Отлавливание потери фокуса
     // QEvent::ActivationChange
@@ -2404,8 +2481,9 @@ bool wn_t::eventFilter(QObject* o, QEvent* e)
 // Слот, обрабатывающий смену фокуса на виджетах
 void wn_t::on_focus_changed(QWidget* widgetFrom, QWidget* widgetTo)
 {
-    Q_UNUSED(widgetFrom);
-    if (widgetTo == nullptr) return;
+    (void)widgetFrom;
+    if (widgetTo == nullptr)
+        return;
     // qDebug() << "MainWindow::onFocusChanged() to " << widgetTo->objectName();
 
     return; // Временно ничего не делает
@@ -2452,7 +2530,8 @@ std::set<web::Browser*> wn_t::browsers() const
             if (rs) {
                 auto bro = rs->browser();
                 if (bro)
-                    if (result.find(bro) == result.end()) result.insert(bro); // if(*i){	// && *i != widget()=>for entrance
+                    if (result.find(bro) == result.end())
+                        result.insert(bro); // if(*i){	// && *i != widget()=>for entrance
             }
         }
     }
@@ -2491,7 +2570,8 @@ web::WebView* wn_t::find(const std::function<bool(boost::intrusive_ptr<const ::B
             auto browser_ = dynamic_cast<rs_t*>(w)->browser();
             if (browser_) {
                 v = browser_->tab_widget()->find(_equal);
-                if (v != nullptr) break;
+                if (v != nullptr)
+                    break;
             }
         }
     }
@@ -2512,7 +2592,8 @@ web::WebView* wn_t::find(const std::function<bool(boost::intrusive_ptr<const ::B
             }
         }
     }
-    if (!found_myself) v = nullptr;
+    if (!found_myself)
+        v = nullptr;
     return v;
 }
 
@@ -2521,7 +2602,6 @@ web::WebView* wn_t::find(const std::function<bool(boost::intrusive_ptr<const ::B
 //	return new Blogger(_vtab_record, _profile, _editor_docker,
 //_style_source, appconfig->hide_editor_tools(), state_, topic);
 //}
-
 
 //// not sure to succeeded if force is false
 //template <>
@@ -2535,7 +2615,6 @@ web::WebView* wn_t::find(const std::function<bool(boost::intrusive_ptr<const ::B
 //		    return browser<boost::intrusive_ptr<real_url_t<url_value>>>(real_target_url_, force);
 //	    });
 //}
-
 
 url_value wn_t::query_internet(const QString& search_text)
 {
@@ -2578,7 +2657,8 @@ wn_t::browser<QByteArray>(const QByteArray& state_, bool force)
 {
     (void)force;
     size_t topic_number = static_cast<size_t>(appconfig->topic_number());
-    if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
+    if (browsers().size() > topic_number)
+        shrink(topic_number > 0 ? topic_number - 1 : topic_number);
     auto state_data = web::Browser::state(state_);
     auto topic = std::get<3>(state_data);
     auto title = std::get<2>(state_data);
@@ -2602,7 +2682,8 @@ wn_t::browser<QStringList>(const QStringList& tags_list_,
 {
     (void)force;
     size_t topic_number = static_cast<size_t>(appconfig->topic_number());
-    if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
+    if (browsers().size() > topic_number)
+        shrink(topic_number > 0 ? topic_number - 1 : topic_number);
 
     auto tags_list = tags_list_; // QStringList(item->field<tags_key>());
     web::Browser* bro = nullptr; //(dumy_browser());
@@ -2613,11 +2694,13 @@ wn_t::browser<QStringList>(const QStringList& tags_list_,
             bro = real_url_t<QString>::instance<web::Browser*>(item_topic, [&](boost::intrusive_ptr<real_url_t<QString>> topic) {
                 return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic);
             });
-            if (bro) break;
+            if (bro)
+                break;
         }
-        if (!bro) bro = real_url_t<QString>::instance<web::Browser*>(tags_list[0], [&](boost::intrusive_ptr<real_url_t<QString>> topic) {
-            return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic);
-        });
+        if (!bro)
+            bro = real_url_t<QString>::instance<web::Browser*>(tags_list[0], [&](boost::intrusive_ptr<real_url_t<QString>> topic) {
+                return browser<boost::intrusive_ptr<real_url_t<QString>>>(topic);
+            });
     }
     if (!bro && force) {
         bro = real_url_t<QString>::instance<web::Browser*>(gl_para::_default_topic, [&](boost::intrusive_ptr<real_url_t<QString>> topic) {
@@ -2629,7 +2712,6 @@ wn_t::browser<QStringList>(const QStringList& tags_list_,
     return bro;
 }
 
-
 template <>
 web::Browser*
 wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it,
@@ -2637,7 +2719,8 @@ wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it,
 {
     (void)force;
     size_t topic_number = static_cast<size_t>(appconfig->topic_number());
-    if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
+    if (browsers().size() > topic_number)
+        shrink(topic_number > 0 ? topic_number - 1 : topic_number);
 
     boost::intrusive_ptr<i_t> item = it;
 
@@ -2669,7 +2752,8 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusiv
 {
     (void)force;
     size_t topic_number = static_cast<size_t>(appconfig->topic_number());
-    if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
+    if (browsers().size() > topic_number)
+        shrink(topic_number > 0 ? topic_number - 1 : topic_number);
     boost::intrusive_ptr<real_url_t<url_value>> dummy = real_find_url_;
     (void)dummy;
     auto real_url = real_find_url_->value();
@@ -2725,10 +2809,10 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusiv
                 stream << topic;
                 stream << detail::to_qstring(it->field<name_key>());
                 stream << _browser_docker->size();
-                stream << true;  // menuBar()->isVisible();
-                stream << true;  //!_find_screen->isHidden();
+                stream << true; // menuBar()->isVisible();
+                stream << true; //!_find_screen->isHidden();
                 stream << false; //!_bookmarkstoolbar->isHidden();
-                stream << true;  //!gl_paras->status_bar()->isHidden();
+                stream << true; //!gl_paras->status_bar()->isHidden();
                 stream << tab_sate(it);
                 return data;
             };
@@ -2741,17 +2825,18 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<url_value>>>(const boost::intrusiv
     return bro;
 }
 
-
 // not sure to succeeded if force is false
 template <>
 web::Browser*
 wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_ptr<real_url_t<QString>>& topic_, bool force) //const QString& topic_,
 {
     size_t topic_number = static_cast<size_t>(appconfig->topic_number());
-    if (browsers().size() > topic_number) shrink(topic_number > 0 ? topic_number - 1 : topic_number);
+    if (browsers().size() > topic_number)
+        shrink(topic_number > 0 ? topic_number - 1 : topic_number);
     // clean();
     QString topic = topic_->value();
-    if ("" == topic) topic = gl_para::_default_topic;
+    if ("" == topic)
+        topic = gl_para::_default_topic;
 
     // std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
     web::Browser* bro = nullptr; //(dumy_browser());
@@ -2829,9 +2914,8 @@ wn_t::browser<boost::intrusive_ptr<real_url_t<QString>>>(const boost::intrusive_
     }
 
     assert(bro || !force); //	assert(bro);
-    return bro;            // qobject_cast<DockedWindow *>(widget()); //
+    return bro; // qobject_cast<DockedWindow *>(widget()); //
 }
-
 
 std::map<std::string, QMenu*>& wn_t::main_menu_map()
 {
@@ -2861,7 +2945,6 @@ void wn_t::synchronize_title(const QString& title_)
     } else
         this->setWindowTitle(program_title);
 }
-
 
 //void wn_t::on_tabCloseRequested(int index)
 //{
@@ -2918,7 +3001,8 @@ size_t wn_t::shrink(const size_t bar)
 {
     size_t result = bar;
     auto downloader_ = download_screen();
-    if (downloader_) _vtab_record->removeTab(_vtab_record->indexOf(downloader_));
+    if (downloader_)
+        _vtab_record->removeTab(_vtab_record->indexOf(downloader_));
     std::set<web::Browser*> browsers = wn_t::browsers();
 
     //	rs_t* cur_rs = nullptr;
@@ -2963,7 +3047,8 @@ size_t wn_t::shrink(const size_t bar)
                     if (_record_view && host) {
                         //						if (_record_screen == cur_rs)
                         current = _record_view->current_item();
-                        if (!current) current = host;
+                        if (!current)
+                            current = host;
                         assert(current);
                         break;
                         ////	    auto	_proxy_model	=
@@ -3048,7 +3133,6 @@ size_t wn_t::shrink(const size_t bar)
             // *>::size_type>(count()); i ++){
             //							auto v = bro->tab_widget()->webView(i); // v_list[i];
 
-
             //
             bool found = false;
             // [&] {for(auto &j : list) if(j->id() == h->id()){found =
@@ -3085,7 +3169,7 @@ size_t wn_t::shrink(const size_t bar)
         // ;
         // });
 
-        qSort(list_v.begin(), list_v.end(), [&](web::Browser* b0, web::Browser* b1) -> int {
+        std::sort(list_v.begin(), list_v.end(), [&](web::Browser* b0, web::Browser* b1) -> int {
             // auto _e = list.end();
             // auto _re = _e.base();
             // auto _se = _re->get();
@@ -3093,14 +3177,12 @@ size_t wn_t::shrink(const size_t bar)
             auto v1 = b1->currentTab();
             return // &t0 != _re ? &t1 != _re ?
                 v0 // && t0 != *list.end()
-                ?
-                v1 // && t1 != *list.end()
-                    ?
-                (current->distance(v0->page()->host()) != -1 && current->distance(v0->page()->host()) < current->distance(v1->page()->host())) //
-                        || (-1 == current->distance(v1->page()->host()))                                                                       //
-                        || (v0->page()->host()->field<rating_key>() > v1->page()->host()->field<rating_key>()) :
-                true :
-                false // : true : false
+                ? v1 // && t1 != *list.end()
+                    ? (current->distance(v0->page()->host()) != -1 && current->distance(v0->page()->host()) < current->distance(v1->page()->host())) //
+                        || (-1 == current->distance(v1->page()->host())) //
+                        || (v0->page()->host()->field<rating_key>() > v1->page()->host()->field<rating_key>())
+                    : true
+                : false // : true : false
                 ;
         });
         // while(list.size() > 30) list.pop_back();

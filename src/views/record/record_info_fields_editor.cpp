@@ -1,8 +1,6 @@
 
 
-#if QT_VERSION == 0x050600
-#include <wobjectimpl.h>
-#endif
+
 
 #include <QIcon>
 #include <QMessageBox>
@@ -15,6 +13,10 @@
 #include "info_field_enter.h"
 #include "main.h"
 #include "record_info_fields_editor.h"
+
+#if QT_VERSION == 0x050600
+#include <wobjectimpl.h>
+#endif
 
 // Окно редактирования информационных полей записи (не текста записи!)
 // Оно появляется при двойном клике на записи или при клике на кнопку

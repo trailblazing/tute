@@ -8,6 +8,7 @@
 #include <QSpinBox>
 #include <QWidget>
 
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>

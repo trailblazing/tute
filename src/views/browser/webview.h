@@ -66,6 +66,8 @@
 #include "views/record_table/record_view.h"
 // #include "models/tree/TreeItem.h"
 
+
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>

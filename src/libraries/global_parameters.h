@@ -13,13 +13,13 @@
 // #include <QCoreApplication>
 
 namespace web {
-template <typename real_t>
-class Docker;
-class DownloadManager;
-class Profile;
-class Browser;
-class TabWidget;
-class ChaseWidget;
+    template <typename real_t>
+    class Docker;
+    class DownloadManager;
+    class Profile;
+    class Browser;
+    class TabWidget;
+    class ChaseWidget;
 }
 
 class ts_t;
@@ -129,8 +129,8 @@ public:
     void vtab_record(HidableTab* point);
     HidableTab* vtab_record() const;
 
-    // void		vtab_tree(QTabWidget *point);
-    // QTabWidget	*vtab_tree();
+    void vtab_tree(HidableTab* point);
+    HidableTab* vtab_tree() const;
 
     void tree_screen(ts_t* point);
     ts_t* tree_screen() const;
@@ -193,14 +193,14 @@ public:
     static constexpr char _program_root_dir_name[] = "rootdir";
     static constexpr char _program_instance_name[] = "tute"; // QCoreApplication::applicationName();// won't work
     static constexpr char _index_xml_file_name[] = "index.xml";
-    static constexpr char _mode_filename[] = "mode.ini"; // static constexpr char _mode_filename[]	= "mode.ini";
-    static constexpr char _conf_filename[] = "conf.ini"; // static constexpr char _conf_filename[]	= "conf.ini";
-    static constexpr char _browser_conf_filename[] = "browser.conf"; // static constexpr char _browser_conf_filename[] = "browser.conf";
-    static constexpr char _dock_conf_filename[] = "dock.ini"; // static constexpr char _dock_conf_filename[] = "dock.ini";
-    static constexpr char _dock_settings_section_name[] = "system"; // static constexpr char _dock_settings_section_name[] = "system";
+    static constexpr char _mode_filename[] = "mode.ini";              // static constexpr char _mode_filename[]	= "mode.ini";
+    static constexpr char _conf_filename[] = "conf.ini";              // static constexpr char _conf_filename[]	= "conf.ini";
+    static constexpr char _browser_conf_filename[] = "browser.conf";  // static constexpr char _browser_conf_filename[] = "browser.conf";
+    static constexpr char _dock_conf_filename[] = "dock.ini";         // static constexpr char _dock_conf_filename[] = "dock.ini";
+    static constexpr char _dock_settings_section_name[] = "system";   // static constexpr char _dock_settings_section_name[] = "system";
     static constexpr char _editor_conf_filename[] = "editorconf.ini"; // static constexpr char _editor_conf_filename[] = "editorconf.ini";
-    static constexpr char _data_conf_filename[] = "database.ini"; //	static constexpr char *_browser_dock_conf_filename = "entrance.ini";//static constexpr char _entrance_conf_filename[] = "entrance.ini";
-    static constexpr char _stylesheet_filename[] = "stylesheet.css"; // static constexpr char _stylesheet_filename[] = "stylesheet.css";
+    static constexpr char _data_conf_filename[] = "database.ini";     //	static constexpr char *_browser_dock_conf_filename = "entrance.ini";//static constexpr char _entrance_conf_filename[] = "entrance.ini";
+    static constexpr char _stylesheet_filename[] = "stylesheet.css";  // static constexpr char _stylesheet_filename[] = "stylesheet.css";
     // static constexpr char _document_config_name[] = "document.ini";
     static constexpr char _file_menu_name[] = "file_menu";
     static constexpr char _tools_menu_name[] = "tools_menu";
@@ -244,12 +244,11 @@ private:
     // void create_root_portable(void);
     // void initialize_root_impl(const QString &root_dir);
     static QString _app_data_path_system; // = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation); // QDir::homePath() + "/.config/" +
-        // gl_para::_program_instance_name;
+                                          // gl_para::_program_instance_name;
 #ifdef USE_ALTERNATIVE_PATH
     std::pair<QString, QString> _candidate_mode_paths_by_system = {
         QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + gl_para::_program_instance_name,
-        QDir::homePath() + "/." + gl_para::_program_instance_name
-    };
+        QDir::homePath() + "/." + gl_para::_program_instance_name};
 #endif // USE_ALTERNATIVE_PATH
     static std::function<QString()> mode_full_name_in_app_data_path_system;
     static std::function<std::tuple<const bool, const QString>()> init;
@@ -266,8 +265,8 @@ private:
     QSplitter* _v_left_splitter = nullptr;
     QSplitter* _h_record_splitter = nullptr;
     QSplitter* _v_right_splitter = nullptr;
-    HidableTab* _vtab_record = nullptr; // HidableTabWidget
-    // *_vtab_tree		= nullptr;
+    HidableTab* _vtab_record = nullptr;
+    HidableTab* _vtab_tree = nullptr;
     wn_t* _mainwindow = nullptr;
     web::DownloadManager* _download_manager = nullptr;
     AttachTableController* _attachtable_controller = nullptr;

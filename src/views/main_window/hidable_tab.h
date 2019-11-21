@@ -12,6 +12,7 @@
 #include <QStackedLayout>
 #include <QTabWidget>
 
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>
@@ -53,7 +54,7 @@ class HidableTab : public QTabWidget {
 	bool eventFilter(QObject* obj, QEvent* event);
 	void on_tabbar_clicked(int index);
     public slots:
-	void collapse_when_true(bool checked);
+	void collapse(bool checked);
 	// void onTabBarClicked(int index);
 	void on_child_self_close_requested(QWidget* child_);
 

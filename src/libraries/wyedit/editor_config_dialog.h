@@ -5,10 +5,12 @@
 #include "views/app_config/config_dialog.h"
 #include <QWidget>
 
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>
 #endif
+
 class Editor;
 class EditorConfig;
 class EditorConfigDialog : public QWidget {

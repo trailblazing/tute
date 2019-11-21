@@ -71,6 +71,7 @@ namespace web {
 	template <typename real_t>
 	class Docker : public QDockWidget {
 #ifdef USE_MOC
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 		W_OBJECT(Entrance)
 #else

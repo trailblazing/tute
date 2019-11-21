@@ -1,14 +1,16 @@
 
 
-#if QT_VERSION == 0x050600
-#include <wobjectimpl.h>
-#endif
+
 
 #include <QHBoxLayout>
 #include <QIcon>
 
 #include "main.h"
 #include "wait_clock.h"
+
+#if QT_VERSION == 0x050600
+#include <wobjectimpl.h>
+#endif
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(WaitClock)

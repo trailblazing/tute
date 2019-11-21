@@ -1,8 +1,6 @@
 
 
-#if QT_VERSION == 0x050600
-#include <wobjectimpl.h>
-#endif
+
 
 #include <QDir>
 #include <QIcon>
@@ -24,6 +22,11 @@
 #include "models/app_config/app_config.h"
 
 #include "views/record/editor_wrap.h"
+
+#if QT_VERSION == 0x050600
+#include <wobjectimpl.h>
+#endif
+
 
 extern std::shared_ptr<gl_para> gl_paras;
 extern std::shared_ptr<AppConfig> appconfig;

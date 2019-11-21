@@ -105,7 +105,7 @@ class EditorWrap;
 class EditorWrap;
 //#define TEXTEDIT EditorWrap
 typedef EditorWrap TEXTEDIT;
-#else //USE_EDITOR_WRAP
+#else // USE_EDITOR_WRAP
 
 #include "libraries/wyedit/editor.h"
 class Editor;
@@ -586,7 +586,7 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
 
 		auto bar_width = _control_tab->tabBar()->sizeHint().width();
 		if (list[0] <= bar_width || collapsed) {
-			_control_tab->collapse_when_true(true);
+            _control_tab->collapse(true);
 			// auto list = _splitter->sizes();
 
 			list[1] = width() - bar_width;
@@ -594,7 +594,7 @@ Blogger::Blogger(QString const& new_post_topic, QString const& new_post_content,
 			// _splitter->setSizes(list);
 			// emit _splitter->splitterMoved(list[0], 0);
 		} else {
-			_control_tab->collapse_when_true(false);
+            _control_tab->collapse(false);
 			// 284
 			// 428
 		}
@@ -688,7 +688,7 @@ void Blogger::doUiSetup()
 	sapp_t::instance()->setWindowIcon(QIcon(QLatin1String(":/resource/pic/logo.svg"))); // QPixmap(":/images/qtm-logo1.png")
 
 #ifdef USE_SYSTRAYICON
-	sti = 0;
+    sti = nullptr;
 #endif
 
 #ifdef Q_OS_MAC
@@ -1093,8 +1093,8 @@ bool Blogger::handleArguments()
 
 void Blogger::positionWidget(QWidget* w, QWidget* refWidget)
 {
-	QDesktopWidget* dw = QApplication::desktop();
-	QRect r = dw->availableGeometry();
+    //	QDesktopWidget* dw = QApplication::desktop();
+    QRect r = QGuiApplication::screens()[0]->geometry();// dw->availableGeometry();
 	if (qobject_cast<QWidget*>(refWidget)) {
 		QRect g = refWidget->geometry(); // of the reference widget
 		if ((g.right() + 30) >= (r.right() + 30) &&
@@ -2827,7 +2827,8 @@ void Blogger::insertLink(bool isAutoLink)
 	linkEntry.setWindowFlags(Qt::Sheet);
 #endif
 	leui.setupUi(&linkEntry);
-    if (isAutoLink) leui.cbMakeAutoLink->setChecked(Qt::Checked>0? true : false);
+    if (isAutoLink) leui.cbMakeAutoLink->setChecked(true    // Qt::Checked > 0? true : false
+                                                                     );
 	if (!selectedString.isEmpty()) leui.leLinkText->setText(selectedString);
 	if (linkEntry.exec()) {
 		linkString = leui.leLinkURL->text();
@@ -3463,8 +3464,8 @@ void Blogger::newWPPost()
 				       ->itemData(_control_tab->cbMainCat->currentIndex())
 				       .toString();
 			for (int a = 0; a < _control_tab->lwOtherCats->count(); a++) {
-				if (_control_tab->lwOtherCats->isItemSelected(
-					_control_tab->lwOtherCats->item(a))) {
+                if (_control_tab->lwOtherCats->item(a)->isSelected()
+                        ) {
 					// cat = currentBlogElement.firstChildElement(
 					// "categories" ).childNodes().at( a ).toElement();
 					catList << _control_tab->cbMainCat->itemData(a).toString();
@@ -3748,8 +3749,7 @@ void Blogger::submitWPEdit()
 				       ->itemData(_control_tab->cbMainCat->currentIndex())
 				       .toString();
 			for (int a = 0; a < _control_tab->lwOtherCats->count(); a++) {
-				if (_control_tab->lwOtherCats->isItemSelected(
-					_control_tab->lwOtherCats->item(a))) {
+                if (_control_tab->lwOtherCats->item(a)->isSelected()) {
 					// cat = currentBlogElement.firstChildElement(
 					// "categories" ).childNodes().at( a ).toElement();
 					catList << _control_tab->cbMainCat->itemData(a).toString();
@@ -3893,8 +3893,7 @@ void Blogger::setPostCategories()
 				arrayValue.appendChild(arrayStruct);
 				_data.appendChild(arrayValue);
 				for (int a = 0; a < _control_tab->lwOtherCats->count(); a++) {
-					if (_control_tab->lwOtherCats->isItemSelected(
-						_control_tab->lwOtherCats->item(a))) {
+                    if (_control_tab->lwOtherCats->item(a)->isSelected()) {
 						cat = currentBlogElement.firstChildElement("categories")
 							  .childNodes()
 							  .at(a)
@@ -4179,8 +4178,7 @@ void Blogger::save_impl(const QString& file_name_with_full_path, bool exp)
 			QString catsList;
 			int cats = 0;
 			for (int a = 0; a < _control_tab->lwOtherCats->count(); a++) {
-				if (_control_tab->lwOtherCats->isItemSelected(
-					_control_tab->lwOtherCats->item(a))) {
+                if (_control_tab->lwOtherCats->item(a)->isSelected()) {
 					if (cats)
 						catsList.append(QString(";%1").arg(_control_tab->cbMainCat->itemData(a).toString()));
 					else
@@ -4658,8 +4656,7 @@ bool Blogger::load(const QString& fname, bool fromSTI)
 								// primary category";
 								_control_tab->cbMainCat->setCurrentIndex(i);
 							} else if (otherCatStringList.contains(cc))
-								_control_tab->lwOtherCats->setItemSelected(
-								    _control_tab->lwOtherCats->item(i), true);
+                                _control_tab->lwOtherCats->item(i)->setSelected(true);
 						}
 					} else {
 						_control_tab->chNoCats->setEnabled(false);
@@ -4833,8 +4830,7 @@ void Blogger::setLoadedPostCategories()
 			c = otherCatsList.section(QChar(';'), i, i);
 			a = c.toInt(&isOK);
 			if (isOK)
-				_control_tab->lwOtherCats->setItemSelected(
-				    _control_tab->lwOtherCats->item(a), true);
+                _control_tab->lwOtherCats->item(a)->setSelected(true);
 			else
 				break;
 			i++;
@@ -4853,8 +4849,7 @@ void Blogger::setLoadedPostCategories()
 				// qDebug() << "found primary category";
 				_control_tab->cbMainCat->setCurrentIndex(i);
 			} else if (catStringList.contains(cc))
-				_control_tab->lwOtherCats->setItemSelected(
-				    _control_tab->lwOtherCats->item(i), true);
+                _control_tab->lwOtherCats->item(i)->setSelected(true);
 		}
 		initialChangeBlog = false;
 	}
@@ -5373,7 +5368,7 @@ void Blogger::doInitialChangeBlog()
 #ifdef QTM_DEBUG
 	addToConsole(QString("loadedEntryBlog: %1\n").arg(loadedEntryBlog));
 #endif
-	disconnect(this, SIGNAL(httpBusinessFinished()), 0, 0);
+    disconnect(this, SIGNAL(httpBusinessFinished()), nullptr, nullptr);
 	if (loadedEntryBlog != 999) {
 		currentBlog = loadedEntryBlog;
 		loadedEntryBlog = 999;
@@ -5617,7 +5612,7 @@ void Blogger::loadAutoLinkDictionary()
 		QDomDocument dictDoc("autoLinkDictionary");
 		QFile file(dictionaryFileName);
 		if (!dictDoc.setContent(&file, true, &errorString, &errorLine, &errorCol))
-			QMessageBox::warning(0, tr("Failed to read templates"), QString(tr("Error: %1\nLine %2, col %3")).arg(errorString).arg(errorLine).arg(errorCol));
+            QMessageBox::warning(nullptr, tr("Failed to read templates"), QString(tr("Error: %1\nLine %2, col %3")).arg(errorString).arg(errorLine).arg(errorCol));
 		else {
 			QDomNodeList entryList = dictDoc.elementsByTagName("entry");
 			for (int i = 0; i < entryList.count(); i++) {
@@ -5646,7 +5641,7 @@ void Blogger::loadAutoLinkDictionary()
 
 QByteArray Blogger::toBase64(QByteArray& qbarray)
 {
-	QProgressDialog pdialog(tr("Converting file to Base64"), tr("Cancel"), 0, qbarray.size(), 0);
+    QProgressDialog pdialog(tr("Converting file to Base64"), tr("Cancel"), 0, qbarray.size(), nullptr);
 	pdialog.setWindowModality(Qt::WindowModal);
 	pdialog.setMinimumDuration(2000);
 	pdialog.setWindowTitle(program_title);
@@ -5746,7 +5741,7 @@ void Blogger::hideProgressBar()
 	taskbarProgress->setVisible(false);
 	taskbarProgress->reset();
 #endif
-	if (QApplication::overrideCursor() != 0) QApplication::restoreOverrideCursor();
+    if (QApplication::overrideCursor() != nullptr) QApplication::restoreOverrideCursor();
 }
 
 QString Blogger::checkBoxName(QString source)

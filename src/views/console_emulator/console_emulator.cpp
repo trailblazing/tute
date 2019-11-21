@@ -1,8 +1,6 @@
 
 
-#if QT_VERSION == 0x050600
-#include <wobjectimpl.h>
-#endif
+
 
 #include <QScrollBar>
 #include <QWidget>
@@ -12,6 +10,10 @@
 #include "main.h"
 #include "models/app_config/app_config.h"
 #include "views/find_in_base_screen/find_screen.h"
+
+#if QT_VERSION == 0x050600
+#include <wobjectimpl.h>
+#endif
 
 extern std::shared_ptr<AppConfig> appconfig;
 

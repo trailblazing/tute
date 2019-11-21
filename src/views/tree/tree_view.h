@@ -20,6 +20,7 @@
 #include "models/tree/tree_item.h"  // because of moc
 #include "models/tree/tree_know_model.h"
 
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>

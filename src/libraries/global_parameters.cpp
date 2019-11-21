@@ -891,15 +891,15 @@ HidableTab* gl_para::vtab_record() const
     return _vtab_record;
 }
 
-// void GlobalParameters::vtab_tree(QTabWidget *point)
-// {
-// _vtab_tree = point;
-// }
+void gl_para::vtab_tree(HidableTab* point)
+{
+    _vtab_tree = point;
+}
 
-// QTabWidget *GlobalParameters::vtab_tree()
-// {
-// return _vtab_tree;
-// }
+HidableTab* gl_para::vtab_tree() const
+{
+    return _vtab_tree;
+}
 
 web::DownloadManager* gl_para::request_download_manager()
 {

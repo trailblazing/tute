@@ -27,6 +27,7 @@ extern const std::string editor_prefix;
 // Fix ugly Qt QSS bug
 // #include "libraries/flat_control.h"
 
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>

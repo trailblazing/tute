@@ -1,8 +1,6 @@
 
 
-#if QT_VERSION == 0x050600
-#include <wobjectimpl.h>
-#endif
+
 
 #include <QDrag>
 #include <QHeaderView>
@@ -37,6 +35,10 @@
 #include "views/record_table/vertical_scrollarea.h"
 #include "views/tree/tree_screen.h"
 #include "views/tree/tree_view.h"
+
+#if QT_VERSION == 0x050600
+#include <wobjectimpl.h>
+#endif
 
 extern std::shared_ptr<gl_para> gl_paras;
 extern FixedParameters fixedparameters;

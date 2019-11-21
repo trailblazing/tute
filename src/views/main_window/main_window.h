@@ -55,6 +55,7 @@
 // #include "models/app_config/AppConfig.h"
 // #include "models/database_config/DataBaseConfig.h"
 
+#include <QtGlobal>
 #if QT_VERSION == 0x050600
 #include <QObject>
 #include <wobjectdefs.h>
@@ -66,14 +67,14 @@ extern const std::string program_title_string;
 extern const char* meta_editor_singleton_name;
 
 namespace web {
-template <typename>
-class Docker;
-class Browser;
-class DownloadManager;
-class HistoryMenu;
-class BookmarksMenu;
-class Profile;
-class AutoSaver;
+    template <typename>
+    class Docker;
+    class Browser;
+    class DownloadManager;
+    class HistoryMenu;
+    class BookmarksMenu;
+    class Profile;
+    class AutoSaver;
 }
 
 class ts_t;
@@ -239,21 +240,23 @@ private:
     // QAction *_action_tray_maximize;
     // QAction *_action_tray_minimize;
     // QAction *_action_tray_quit;
-
+    WindowSwitcher* _switcher;
     QSplitter* _v_right_splitter;
     QSplitter* _v_find_splitter;
 
-    // HidableTabWidget	*_vtab_tree;
-    QSplitter* _h_record_splitter;
+
     QSplitter* _h_tree_splitter;
+    QSplitter* _h_record_splitter;
+
     // QSplitter           *_h_splitter;
+    HidableTab* _vtab_tree;
     HidableTab* _vtab_record;
     web::Docker<web::Browser>* _browser_docker;
     web::Docker<Blogger>* _editor_docker;
     ts_t* _tree_screen;
     FindScreen* _find_screen;
     QStatusBar* _statusbar;
-    WindowSwitcher* _switcher;
+
 
     QAction* _quit_action;
     // QMenu *_tray_icon_menu;
@@ -299,7 +302,7 @@ wn_t::browser<boost::intrusive_ptr<i_t>>(const boost::intrusive_ptr<i_t>& it,
 
 template <>
 web::Browser*
-wn_t::browser<QStringList //boost::intrusive_ptr<i_t>
+wn_t::browser<QStringList           //boost::intrusive_ptr<i_t>
     >(const QStringList& tags_list, //const boost::intrusive_ptr<i_t>& it,
     bool force);
 

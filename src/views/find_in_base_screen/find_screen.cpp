@@ -4,6 +4,7 @@
 #include <thread>
 #include <utility>
 
+
 #if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
 #endif
